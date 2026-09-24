@@ -12,6 +12,17 @@ runs:
         node-version-file: .nvmrc
     - run: corepack enable
       shell: bash
+    # Fetch the pinned pnpm up front, retrying: a registry connection reset here used to fail
+    # the whole job before any check ran.
+    - name: pnpm (corepack install, with retries)
+      shell: bash
+      run: |
+        for attempt in 1 2 3 4; do
+          corepack install && exit 0
+          echo "corepack install failed (attempt $attempt); retrying" >&2
+          sleep $((attempt * 5))
+        done
+        exit 1
     - name: pnpm store cache
       uses: actions/cache@v4
       with:
