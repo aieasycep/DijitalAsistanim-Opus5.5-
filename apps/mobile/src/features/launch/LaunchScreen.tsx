@@ -1,7 +1,9 @@
 /**
  * Launch view: the brand tile exactly where the native splash draws it (centred, 96 pt), with the
  * app name and the PRIMARY brand line beneath. Colours, type and spacing come from the tokens, so
- * the handover from the native splash is seamless in light and dark.
+ * the handover from the native splash is seamless in light and dark. When the entry route takes
+ * longer than 3 s (a slow bootstrap), a 16 px spinner appears so the app never looks frozen
+ * (M-GL-02); there is no timed navigation.
  */
 import {
   color,
@@ -12,7 +14,7 @@ import {
   typography,
   type TextStyleToken,
 } from '@da/design-tokens';
-import { Image, Platform, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Platform, StyleSheet, Text, View } from 'react-native';
 import { useTranslations } from 'use-intl';
 
 import brandTile from '../../../assets/splash.png';
@@ -32,12 +34,21 @@ function textStyle(token: TextStyleToken) {
   };
 }
 
-export function LaunchScreen() {
+export interface LaunchScreenProps {
+  /** Shows the loading spinner (the entry route is still resolving after 3 s). */
+  readonly busy?: boolean;
+}
+
+export function LaunchScreen({ busy = false }: LaunchScreenProps) {
   const t = useTranslations('common.app');
   const palette = color[useSchemeName()];
 
   return (
-    <View style={[styles.root, { backgroundColor: palette.bg }]} testID="launch-screen">
+    <View
+      style={[styles.root, { backgroundColor: palette.bg }]}
+      testID="launch-screen"
+      accessibilityLabel={busy ? t('loadingA11y') : undefined}
+    >
       <Image
         source={brandTile}
         style={styles.tile}
@@ -58,6 +69,16 @@ export function LaunchScreen() {
         >
           {t('tagline')}
         </Text>
+        {busy ? (
+          <ActivityIndicator
+            testID="launch-spinner"
+            size={16}
+            color={palette.brand.primary}
+            accessibilityRole="progressbar"
+            accessibilityLabel={t('loadingA11y')}
+            style={styles.spinner}
+          />
+        ) : null}
       </View>
     </View>
   );
@@ -90,5 +111,8 @@ const styles = StyleSheet.create({
   tagline: {
     ...textStyle(typography.body),
     textAlign: 'center',
+  },
+  spinner: {
+    marginTop: space[4],
   },
 });

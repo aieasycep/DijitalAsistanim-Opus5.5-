@@ -5,7 +5,7 @@ import { render, screen } from '@testing-library/react-native';
 import * as Localization from 'expo-localization';
 import { StyleSheet } from 'react-native';
 
-import LaunchRoute from '../app/index';
+import { LaunchScreen } from '../src/features/launch/LaunchScreen';
 import { deviceLocale, deviceTimeZone, I18nProvider } from '../src/i18n/I18nProvider';
 import { useSchemeName } from '../src/lib/useSchemeName';
 
@@ -18,15 +18,15 @@ jest.mock('expo-localization', () => ({
 const schemeName = jest.mocked(useSchemeName);
 const localization = jest.mocked(Localization);
 
-function renderLaunch(locale: 'tr' | 'en') {
+function renderLaunch(locale: 'tr' | 'en', busy = false) {
   return render(
     <I18nProvider locale={locale} timeZone="Europe/Istanbul">
-      <LaunchRoute />
+      <LaunchScreen busy={busy} />
     </I18nProvider>,
   );
 }
 
-describe('launch screen (app/index)', () => {
+describe('launch view (M-GL-02 entry resolver while loading)', () => {
   beforeEach(() => {
     schemeName.mockReturnValue('light');
   });
@@ -59,6 +59,20 @@ describe('launch screen (app/index)', () => {
   it('keeps the brand tile out of the accessibility tree', async () => {
     await renderLaunch('tr');
     expect(screen.queryByRole('image')).toBeNull();
+    expect(screen.queryByTestId('launch-spinner')).toBeNull();
+  });
+
+  it('shows the labelled 16 px spinner when the entry route is slow', async () => {
+    await renderLaunch('tr', true);
+    const spinner = screen.getByTestId('launch-spinner');
+    expect(spinner.props).toMatchObject({
+      accessibilityRole: 'progressbar',
+      accessibilityLabel: 'Dijital Asistan yükleniyor',
+      size: 16,
+    });
+    expect(screen.getByTestId('launch-screen').props.accessibilityLabel).toBe(
+      'Dijital Asistan yükleniyor',
+    );
   });
 });
 

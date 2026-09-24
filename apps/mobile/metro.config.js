@@ -12,6 +12,7 @@
  */
 const path = require('node:path');
 const { getDefaultConfig } = require('expo/metro-config');
+const { demoRouteBlockList } = require('./demo-routes');
 
 const projectRoot = __dirname;
 const workspaceRoot = path.resolve(projectRoot, '../..');
@@ -38,6 +39,8 @@ config.resolver.blockList = [
   under('apps', 'mobile', 'android'),
   under('apps', 'mobile', '.expo-export'),
   /\/\.next\/.*/,
+  // `app/demo/**` exists only in demo builds (EXPO_PUBLIC_DEMO_MODE=true).
+  ...demoRouteBlockList(process.env, projectRoot),
 ];
 
 module.exports = config;

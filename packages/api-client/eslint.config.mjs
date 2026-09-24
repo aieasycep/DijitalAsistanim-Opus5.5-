@@ -1,0 +1,30 @@
+import { base } from '@da/config/eslint/base.mjs';
+
+/**
+ * Platform-neutral client (mobile and web): no React Native or Node-only imports in `src/`, and
+ * React only behind the `./react` subpath (`src/hooks`), so the core stays usable anywhere.
+ */
+export default [
+  ...base({ tsconfigRootDir: import.meta.dirname }),
+  {
+    files: ['src/**/*.ts'],
+    ignores: ['src/hooks/**'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              regex: '^(react|react-native|@tanstack/react-query)(/.*)?$',
+              message: 'The core client stays React-free; hooks live in src/hooks (./react).',
+            },
+            {
+              regex: '^node:',
+              message: 'The client runs in React Native and browsers; no Node built-ins.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+];

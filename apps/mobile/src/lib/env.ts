@@ -6,7 +6,7 @@
  */
 import { clientEnv, formatEnvError, type ExpoClientEnv } from '@da/validation/env';
 
-import { variantScheme } from './variant';
+import { DEFAULT_WEB_URL, variantScheme } from './variant';
 
 export type RawClientEnv = Readonly<Record<string, string | undefined>>;
 
@@ -55,4 +55,24 @@ let cached: ExpoClientEnv | undefined;
 export function getClientEnv(): ExpoClientEnv {
   cached ??= parseClientEnv(readExpoPublicEnv());
   return cached;
+}
+
+/** The web origin (`EXPO_PUBLIC_WEB_URL`, default M§108) without a trailing slash. */
+export function webOrigin(env: ExpoClientEnv = getClientEnv()): string {
+  return (env.EXPO_PUBLIC_WEB_URL ?? DEFAULT_WEB_URL).replace(/\/+$/, '');
+}
+
+/** A page on the public web site, e.g. `webPage('/terms')`. */
+export function webPage(path: `/${string}`, env: ExpoClientEnv = getClientEnv()): string {
+  return `${webOrigin(env)}${path}`;
+}
+
+/** `dijitalasistan[-variant]://<path>` for this build's scheme. */
+export function appLink(path: string, env: ExpoClientEnv = getClientEnv()): string {
+  return `${env.EXPO_PUBLIC_APP_SCHEME}://${path.replace(/^\/+/, '')}`;
+}
+
+/** Demo builds only (`EXPO_PUBLIC_DEMO_MODE=true`; refused in production by the env schema). */
+export function isDemoBuild(env: ExpoClientEnv = getClientEnv()): boolean {
+  return env.EXPO_PUBLIC_DEMO_MODE;
 }
