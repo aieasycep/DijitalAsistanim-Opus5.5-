@@ -16,89 +16,47 @@ env:
   TURBO_TELEMETRY_DISABLED: '1'
 
 jobs:
-  install:
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-      - run: corepack enable
-      - name: pnpm store cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.local/share/pnpm/store
-          key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: pnpm-store-${{ runner.os }}-
-      - run: pnpm install --frozen-lockfile
-
   lint:
-    needs: install
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: ./.github/actions/setup
         with:
-          node-version-file: .nvmrc
-      - run: corepack enable
-      - uses: actions/cache@v4
-        with:
-          path: ~/.local/share/pnpm/store
-          key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: pnpm-store-${{ runner.os }}-
-      - uses: actions/cache@v4
-        with:
-          path: .turbo
-          key: turbo-lint-${{ runner.os }}-${{ github.sha }}
-          restore-keys: turbo-lint-${{ runner.os }}-
-      - run: pnpm install --frozen-lockfile
+          turbo-cache-key: lint
       - run: pnpm exec eslint .
       - run: pnpm lint
       - run: pnpm format:check
       - run: pnpm quality-gate
 
   typecheck:
-    needs: install
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: ./.github/actions/setup
         with:
-          node-version-file: .nvmrc
-      - run: corepack enable
-      - uses: actions/cache@v4
-        with:
-          path: ~/.local/share/pnpm/store
-          key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: pnpm-store-${{ runner.os }}-
-      - uses: actions/cache@v4
-        with:
-          path: .turbo
-          key: turbo-typecheck-${{ runner.os }}-${{ github.sha }}
-          restore-keys: turbo-typecheck-${{ runner.os }}-
-      - run: pnpm install --frozen-lockfile
+          turbo-cache-key: typecheck
       - run: pnpm exec tsc -p tsconfig.json
       - run: pnpm typecheck
 
   unit:
-    needs: install
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: ./.github/actions/setup
         with:
-          node-version-file: .nvmrc
-      - run: corepack enable
-      - uses: actions/cache@v4
-        with:
-          path: ~/.local/share/pnpm/store
-          key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: pnpm-store-${{ runner.os }}-
-      - uses: actions/cache@v4
-        with:
-          path: .turbo
-          key: turbo-unit-${{ runner.os }}-${{ github.sha }}
-          restore-keys: turbo-unit-${{ runner.os }}-
-      - run: pnpm install --frozen-lockfile
+          turbo-cache-key: unit
       - run: pnpm test:scripts
       - run: pnpm test
+
+  mobile:
+    name: mobile (install check, bundle export, prebuild smoke)
+    runs-on: ubuntu-24.04
+    env:
+      EXPO_OFFLINE: '1'
+      EXPO_NO_TELEMETRY: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+        with:
+          turbo-cache-key: mobile
+      - run: pnpm mobile:check

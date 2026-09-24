@@ -1,0 +1,28 @@
+name: Setup workspace
+description: Node (from .nvmrc), corepack pnpm, pnpm store cache, turbo cache and a frozen install.
+inputs:
+  turbo-cache-key:
+    description: Job-specific prefix for the turbo cache key.
+    required: true
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version-file: .nvmrc
+    - run: corepack enable
+      shell: bash
+    - name: pnpm store cache
+      uses: actions/cache@v4
+      with:
+        path: ~/.local/share/pnpm/store
+        key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+        restore-keys: pnpm-store-${{ runner.os }}-
+    - name: turbo cache
+      uses: actions/cache@v4
+      with:
+        path: .turbo
+        key: turbo-${{ inputs.turbo-cache-key }}-${{ runner.os }}-${{ github.sha }}
+        restore-keys: turbo-${{ inputs.turbo-cache-key }}-${{ runner.os }}-
+    - run: pnpm install --frozen-lockfile
+      shell: bash
