@@ -17,16 +17,23 @@
     "test": "jest"
   },
   "dependencies": {
-    "@da/design-tokens": "workspace:*"
+    "@da/design-tokens": "workspace:*",
+    "@da/i18n": "workspace:*"
   },
   "peerDependencies": {
     "react": "catalog:",
     "react-native": "catalog:expo",
-    "react-native-svg": "catalog:expo"
+    "react-native-gesture-handler": "catalog:expo",
+    "react-native-reanimated": "catalog:expo",
+    "react-native-safe-area-context": "catalog:expo",
+    "react-native-svg": "catalog:expo",
+    "react-native-worklets": "catalog:expo"
   },
   "devDependencies": {
     "@babel/core": "catalog:expo",
     "@da/config": "workspace:*",
+    "@expo-google-fonts/geist": "catalog:expo",
+    "@expo-google-fonts/lora": "catalog:expo",
     "@jest/globals": "catalog:expo",
     "@material-symbols/svg-400": "catalog:expo",
     "@react-native/babel-preset": "catalog:expo",
@@ -34,11 +41,16 @@
     "@testing-library/react-native": "catalog:expo",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
+    "babel-plugin-react-compiler": "catalog:",
     "eslint": "catalog:",
     "jest": "catalog:expo",
     "react": "catalog:",
     "react-native": "catalog:expo",
+    "react-native-gesture-handler": "catalog:expo",
+    "react-native-reanimated": "catalog:expo",
+    "react-native-safe-area-context": "catalog:expo",
     "react-native-svg": "catalog:expo",
+    "react-native-worklets": "catalog:expo",
     "test-renderer": "catalog:expo",
     "typescript": "catalog:"
   }
