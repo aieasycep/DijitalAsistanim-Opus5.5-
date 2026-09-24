@@ -1,4 +1,4 @@
-import { parseClientEnv, type ClientEnv } from './schema.ts';
+import { parseClientEnv, type ClientEnv } from './client-schema.ts';
 
 /**
  * Browser-safe configuration. Each `NEXT_PUBLIC_*` value is referenced literally so Next.js

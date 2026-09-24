@@ -10,28 +10,18 @@ import { DEFAULT_APP_ID, DEFAULT_PRIVACY_EMAIL } from '../lib/site.ts';
  * public API origin) or a build-time identifier. A Supabase secret key is rejected outright.
  */
 
-type Source = Readonly<Record<string, string | undefined>>;
-
-const blankToUndefined = (value: unknown): unknown =>
-  typeof value === 'string' && value.trim() === '' ? undefined : value;
-
-const optionalString = z.preprocess(blankToUndefined, z.string().trim().min(1).optional());
-
-const optionalUrl = z.preprocess(
+import {
+  EnvError,
   blankToUndefined,
-  z
-    .url({ protocol: /^https?$/ })
-    .transform((value) => value.replace(/\/+$/, ''))
-    .optional(),
-);
+  booleanFlag,
+  formatIssues,
+  optionalString,
+  optionalUrl,
+  type Source,
+} from './shared.ts';
 
-const booleanFlag = (fallback: boolean) =>
-  z.preprocess((value) => {
-    const v = blankToUndefined(value);
-    if (v === undefined) return fallback;
-    if (typeof v === 'string') return ['1', 'true', 'yes', 'on'].includes(v.toLowerCase());
-    return v;
-  }, z.boolean());
+export { EnvError } from './shared.ts';
+export { parseClientEnv, type ClientEnv } from './client-schema.ts';
 
 export const APP_ENV_VALUES = ['development', 'test', 'preview', 'staging', 'production'] as const;
 export type AppEnv = (typeof APP_ENV_VALUES)[number];
@@ -107,49 +97,10 @@ const serverShape = z.object({
   EU_REPRESENTATIVE: optionalString,
 });
 
-const clientShape = z.object({
-  NEXT_PUBLIC_SITE_URL: z.preprocess(
-    blankToUndefined,
-    z
-      .url({ protocol: /^https?$/ })
-      .transform((value) => value.replace(/\/+$/, ''))
-      .default('https://dijitalasistan.app'),
-  ),
-  NEXT_PUBLIC_SUPABASE_URL: optionalUrl,
-  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.preprocess(
-    blankToUndefined,
-    z
-      .string()
-      .refine((key) => !key.startsWith('sb_secret_'), {
-        message: 'A Supabase secret key must never reach the web bundle',
-      })
-      .optional(),
-  ),
-  NEXT_PUBLIC_ANALYTICS_ENABLED: booleanFlag(false),
-  NEXT_PUBLIC_TURNSTILE_SITE_KEY: optionalString,
-});
-
 export type ServerEnv = z.infer<typeof serverShape> & {
   /** Search engines may index the site (production deployment with `SITE_INDEXABLE=true`). */
   readonly indexable: boolean;
 };
-export type ClientEnv = z.infer<typeof clientShape>;
-
-export class EnvError extends Error {
-  override readonly name = 'EnvError';
-}
-
-function formatIssues(error: z.ZodError): string {
-  return error.issues
-    .map((issue) => `  ${issue.path.join('.') || '(root)'}: ${issue.message}`)
-    .join('\n');
-}
-
-export function parseClientEnv(source: Source): ClientEnv {
-  const result = clientShape.safeParse(source);
-  if (!result.success) throw new EnvError(`Invalid web client env:\n${formatIssues(result.error)}`);
-  return result.data;
-}
 
 /** Keys a production, indexable deployment cannot launch without (Part 5 §17, §16 env test). */
 export const INDEXABLE_PRODUCTION_REQUIRED = [

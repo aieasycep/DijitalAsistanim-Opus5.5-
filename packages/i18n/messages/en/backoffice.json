@@ -1,8 +1,16 @@
 {
   "app": {
-    "name": "Dijital Asistan Admin"
+    "name": "Dijital Asistan Admin",
+    "skipToContent": "Skip to content",
+    "homeLink": "Dijital Asistan Admin home"
   },
   "nav": {
+    "label": "Main menu",
+    "collapse": "Collapse menu",
+    "expand": "Expand menu",
+    "open": "Open menu",
+    "close": "Close menu",
+    "breadcrumb": "Location",
     "groups": {
       "overview": "Overview",
       "users": "Users",
@@ -35,19 +43,136 @@
       "settings": "Settings"
     }
   },
+  "shell": {
+    "search": "Search…",
+    "searchShortcutMac": "⌘K",
+    "searchShortcutOther": "Ctrl K",
+    "envPreview": "PREVIEW",
+    "accountMenu": "Account menu",
+    "signedInAs": "Signed in as {name}",
+    "toasts": "Notifications"
+  },
+  "theme": {
+    "label": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "switchToDark": "Switch to dark theme",
+    "switchToLight": "Switch to light theme"
+  },
   "auth": {
     "title": "Sign in to the admin panel",
+    "subtitle": "Enter your work email. If you have an account, we'll send you a 6-digit sign-in code.",
     "email": "Email",
+    "emailHint": "name@company.com",
+    "emailInvalid": "Enter a valid email address.",
     "sendCode": "Send code",
+    "codeSent": "If an account exists, a 6-digit sign-in code has been sent to your email.",
     "code": "Email code",
     "codeHelp": "Type the 6-digit code we sent to {email}.",
+    "codeFormat": "The code is 6 digits.",
+    "codeInvalid": "The code is wrong or has expired.",
     "verify": "Verify",
+    "resend": "Resend code",
+    "resendIn": "You can request a new code in {seconds} s.",
+    "changeEmail": "Change email",
+    "tooMany": "Too many attempts. Try again in {minutes} minutes.",
+    "locked": "Your account has been locked for security reasons. Contact a super admin.",
+    "notAdmin": "This account can't sign in to the admin panel.",
+    "unavailable": "The authentication service can't be reached. Try again shortly.",
+    "stepExpired": "This sign-in step has expired. Enter your email again.",
+    "reasons": {
+      "idle": "Your session was closed for your security. Please sign in again.",
+      "expired": "Your session time is up (12 hours). Please sign in again.",
+      "revoked": "Your session was ended from another device or by an administrator.",
+      "loggedOut": "You've signed out.",
+      "notAdmin": "This account can't sign in to the admin panel.",
+      "mfaFailed": "Too many failed verification attempts. Please sign in again."
+    },
     "mfaTitle": "Two-step verification",
-    "mfaHelp": "Type the 6-digit code from your authenticator app.",
-    "mfaEnrollTitle": "Set up your authenticator app",
+    "mfaHelp": "Enter the 6-digit code from your authenticator app.",
+    "mfaEnrollTitle": "Set up two-step verification",
+    "mfaEnrollHint": "Scan the QR code with Google Authenticator, 1Password or a similar app.",
+    "mfaManual": "Enter the code manually: {secret}",
+    "mfaQrAlt": "QR code for your authenticator app",
+    "mfaCode": "Verification code",
+    "mfaInvalid": "The code couldn't be verified. Try again.",
+    "mfaLost": "I can't access my authenticator",
+    "recovery": {
+      "title": "Continue with a recovery code",
+      "help": "Enter one of your recovery codes. After it's used, you'll set up your authenticator app again.",
+      "label": "Recovery code",
+      "submit": "Use code",
+      "invalid": "The recovery code is invalid or has already been used.",
+      "back": "Back to the authenticator code",
+      "used": "Recovery code used. Set up your authenticator app again."
+    },
+    "codes": {
+      "title": "Your recovery codes",
+      "text": "Each code can be used only once. Keep them somewhere safe.",
+      "listLabel": "Recovery codes",
+      "copy": "Copy",
+      "copied": "Codes copied to the clipboard.",
+      "download": "Download (.txt)",
+      "saved": "I've saved the codes somewhere safe",
+      "continue": "Continue",
+      "failed": "The recovery codes couldn't be created. Try again.",
+      "retry": "Create codes"
+    },
+    "invite": {
+      "title": "Admin panel invitation",
+      "text": "When you accept, we'll send a 6-digit sign-in code to your email. Then you'll set up two-step verification.",
+      "accept": "Accept invitation",
+      "expired": "This invitation link has expired. Ask your administrator for a new one.",
+      "invalid": "This invitation link isn't valid. Open it again from the email or ask your administrator for a new one."
+    },
+    "forbidden": {
+      "title": "No access",
+      "text": "You don't have permission to view this section.",
+      "back": "Back to the dashboard"
+    },
     "sessionExpired": "Your session has ended. Sign in again.",
     "signOut": "Sign out",
     "signOutAll": "Sign out of all sessions"
+  },
+  "session": {
+    "warningTitle": "Your session is about to close",
+    "warningText": "Because of inactivity, your session will close within 2 minutes.",
+    "absoluteText": "Your session time (12 hours) runs out within 2 minutes. You'll need to sign in again after that.",
+    "remaining": "Time left: {time}",
+    "continue": "Stay signed in",
+    "signOut": "Sign out",
+    "logoutTitle": "Sign out",
+    "logoutText": "Your session on this device will close.",
+    "logoutAllTitle": "Sign out of all sessions",
+    "logoutAllText": "Every open session of this account closes, including this one. You'll need to sign in again."
+  },
+  "palette": {
+    "hint": "Search or type a command…",
+    "title": "Command palette",
+    "description": "Go to a page, look up a record or run a command.",
+    "empty": "No results found.",
+    "minChars": "Type at least 3 characters to search.",
+    "failed": "The search couldn't be run. Try again.",
+    "searching": "Searching…",
+    "groups": {
+      "navigation": "Pages",
+      "results": "Records",
+      "commands": "Commands"
+    },
+    "types": {
+      "user": "User",
+      "job": "Job",
+      "ticket": "Ticket",
+      "subscription": "Subscription",
+      "referral": "Referral code",
+      "integration": "Integration"
+    },
+    "copyId": "Copy ID",
+    "idCopied": "ID copied.",
+    "themeDark": "Theme: Dark",
+    "themeLight": "Theme: Light",
+    "logout": "Sign out",
+    "logoutAll": "Sign out of all sessions"
   },
   "roles": {
     "super_admin": "Super admin",
@@ -60,16 +185,32 @@
   },
   "table": {
     "emptyFiltered": "No records match the filters.",
+    "emptyDefault": "No records yet.",
     "clearFilters": "Clear filters",
     "loadFailed": "The data couldn't be loaded.",
     "errorId": "Error ID: {correlationId}",
     "forbidden": "You don't have permission to view this section.",
     "columns": "Columns",
+    "requiredColumn": "This column can't be hidden.",
     "previous": "Previous",
     "next": "Next",
     "selected": "{count} selected",
     "rowsPerPage": "Per page",
+    "pageStatus": "Page {page} of {pages}",
+    "range": "{from}–{to} of {total}",
+    "rangeEstimate": "{from}–{to} of {total}+",
+    "sortAscending": "Sorted ascending",
+    "sortDescending": "Sorted descending",
+    "sortNone": "Not sorted",
+    "sortBy": "Sort by {column}",
+    "retry": "Try again",
+    "loading": "Loading",
+    "search": "Search by ID",
+    "searchSubmit": "Search",
+    "activeFilters": "Active filters",
+    "removeFilter": "Remove the {filter} filter",
     "density": {
+      "label": "Density",
       "comfortable": "Comfortable",
       "compact": "Compact"
     }
@@ -77,21 +218,120 @@
   "confirm": {
     "reason": "Reason",
     "reasonHelp": "This action is written to the audit log with its reason (10–500 characters).",
+    "reasonCount": "{count}/500",
+    "reasonTooShort": "A reason is required (at least 10 characters).",
+    "reasonTooLong": "The reason can be at most 500 characters.",
+    "whatHappens": "What happens",
+    "typed": "Type <strong>{token}</strong> to confirm",
+    "typedLabel": "Confirmation text",
+    "typedMismatch": "The text doesn't match.",
+    "stepUp": "Verification code",
+    "stepUpHelp": "Enter the 6-digit code from your authenticator app.",
+    "stepUpInvalid": "The code couldn't be verified. Try again.",
+    "pending": "Working…",
+    "saved": "Saved.",
     "confirm": "Confirm",
     "cancel": "Cancel"
   },
   "pii": {
     "reveal": "Reveal",
+    "revealLabel": "Reveal {label}",
+    "revealTitle": "Reveal the value",
+    "revealEffect": "The value is visible for 60 seconds, then masked again. This is written to the audit log with your reason.",
     "revealReason": "Why do you need to see this?",
+    "revealedFor": "Masked again in {seconds} s",
+    "hide": "Hide",
     "masked": "Masked"
+  },
+  "states": {
+    "loading": "Loading",
+    "offline": "You're offline. The data may be out of date.",
+    "error": "The data couldn't be loaded.",
+    "errorId": "Error ID: {correlationId}",
+    "copyErrorId": "Copy the error ID",
+    "copied": "Copied.",
+    "retry": "Try again",
+    "forbidden": "You don't have permission to view this section.",
+    "aggregatesOnly": "You don't have row-level access to this table; you can see the summary metrics only.",
+    "notFound": "The record wasn't found or has been deleted.",
+    "pageNotFound": "Page not found.",
+    "backToDashboard": "Back to the dashboard",
+    "notConfigured": "Not configured",
+    "externalCredential": "External credential required: {service}",
+    "stale": "Last updated {relative}.",
+    "noData": "No data yet"
+  },
+  "errors": {
+    "forbidden": "You don't have permission for this action.",
+    "stepUpRequired": "This action needs a verification code.",
+    "notFound": "The record wasn't found or has been deleted.",
+    "conflict": "Another administrator changed this record. Refresh the page and try again.",
+    "lastSuperAdmin": "The last active super admin can't be disabled or have their role changed.",
+    "invalidState": "This record's current state doesn't allow this action.",
+    "reasonRequired": "A reason is required (at least 10 characters).",
+    "validation": "Some fields are invalid. Check them and try again.",
+    "rateLimited": "Too many requests. Please try again in {seconds} seconds.",
+    "externalCredential": "External credential required: {service}. This action isn't available until the configuration is complete.",
+    "upstream": "{service} isn't responding right now. Try again later.",
+    "internal": "Something unexpected went wrong. Error ID: {correlationId}",
+    "csrf": "The request couldn't be verified. Refresh the page and try again.",
+    "network": "The server can't be reached. Check your connection and try again.",
+    "serviceFallback": "The service"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "description": "Users, usage and cost at a glance.",
+    "range": {
+      "label": "Time range",
+      "r24h": "24 hours",
+      "r7d": "7 days",
+      "r30d": "30 days",
+      "r90d": "90 days"
+    },
+    "kpisLabel": "Key metrics",
+    "kpis": {
+      "total_users": "Total users",
+      "active_users": "Active users",
+      "new_users": "New users",
+      "pro_users": "Pro users",
+      "trials": "Trials",
+      "connected_emails": "Connected email accounts",
+      "connected_calendars": "Connected calendars",
+      "ai_requests": "AI requests",
+      "ai_cost_usd": "AI cost",
+      "briefings_generated": "Briefings",
+      "push_sent": "Push notifications"
+    },
+    "delta": {
+      "up": "Up {value}% on the previous period",
+      "down": "Down {value}% on the previous period",
+      "flat": "Same as the previous period",
+      "none": "No previous-period data"
+    },
+    "noData": "No data yet",
+    "metricsFailed": "The metrics couldn't be loaded",
+    "chartsLabel": "Charts",
+    "charts": {
+      "user_growth": "User growth",
+      "active_usage": "Active usage",
+      "ai_costs": "AI cost",
+      "subscriptions": "Subscriptions",
+      "sync_failures": "Sync failures"
+    }
+  },
+  "charts": {
+    "showTable": "Show as table",
+    "showChart": "Show as chart",
+    "empty": "No data in this range.",
+    "summary": "Total {total}; highest value {peak} ({peakDate}).",
+    "date": "Date",
+    "value": "Value",
+    "approx": "Approximated from daily histograms."
   },
   "health": {
     "notConfigured": "External credential required",
     "healthy": "Healthy",
     "degraded": "Degraded",
     "down": "Down"
-  },
-  "palette": {
-    "hint": "Search or type a command…"
   }
 }

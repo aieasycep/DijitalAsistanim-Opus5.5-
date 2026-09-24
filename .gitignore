@@ -3,6 +3,7 @@ node_modules/
 .pnpm-store/
 .turbo/
 .next/
+next-env.d.ts
 out/
 dist/
 build/
