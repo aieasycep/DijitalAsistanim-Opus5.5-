@@ -20,6 +20,7 @@ import { openEmailParam } from './seal.ts';
 import {
   type EmailLocale,
   type RenderedEmail,
+  renderAccountDeleted,
   renderAdminInvite,
   renderSecurityRecovery,
   renderSupportReply,
@@ -50,6 +51,12 @@ export interface TransactionalEmailDeps {
   readonly provider?: EmailProvider | null;
   /** Extra resolvers (e.g. `deletion_request`, registered by the privacy flows). */
   readonly resolvers?: Partial<Record<RecipientType, RecipientResolver>>;
+  /**
+   * Called after a successful send, per recipient type (the privacy flow wipes the sealed
+   * deletion-confirmation address, API_CONTRACTS JOB-31 / JOB-23 step 9). A failure is logged and
+   * never re-sends the e-mail.
+   */
+  readonly onSent?: Partial<Record<RecipientType, (id: string) => Promise<void>>>;
   readonly fetch?: typeof fetch;
 }
 
@@ -158,6 +165,15 @@ async function prepare(
         }),
         replyTo,
       };
+    case 'account_deleted':
+      // JOB-23 step 9: the account deletion confirmation (only for a deletion request).
+      if (payload.recipient_ref.type !== 'deletion_request') {
+        throw new JobError('TEMPLATE_PARAM_INVALID', false, null, 'recipient_ref');
+      }
+      return {
+        email: renderAccountDeleted(locale, { reference: param(payload, 'reference') }),
+        replyTo,
+      };
     default:
       throw new JobError('TEMPLATE_UNKNOWN', false, null, payload.template_key.slice(0, 80));
   }
@@ -198,6 +214,14 @@ export function transactionalEmailJob(
           template_key: ctx.payload.template_key,
           provider: provider.id,
         });
+        const onSent = deps.onSent?.[ctx.payload.recipient_ref.type];
+        if (onSent !== undefined) {
+          await onSent(ctx.payload.recipient_ref.id).catch(() =>
+            ctx.log.warn('transactional_email_after_send_failed', {
+              template_key: ctx.payload.template_key,
+            }),
+          );
+        }
         return {
           message_id: sent.messageId,
           template_key: ctx.payload.template_key,

@@ -25,6 +25,7 @@ import {
 } from '../../_shared/services/integrations/jobs.ts';
 import type { IntelDeps } from './intel.ts';
 import { intelJobDefinitions } from './intel-jobs.ts';
+import { type PrivacyJobDeps, privacyJobDefinitions } from './privacy.ts';
 
 export interface HandlerDeps {
   readonly credentials: CredentialsRepo;
@@ -41,6 +42,8 @@ export interface HandlerDeps {
   readonly intel?: IntelDeps;
   /** JOB-31 `transactional_email` (admin invites, support replies, security notices). */
   readonly email?: TransactionalEmailDeps;
+  /** JOB-20…JOB-23 `retention`, `export`, `history_deletion`, `account_deletion` (T-11.01…T-11.04). */
+  readonly privacy?: PrivacyJobDeps;
 }
 
 export function jobDefinitions(deps: HandlerDeps): JobDefinition<never>[] {
@@ -65,6 +68,7 @@ export function jobDefinitions(deps: HandlerDeps): JobDefinition<never>[] {
     ...(deps.email === undefined
       ? []
       : [transactionalEmailJob(deps.email) as unknown as JobDefinition<never>]),
+    ...(deps.privacy === undefined ? [] : privacyJobDefinitions(deps.privacy)),
   ];
 }
 

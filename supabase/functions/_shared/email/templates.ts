@@ -12,6 +12,7 @@ export const EMAIL_TEMPLATE_KEYS = [
   'admin_invite',
   'support_reply',
   'admin_security_recovery_used',
+  'account_deleted',
 ] as const;
 export type EmailTemplateKey = (typeof EMAIL_TEMPLATE_KEYS)[number];
 
@@ -79,6 +80,22 @@ export function renderSecurityRecovery(locale: EmailLocale, args: { time: string
   return render(c.subject, [
     fill(c.body, { time: args.time }),
     c.action,
+    CATALOGS[locale].signature,
+  ]);
+}
+
+/** JOB-23 step 9: the account deletion confirmation (Apple 5.1.1(v); SECURITY_AND_PRIVACY_PLAN §4.8). */
+export function renderAccountDeleted(
+  locale: EmailLocale,
+  args: { reference: string },
+): RenderedEmail {
+  const c = CATALOGS[locale].accountDeleted;
+  return render(c.subject, [
+    fill(c.body, { reference: args.reference }),
+    c.google,
+    c.microsoft,
+    c.subscription,
+    c.backups,
     CATALOGS[locale].signature,
   ]);
 }

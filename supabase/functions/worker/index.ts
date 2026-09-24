@@ -24,6 +24,14 @@ import {
   supabaseTriggerRepo,
 } from '../_shared/services/notifications/repo.ts';
 import { createIntelDeps } from './handlers/intel-wiring.ts';
+import { supabaseAuditWriter } from '../_shared/services/audit.ts';
+import { deleteRevenueCatCustomer } from '../_shared/services/billing/revenuecat.ts';
+import { disconnectAccount } from '../_shared/services/integrations/disconnect.ts';
+import { supabasePrivacyRepo } from '../_shared/services/privacy/repo.ts';
+import { supabaseObjectStore } from '../_shared/services/privacy/storage.ts';
+import { appleRevokerFromEnv, supabaseAuthAdmin } from '../_shared/services/privacy/providers.ts';
+import { deletionRequestRecipient } from '../_shared/email/deletion-request.ts';
+import { emailConfig } from '../_shared/email/provider.ts';
 
 const raw = processEnv();
 assertDemoAllowed(raw);
@@ -37,6 +45,14 @@ const integrations = createIntegrationWiring({
   raw,
   system,
   log: workerLog,
+  keyring: () => (keyring ??= loadKeyring(env)),
+});
+// Privacy jobs (T-11.01…T-11.04): export, history and account deletion, retention.
+const privacyRepo = supabasePrivacyRepo(system);
+const privacyStore = supabaseObjectStore(system);
+const privacyAudit = supabaseAuditWriter(system);
+const deletionRecipient = deletionRequestRecipient({
+  repo: privacyRepo,
   keyring: () => (keyring ??= loadKeyring(env)),
 });
 const app = createWorkerApp({
@@ -69,7 +85,43 @@ const app = createWorkerApp({
     },
     integrations: { runtime: integrations.runtime, webhooks: integrations.webhooks },
     intel: createIntelDeps(system, raw, workerLog),
-    email: { system, raw, keyring: () => (keyring ??= loadKeyring(env)) },
+    email: {
+      system,
+      raw,
+      keyring: () => (keyring ??= loadKeyring(env)),
+      resolvers: { deletion_request: deletionRecipient.resolve },
+      onSent: { deletion_request: deletionRecipient.onSent },
+    },
+    privacy: {
+      export: { repo: privacyRepo, store: privacyStore, audit: privacyAudit },
+      retention: { repo: privacyRepo, store: privacyStore, audit: privacyAudit },
+      account: {
+        repo: privacyRepo,
+        store: privacyStore,
+        audit: privacyAudit,
+        authAdmin: supabaseAuthAdmin(system),
+        teardown: async (input) =>
+          (
+            await disconnectAccount(integrations.runtime, {
+              userId: input.userId,
+              accountId: input.accountId,
+              purgeContent: true,
+              correlationId: input.correlationId,
+              log: input.log,
+            })
+          ).revocation,
+        credentials: supabaseCredentialsRepo(system),
+        keyring: () => (keyring ??= loadKeyring(env)),
+        apple: appleRevokerFromEnv(raw),
+        revenueCat:
+          revenueCat === null
+            ? null
+            : (appUserId, signal) =>
+                deleteRevenueCatCustomer({ config: revenueCat }, appUserId, signal),
+        pepper: env,
+        emailConfigured: emailConfig(raw).configured,
+      },
+    },
   }),
   log: workerLog,
   sentry: createSentry({ dsn: env.SENTRY_DSN, environment: env.APP_ENV }),

@@ -400,6 +400,73 @@ export const DB_FN = {
     'ai_cost_by_model',
     '(p_day date) returns jsonb [{provider, model, cost_usd_micros, requests}]',
   ),
+  // Privacy: export, history and account deletion, retention (T-11.01…T-11.04; migrations 2500/2510)
+  createExportRequest: fn(
+    'public',
+    'create_export_request',
+    '(p_user uuid, p_include text[], p_correlation_id uuid) returns jsonb {created, request_id, status, job_id?}',
+  ),
+  historyDeletionCounts: fn(
+    'public',
+    'history_deletion_counts',
+    '(p_user uuid, p_account uuid) returns jsonb {summaries, priority_decisions, memory_chunks, assistant_threads, learned_preferences, insights, briefings}',
+  ),
+  purgeHistory: fn(
+    'public',
+    'purge_history',
+    '(p_user uuid, p_account uuid) returns jsonb {deleted, storage_paths}',
+  ),
+  deletionRequestUpdate: fn(
+    'public',
+    'deletion_request_update',
+    '(p_request uuid, p_status deletion_status, p_steps jsonb, p_error_code text, p_notify bytea, p_notify_locale text, p_clear_notify boolean) returns jsonb {id, kind, status, steps, user_id, completed_at}',
+  ),
+  accountDeletionContext: fn(
+    'public',
+    'account_deletion_context',
+    '(p_user uuid) returns jsonb {user_exists, email, locale, installation_ids, apple_sub, accounts, watches, subscription}',
+  ),
+  accountDeletionBegin: fn(
+    'public',
+    'account_deletion_begin',
+    '(p_request uuid, p_user uuid, p_job uuid) returns jsonb {state, steps, user_id, jobs_cancelled?}',
+  ),
+  accountDeletionSystemPurge: fn(
+    'public',
+    'account_deletion_system_purge',
+    '(p_user uuid, p_job uuid) returns jsonb',
+  ),
+  privacyTombstonesUpsert: fn(
+    'public',
+    'privacy_tombstones_upsert',
+    '(p_signals jsonb) returns int',
+  ),
+  userRowsRemaining: fn('public', 'user_rows_remaining', '(p_user uuid) returns jsonb'),
+  pseudonymizeAuditSubject: fn(
+    'public',
+    'pseudonymize_audit_subject',
+    '(p_user uuid) returns bigint',
+  ),
+  retentionCleanup: fn(
+    'public',
+    'retention_cleanup',
+    '(p_batch int, p_now timestamptz) returns jsonb {deleted, storage_paths}',
+  ),
+  recomputeExpiresAt: fn(
+    'public',
+    'recompute_expires_at',
+    '(p_user uuid, p_batch int) returns int',
+  ),
+  retentionOrphanObjects: fn(
+    'public',
+    'retention_orphan_objects',
+    '(p_now timestamptz, p_limit int) returns jsonb {captures, briefing-audio, exports}',
+  ),
+  retentionSystemSweep: fn(
+    'public',
+    'retention_system_sweep',
+    '(p_batch int, p_now timestamptz) returns jsonb',
+  ),
 } as const satisfies Record<string, DbFunction>;
 
 export type DbFunctionName = keyof typeof DB_FN;

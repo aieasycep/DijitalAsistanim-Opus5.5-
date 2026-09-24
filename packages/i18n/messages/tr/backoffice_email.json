@@ -16,5 +16,13 @@
     "body": "Bir yönetici hesabında iki adımlı doğrulama kurtarma kodu kullanıldı ({time}). Hesabın doğrulayıcı uygulama kayıtları silindi; bir sonraki girişte yeniden kurulum gerekecek.",
     "action": "Bu işlem beklenmiyorsa yönetim panelinde Yöneticiler sayfasından hesabı hemen devre dışı bırak."
   },
+  "accountDeleted": {
+    "subject": "Hesabın silindi",
+    "body": "Dijital Asistan hesabın ve hesabına bağlı veriler silindi: profilin, ayarların, bağlı hesap bağlantıların, brifingler, analizler, AI hafızası, yüklediğin dosyalar ve dışa aktarımların. Talep numaran: {reference}",
+    "google": "Google erişim iznin iptal edildi. Dilersen myaccount.google.com/permissions adresinden kontrol edebilirsin.",
+    "microsoft": "Microsoft hesabı bağladıysan erişimi ayrıca kaldırman gerekir: account.live.com/consent/Manage veya myapps.microsoft.com.",
+    "subscription": "Mağaza aboneliğin hesabını silmekle iptal olmaz. Ücretlendirilmemek için App Store veya Google Play abonelik ayarlarından iptal et.",
+    "backups": "Yedeklerdeki kopyalar en geç 30 gün içinde kendiliğinden silinir."
+  },
   "signature": "Dijital Asistan"
 }
