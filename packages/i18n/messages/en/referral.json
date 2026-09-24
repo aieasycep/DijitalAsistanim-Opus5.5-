@@ -19,5 +19,43 @@
   "codeHint": "Invite code",
   "apply": "Apply",
   "applied": "Your invite code was added. You'll both get Pro once the conditions are met.",
-  "landing": "A friend invited you"
+  "landing": "A friend invited you",
+  "send": "Send Invite",
+  "copied": "Link copied",
+  "linkA11y": "Your invite link, code {code}",
+  "emptyTitle": "No invites yet.",
+  "emptyBody": "Friends who join with your link appear here.",
+  "footer": "Earned in total: {days} days of Pro · Limit: at most {cap} rewards a year",
+  "capReached": "You reached this year's reward limit; your invites still earn your friends their reward.",
+  "statusMeta": {
+    "pending": "Joined · the reward comes once they connect an account and get their first briefing",
+    "flagged": "Under review",
+    "qualified": "Conditions met · reward in progress",
+    "rewarded": "Reward granted",
+    "rejected": "Conditions not met"
+  },
+  "badges": {
+    "pending": "Pending",
+    "flagged": "Pending",
+    "qualified": "Processing",
+    "rewarded": "+{days} days",
+    "rejected": "Not valid"
+  },
+  "referee": {
+    "title": "You joined with an invite code",
+    "reward": "Your reward: {days} days of Pro after your first briefing"
+  },
+  "codeSheet": {
+    "title": "Enter your invite code",
+    "body": "A code can be added within {days} days of signing up.",
+    "cta": "Apply Code",
+    "success": "Invite code added. You will both earn Pro after your first briefing."
+  },
+  "errors": {
+    "invalid": "This code is not valid.",
+    "self": "You cannot use your own invite code.",
+    "windowClosed": "An invite code can only be added within 7 days of signing up.",
+    "alreadyApplied": "You already used an invite code.",
+    "failed": "The code could not be applied. Try again."
+  }
 }

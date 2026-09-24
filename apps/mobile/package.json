@@ -11,7 +11,8 @@
     "assets": "node ../../scripts/mobile/render-assets.ts",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json",
-    "test": "jest"
+    "test": "jest",
+    "licenses": "node scripts/generate-licenses.mjs"
   },
   "expo": {
     "install": {
@@ -45,6 +46,7 @@
     "expo-background-task": "catalog:expo",
     "expo-build-properties": "catalog:expo",
     "expo-calendar": "catalog:expo",
+    "expo-clipboard": "catalog:expo",
     "expo-constants": "catalog:expo",
     "expo-crypto": "catalog:expo",
     "expo-dev-client": "catalog:expo",
@@ -64,6 +66,7 @@
     "expo-speech-recognition": "catalog:expo",
     "expo-splash-screen": "catalog:expo",
     "expo-status-bar": "catalog:expo",
+    "expo-store-review": "catalog:expo",
     "expo-system-ui": "catalog:expo",
     "expo-task-manager": "catalog:expo",
     "expo-updates": "catalog:expo",
@@ -74,6 +77,7 @@
     "react-native-keyboard-controller": "catalog:expo",
     "react-native-mmkv": "catalog:expo",
     "react-native-nitro-modules": "catalog:expo",
+    "react-native-purchases": "catalog:expo",
     "react-native-reanimated": "catalog:expo",
     "react-native-safe-area-context": "catalog:expo",
     "react-native-screens": "catalog:expo",

@@ -63,9 +63,8 @@ export const ONBOARDING_ROOT_SCREENS: readonly string[] = ['(onboarding)'];
 /** Signed in, onboarded, supported version, active account: `(tabs)` and every detail route. */
 export const APP_ROOT_SCREENS: readonly string[] = [
   '(tabs)',
-  // T-8.07
-  'settings/accounts/index',
-  'settings/accounts/[id]',
+  // T-8.22 paywall (modal)
+  'paywall',
   // T-8.09
   'briefing/[id]/index',
   'briefing/[id]/listen',
@@ -77,9 +76,46 @@ export const APP_ROOT_SCREENS: readonly string[] = [
 export const ROOT_SCREEN_OPTIONS: Readonly<
   Record<string, { readonly presentation: 'modal' | 'fullScreenModal' }>
 > = {
+  settings: { presentation: 'modal' },
+  paywall: { presentation: 'modal' },
   'briefing/[id]/listen': { presentation: 'fullScreenModal' },
   'weekly/[id]/share': { presentation: 'modal' },
 };
+/**
+ * The settings stack (`app/settings/_layout.tsx`, T-8.07 accounts + T-8.19…T-8.22): reachable with
+ * the app, and — for the deletion status route only — while the account is `deletion_pending`
+ * (the settings layout protects every other page with the app guard).
+ */
+export const SETTINGS_ROOT_SCREENS = ['settings'] as const;
+/** Route names inside the settings stack (kept equal to `app/settings/**` by a test). */
+export const SETTINGS_SCREENS: readonly string[] = [
+  'index',
+  'profile',
+  'notifications',
+  'briefings',
+  'appearance',
+  'language',
+  'help',
+  'feedback',
+  'about',
+  'accounts/index',
+  'accounts/[id]',
+  'privacy/index',
+  'privacy/permissions',
+  'privacy/data-sources',
+  'privacy/retention',
+  'privacy/history',
+  'privacy/export',
+  'privacy/delete-account',
+  'personalization',
+  'priority-rules/index',
+  'priority-rules/[id]',
+  'subscription',
+  'referral',
+];
+/** The one settings page a `deletion_pending` account can reach (M-SET-39 status). */
+export const DELETION_STATUS_SCREEN = 'privacy/delete-account';
+
 /** Demo builds only. */
 export const DEMO_ROOT_SCREENS = ['demo/setup'] as const;
 
@@ -168,6 +204,8 @@ export interface GuardFlags {
   readonly onboarding: boolean;
   /** `(tabs)` and every detail route. */
   readonly app: boolean;
+  /** The deletion status page (M-SET-39) of a `deletion_pending` account. */
+  readonly deletionStatus: boolean;
 }
 
 export function guardFlags(ctx: EntryContext): GuardFlags {
@@ -176,6 +214,7 @@ export function guardFlags(ctx: EntryContext): GuardFlags {
     signedOut: ctx.auth === 'signed_out',
     onboarding: ctx.auth === 'signed_out' || target.kind === 'onboarding_step',
     app: target.kind === 'today',
+    deletionStatus: target.kind === 'deletion_pending' && target.href !== null,
   };
 }
 
@@ -202,6 +241,7 @@ let snapshot: GuardFlags & { readonly auth: AuthStatus } = {
   signedOut: false,
   onboarding: false,
   app: false,
+  deletionStatus: false,
 };
 
 export function setGuardSnapshot(next: GuardFlags & { readonly auth: AuthStatus }): void {

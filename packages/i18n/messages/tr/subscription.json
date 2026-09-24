@@ -30,5 +30,21 @@
   "nothingToRestore": "Geri yüklenecek bir satın alım bulunamadı.",
   "upgrade": "Pro'ya Geç",
   "dataKept": "Pro sona erse de verilerin ve ayarların korunur.",
-  "storeManaged": "Aboneliğin {store} üzerinden yönetilir."
+  "storeManaged": "Aboneliğin {store} üzerinden yönetilir.",
+  "hero": {
+    "freeTitle": "Ücretsiz plan",
+    "freeBody": "1 mail hesabı, 1 takvim, sabah brifingi ve sınırlı AI analizi.",
+    "trialRenews": "Deneme {date} tarihinde bitiyor. Sonra {plan} olarak yenilenir.",
+    "trialEnds": "Deneme {date} tarihinde bitiyor; otomatik yenileme kapalı.",
+    "activeTitle": "Pro · {plan}",
+    "renews": "Yenileme: {date}",
+    "billingIssue": "{store} ödeme yöntemini güncellemen gerekiyor; Pro şimdilik açık.",
+    "grantTitle": "Pro · {source}",
+    "until": "{date} tarihine kadar"
+  },
+  "sources": "Kaynaklar",
+  "storeSource": "{store} aboneliği · {plan}",
+  "grantRange": "{start} – {end}",
+  "changePlan": "Planı değiştir",
+  "grantNote": "Davet ve destek ödülleri mağaza aboneliğinden ayrıdır; mağaza aboneliğini iptal etmek bu ödülleri etkilemez."
 }

@@ -141,16 +141,41 @@ describe('guardFlags', () => {
       signedOut: true,
       onboarding: true,
       app: false,
+      deletionStatus: false,
     });
-    expect(guardFlags(ctx())).toEqual({ signedOut: false, onboarding: false, app: true });
+    expect(guardFlags(ctx())).toEqual({
+      signedOut: false,
+      onboarding: false,
+      app: true,
+      deletionStatus: false,
+    });
     const onboarding = ctx({ bootstrap: { status: 'success', data: notOnboarded('vip') } });
-    expect(guardFlags(onboarding)).toEqual({ signedOut: false, onboarding: true, app: false });
+    expect(guardFlags(onboarding)).toEqual({
+      signedOut: false,
+      onboarding: true,
+      app: false,
+      deletionStatus: false,
+    });
     const upgrade = bootstrap({ config: { ...bootstrap().config, upgrade_required: true } });
     expect(guardFlags(ctx({ bootstrap: { status: 'success', data: upgrade } })).app).toBe(false);
     expect(guardFlags(ctx({ auth: 'loading' }))).toEqual({
       signedOut: false,
       onboarding: false,
       app: false,
+      deletionStatus: false,
+    });
+  });
+
+  it('opens only the deletion status page for a pending deletion (T-8.20)', () => {
+    const deletion = bootstrap({ account_state: 'deletion_pending' });
+    const flags = guardFlags(
+      ctx({ bootstrap: { status: 'success', data: deletion }, isScreenAvailable: () => true }),
+    );
+    expect(flags).toEqual({
+      signedOut: false,
+      onboarding: false,
+      app: false,
+      deletionStatus: true,
     });
   });
 });

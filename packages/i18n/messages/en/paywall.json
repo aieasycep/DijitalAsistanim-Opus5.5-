@@ -58,5 +58,22 @@
     "title": "This feature is part of Pro.",
     "morningFree": "Your morning briefing is always free.",
     "dismiss": "Not now"
-  }
+  },
+  "kicker": "Dijital Asistan Pro",
+  "headline": "Your whole digital life, in one briefing.",
+  "subline": "Midday and evening briefings, meeting prep and more.",
+  "rowA11y": "{label}. Free: {free}. Pro: {pro}",
+  "monthlyEquivalent": "{price} per month",
+  "savings": "save {percent}%",
+  "changeCta": "Switch Plan",
+  "legalTrial": "After {days} days, {price}. Cancel anytime.",
+  "legalRenew": "{price}, renews automatically at the end of each period. Cancel anytime in {store} settings.",
+  "offline": "Purchases need an internet connection.",
+  "paymentPending": "The purchase is awaiting approval. Pro turns on automatically once approved.",
+  "alreadyPurchased": "This purchase was already made. You can restore your purchases.",
+  "storeUnreachable": "Could not reach the store. Try again.",
+  "pendingActivation": "The purchase finished but Pro is not active yet. It turns on automatically shortly.",
+  "successTitle": "Pro is active",
+  "successBody": "All Pro features are unlocked.",
+  "activating": "Activating Pro… It shows on the Subscription screen within a few minutes."
 }

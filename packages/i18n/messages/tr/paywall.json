@@ -58,5 +58,22 @@
     "title": "Bu özellik Pro'da.",
     "morningFree": "Sabah brifingin her zaman ücretsiz.",
     "dismiss": "Şimdi değil"
-  }
+  },
+  "kicker": "Dijital Asistan Pro",
+  "headline": "Tüm dijital hayatın, tek brifingde.",
+  "subline": "Öğle ve akşam brifingleri, toplantı hazırlığı ve daha fazlası.",
+  "rowA11y": "{label}. Free: {free}. Pro: {pro}",
+  "monthlyEquivalent": "ayda {price}",
+  "savings": "%{percent} tasarruf",
+  "changeCta": "Plana Geç",
+  "legalTrial": "{days} gün sonra {price}. İstediğin zaman iptal edebilirsin.",
+  "legalRenew": "{price}, dönem sonunda otomatik yenilenir. İstediğin zaman {store} ayarlarından iptal edebilirsin.",
+  "offline": "Satın alma için internet bağlantısı gerekiyor.",
+  "paymentPending": "Satın alma onay bekliyor. Onaylandığında Pro otomatik açılır.",
+  "alreadyPurchased": "Bu satın alma zaten yapılmış. Satın alımları geri yükleyebilirsin.",
+  "storeUnreachable": "Mağazaya ulaşılamadı. Tekrar dene.",
+  "pendingActivation": "Satın alma tamamlandı ama Pro henüz etkin görünmüyor. Birazdan otomatik açılır.",
+  "successTitle": "Pro etkin",
+  "successBody": "Tüm Pro özellikleri açıldı.",
+  "activating": "Pro etkinleştiriliyor… Birkaç dakika içinde Abonelik ekranında görünür."
 }

@@ -8,7 +8,8 @@
       "proGrant": "Pro · invite reward · until {date}",
       "billingIssue": "Payment problem",
       "free": "Free plan",
-      "upgrade": "Go Pro"
+      "upgrade": "Go Pro",
+      "proGrantOther": "Pro · {source} · until {date}"
     },
     "approvalCard": {
       "title": "Approval Center",
@@ -42,10 +43,21 @@
       "language": "Language",
       "help": "Help",
       "feedback": "Feedback",
-      "about": "About"
+      "about": "About",
+      "notificationsOn": "On",
+      "notificationsOff": "Off",
+      "connectionsNone": "Connect an account",
+      "connectionsCount": "{count} connected",
+      "planFree": "Free",
+      "planPro": "Pro",
+      "planTrial": "Pro trial"
     },
     "signOut": "Sign out",
-    "footer": "Dijital Asistan {version} ({build}) · Release notes"
+    "footer": "Dijital Asistan {version} ({build}) · Release notes",
+    "identityA11y": "{name}, edit profile",
+    "lockedA11y": "{title}, Pro feature, locked",
+    "dangerA11y": "{title}, destructive action",
+    "version": "Dijital Asistan {version} ({build})"
   },
   "signOut": {
     "title": "Sign out?",
@@ -54,7 +66,9 @@
     "everywhere": "Sign out of all devices",
     "everywhereMeta": "Every session signed in with this account is closed.",
     "everywhereConfirmTitle": "Sign out of all devices?",
-    "everywhereConfirmBody": "You'll be signed out everywhere, including this device."
+    "everywhereConfirmBody": "You'll be signed out everywhere, including this device.",
+    "unsentSettings": "Some setting changes are not sent yet; they are lost if you sign out.",
+    "globalFailed": "Could not close the sessions. Try again."
   },
   "profile": {
     "title": "Profile",
@@ -67,7 +81,9 @@
     "signInMethod": "Sign-in method",
     "signInWith": "Signed in with {provider}",
     "memberSince": "Member since",
-    "timezoneNote": "Your time zone is in briefing settings."
+    "timezoneNote": "Your time zone is in briefing settings.",
+    "nameEmpty": "Name cannot be empty.",
+    "emailCode": "Email code"
   },
   "accounts": {
     "title": "Connections",
@@ -184,7 +200,8 @@
       "auto": "Automatic (device time zone)",
       "current": "Currently: {zone}",
       "manual": "Choose manually",
-      "searchHint": "Search for a city"
+      "searchHint": "Search for a city",
+      "empty": "No results."
     }
   },
   "personalization": {
@@ -239,7 +256,9 @@
   },
   "language": {
     "title": "Language",
-    "note": "The app language also sets the language of your briefings and notifications."
+    "note": "The app language also sets the language of your briefings and notifications.",
+    "turkish": "Türkçe",
+    "english": "English"
   },
   "help": {
     "title": "Help",
@@ -260,7 +279,9 @@
       "resolved": "Resolved",
       "closed": "Closed"
     },
-    "ticketNote": "We're sending our replies to {email}. You can reply to that email with more details."
+    "ticketNote": "We're sending our replies to {email}. You can reply to that email with more details.",
+    "footer": "Dijital Asistan {version} ({build}) · © {year} Dijital Asistan",
+    "ticketDates": "Created {created} · Updated {updated}"
   },
   "contact": {
     "title": "Contact support",
@@ -299,7 +320,8 @@
       "email": "Enter a valid email address."
     },
     "rateLimited": "Too many requests. Please try again in an hour.",
-    "failed": "Couldn't send. Check your internet connection and try again."
+    "failed": "Couldn't send. Check your internet connection and try again.",
+    "draftSaved": "Draft saved"
   },
   "feedback": {
     "title": "Feedback",
@@ -346,7 +368,8 @@
     "empty": "The message can't be empty.",
     "rateLimited": "Too much feedback was sent in a short time. Try again a little later.",
     "storeReview": "Rate Dijital Asistan in the store",
-    "storeReviewCta": "Rate"
+    "storeReviewCta": "Rate",
+    "failed": "Could not send. Try again."
   },
   "about": {
     "title": "About",
@@ -372,5 +395,162 @@
     "packagesSection": "Software packages",
     "openSource": "Open source",
     "empty": "No package found."
+  },
+  "common": {
+    "offlineBanner": "You are offline. Showing saved information.",
+    "addressCopied": "Address copied"
+  },
+  "time": {
+    "hour": "Hour",
+    "minute": "Minute",
+    "increase": "Increase {unit}",
+    "decrease": "Decrease {unit}",
+    "chipA11y": "{title} time, {time}, tap to change"
+  },
+  "quietHours": {
+    "sameTime": "Start and end cannot be the same."
+  },
+  "notificationsScreen": {
+    "noPermissionCaption": "These settings do not apply without notification permission.",
+    "androidChannels": "On Android every notification channel hides its content on the lock screen; you can also turn channels off one by one in Android settings."
+  },
+  "notificationTest": {
+    "rateLimited": "Too many tests in a short time. Try again a little later."
+  },
+  "briefingsScreen": {
+    "middayAfterMorning": "The midday pulse must be at least 1 hour after the morning briefing.",
+    "eveningAfterMidday": "The evening wrap-up must be at least 1 hour after the midday pulse.",
+    "insideQuietHours": "This time is inside quiet hours; the briefing is prepared but no notification is sent. You will see it on Today.",
+    "allSilent": "At least one day must keep briefings. To stop briefings, turn off the switches above.",
+    "weekendTime": "Weekend morning time"
+  },
+  "appearanceScreen": {
+    "systemMeta": "Follows your device",
+    "lightMeta": "Always light",
+    "darkMeta": "Always dark",
+    "reduceMotion": "Reduce motion",
+    "haptics": "Haptic feedback",
+    "reduceMotionCaption": "“Reduce motion” turns every transition into a short fade."
+  },
+  "languageScreen": {
+    "note": "Briefings and summaries are written in the language you choose; your emails keep their original language.",
+    "region": "Region",
+    "dateFormat": "Date format",
+    "timeFormat": "Time format",
+    "hours24": "24-hour ({time})"
+  },
+  "aboutScreen": {
+    "version": "Version {version} ({build})",
+    "tagline": "Tells you what you need to know today, before you ask.",
+    "demo": "Demo mode · Running on sample data",
+    "copyright": "© {year} Dijital Asistan"
+  },
+  "licensesScreen": {
+    "licensed": "License: {license}. The full license text is in the package source."
+  },
+  "personalizationScreen": {
+    "title": "How Dijital Asistan knows you",
+    "subtitle": "What I have learned over time. You can edit, turn off or delete each row; I never assume something you deleted again.",
+    "learnMeta": "I adapt prioritisation from your reactions. No model training happens.",
+    "learningOff": "Learning is off · existing preferences apply until you turn them off.",
+    "sections": {
+      "people": "People",
+      "topics": "Topics",
+      "preferences": "Preferences"
+    },
+    "emptyTitle": "The AI has not learned a preference yet.",
+    "emptyBody": "Emails you mark as not important or open often turn into preferences here.",
+    "deleted": "Preference deleted",
+    "editTitle": "Edit preference"
+  },
+  "rulesScreen": {
+    "subtitle": "The explicit rules you wrote. They always come before what the AI learned.",
+    "groups": {
+      "always_important": "Always important",
+      "high": "High priority",
+      "low": "Low priority",
+      "always_notify": "Always notify",
+      "mute": "Mute"
+    },
+    "outcomes": {
+      "always_important": "Always treat as important",
+      "high": "Treat as high priority",
+      "low": "Treat as low priority",
+      "always_notify": "Always notify",
+      "mute": "Mute"
+    },
+    "categories": {
+      "promotions": "Promotions and newsletters",
+      "informational": "Informational emails",
+      "low_priority": "Low-priority emails",
+      "has_deadline": "Emails with a deadline",
+      "awaiting_my_reply": "Waiting for your reply",
+      "awaiting_their_reply": "Waiting for their reply"
+    },
+    "summary": {
+      "person": "From {name}",
+      "domain": "From @{domain}",
+      "sender": "From {address}",
+      "keyword": "Containing {words}",
+      "app": "{app} notifications"
+    },
+    "appCount": "{count} notifications · last 30 days",
+    "vipMetaQuiet": "{count} people · Even in quiet hours",
+    "rowA11y": "{type} rule, {title}, {outcome}, {count} emails in the last 30 days, {state}",
+    "emptyTitle": "No rules yet.",
+    "emptyBody": "Pick important people, domains or topics yourself; the AI always applies them first.",
+    "add": "Add Rule",
+    "footer": "You will find what the AI learned in AI Personalization; this page lists only your rules.",
+    "precedence": {
+      "title": "How is priority decided?",
+      "rules": "Your rules — always applied first.",
+      "learned": "What the AI learned — you can turn it off or delete it.",
+      "signals": "Email signals — e.g. your VIP people, bulk sending and auto-reply headers.",
+      "ai": "AI classification — its source and reason are shown on every card.",
+      "specificity": "When several rules match, the most specific wins: person and sender before domain; domain before keyword and category."
+    },
+    "newKicker": "New rule",
+    "editKicker": "Edit rule",
+    "newTitle": "New rule",
+    "conditionSection": "1 · Condition",
+    "outcomeSection": "2 · Outcome",
+    "otherOutcomes": "Other outcomes",
+    "domainHint": "company.com",
+    "senderHint": "name@company.com or noreply@*",
+    "searchBody": "Search subject and body",
+    "suggested": "Suggested: @{domain}",
+    "pickContact": "Choose a person",
+    "noContacts": "No people found.",
+    "previewKicker": "Preview · last 30 days",
+    "previewCount": "{count} emails matched this rule",
+    "previewFooter": "{important} were already treated as important; {up} emails will move up.",
+    "previewEmpty": "No email matched this rule in the last 30 days. The rule applies to new emails.",
+    "previewHint": "Complete the condition to see a preview of the last 30 days.",
+    "previewOffline": "The preview needs an internet connection.",
+    "previewError": "The preview could not be loaded right now.",
+    "statusMeta": "Created {date} · {count} emails affected in the last 30 days",
+    "errors": {
+      "domain": "Enter a valid domain (e.g. company.com).",
+      "keywords": "Add at least one keyword.",
+      "sender": "Enter a valid email address.",
+      "category": "Choose a category.",
+      "person": "Choose a person.",
+      "duplicate": "This rule already exists."
+    },
+    "saved": "Rule saved",
+    "delete": "Delete Rule",
+    "deleteBody": "The “{summary}” rule is deleted. These emails go back to the AI's own priority.",
+    "exceptions": {
+      "title": "Exceptions",
+      "categories": "Categories",
+      "senders": "Senders",
+      "senderLabel": "Sender email",
+      "none": "No exceptions.",
+      "invalidEmail": "Enter a valid email address."
+    },
+    "leaveTitle": "Discard your changes?",
+    "leaveDiscard": "Discard",
+    "leaveKeep": "Keep editing",
+    "notFound": "This rule was not found."
   }
 }

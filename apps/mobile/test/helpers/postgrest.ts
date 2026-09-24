@@ -86,6 +86,9 @@ export function fakePostgrest(): PostgrestFake {
     chain('eq', (col, value) => filters.push([String(col), 'eq', value]));
     chain('neq', (col, value) => filters.push([String(col), 'neq', value]));
     chain('in', (col, value) => filters.push([String(col), 'in', value]));
+    // T-8.19…T-8.22: `is(col, null)` and range filters used by the settings screens.
+    chain('is', (col, value) => filters.push([String(col), 'is', value]));
+    chain('gte', (col, value) => filters.push([String(col), 'gte', value]));
     chain('range', (a, b) => {
       range = [Number(a), Number(b)];
     });
@@ -113,6 +116,11 @@ export function fakePostgrest(): PostgrestFake {
         filters.every(([col, kind, value]) => {
           if (kind === 'eq') return row[col] === value;
           if (kind === 'neq') return row[col] !== value;
+          if (kind === 'is') return (row[col] ?? null) === value;
+          if (kind === 'gte') {
+            const cell = row[col];
+            return typeof cell === 'string' && typeof value === 'string' && cell >= value;
+          }
           return Array.isArray(value) && value.includes(row[col]);
         }),
       );

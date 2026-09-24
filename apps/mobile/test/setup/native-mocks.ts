@@ -229,3 +229,49 @@ jest.mock('expo-file-system/legacy', () => ({
 jest.mock('react-native-view-shot', () => ({
   captureRef: jest.fn(() => Promise.resolve('file:///cache/share.png')),
 }));
+
+// T-8.19…T-8.22: clipboard, store review and RevenueCat doubles (tests override per case).
+jest.mock('expo-clipboard', () => ({
+  setStringAsync: jest.fn(() => Promise.resolve(true)),
+}));
+
+jest.mock('expo-store-review', () => ({
+  isAvailableAsync: jest.fn(() => Promise.resolve(false)),
+  requestReview: jest.fn(() => Promise.resolve()),
+  storeUrl: jest.fn(() => null),
+  hasAction: jest.fn(() => Promise.resolve(false)),
+}));
+
+jest.mock('react-native-purchases', () => {
+  const PURCHASES_ERROR_CODE = {
+    PURCHASE_CANCELLED_ERROR: '1',
+    STORE_PROBLEM_ERROR: '2',
+    PURCHASE_NOT_ALLOWED_ERROR: '3',
+    PRODUCT_NOT_AVAILABLE_FOR_PURCHASE_ERROR: '5',
+    PRODUCT_ALREADY_PURCHASED_ERROR: '6',
+    NETWORK_ERROR: '10',
+    PAYMENT_PENDING_ERROR: '20',
+  };
+  const Purchases = {
+    configure: jest.fn(),
+    logIn: jest.fn(() => Promise.resolve({ customerInfo: {}, created: false })),
+    logOut: jest.fn(() => Promise.resolve({})),
+    addCustomerInfoUpdateListener: jest.fn(),
+    getOfferings: jest.fn(() => Promise.resolve({ current: null, all: {} })),
+    purchasePackage: jest.fn(),
+    restorePurchases: jest.fn(() => Promise.resolve({ entitlements: { active: {}, all: {} } })),
+    showManageSubscriptions: jest.fn(() => Promise.resolve()),
+    checkTrialOrIntroductoryPriceEligibility: jest.fn(() => Promise.resolve({})),
+    canMakePayments: jest.fn(() => Promise.resolve(true)),
+  };
+  return {
+    __esModule: true,
+    default: Purchases,
+    PURCHASES_ERROR_CODE,
+    INTRO_ELIGIBILITY_STATUS: {
+      INTRO_ELIGIBILITY_STATUS_UNKNOWN: 0,
+      INTRO_ELIGIBILITY_STATUS_INELIGIBLE: 1,
+      INTRO_ELIGIBILITY_STATUS_ELIGIBLE: 2,
+    },
+  };
+});

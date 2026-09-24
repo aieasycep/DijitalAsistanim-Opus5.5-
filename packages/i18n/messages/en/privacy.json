@@ -34,7 +34,8 @@
     "exportPreparing": "Preparing",
     "deleteHistory": "Delete analysis history",
     "deleteAccount": "Delete my account",
-    "policyLink": "Privacy Policy"
+    "policyLink": "Privacy Policy",
+    "promiseTitle": "Our promise"
   },
   "permissions": {
     "title": "Permissions",
@@ -214,5 +215,50 @@
     "completedTitle": "Your account was deleted.",
     "completedBody": "The data on this device was cleared too.",
     "timeout": "Deletion is in progress and will complete within 24 hours. The data on this device was cleared and you've been signed out. You can check the status on our website's Data Deletion page with email verification."
+  },
+  "permissionsScreen": {
+    "noAccount": "No connected account yet.",
+    "unknown": "Unknown"
+  },
+  "retentionScreen": {
+    "bodyNoCount": "Summaries, priority decisions and memory entries older than {days} days are permanently deleted at the next cleanup (within 24 hours).",
+    "nothingToDelete": "There is no older data to delete."
+  },
+  "historyScreen": {
+    "nothing": "There is no analysis history to delete.",
+    "willDeleteNoCount": "Summaries, priority decisions, memory entries and learned preferences are deleted.",
+    "submitFailed": "The request was not sent; nothing was deleted. Try again.",
+    "reauthExpired": "Your verification expired; verify again."
+  },
+  "exportScreen": {
+    "requestFailed": "The request was not sent. Try again.",
+    "rateLimited": "You reached today's export limit. You can try again tomorrow.",
+    "linkFailed": "Could not create the download link. Try again.",
+    "downloadFailed": "The download did not finish. Try again.",
+    "progress": "Downloading · {percent}%"
+  },
+  "deleteAccountScreen": {
+    "confirmTitle": "Last step",
+    "confirmPrompt": "Type DELETE to confirm",
+    "confirmA11y": "Confirmation word, type DELETE",
+    "ackRequired": "Tick this box to continue.",
+    "submitFailed": "The request was not sent; your account was not deleted. Try again.",
+    "reauthExpired": "Your verification expired; verify again.",
+    "completedBody": "When you tap “OK”, the data on this device is cleared too.",
+    "timeoutBody": "Deletion is in progress and completes within 24 hours. When you tap “OK”, the data on this device is cleared and you are signed out. You can check the status on the Data Deletion page of our website with email verification.",
+    "appleAndroid": "If Apple verification is not available on this device, continue on your iPhone or on the Data Deletion page of our website."
+  },
+  "reauth": {
+    "apple": "Verify with Apple",
+    "google": "Verify with Google",
+    "microsoft": "Verify with Microsoft",
+    "emailBody": "We will send a 6-digit code to {email}.",
+    "sendCode": "Send code",
+    "codeLabel": "6-digit code",
+    "resend": "Resend code",
+    "wrongCode": "The code is wrong.",
+    "mismatch": "You signed in with a different account. Verify with the account you want to delete.",
+    "failed": "Verification did not complete. Try again.",
+    "unavailable": "This account cannot be verified on this device. You can continue on the Data Deletion page of our website."
   }
 }
