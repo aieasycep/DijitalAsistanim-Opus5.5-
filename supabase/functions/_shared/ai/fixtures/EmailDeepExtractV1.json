@@ -1,0 +1,62 @@
+{
+  "schema": "EmailDeepExtractV1",
+  "prompt_keys": ["email_deep_extract"],
+  "default": {
+    "ref": "m1",
+    "summary_tr": "Sözleşme yenilemesi ve ödeme tarihi.",
+    "key_points": [
+      {
+        "text_tr": "Sözleşme yenileniyor",
+        "evidence": {
+          "ref": "m1",
+          "quote": "sözleşme yenilemesi"
+        }
+      }
+    ],
+    "deadlines": [],
+    "schedule_requests": [
+      {
+        "kind": "reschedule",
+        "requested_time_quote": "16:00",
+        "evidence": {
+          "ref": "m1",
+          "quote": "toplantıyı 16:00’ya alalım"
+        }
+      }
+    ],
+    "tasks_for_user": [
+      {
+        "what_tr": "İmzalı kopyayı gönder",
+        "due_quote": null,
+        "evidence": {
+          "ref": "m1",
+          "quote": "imzalı kopyayı gönderin"
+        }
+      }
+    ],
+    "amounts": [
+      {
+        "label_tr": "Yıllık bedel",
+        "amount_quote": "₺18.420,00",
+        "evidence": {
+          "ref": "m1",
+          "quote": "yıllık bedel ₺18.420,00"
+        }
+      }
+    ],
+    "commitments": [],
+    "people": [
+      {
+        "name_quote": "Selin Kaya",
+        "role_tr": "Satın alma",
+        "evidence": {
+          "ref": "m1",
+          "quote": "Selin Kaya (Satın alma)"
+        }
+      }
+    ],
+    "injection_suspected": false,
+    "confidence": "high"
+  },
+  "by_input": {}
+}

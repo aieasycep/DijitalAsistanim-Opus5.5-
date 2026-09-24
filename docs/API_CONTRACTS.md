@@ -4781,7 +4781,7 @@ PublicSupportBody = z.strictObject({ name: z.string().max(120).optional(), email
 #### HLT-02 · `POST /health/run`
 - **Capability:** run the real dependency probes; a probe never reports fake green (M§67).
 - **Auth:** `secret:automations` (JOB-26) or admin with `health.run` (ADM-18).
-- **Input:** `z.strictObject({ probes: z.array(HealthProbe).optional() })`, where `HealthProbe` is one of `api | database | supabase_auth | storage | google_oauth | microsoft_oauth | gmail | microsoft_graph | push | ai_anthropic | ai_openai | ai_voyage | revenuecat | cron | webhooks`.
+- **Input:** `z.strictObject({ probes: z.array(HealthProbe).optional() })`, where `HealthProbe` is one of `api | database | supabase_auth | storage | google_oauth | microsoft_oauth | gmail | microsoft_graph | push | ai_anthropic | ai_openai | ai_voyage | revenuecat | cron | webhooks | email_delivery | audit_chain` (the last two are the BACKOFFICE_PLAN §11 probes for the transactional-email provider and the audit hash chain).
 - **Output:** `Success({ results: z.array(z.object({ probe, status: z.enum(['healthy','degraded','down','external_credential_required','unknown']), latency_ms: z.int().nullable(), detail_code: z.string().nullable(), checked_at: IsoDateTime })) })`. The status values are the DB `system_health_checks.status` values.
 
 | Probe | Check (4 s timeout each) | `external_credential_required` when | `degraded` when |

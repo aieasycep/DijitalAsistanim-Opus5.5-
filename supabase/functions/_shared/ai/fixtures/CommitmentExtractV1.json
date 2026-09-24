@@ -1,0 +1,31 @@
+{
+  "schema": "CommitmentExtractV1",
+  "prompt_keys": ["commitment"],
+  "default": {
+    "items": [
+      {
+        "ref": "m1",
+        "commitments": [
+          {
+            "owner": "user",
+            "counterparty_quote": "Mehmet Bey",
+            "what_tr": "Teklifi gönder",
+            "due_quote": "yarın",
+            "evidence": {
+              "ref": "m1",
+              "quote": "teklifi yarın göndereceğim"
+            },
+            "certainty": "explicit"
+          }
+        ],
+        "expects_reply": true,
+        "expects_reply_evidence": {
+          "ref": "m1",
+          "quote": "dönüşünüzü bekliyorum"
+        },
+        "injection_suspected": false
+      }
+    ]
+  },
+  "by_input": {}
+}

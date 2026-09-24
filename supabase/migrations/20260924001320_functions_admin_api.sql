@@ -4978,7 +4978,8 @@ declare
 begin
   if p_component is null or p_component not in (
        'api', 'database', 'supabase_auth', 'storage', 'google_oauth', 'microsoft_oauth', 'gmail', 'microsoft_graph',
-       'push', 'ai_anthropic', 'ai_openai', 'ai_voyage', 'revenuecat', 'cron', 'webhooks', 'worker') then
+       'push', 'ai_anthropic', 'ai_openai', 'ai_voyage', 'revenuecat', 'cron', 'webhooks', 'worker',
+       'email_delivery', 'audit_chain') then
     raise exception 'VALIDATION_FAILED:component' using errcode = '22023';
   end if;
   if p_range is null or p_range not in ('24h', '7d', '30d') then

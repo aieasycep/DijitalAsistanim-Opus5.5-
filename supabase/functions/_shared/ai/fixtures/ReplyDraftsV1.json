@@ -1,0 +1,33 @@
+{
+  "schema": "ReplyDraftsV1",
+  "prompt_keys": ["reply_draft"],
+  "default": {
+    "drafts": [
+      {
+        "tone": "short",
+        "body_tr": "Merhaba Mehmet Bey, teklifi yarın iletiyorum."
+      },
+      {
+        "tone": "professional",
+        "body_tr": "Merhaba Mehmet Bey, revize teklifi yarın 17:00’ye kadar iletiyorum."
+      },
+      {
+        "tone": "friendly",
+        "body_tr": "Merhaba Mehmet, teklif yarın sende olur."
+      },
+      {
+        "tone": "detailed",
+        "body_tr": "Merhaba Mehmet Bey, Ekim teslimatına göre güncellenmiş teklifi yarın iletiyorum."
+      }
+    ],
+    "commitments_in_draft": [
+      {
+        "what_tr": "Teklifi gönder",
+        "due_phrase_tr": "yarın"
+      }
+    ],
+    "referenced_attachment_names": ["Teklif_v2.pdf"],
+    "injection_suspected": false
+  },
+  "by_input": {}
+}

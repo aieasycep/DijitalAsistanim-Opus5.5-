@@ -1,0 +1,9 @@
+{
+  "schema": "FollowUpDraftV1",
+  "prompt_keys": ["follow_up"],
+  "default": {
+    "body_tr": "Merhaba Selin, teklifle ilgili dönüşünü bekliyorum.",
+    "injection_suspected": false
+  },
+  "by_input": {}
+}

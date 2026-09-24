@@ -269,7 +269,8 @@ create table public.system_health_checks (
   id bigint generated always as identity,
   component text not null check (component in (
     'api', 'database', 'supabase_auth', 'storage', 'google_oauth', 'microsoft_oauth', 'gmail', 'microsoft_graph',
-    'push', 'ai_anthropic', 'ai_openai', 'ai_voyage', 'revenuecat', 'cron', 'webhooks', 'worker')),
+    'push', 'ai_anthropic', 'ai_openai', 'ai_voyage', 'revenuecat', 'cron', 'webhooks', 'worker',
+    'email_delivery', 'audit_chain')),
   status text not null check (status in ('healthy', 'degraded', 'down', 'external_credential_required', 'unknown')),
   latency_ms integer,
   detail jsonb not null default '{}'::jsonb check (jsonb_typeof(detail) = 'object'),

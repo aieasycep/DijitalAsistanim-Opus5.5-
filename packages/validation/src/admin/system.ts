@@ -23,6 +23,8 @@ export const HEALTH_PROBE_VALUES = [
   'revenuecat',
   'cron',
   'webhooks',
+  'email_delivery',
+  'audit_chain',
 ] as const;
 export const HealthProbe = z.enum(HEALTH_PROBE_VALUES);
 /** `system_health_checks.status`: a missing credential is never `healthy`. */

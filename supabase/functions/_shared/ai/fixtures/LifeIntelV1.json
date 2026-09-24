@@ -1,0 +1,43 @@
+{
+  "schema": "LifeIntelV1",
+  "prompt_keys": ["life_intel"],
+  "default": {
+    "items": [
+      {
+        "ref": "m1",
+        "events": [
+          {
+            "kind": "shipment",
+            "merchant_quote": "Trendyol",
+            "carrier_quote": "Yurtiçi Kargo",
+            "tracking_quote": "123456789012",
+            "status": "out_for_delivery",
+            "eta_quote": "bugün",
+            "item_count_quote": null,
+            "evidence": {
+              "ref": "m1",
+              "quote": "siparişiniz bugün dağıtımda"
+            }
+          },
+          {
+            "kind": "flight",
+            "flight_no_quote": "TK2154",
+            "from_quote": "İstanbul",
+            "to_quote": "İzmir",
+            "depart_quote": "25 Eylül 09:40",
+            "arrive_quote": null,
+            "gate_quote": null,
+            "pnr_quote": "ABC123",
+            "checkin_status": "open",
+            "evidence": {
+              "ref": "m1",
+              "quote": "TK2154 İstanbul - İzmir"
+            }
+          }
+        ],
+        "injection_suspected": false
+      }
+    ]
+  },
+  "by_input": {}
+}

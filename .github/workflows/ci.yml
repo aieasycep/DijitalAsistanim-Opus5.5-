@@ -60,3 +60,37 @@ jobs:
         with:
           turbo-cache-key: mobile
       - run: pnpm mobile:check
+
+  functions:
+    name: functions (import maps, deno check, lint, test)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+        with:
+          turbo-cache-key: functions
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/deno
+          key: deno-${{ runner.os }}-${{ hashFiles('supabase/functions/import_map.base.json') }}
+          restore-keys: deno-${{ runner.os }}-
+      - run: pnpm functions:imports --check
+      - run: pnpm functions:check
+      - run: pnpm functions:lint
+      - run: pnpm functions:test
+
+  db:
+    name: db (tier A — supabase start, reset, pgTAP, lint, type drift)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+        with:
+          turbo-cache-key: db
+      - run: pnpm db:lint
+      - run: pnpm db:enum-parity
+      - run: bash scripts/db/tier-a.sh --keep-running
+      - name: generated types match the real stack
+        run: pnpm db:types:check --no-migrate
+        env:
+          DA_TYPEGEN_DB_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres

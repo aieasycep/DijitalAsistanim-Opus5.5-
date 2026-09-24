@@ -6555,6 +6555,14 @@ export type Database = {
         };
         Returns: number;
       };
+      audit_verify_chain: {
+        Args: { p_from?: number; p_to?: number };
+        Returns: {
+          checked: number;
+          first_bad_seq: number;
+          ok: boolean;
+        }[];
+      };
       check_plan_limit: {
         Args: { p_increment?: number; p_key: string; p_user_id?: string };
         Returns: Json;

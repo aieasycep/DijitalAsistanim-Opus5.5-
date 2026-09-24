@@ -30,7 +30,11 @@
     "db:types": "bash scripts/db/gen-types.sh",
     "db:types:check": "bash scripts/db/gen-types.sh --check",
     "db:enum-parity": "node scripts/db/enum-parity.ts",
-    "db:seed:demo": "bash scripts/db/seed-demo.sh"
+    "db:seed:demo": "bash scripts/db/seed-demo.sh",
+    "functions:imports": "node scripts/functions/sync-import-maps.ts",
+    "functions:check": "node scripts/functions/deno-tasks.ts check",
+    "functions:lint": "node scripts/functions/deno-tasks.ts lint",
+    "functions:test": "node scripts/functions/deno-tasks.ts test"
   },
   "devDependencies": {
     "@da/config": "workspace:*",
