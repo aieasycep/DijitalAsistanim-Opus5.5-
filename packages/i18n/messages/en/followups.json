@@ -1,0 +1,13 @@
+{
+  "title": "To follow up",
+  "awaitingThemTitle": "Waiting for their reply",
+  "lastMessage": "Last message: {relative}",
+  "statusNoReply": "Status: No reply yet.",
+  "noReply": "No reply yet.",
+  "waitingDays": "Waiting for {count, plural, one {# day} other {# days}}",
+  "actions": {
+    "followUp": "Follow up",
+    "remindTomorrow": "Remind me tomorrow",
+    "close": "Close"
+  }
+}

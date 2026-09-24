@@ -1,0 +1,34 @@
+{
+  "title": "Subscription",
+  "currentPlan": "Current plan",
+  "statuses": {
+    "none": "Free",
+    "trial": "Pro trial",
+    "active": "Pro",
+    "grace_period": "Payment pending",
+    "billing_issue": "Payment problem",
+    "cancelled": "Cancelled · Pro until the end of the period",
+    "paused": "Paused",
+    "expired": "Expired",
+    "refunded": "Refunded"
+  },
+  "renews": "Renews on {date}",
+  "ends": "Ends on {date}",
+  "trialEnds": "Trial ends on {date}",
+  "grantUntil": "{source} · until {date}",
+  "grantSources": {
+    "referral_referrer": "Invite reward",
+    "referral_referee": "Welcome reward",
+    "admin": "Pro access",
+    "support": "Pro from support",
+    "compensation": "Pro as compensation"
+  },
+  "manage": "Manage subscription",
+  "restore": "Restore purchases",
+  "restoring": "Checking your purchases…",
+  "restored": "Your purchases were restored.",
+  "nothingToRestore": "No purchases were found to restore.",
+  "upgrade": "Go Pro",
+  "dataKept": "Your data and settings are kept even if Pro ends.",
+  "storeManaged": "Your subscription is managed through {store}."
+}

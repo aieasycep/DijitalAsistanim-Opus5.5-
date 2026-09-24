@@ -1,0 +1,21 @@
+{
+  "title": "Senden Beklenenler",
+  "buckets": {
+    "urgent": "Acil",
+    "today": "Bugün",
+    "thisWeek": "Bu hafta"
+  },
+  "fields": {
+    "person": "Kişi",
+    "subject": "Konu",
+    "expected": "Ne bekleniyor?",
+    "deadline": "Son tarih"
+  },
+  "waitingHours": "{count} saattir bekliyor",
+  "waitingDays": "{count} gündür bekliyor",
+  "actions": {
+    "openMail": "İlgili maili aç",
+    "prepareReply": "Yanıt Hazırla",
+    "remind": "Hatırlat"
+  }
+}

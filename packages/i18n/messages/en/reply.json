@@ -1,0 +1,18 @@
+{
+  "title": "Reply draft",
+  "tones": {
+    "short": "Short",
+    "professional": "Professional",
+    "friendly": "Friendly",
+    "detailed": "Detailed"
+  },
+  "regenerate": "Rewrite",
+  "approveSend": "Approve sending",
+  "openIn": "Open in {provider}",
+  "writeMyself": "I'll write it myself",
+  "aiNote": "The AI prepared this draft; check it before sending.",
+  "sendNote": "When you approve, it's sent from {account}.",
+  "disabled": "Reply drafts are turned off for this account.",
+  "generating": "Preparing a draft…",
+  "followUpMode": "Follow-up message"
+}

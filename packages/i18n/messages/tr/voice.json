@@ -1,0 +1,17 @@
+{
+  "title": "Sesli komut",
+  "listening": "Dinliyorum…",
+  "processing": "Anlıyorum…",
+  "tapToApprove": "Onaylamak için karta dokun.",
+  "continueWithText": "Metinle devam et",
+  "examples": {
+    "moveMeeting": "Yarınki toplantımı 30 dakika ileri al.",
+    "readBriefing": "Bugünkü brifingimi oku.",
+    "shouldReply": "Mehmet'e cevap vermem gerekiyor mu?"
+  },
+  "permission": {
+    "title": "Mikrofon izni gerekli",
+    "body": "Sesli komut için mikrofonuna ve konuşma tanımaya izin vermen gerekiyor."
+  },
+  "notUnderstood": "Bunu anlayamadım. Tekrar söyler misin?"
+}

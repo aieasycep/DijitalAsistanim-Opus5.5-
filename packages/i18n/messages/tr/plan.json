@@ -1,0 +1,32 @@
+{
+  "title": "Plan",
+  "segments": {
+    "day": "Gün",
+    "week": "Hafta"
+  },
+  "calendarIntel": "Takvim zekâsı",
+  "freeSlot": "{day} {start}–{end} arasında {duration} boşluğun var.",
+  "suggestion": "{task} görevini buraya yerleştirebilirim.",
+  "proposal": {
+    "kicker": "Önerilen · henüz gerçek değil",
+    "changeTime": "Saati Değiştir",
+    "otherTime": "Başka zaman",
+    "approve": "Onayla",
+    "cancel": "İptal"
+  },
+  "conflict": {
+    "title": "Takvim Çakışması",
+    "body": "{timeA} {eventA} ile {timeB} {eventB} çakışıyor.",
+    "options": "Seçenekleri Gör",
+    "ignore": "Yoksay",
+    "notOrganizer": "Bu etkinliğin düzenleyicisi sen değilsin; yeni saat önermek için bir yanıt taslağı hazırlayabilirim.",
+    "attendeesNotified": "Katılımcılara güncelleme gönderilir"
+  },
+  "density": {
+    "busy": "Yoğun",
+    "moderate": "Orta",
+    "calm": "Sakin"
+  },
+  "focusBlock": "Odak bloğu",
+  "commitments": "Taahhütler"
+}

@@ -1,0 +1,66 @@
+{
+  "kinds": {
+    "morning": "Morning briefing",
+    "midday": "Midday pulse",
+    "evening": "Evening wrap-up",
+    "weekly": "Weekly summary"
+  },
+  "kicker": "{kind} · {date}",
+  "sections": {
+    "priorities": "Today's Priorities",
+    "schedule": "Your Schedule",
+    "awaiting_me": "Expected From You",
+    "awaiting_them": "What You're Waiting For",
+    "deadlines": "Deadlines",
+    "life": "Personal Updates",
+    "completed": "Completed",
+    "carry_over": "Carrying Over",
+    "follow_up": "Follow-up",
+    "tomorrow_first": "Tomorrow's first event",
+    "midday_delta": "Since this morning",
+    "weekly_highlight": "The week's highlights",
+    "weekly_outlook": "Next week at a glance"
+  },
+  "row": {
+    "done": "Done",
+    "notSure": "Not sure · {meta}"
+  },
+  "provenance": "From {emails, plural, one {# email} other {# emails}} and {events, plural, one {# event} other {# events}}, last {hours, plural, one {# hour} other {# hours}} · {time}",
+  "feedback": {
+    "question": "Was this briefing useful?",
+    "helpful": "Yes",
+    "inaccurate": "Something is wrong",
+    "thanks": "Thanks, I've noted that."
+  },
+  "audio": {
+    "listen": "Listen · {minutes} min",
+    "title": "Audio briefing",
+    "play": "Play",
+    "pause": "Pause",
+    "back15": "Back 15 seconds",
+    "forward15": "Forward 15 seconds",
+    "speed": "Speed {speed}x",
+    "seekA11y": "Position, {position} of {duration}",
+    "preparing": "Preparing audio…",
+    "failed": "The audio couldn't be prepared. You can read the text instead.",
+    "chapter": "Part {current} of {total}"
+  },
+  "midday": {
+    "noChange": "No important changes since this morning."
+  },
+  "evening": {
+    "ready": "I'm ready for tomorrow",
+    "readyDone": "You're ready for tomorrow. Your morning briefing will be ready at {time}.",
+    "quietUntilMorning": "Mute notifications until morning"
+  },
+  "weekly": {
+    "title": "How was your week?",
+    "busiestDay": "Your busiest day",
+    "topContacts": "People you were in touch with most",
+    "carryOver": "Carrying over to next week",
+    "outlook": "Next week at a glance",
+    "timeSaved": "Estimated time saved: {duration}",
+    "share": "Share",
+    "shareCardTitle": "My Digital Week"
+  }
+}

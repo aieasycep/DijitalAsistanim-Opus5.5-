@@ -1,0 +1,25 @@
+{
+  "title": "Phone notifications",
+  "subtitle": "I pick out personal updates from delivery, bank and app notifications.",
+  "status": {
+    "on": "On",
+    "off": "Off",
+    "notGranted": "Notification access not granted"
+  },
+  "grantCta": "Turn on notification access",
+  "modes": {
+    "selected": "Only apps I choose",
+    "all": "All apps"
+  },
+  "apps": "Apps",
+  "alwaysExcluded": "Always excluded",
+  "alwaysExcludedBody": "Authenticator and password-manager apps, e-Devlet, banking security apps, chat apps and notifications with verification codes are never read.",
+  "signals": "Extracted details",
+  "deleteAll": "Delete all",
+  "deleteAllDone": "Extracted details were deleted.",
+  "disclosure": {
+    "title": "About notification access",
+    "accept": "I understand, continue"
+  },
+  "pro": "Phone notification intelligence is part of Pro."
+}

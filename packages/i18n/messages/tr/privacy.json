@@ -1,0 +1,218 @@
+{
+  "promises": {
+    "encrypted": "Veriler aktarım sırasında ve saklanırken şifrelenir.",
+    "approval": "Önemli işlemler sen onaylamadan gerçekleştirilmez.",
+    "ads": "Verilerin reklam amacıyla satılmaz.",
+    "training": "Mail içerikleri model eğitiminde kullanılmaz.",
+    "trainingLong": "Mail içeriklerin yapay zekâ modellerini eğitmek için kullanılmaz.",
+    "deletable": "Verilerini istediğin zaman silebilirsin."
+  },
+  "storage": {
+    "canonical": "Mail içeriğinin tamamı saklanmaz; yalnızca özetler, kısa alıntılar ve analiz sonuçları saklama süren boyunca tutulur.",
+    "firstAnalysisFooter": "Son 72 saat analiz edildi. Mail içeriğinin tamamı saklanmaz.",
+    "androidNi": "Bildirim içerikleri cihazında işlenir; yalnızca çıkarılan bilgiler (ör. kargo durumu, tutar, tarih) hesabına kaydedilir. Doğrulama kodları ve güvenlik uygulamaları her zaman hariç tutulur.",
+    "short": "Mail içeriğinin tamamı saklanmaz",
+    "region": "Veriler {region} bölgesinde saklanır.",
+    "crossBorder": "AI analizi ABD'deki alt işleyicilerimizde yapılır."
+  },
+  "center": {
+    "title": "Gizlilik ve Güvenlik",
+    "subtitle": "Neyi okuduğumu, ne kadar sakladığımı ve nasıl sileceğini burada görürsün.",
+    "connectedAccounts": "Bağlı hesaplar · {count}",
+    "accountScopes": "Okuma · Gönderme (onaylı)",
+    "noAccount": "Hesap bağla",
+    "dataSection": "Veri",
+    "permissions": "İzinler",
+    "aiData": "AI'ın eriştiği veriler",
+    "aiDataMeta": "{count} alan",
+    "retention": "Veri saklama",
+    "personalization": "AI kişiselleştirme",
+    "on": "Açık",
+    "off": "Kapalı",
+    "export": "Verilerimi dışa aktar",
+    "exportReady": "Hazır",
+    "exportPreparing": "Hazırlanıyor",
+    "deleteHistory": "Analiz geçmişini sil",
+    "deleteAccount": "Hesabımı sil",
+    "policyLink": "Gizlilik Politikası"
+  },
+  "permissions": {
+    "title": "İzinler",
+    "accountSection": "Bağlı hesap izinleri",
+    "phoneSection": "Telefon izinleri",
+    "status": {
+      "granted": "İzin verildi",
+      "denied": "Reddedildi",
+      "undetermined": "Sorulmadı",
+      "limited": "Sınırlı"
+    },
+    "os": {
+      "notifications": {
+        "title": "Bildirimler",
+        "meta": "Brifing ve önemli uyarılar için"
+      },
+      "calendar": {
+        "title": "Takvim",
+        "meta": "Cihaz takvimini okumak için"
+      },
+      "reminders": {
+        "title": "Hatırlatıcılar",
+        "meta": "Apple Hatırlatıcılar için"
+      },
+      "microphone": {
+        "title": "Mikrofon",
+        "meta": "Sesli komut ve toplantı notu için"
+      },
+      "speech": {
+        "title": "Konuşma tanıma",
+        "meta": "Sesini yazıya çevirmek için"
+      },
+      "camera": {
+        "title": "Kamera",
+        "meta": "Belge ve fotoğraf yakalamak için"
+      },
+      "notificationAccess": {
+        "title": "Bildirim erişimi",
+        "meta": "Telefon bildirimleri zekâsı için"
+      }
+    },
+    "scopes": {
+      "mail_read": "Mailleri okuma",
+      "mail_send": "Mail gönderme (her seferinde onayınla)",
+      "calendar_read": "Takvim etkinliklerini okuma",
+      "calendar_write": "Etkinlik oluşturma ve taşıma (her seferinde onayınla)",
+      "tasks_read": "Görevleri okuma",
+      "tasks_write": "Görev oluşturma (her seferinde onayınla)",
+      "notRequested": "Henüz istenmedi · ilk onaylı işlemde istenir"
+    },
+    "whyTitle": "{permission} izni neden gerekli?"
+  },
+  "aiData": {
+    "title": "AI neye erişiyor?",
+    "subtitle": "Bugün itibarıyla. Her satırı kapatabilirsin; kapattığın alanlar analize girmez.",
+    "reads": "Okur",
+    "mailBody": {
+      "title": "Mail konu ve gövdeleri",
+      "meta": "Özetlemek için · Mail içeriğinin tamamı saklanmaz"
+    },
+    "attachments": {
+      "title": "Ekler (PDF, görüntü)",
+      "meta": "Fatura ve teklif tespiti"
+    },
+    "calendar": {
+      "title": "Takvim ayrıntıları",
+      "meta": "Katılımcılar, konumlar ve açıklamalar"
+    },
+    "contacts": {
+      "title": "Kişiler",
+      "meta": "Yalnızca isim eşleştirme ve kişi özetleri"
+    },
+    "never": "Hiçbir zaman kullanmaz",
+    "neverPasswords": "Şifreler ve doğrulama kodları",
+    "neverBank": "Banka hesap ve kart numaraları",
+    "neverMessaging": "Mesajlaşma uygulamalarının içerikleri",
+    "neverLocation": "Konumun",
+    "footnote": "Bu bilgiler bir mailin içinde geçse bile AI'a gönderilmeden önce ayıklanır ve saklanmaz.",
+    "perAccount": "Hesap bazında"
+  },
+  "sourceOff": {
+    "mail_body": {
+      "title": "Mail gövdeleri kapatılsın mı?",
+      "body": "Kapatırsan AI yalnızca gönderen ve konu satırını kullanır. Mail özetleri, anahtar noktalar ve yanıt taslakları çalışmaz; öncelik tahminleri daha az isabetli olur."
+    },
+    "attachments": {
+      "title": "Ekler kapatılsın mı?",
+      "body": "Fatura, teklif ve bilet ekleri okunmaz; bu eklerdeki tarih ve tutarlar tespit edilmez."
+    },
+    "calendar": {
+      "title": "Takvim ayrıntıları kapatılsın mı?",
+      "body": "Toplantı hazırlığı yalnızca başlık ve saati kullanır; katılımcı bilgileri ve konum gösterilmez."
+    },
+    "contacts": {
+      "title": "Kişiler kapatılsın mı?",
+      "body": "Kişi sayfaları ve ilişki özetleri hazırlanmaz. VIP ve öncelik kuralların e-posta adresiyle çalışmaya devam eder."
+    },
+    "cta": "Kapat"
+  },
+  "retention": {
+    "title": "Veri saklama",
+    "subtitle": "Analiz sonuçları ve özetler ne kadar saklansın?",
+    "options": {
+      "d30": "30 gün",
+      "d90": "90 gün",
+      "d365": "1 yıl",
+      "until_deleted": "Silene kadar"
+    },
+    "explanation": "Hafıza araması bu süreyle sınırlıdır. Orijinal mailler kendi hesabında kalır.",
+    "exportMeta": "JSON · {size}",
+    "shorten": {
+      "title": "Saklama süresi {days} güne düşürülsün mü?",
+      "body": "{days} günden eski {count} özet, öncelik kararı ve hafıza kaydı bir sonraki temizlikte (en geç 24 saat içinde) kalıcı olarak silinir.",
+      "cta": "Süreyi Kısalt"
+    }
+  },
+  "history": {
+    "title": "Analiz geçmişi",
+    "body": "Özetler, öncelik kararları, AI hafızası ve öğrenilen tercihler silinir. Maillerin ve takvimin etkilenmez.",
+    "willDelete": "Silinecek: {summaries} özet · {decisions} öncelik kararı · {memory} hafıza kaydı · {preferences} öğrenilen tercih",
+    "willKeep": "Korunacak: bağlantılar, ayarlar, öncelik kuralların, VIP listen, açık taahhütlerin ve kurulu hatırlatıcıların",
+    "pendingCancelled": "Bekleyen onaylar iptal edilir.",
+    "processing": "Siliniyor… Bu işlem birkaç dakika sürebilir.",
+    "completed": "Analiz geçmişin silindi · {when}",
+    "completedCount": "{count} özet silindi",
+    "failed": "Silme tamamlanamadı. Tekrar deneyebilirsin.",
+    "cta": "Analiz geçmişini sil",
+    "confirm": {
+      "title": "Analiz geçmişi silinsin mi?",
+      "body": "{days} günlük özetler, öncelik kararları ve hafıza dizini silinir. Maillerin ve takvimin etkilenmez. Bu işlem geri alınamaz.",
+      "bodyAll": "Tüm özetler, öncelik kararları ve hafıza dizini silinir. Maillerin ve takvimin etkilenmez. Bu işlem geri alınamaz.",
+      "cta": "Geçmişi Sil"
+    }
+  },
+  "export": {
+    "title": "Verilerimi dışa aktar",
+    "body": "Hesabındaki verilerin bir kopyasını JSON dosyaları halinde ZIP olarak hazırlarız. Erişim anahtarları ve şifreler dahil edilmez.",
+    "contentsTitle": "İçerik",
+    "contents": "Profil ve ayarlar · Bağlı hesap bilgileri (anahtarlar hariç) · Özetler ve brifingler · Taahhütler, hatırlatıcılar ve onaylar · Asistan konuşmaları · Yüklediğin dosyalar",
+    "processing": "Hazırlanıyor…",
+    "processingNotify": "Hazırlanıyor… Hazır olunca bildirim göndereceğiz.",
+    "ready": "Hazır · {size} · {expires} tarihine kadar indirilebilir",
+    "download": "İndir",
+    "expired": "Bu dışa aktarmanın süresi doldu.",
+    "newRequest": "Yeni talep oluştur",
+    "failed": "Dışa aktarma hazırlanamadı.",
+    "cta": "Dışa aktarma talebi oluştur"
+  },
+  "deleteAccount": {
+    "title": "Hesabını silmek istediğine emin misin?",
+    "deletedSection": "Silinenler",
+    "deleted": {
+      "profile": "Profilin, ayarların ve tercihlerin",
+      "analysis": "Brifingler, analizler ve AI hafızası",
+      "connections": "Bağlı hesap bağlantıların (Google erişimi iptal edilir)",
+      "files": "Yüklediğin dosyalar ve dışa aktarımlar",
+      "referral": "Davet kodun ve Pro ödüllerin"
+    },
+    "unaffectedSection": "Etkilenmeyenler",
+    "unaffected": {
+      "original": "Gmail, Outlook ve takvimlerindeki orijinal içerik",
+      "sent": "Senin onayınla gönderilen mailler ve oluşturulan etkinlikler (sağlayıcıda kalır)"
+    },
+    "subscriptionWarning": "{store} aboneliğin hesabını silmekle iptal olmaz. Ücretlendirilmemek için önce aboneliğini iptal et.",
+    "manageSubscription": "Aboneliği Yönet",
+    "ackSubscription": "Aboneliğimin ayrıca iptal edilmesi gerektiğini anladım.",
+    "microsoftWarning": "Microsoft erişimini ayrıca kaldırman gerekir: account.live.com/consent/Manage veya myapps.microsoft.com.",
+    "appleNote": "Kimliğini Apple ile doğruladığında Apple ile Giriş bağlantısı silme sırasında Apple'da da kaldırılır. E-posta koduyla doğrularsan Ayarlar › Apple Kimliği › Apple ile Giriş bölümünden kaldırman gerekir.",
+    "exportFirst": "Önce verilerimi dışa aktar",
+    "reauthTitle": "Kimliğini doğrula",
+    "reauthBody": "Güvenliğin için {method} ile yeniden giriş yapman gerekiyor.",
+    "confirmPrompt": "Onaylamak için SİL yaz",
+    "confirmWord": "SİL",
+    "confirmCta": "Hesabımı Kalıcı Olarak Sil",
+    "queuedTitle": "Hesabın silme kuyruğunda",
+    "queuedBody": "Bağlantıların iptal ediliyor ve verilerin siliniyor. Bu genellikle birkaç dakika sürer.",
+    "completedTitle": "Hesabın silindi.",
+    "completedBody": "Bu cihazdaki veriler de temizlendi.",
+    "timeout": "Silme işlemi sürüyor. En geç 24 saat içinde tamamlanır. Bu cihazdaki verilerin temizlendi ve oturumun kapatıldı. Durumu web sitemizdeki Veri Silme sayfasından e-posta doğrulamasıyla görebilirsin."
+  }
+}

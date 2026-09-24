@@ -1,0 +1,34 @@
+{
+  "title": "Assistant",
+  "memoryPill": "Memory",
+  "summary": "Today I analysed {emails, plural, one {# email} other {# emails}}, {events, plural, one {# event} other {# events}} and {followUps, plural, one {# follow-up} other {# follow-ups}}. What would you like to know?",
+  "summaryFallback": "What would you like to know?",
+  "summaryNoAccounts": "Once your email and calendar are connected, I'll answer your questions from them.",
+  "summaryFirstAnalysis": "The first analysis is running… You'll see results here as they're ready.",
+  "suggestedKicker": "Suggested",
+  "recentKicker": "Recent chats",
+  "prompts": {
+    "focus": "What should I focus on today?",
+    "replies": "Who do I need to reply to?",
+    "tomorrowBusy": "Am I busy tomorrow?",
+    "lastTalked": "What did {name} and I last talk about?",
+    "deadlinesThisWeek": "Which deadlines do I have this week?",
+    "paymentsDue": "Is there anything I need to pay?"
+  },
+  "composer": {
+    "hint": "Ask about your digital life…",
+    "send": "Send",
+    "microphone": "Microphone",
+    "attach": "Add"
+  },
+  "thread": {
+    "personScope": "About {name}",
+    "deleteTitle": "Delete this chat?",
+    "deleteBody": "The messages are permanently deleted.",
+    "deleted": "Chat deleted",
+    "loadFailed": "Chats couldn't be loaded.",
+    "sources": "Sources",
+    "noAnswer": "I couldn't find that in your sources.",
+    "thinking": "I'm checking your sources…"
+  }
+}

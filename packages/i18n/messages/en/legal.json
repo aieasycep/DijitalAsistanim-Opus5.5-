@@ -1,0 +1,45 @@
+{
+  "privacy": {
+    "title": "Privacy Policy",
+    "lastUpdated": "Last updated: {date}",
+    "sections": {
+      "controller": "Data controller",
+      "dataWeProcess": "Data we process",
+      "purposes": "Purposes and legal bases",
+      "googleLimitedUse": "Google API Services User Data Policy",
+      "aiProcessing": "AI processing",
+      "subProcessors": "Sub-processors and international transfers",
+      "retention": "Retention periods",
+      "security": "Security",
+      "rights": "Your rights",
+      "deletion": "Account and data deletion",
+      "children": "Children",
+      "changes": "Changes",
+      "contact": "Contact"
+    },
+    "noTraining": "Your email content and other data are never used to train AI models.",
+    "noAds": "Your data is never sold for advertising and is never used for ad targeting.",
+    "limitedUse": "Dijital Asistan's use and transfer to any other app of information received from Google APIs will adhere to the Google API Services User Data Policy, including the Limited Use requirements.",
+    "aiOutput": "AI output may be incomplete or wrong. You can check the source with “Where did this come from?”; details that can't be verified are marked “Not confirmed in the source.”"
+  },
+  "terms": {
+    "title": "Terms of Use",
+    "lastUpdated": "Last updated: {date}",
+    "sections": {
+      "service": "The service",
+      "account": "Your account",
+      "approvals": "Approvals and responsibility",
+      "subscriptions": "Subscriptions and payments",
+      "fairUse": "Fair use",
+      "acceptableUse": "Acceptable use",
+      "aiOutput": "AI output",
+      "termination": "Termination",
+      "liability": "Limitation of liability",
+      "law": "Governing law",
+      "contact": "Contact"
+    }
+  },
+  "consent": {
+    "accept": "By continuing, you accept the <terms>Terms of Use</terms> and the <privacy>Privacy Policy</privacy>."
+  }
+}

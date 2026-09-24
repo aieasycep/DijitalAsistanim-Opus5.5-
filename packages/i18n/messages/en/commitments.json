@@ -1,0 +1,30 @@
+{
+  "title": "Commitments",
+  "directions": {
+    "user_owes": "Your promises",
+    "they_owe": "Promises to you"
+  },
+  "statuses": {
+    "open": "Open",
+    "done": "Done",
+    "snoozed": "Snoozed",
+    "cancelled": "Cancelled"
+  },
+  "fields": {
+    "commitment": "Commitment",
+    "to": "To",
+    "from": "From",
+    "due": "Due",
+    "source": "Source",
+    "confidence": "Confidence",
+    "reminders": "Reminders"
+  },
+  "actions": {
+    "snooze": "Snooze",
+    "viewSource": "View source",
+    "notACommitment": "This isn't a promise",
+    "plan": "Schedule",
+    "done": "Done"
+  },
+  "newProposal": "New commitment"
+}

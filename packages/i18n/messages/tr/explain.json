@@ -1,0 +1,18 @@
+{
+  "whyImportant": "Neden önemli?",
+  "whereFrom": "Bu nereden çıktı?",
+  "tiers": {
+    "explicit_rule": "Senin kuralın",
+    "learned_preference": "Öğrenilen tercih",
+    "deterministic_signal": "Kesin sinyal",
+    "ai_classification": "AI tahmini"
+  },
+  "precedence": "Kendi kuralların her zaman AI tahmininden önce gelir.",
+  "source": {
+    "title": "Kaynak",
+    "quote": "Kaynaktaki ifade",
+    "open": "Kaynağı Aç",
+    "deviceStale": "Cihaz takvimi en son {time} eşitlendi"
+  },
+  "confidence": "%{percent} güven"
+}

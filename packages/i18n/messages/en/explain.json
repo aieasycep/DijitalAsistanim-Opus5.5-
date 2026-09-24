@@ -1,0 +1,18 @@
+{
+  "whyImportant": "Why is this important?",
+  "whereFrom": "Where did this come from?",
+  "tiers": {
+    "explicit_rule": "Your rule",
+    "learned_preference": "Learned preference",
+    "deterministic_signal": "Clear signal",
+    "ai_classification": "AI estimate"
+  },
+  "precedence": "Your own rules always come before AI guesses.",
+  "source": {
+    "title": "Source",
+    "quote": "Quote from the source",
+    "open": "Open source",
+    "deviceStale": "Device calendar last synced at {time}"
+  },
+  "confidence": "{percent}% confidence"
+}

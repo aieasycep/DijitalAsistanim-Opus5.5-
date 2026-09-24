@@ -1,0 +1,134 @@
+{
+  "meta": {
+    "siteName": "Dijital Asistan",
+    "homeTitle": "Dijital Asistan — Tells you what you need to know today, before you ask.",
+    "pricingTitle": "Pricing — Dijital Asistan",
+    "supportTitle": "Support and FAQ — Dijital Asistan",
+    "privacyTitle": "Privacy Policy — Dijital Asistan",
+    "termsTitle": "Terms of Use — Dijital Asistan",
+    "deletionTitle": "Data Deletion — Dijital Asistan"
+  },
+  "nav": {
+    "features": "Features",
+    "security": "Security",
+    "pricing": "Pricing",
+    "faq": "FAQ",
+    "getStarted": "Get started free",
+    "language": "Türkçe",
+    "skipToContent": "Skip to content"
+  },
+  "home": {
+    "hero": {
+      "title": "Tells you what you need to know today, before you ask.",
+      "lead": "Understands your email, calendar and open tasks, and prepares a short briefing every morning. Nothing is sent without your approval.",
+      "trust": "Data is encrypted in transit and at rest. Your data is never sold for advertising."
+    },
+    "sections": {
+      "integrations": "Integrations",
+      "howItWorks": "How it works",
+      "morningBriefing": "Morning Briefing",
+      "mailIntel": "Mail Intelligence",
+      "meetingPrep": "Meeting Prep",
+      "planning": "Smart Planning",
+      "memory": "AI Memory",
+      "security": "Security",
+      "pricing": "Pricing",
+      "faq": "Frequently asked questions"
+    },
+    "briefingLead": "Your briefing has six parts: Today's Priorities, Your Schedule, Expected From You, What You're Waiting For, Deadlines and Personal Updates. Every item shows where it came from.",
+    "finalCta": "Start your day prepared.",
+    "brandNote": "Gmail, Google Calendar, Outlook and Apple Calendar are trademarks of their respective companies; Dijital Asistan is not affiliated with them."
+  },
+  "download": {
+    "title": "Download Dijital Asistan",
+    "qr": "Scan with your phone camera",
+    "appStore": "Download on the App Store",
+    "googlePlay": "Get it on Google Play"
+  },
+  "pricing": {
+    "kicker": "Pricing",
+    "title": "Start free. Go Pro when you need more.",
+    "lead": "Your morning briefing is always free. Midday and evening briefings, meeting prep, smart follow-up and AI memory are Pro.",
+    "freeTitle": "Free",
+    "freeSub": "No time limit",
+    "freeCta": "Get started free",
+    "proCta": "Go Pro in the app",
+    "storeNote": "Store price · incl. VAT · as of {asOf}",
+    "trialLine": "New subscribers are offered a free trial of {days, plural, one {# day} other {# days}} in the store. The app shows whether you're eligible and what you'll be charged when it ends, before you buy. A valid payment method on your store account may be required.",
+    "periodLegend": "Billing period",
+    "tableCaption": "Free and Pro compared"
+  },
+  "support": {
+    "kicker": "Support",
+    "title": "How can we help?",
+    "lead": "Find answers to common questions below, or write to us about anything else.",
+    "contactTitle": "Contact us",
+    "contactLead": "Fill in the form or email destek@dijitalasistan.app.",
+    "deletionCallout": "Want to delete your account or data? The Data Deletion page is the fastest way.",
+    "form": {
+      "email": "Your email",
+      "emailHelp": "We'll reply to this address.",
+      "name": "Your name (optional)",
+      "topic": "Topic",
+      "message": "Your message",
+      "messageHelp": "If it's about the app, include your device (iPhone or Android) and the version shown in Profile › About. Don't share passwords, verification codes or card details.",
+      "notice": "We use what you send only to answer your request. Details: <privacy>Privacy Policy</privacy>.",
+      "privacyHint": "To delete your account or data, use the <deletion>Data Deletion</deletion> page; it's the fastest way.",
+      "submit": "Send",
+      "submitting": "Sending…",
+      "successTitle": "We've received your request.",
+      "successBody": "Your reference: {reference}. We'll reply to {maskedEmail}.",
+      "another": "Send another request",
+      "captchaFailed": "The security check couldn't be completed. Try again.",
+      "serverError": "We can't take your request right now. Try again a little later or email destek@dijitalasistan.app.",
+      "noScript": "The form needs JavaScript; you can email us at destek@dijitalasistan.app."
+    }
+  },
+  "deletion": {
+    "title": "Delete your account and data",
+    "lead": "If you can't access the app, you can request deletion here with email verification.",
+    "emailStep": "Your account's email address",
+    "sendCode": "Send verification code",
+    "codeStep": "Type the 6-digit code we sent to {email}.",
+    "kinds": {
+      "history": "Delete only my analysis history",
+      "account": "Delete my account and all my data"
+    },
+    "submit": "Request deletion",
+    "status": "Request status: {status}",
+    "statuses": {
+      "requested": "Received",
+      "verified": "Verified",
+      "queued": "Queued",
+      "processing": "Deleting",
+      "completed": "Completed",
+      "failed": "Not completed",
+      "cancelled": "Cancelled"
+    },
+    "subscriptionNote": "Your App Store or Google Play subscription isn't cancelled automatically."
+  },
+  "referralLanding": {
+    "title": "A friend invited you",
+    "body": "Download the app and join with this invite; you both get {days, plural, one {# day} other {# days}} of Pro.",
+    "invalid": "This invite code isn't valid."
+  },
+  "oauthDone": {
+    "title": "Your connection is almost done",
+    "body": "Go back to the Dijital Asistan app to finish.",
+    "openApp": "Open the app",
+    "adminInfo": "Information for your admin"
+  },
+  "footer": {
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Use",
+    "support": "Support",
+    "deletion": "Data Deletion",
+    "copyright": "© {year} Dijital Asistan"
+  },
+  "errors": {
+    "notFoundTitle": "This page wasn't found.",
+    "notFoundBody": "The link may be old, or the page may have moved.",
+    "serverTitle": "Something went wrong.",
+    "backHome": "Back to the home page"
+  }
+}

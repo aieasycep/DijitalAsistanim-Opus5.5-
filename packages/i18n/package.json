@@ -1,0 +1,40 @@
+{
+  "name": "@da/i18n",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./use-intl": "./src/use-intl.ts",
+    "./messages/*": "./messages/*"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "check:catalogs": "node scripts/check-catalogs.ts"
+  },
+  "dependencies": {
+    "@date-fns/tz": "catalog:",
+    "@formatjs/icu-messageformat-parser": "catalog:",
+    "date-fns": "catalog:"
+  },
+  "peerDependencies": {
+    "use-intl": "catalog:"
+  },
+  "peerDependenciesMeta": {
+    "use-intl": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@da/config": "workspace:*",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "intl-messageformat": "catalog:",
+    "react": "catalog:",
+    "typescript": "catalog:",
+    "use-intl": "catalog:",
+    "vitest": "catalog:"
+  }
+}

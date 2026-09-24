@@ -1,0 +1,116 @@
+{
+  "greeting": {
+    "morning": "Günaydın, {name}",
+    "afternoon": "İyi günler, {name}",
+    "evening": "İyi akşamlar, {name}",
+    "morningNoName": "Günaydın",
+    "afternoonNoName": "İyi günler",
+    "eveningNoName": "İyi akşamlar"
+  },
+  "header": {
+    "approvals": "{count} onay",
+    "approvalsA11y": "Onay bekleyenler, {count}",
+    "profileA11y": "Profil ve ayarlar"
+  },
+  "hero": {
+    "firstAnalysis": {
+      "kicker": "İlk analiz sürüyor…",
+      "title": "Son 72 saatini okuyorum.",
+      "context": "{emails} mail · {items} konu"
+    },
+    "silentDay": {
+      "kicker": "Sessiz gün",
+      "title": "Bugün brifing yok.",
+      "context": "Önceliklerin aşağıda."
+    },
+    "morningReady": {
+      "kicker": "Brifing hazır · {time}",
+      "firstDayKicker": "İlk brifingin hazır",
+      "title": "Bugün bilmen gereken {count} şey var.",
+      "zero": "Bugün bilmen gereken yeni bir şey yok.",
+      "middayNoChange": "Sabahından beri önemli bir değişiklik yok."
+    },
+    "generating": {
+      "kicker": "Brifing hazırlanıyor…"
+    },
+    "morningFailed": {
+      "kicker": "Brifing gecikti",
+      "retrying": "Brifingi yeniden hazırlıyorum.",
+      "failed": "Brifing hazırlanamadı."
+    },
+    "preMorning": {
+      "kicker": "Sabah brifingi · {time}",
+      "title": "Brifingin {time_loc} hazır olacak.",
+      "context": "Şimdiden {count} konu var.",
+      "notify": "Hazır olunca haber veririm."
+    },
+    "middayReady": {
+      "kicker": "Öğle nabzı · {time}",
+      "title": "Sabahından beri {count} önemli gelişme oldu.",
+      "context": "{calendar} takvim · {mail} mail",
+      "cta": "Nabzı Gör",
+      "secondary": "Sabah brifingi"
+    },
+    "middayGate": {
+      "kicker": "Öğle nabzı · Pro",
+      "title": "Sabahından beri {count} gelişme oldu.",
+      "body": "Öğle nabzı Pro'da. Sabah brifingin her zaman ücretsiz."
+    },
+    "eveningReady": {
+      "kicker": "Akşam kapanışı hazır",
+      "title": "Bugünden yarına {count} konu kaldı.",
+      "zero": "Bugün her şeyi kapattın.",
+      "context": "{completed} tamamlandı · {followUps} takip · Yarın {time} {event}",
+      "cta": "Kapanışı Gör"
+    },
+    "eveningGate": {
+      "kicker": "Akşam kapanışı · Pro",
+      "title": "Bugünden yarına {count} konu kaldı."
+    },
+    "eveningConfirmed": {
+      "kicker": "Yarına hazırsın",
+      "title": "Sabah brifingin {time_loc} hazır olacak.",
+      "context": "{count} konu yarına taşındı",
+      "quiet": "Bildirimler sabaha kadar sessizde"
+    }
+  },
+  "sections": {
+    "priorities": "Önceliklerin",
+    "schedule": "Programın",
+    "calendarIntel": "Takvim zekâsı",
+    "digitalLife": "Dijital hayatın",
+    "carryOver": "Yarına kalanlar",
+    "itemCount": "{count} konu",
+    "eventCount": "{count} etkinlik"
+  },
+  "footer": {
+    "seeAllInFlow": "Akış'ta tümünü gör",
+    "add": "Ekle"
+  },
+  "weekly": {
+    "kicker": "Haftalık özet hazır",
+    "title": "Bu hafta {count} mail analiz edildi.",
+    "meta": "Tahmini {duration} kazandın"
+  },
+  "night": {
+    "title": "Bugünlük bu kadar.",
+    "body": "Taşıdığın {count} konu sabah brifinginde seni bekliyor."
+  },
+  "cards": {
+    "eveningRemind": "Sabah Hatırlat",
+    "followUpDraft": "Takip Mesajı Hazırla",
+    "checkIn": "Check-in",
+    "setAlarm": "Alarm Kur",
+    "review": "İncele",
+    "renewalDetails": "Yenileme Detayı",
+    "trackPackage": "Takibi Gör",
+    "lastContact": "Son görüşme {relative}"
+  },
+  "announcement": {
+    "more": "Devamı",
+    "dismissA11y": "Duyuruyu kapat"
+  },
+  "refresh": {
+    "updated": "Güncel · {time}"
+  }
+}

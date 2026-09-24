@@ -1,0 +1,32 @@
+{
+  "title": "Plan",
+  "segments": {
+    "day": "Day",
+    "week": "Week"
+  },
+  "calendarIntel": "Calendar intelligence",
+  "freeSlot": "You're free {day} {start}–{end} ({duration}).",
+  "suggestion": "I can place “{task}” here.",
+  "proposal": {
+    "kicker": "Suggested · not real yet",
+    "changeTime": "Change time",
+    "otherTime": "Another time",
+    "approve": "Approve",
+    "cancel": "Cancel"
+  },
+  "conflict": {
+    "title": "Calendar conflict",
+    "body": "{eventA} at {timeA} overlaps with {eventB} at {timeB}.",
+    "options": "See options",
+    "ignore": "Ignore",
+    "notOrganizer": "You're not the organiser of this event; I can draft a reply that suggests a new time.",
+    "attendeesNotified": "Attendees will be sent an update"
+  },
+  "density": {
+    "busy": "Busy",
+    "moderate": "Moderate",
+    "calm": "Calm"
+  },
+  "focusBlock": "Focus block",
+  "commitments": "Commitments"
+}

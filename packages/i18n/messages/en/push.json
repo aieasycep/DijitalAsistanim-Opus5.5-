@@ -1,0 +1,623 @@
+{
+  "morning": {
+    "ready": {
+      "full": {
+        "title": "Good morning. There {count, plural, one {is # thing} other {are # things}} you need to know today.",
+        "body": "{highlights}"
+      },
+      "title_only": {
+        "title": "Good morning",
+        "body": "There {count, plural, one {is # thing} other {are # things}} you need to know today."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    },
+    "calm": {
+      "full": {
+        "title": "Good morning",
+        "body": "Everything's under control. Your briefing is ready."
+      },
+      "title_only": {
+        "title": "Good morning",
+        "body": "Everything's under control. Your briefing is ready."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    }
+  },
+  "midday": {
+    "ready": {
+      "full": {
+        "title": "Midday · {count, plural, one {# update} other {# updates}}",
+        "body": "{highlights}"
+      },
+      "title_only": {
+        "title": "Midday",
+        "body": "{count, plural, one {# important update} other {# important updates}} since this morning."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    }
+  },
+  "evening": {
+    "ready": {
+      "full": {
+        "title": "Evening wrap-up",
+        "body": "{count, plural, one {# item carries} other {# items carry}} over to tomorrow: {highlights}"
+      },
+      "title_only": {
+        "title": "Evening wrap-up",
+        "body": "{count, plural, one {# item carries} other {# items carry}} over to tomorrow."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    },
+    "clear": {
+      "full": {
+        "title": "Evening wrap-up",
+        "body": "Nothing carries over to tomorrow. Have a good evening."
+      },
+      "title_only": {
+        "title": "Evening wrap-up",
+        "body": "Nothing carries over to tomorrow. Have a good evening."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    }
+  },
+  "weekly": {
+    "ready": {
+      "full": {
+        "title": "Your week is ready",
+        "body": "This week: {important, plural, one {# important item} other {# important items}}, {meetings, plural, one {# meeting} other {# meetings}}; {followups, plural, one {# follow-up} other {# follow-ups}} open."
+      },
+      "title_only": {
+        "title": "Your week is ready",
+        "body": "Your weekly summary is ready."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    }
+  },
+  "critical_email": {
+    "reply_needed": {
+      "full": {
+        "title": "{sender} · {subject}",
+        "body": "{expectedAction}"
+      },
+      "title_only": {
+        "title": "Important email",
+        "body": "There's an important email you need to answer today."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    },
+    "vip": {
+      "full": {
+        "title": "{vipName} wrote",
+        "body": "{subject}"
+      },
+      "title_only": {
+        "title": "Email from an important person",
+        "body": "One of your important people sent a new email."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    },
+    "rule": {
+      "full": {
+        "title": "{sender} · {subject}",
+        "body": "Your rule: {ruleName}"
+      },
+      "title_only": {
+        "title": "Important email",
+        "body": "A new email matches one of your notify rules."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    }
+  },
+  "meeting": {
+    "prep_ready": {
+      "full": {
+        "title": "{time} · {meeting}",
+        "body": "Your meeting starts in {minutes, plural, one {# minute} other {# minutes}}. You have {count, plural, one {# prep note} other {# prep notes}}."
+      },
+      "title_only": {
+        "title": "Meeting prep",
+        "body": "Your next meeting starts in {minutes, plural, one {# minute} other {# minutes}}. Your prep is ready."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    },
+    "upcoming": {
+      "full": {
+        "title": "{time} · {meeting}",
+        "body": "Your meeting starts in {minutes, plural, one {# minute} other {# minutes}}."
+      },
+      "title_only": {
+        "title": "Upcoming meeting",
+        "body": "Your meeting starts in {minutes, plural, one {# minute} other {# minutes}}."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    },
+    "post": {
+      "full": {
+        "title": "{meeting} has ended",
+        "body": "Anything you need to follow up on?"
+      },
+      "title_only": {
+        "title": "Your meeting has ended.",
+        "body": "Anything you need to follow up on?"
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    },
+    "conflict": {
+      "full": {
+        "title": "Calendar conflict",
+        "body": "{day}: {eventA} at {timeA} overlaps with {eventB} at {timeB}."
+      },
+      "title_only": {
+        "title": "Calendar conflict",
+        "body": "Two of your events overlap in the next two days."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    }
+  },
+  "deadline": {
+    "due_soon": {
+      "full": {
+        "title": "Deadline: {title}",
+        "body": "Closes today at {time}."
+      },
+      "title_only": {
+        "title": "Upcoming deadline",
+        "body": "You have a deadline that closes today."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    },
+    "commitment_due": {
+      "full": {
+        "title": "Your promise: {commitment}",
+        "body": "You promised this for {time} today."
+      },
+      "title_only": {
+        "title": "Commitment reminder",
+        "body": "You have a commitment to finish today."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    }
+  },
+  "follow_up": {
+    "no_reply": {
+      "full": {
+        "title": "{person} · {subject}",
+        "body": "No reply for {days, plural, one {# day} other {# days}}. Shall I draft a follow-up?"
+      },
+      "title_only": {
+        "title": "Time to follow up",
+        "body": "A conversation you're waiting on still has no reply."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    }
+  },
+  "life_intel": {
+    "shipment": {
+      "full": {
+        "title": "{state, select, delivered {Your package was delivered.} delayed {Your package is delayed.} other {Your package arrives today.}}",
+        "body": "{state, select, delivered {{seller} · Delivered · {time}} delayed {{seller} · New estimated delivery {date}} other {{seller} · Estimated delivery {from}–{to}}}"
+      },
+      "title_only": {
+        "title": "Shipment update",
+        "body": "Details are in the app."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    },
+    "flight": {
+      "full": {
+        "title": "{state, select, delayed {{flight} · Delayed} checkin_open {{flight} · Check-in open} other {{flight} · Gate changed}}",
+        "body": "{state, select, delayed {New departure time {time}.} checkin_open {Departs at {time}.} other {New gate {gate}. Departs at {time}.}}"
+      },
+      "title_only": {
+        "title": "Flight update",
+        "body": "Details are in the app."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    },
+    "payment": {
+      "full": {
+        "title": "{issuer} · {amount}",
+        "body": "Due {date}."
+      },
+      "title_only": {
+        "title": "Payment update",
+        "body": "Details are in the app."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    },
+    "subscription": {
+      "full": {
+        "title": "{service} renews soon",
+        "body": "{amount} will be charged on {date}."
+      },
+      "title_only": {
+        "title": "Subscription update",
+        "body": "Details are in the app."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    },
+    "reservation": {
+      "full": {
+        "title": "Your reservation at {venue}",
+        "body": "Today {time} · {partySize, plural, one {# person} other {# people}}"
+      },
+      "title_only": {
+        "title": "Reservation update",
+        "body": "Details are in the app."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    },
+    "security": {
+      "full": {
+        "title": "{service}: security alert",
+        "body": "{summary}"
+      },
+      "title_only": {
+        "title": "Security alert",
+        "body": "There's a security notice about one of your accounts."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    },
+    "phone_digest": {
+      "full": {
+        "title": "Phone notification digest",
+        "body": "{count, plural, one {# new update} other {# new updates}}: {types}"
+      },
+      "title_only": {
+        "title": "Phone notification digest",
+        "body": "You have {count, plural, one {# new personal update} other {# new personal updates}}."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    }
+  },
+  "approval": {
+    "pending": {
+      "full": {
+        "title": "Waiting for approval",
+        "body": "{count, plural, one {{summary} is waiting for your approval.} other {# actions are waiting for your approval.}}"
+      },
+      "title_only": {
+        "title": "Waiting for approval",
+        "body": "{count, plural, one {# action is} other {# actions are}} waiting for your approval."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    },
+    "expiring": {
+      "full": {
+        "title": "Approval expiring",
+        "body": "{summary}: {hours, plural, one {# hour} other {# hours}} left."
+      },
+      "title_only": {
+        "title": "Approval expiring",
+        "body": "An action waiting for your approval is about to expire."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    },
+    "failed": {
+      "full": {
+        "title": "{summary} couldn't be completed.",
+        "body": "Details are in Pending approvals."
+      },
+      "title_only": {
+        "title": "An action couldn't be completed.",
+        "body": "Details are in Pending approvals."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    }
+  },
+  "account": {
+    "reauth_needed": {
+      "full": {
+        "title": "Your {service} connection needs renewing.",
+        "body": "{kind, select, calendar {Your calendar won't update until you reconnect.} other {New emails won't be analysed until you reconnect.}}"
+      },
+      "title_only": {
+        "title": "Your {service} connection needs renewing.",
+        "body": "{kind, select, calendar {Your calendar won't update until you reconnect.} other {New emails won't be analysed until you reconnect.}}"
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    },
+    "admin_consent": {
+      "full": {
+        "title": "Admin approval required",
+        "body": "Your organisation's admin needs to approve access to {service}."
+      },
+      "title_only": {
+        "title": "Admin approval required",
+        "body": "Your organisation's admin needs to approve access to {service}."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    },
+    "trial_ending": {
+      "full": {
+        "title": "Your Pro trial ends tomorrow",
+        "body": "When the trial ends, it renews as {plan}. You can cancel in your store settings if you like."
+      },
+      "title_only": {
+        "title": "Your Pro trial ends tomorrow",
+        "body": "When the trial ends, it renews as {plan}. You can cancel in your store settings if you like."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    },
+    "billing_issue": {
+      "full": {
+        "title": "Payment problem",
+        "body": "{store} couldn't take your payment. Update your payment method to keep Pro."
+      },
+      "title_only": {
+        "title": "Payment problem",
+        "body": "{store} couldn't take your payment. Update your payment method to keep Pro."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    },
+    "pro_ended": {
+      "full": {
+        "title": "Your Pro period has ended",
+        "body": "You're now on the Free plan. Your data and settings are kept."
+      },
+      "title_only": {
+        "title": "Your Pro period has ended",
+        "body": "You're now on the Free plan. Your data and settings are kept."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    },
+    "grant_started": {
+      "full": {
+        "title": "Pro access added",
+        "body": "Your Pro access for {days, plural, one {# day} other {# days}} has started."
+      },
+      "title_only": {
+        "title": "Pro access added",
+        "body": "Your Pro access for {days, plural, one {# day} other {# days}} has started."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    },
+    "referral_reward": {
+      "full": {
+        "title": "{side, select, referee {Your welcome reward} other {Your invite reward is here}}",
+        "body": "{side, select, referee {You joined with an invite, so you get {days, plural, one {# day} other {# days}} of Pro.} other {Your friend joined; you get {days, plural, one {# day} other {# days}} of Pro.}}"
+      },
+      "title_only": {
+        "title": "{side, select, referee {Your welcome reward} other {Your invite reward is here}}",
+        "body": "{side, select, referee {You joined with an invite, so you get {days, plural, one {# day} other {# days}} of Pro.} other {Your friend joined; you get {days, plural, one {# day} other {# days}} of Pro.}}"
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    },
+    "export_ready": {
+      "full": {
+        "title": "Your data export is ready",
+        "body": "You can download it until {date}, {time}."
+      },
+      "title_only": {
+        "title": "Your data export is ready",
+        "body": "You can download it until {date}, {time}."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    },
+    "export_failed": {
+      "full": {
+        "title": "Your export couldn't be prepared",
+        "body": "Tap to try again."
+      },
+      "title_only": {
+        "title": "Your export couldn't be prepared",
+        "body": "Tap to try again."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    },
+    "history_deleted": {
+      "full": {
+        "title": "Your analysis history was deleted",
+        "body": "Analyses from the period you chose were deleted."
+      },
+      "title_only": {
+        "title": "Your analysis history was deleted",
+        "body": "Analyses from the period you chose were deleted."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    },
+    "disconnected_by_support": {
+      "full": {
+        "title": "Connection removed",
+        "body": "Our support team removed your {service} connection. You can reconnect whenever you like."
+      },
+      "title_only": {
+        "title": "Connection removed",
+        "body": "Our support team removed your {service} connection. You can reconnect whenever you like."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    },
+    "support_ticket_updated": {
+      "full": {
+        "title": "Your support request was updated",
+        "body": "Request {reference}: {status}."
+      },
+      "title_only": {
+        "title": "Your support request was updated",
+        "body": "Request {reference}: {status}."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    }
+  },
+  "reminder": {
+    "local": {
+      "full": {
+        "title": "Reminder",
+        "body": "{text}"
+      },
+      "title_only": {
+        "title": "Reminder",
+        "body": "Something you asked me to remind you about is due now."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "You have a new update."
+      }
+    }
+  },
+  "test": {
+    "titlePrefix": "Test · {title}"
+  },
+  "ios": {
+    "hiddenPreview": "Dijital Asistan update"
+  },
+  "foreground": {
+    "open": "Open"
+  },
+  "channels": {
+    "briefings": {
+      "name": "Briefings",
+      "description": "Morning, midday, evening and weekly briefings"
+    },
+    "critical_email": {
+      "name": "Critical emails",
+      "description": "Important emails you need to answer today"
+    },
+    "meetings": {
+      "name": "Meetings",
+      "description": "Meeting reminders and prep"
+    },
+    "deadlines": {
+      "name": "Deadlines",
+      "description": "Upcoming due dates"
+    },
+    "follow_up": {
+      "name": "Follow-up reminders",
+      "description": "Emails waiting for a reply"
+    },
+    "life_intel": {
+      "name": "Life intelligence",
+      "description": "Shipments, flights, payments and security"
+    },
+    "approvals": {
+      "name": "Pending approvals",
+      "description": "Actions waiting for your approval"
+    },
+    "reminders": {
+      "name": "Reminders",
+      "description": "Reminders you set yourself"
+    },
+    "account": {
+      "name": "Account and connections",
+      "description": "Reconnection, subscription and security"
+    },
+    "phone_digest": {
+      "name": "Phone notification digest",
+      "description": "Used only while Phone Notifications is on."
+    }
+  }
+}

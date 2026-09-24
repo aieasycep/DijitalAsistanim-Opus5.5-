@@ -1,0 +1,216 @@
+{
+  "progress": "Adım {current} / {total}",
+  "welcome": {
+    "kicker": "Dijital Asistan",
+    "body": "Mailini, takvimini ve yapman gerekenleri tek yerde anlar.",
+    "cta": "Başlayalım",
+    "signIn": "Zaten hesabın var mı? <signIn>Giriş yap</signIn>"
+  },
+  "noise": {
+    "title": "Gürültüyü azalt.",
+    "body": "Gelen her şeyi okur, yalnızca önemli olanı gösterir.",
+    "summary": "{emails} mail → {items} önemli konu",
+    "a11y": "Örnek: {emails} mail {items} önemli konuya iner.",
+    "examples": {
+      "urgent": "Ahmet revize teklif bekliyor",
+      "deadline": "Başvuru bugün 17:00",
+      "followUp": "Teklife 3 gündür cevap yok"
+    }
+  },
+  "proactive": {
+    "kicker": "Sabah brifingi · {time}",
+    "greeting": "Günaydın",
+    "sampleHeadline": "Bugün oldukça sakin bir günün var.",
+    "sampleBody": "Öğlene kadar toplantın bulunmuyor. Saat 14:30'da Mehmet ile müşteri toplantın var…",
+    "listen": "Brifingi Dinle · {minutes} dk",
+    "schedule": "Her sabah {time}",
+    "title": "Gününü sen sormadan hazırlarız.",
+    "body": "Okumak istemezsen {minutes} dakikada dinle."
+  },
+  "control": {
+    "sampleAction": "Mehmet Yılmaz'a takip mesajı gönder",
+    "whyLabel": "Neden",
+    "whySample": "Teklife 3 gündür yanıt gelmedi.",
+    "changeLabel": "Değişim",
+    "changeSample": "1 mail · Kısa, profesyonel ton",
+    "title": "Kontrol her zaman sende.",
+    "body": "Sen onaylamadan mail göndermez, takvimine dokunmaz.",
+    "cta": "Hesap Oluştur"
+  },
+  "connect": {
+    "title": "Dijital hayatını bağla.",
+    "body": "En az bir mail ve bir takvim yeterli. İstediğin zaman kaldırabilirsin.",
+    "trust": "Sen onaylamadan mail göndermeyiz.",
+    "connected": "Bağlandı",
+    "cta": "Devam · {count} hesap bağlı",
+    "skip": "Şimdilik geç"
+  },
+  "explainer": {
+    "gmail": {
+      "kicker": "Gmail",
+      "title": "Mail erişimine neden ihtiyacımız var?",
+      "reasons": {
+        "important": "Önemli mailleri bulmak",
+        "awaiting": "Cevap bekleyenleri anlamak",
+        "deadlines": "Son tarihleri tespit etmek"
+      },
+      "cta": "Google ile Bağlan",
+      "note": "Sonraki adımda Google'ın kendi izin ekranı açılır."
+    },
+    "outlook": {
+      "kicker": "Outlook · Microsoft 365",
+      "title": "Outlook erişimine neden ihtiyacımız var?",
+      "reasons": {
+        "important": "İş maillerinde önemli konuları bulmak",
+        "awaiting": "Cevap bekleyen konuşmaları anlamak",
+        "deadlines": "Teklif, sözleşme ve son tarihleri tespit etmek"
+      },
+      "orgPolicy": "Kurumsal hesapta yalnızca sana verilen izinler kullanılır; şirket politikaların geçerli kalır.",
+      "cta": "Microsoft ile Bağlan"
+    },
+    "calendar": {
+      "kicker": "Takvim",
+      "title": "Takvim erişimine neden ihtiyacımız var?",
+      "reasons": {
+        "schedule": "Günün programını anlamak",
+        "conflicts": "Toplantı çakışmalarını tespit etmek",
+        "briefing": "Yaklaşan etkinlikleri brifinge eklemek",
+        "slots": "Uygun zaman önermek"
+      },
+      "ads": "Etkinlik içerikleri reklam amacıyla kullanılmaz."
+    },
+    "trustSend": "Sen onaylamadan mail göndermeyiz.",
+    "trustCalendar": "Takviminde değişiklik yapmadan önce senden onay isteriz.",
+    "trustRemove": "Bağlantını istediğin zaman kaldırabilirsin.",
+    "trustAds": "Verilerin reklam amacıyla kullanılmaz, satılmaz.",
+    "notNow": "Şimdi değil"
+  },
+  "calendar": {
+    "title": "Takvimini bağla.",
+    "body": "Toplantı hazırlığı, çakışma uyarıları ve uygun zaman önerileri için. İstediğin zaman kaldırabilirsin.",
+    "appleMeta": "iCloud · cihazdan okunur",
+    "appleNote": "Apple Takvim cihazdan okunur; ayrı giriş gerekmez. Etkinlik bilgileri analiz için şifreli bağlantıyla sunucularımıza gönderilir.",
+    "appleCta": "Apple Takvim'e İzin Ver",
+    "pickedMeta": "{count} takvim · {names}",
+    "picker": {
+      "title": "Hangi takvimler?",
+      "body": "Seçtiğin takvimler brifinge ve plana girer."
+    },
+    "denied": {
+      "title": "Takvim erişimi kapalı",
+      "body": "Dilersen Ayarlar'dan daha sonra açabilirsin. Takvim olmadan da temel özellikler çalışır.",
+      "skip": "Şimdilik Atla"
+    }
+  },
+  "adminConsent": {
+    "title": "Yöneticinin onayı gerekiyor.",
+    "body": "Kurumsal hesabında bu uygulama için BT yöneticinin onayı gerekiyor. Onay bağlantısını yöneticine iletebilirsin.",
+    "cta": "Yöneticiye Gönder"
+  },
+  "permissions": {
+    "kicker": "İzinler",
+    "title": "Neye erişebildiğimi gözden geçir",
+    "body": "Her şeyi istediğin zaman Gizlilik ve Güvenlik bölümünden değiştirebilirsin."
+  },
+  "personalization": {
+    "title": "Senin için neler önemli?",
+    "body": "Birden fazla seçebilirsin. Zamanla kendim de öğrenirim.",
+    "interests": {
+      "work": "İş",
+      "family": "Aile",
+      "finance": "Finans",
+      "travel": "Seyahat",
+      "shopping": "Alışveriş",
+      "appointments": "Randevular",
+      "deadlines": "Son Tarihler",
+      "all": "Hepsi"
+    },
+    "cta": "Devam · {count} seçili"
+  },
+  "schedule": {
+    "title": "Günün ritmi",
+    "body": "Brifingleri ne zaman hazırlayayım? Sonradan değiştirebilirsin.",
+    "morningMeta": "Günün tamamı · sesli sürüm",
+    "middayMeta": "Yalnızca değişenler",
+    "eveningMeta": "Yarına kalanlar",
+    "weekend": "Hafta sonu",
+    "weekendMeta": "Sadece sabah, {time} · Kişisel öncelikli",
+    "pickerTitle": {
+      "morning": "Sabah brifingi saati",
+      "midday": "Öğle nabzı saati",
+      "evening": "Akşam kapanışı saati",
+      "weekend": "Hafta sonu brifingi saati"
+    }
+  },
+  "vip": {
+    "title": "Kimlerden gelen şeyleri asla kaçırmak istemezsin?",
+    "body": "VIP kişilerin mesajları her zaman öne çıkar.",
+    "cta": "Devam ({count})",
+    "add": {
+      "title": "Kişi ekle",
+      "emailHint": "E-posta adresi",
+      "nameHint": "Ad (isteğe bağlı)",
+      "cta": "Ekle"
+    }
+  },
+  "analysis": {
+    "title": "Dijital hayatın analiz ediliyor…",
+    "subtitle": "Son 72 saat · {sources}",
+    "steps": {
+      "scanning": "Son 72 saat taranıyor",
+      "classifying": "E-postalar sınıflandırılıyor",
+      "calendar": "Takvim kontrol ediliyor",
+      "openItems": "Açık konular aranıyor"
+    },
+    "counters": {
+      "emails": "{count} mail bulundu",
+      "important": "{count} potansiyel önemli konu",
+      "events": "{count} yaklaşan etkinlik",
+      "followUps": "{count} olası takip"
+    }
+  },
+  "aha": {
+    "kicker": "Hazır.",
+    "title": "Son 72 saatte bilmen gereken {count} şey bulduk.",
+    "zero": "Son 72 saatte acil bir şey yok.",
+    "more": "+ {count} konu daha"
+  },
+  "notifications": {
+    "exampleMeeting": "Toplantına {minutes} dakika kaldı. {name} için {count} konu hazır.",
+    "exampleMeetingFree": "Toplantına {minutes} dakika kaldı.",
+    "exampleMail": "Bugün cevaplaman gereken önemli bir mail var.",
+    "exampleShipment": "Kargon bugün geliyor. {from}–{to} arası.",
+    "body": "Pazarlama bildirimi yok, “bak bana” bildirimi yok.",
+    "cta": "Bildirimleri Aç",
+    "later": "Daha sonra"
+  },
+  "androidNotifications": {
+    "title": "Telefon bildirimlerini de anlayayım mı?",
+    "body": "Kargo, banka ve uygulama bildirimlerinden kişisel sinyaller çıkarırım. Mesaj içerikleri asla saklanmaz.",
+    "groups": {
+      "shipping": {
+        "title": "Kargo uygulamaları",
+        "meta": "Trendyol, Hepsiburada, Yurtiçi"
+      },
+      "banking": {
+        "title": "Banka",
+        "meta": "Ödeme ve son tarih bildirimleri"
+      },
+      "airline": {
+        "title": "Havayolu",
+        "meta": "THY, Pegasus · kapı ve rötar"
+      },
+      "reservation": {
+        "title": "Rezervasyon",
+        "meta": "Yemek, otel, etkinlik"
+      },
+      "messaging": {
+        "title": "Mesajlaşma",
+        "meta": "WhatsApp, Telegram · her zaman hariç"
+      }
+    },
+    "footer": "Bildirimler cihazında işlenir. Sohbet uygulamaları her zaman hariç tutulur.",
+    "cta": "Bildirim Erişimine İzin Ver",
+    "skip": "Şimdi değil"
+  }
+}

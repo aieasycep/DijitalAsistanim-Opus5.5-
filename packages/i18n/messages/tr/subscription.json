@@ -1,0 +1,34 @@
+{
+  "title": "Abonelik",
+  "currentPlan": "Mevcut plan",
+  "statuses": {
+    "none": "Ücretsiz",
+    "trial": "Pro deneme",
+    "active": "Pro",
+    "grace_period": "Ödeme bekleniyor",
+    "billing_issue": "Ödeme sorunu",
+    "cancelled": "İptal edildi · dönem sonuna kadar Pro",
+    "paused": "Duraklatıldı",
+    "expired": "Süresi doldu",
+    "refunded": "İade edildi"
+  },
+  "renews": "{date} tarihinde yenilenir",
+  "ends": "{date} tarihinde sona erer",
+  "trialEnds": "Deneme {date} tarihinde biter",
+  "grantUntil": "{source} · {date} tarihine kadar",
+  "grantSources": {
+    "referral_referrer": "Davet ödülü",
+    "referral_referee": "Hoş geldin ödülü",
+    "admin": "Tanımlanan Pro",
+    "support": "Destek ekibinden Pro",
+    "compensation": "Telafi Pro"
+  },
+  "manage": "Aboneliği Yönet",
+  "restore": "Satın Alımları Geri Yükle",
+  "restoring": "Satın alımlar kontrol ediliyor…",
+  "restored": "Satın alımların geri yüklendi.",
+  "nothingToRestore": "Geri yüklenecek bir satın alım bulunamadı.",
+  "upgrade": "Pro'ya Geç",
+  "dataKept": "Pro sona erse de verilerin ve ayarların korunur.",
+  "storeManaged": "Aboneliğin {store} üzerinden yönetilir."
+}

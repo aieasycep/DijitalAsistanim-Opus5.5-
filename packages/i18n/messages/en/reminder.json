@@ -1,0 +1,33 @@
+{
+  "title": "When should I remind you?",
+  "presets": {
+    "before_30m": "30 minutes before",
+    "before_1h": "1 hour before",
+    "this_evening": "This evening",
+    "tomorrow_morning": "Tomorrow morning",
+    "smart": "At a good time",
+    "custom": "Pick a time"
+  },
+  "presetWithTime": "{preset} · {time}",
+  "smart": {
+    "explainer": "Dijital Asistan picks a good time based on the gaps in your calendar.",
+    "resolved": "Based on your calendar: {time}",
+    "reason": "chosen from your free time and working hours",
+    "resolving": "Finding a good time…",
+    "noSlot": "I couldn't find a free slot today; choose another option."
+  },
+  "unavailable": {
+    "past": "This time has passed",
+    "quietHours": "Falls in quiet hours"
+  },
+  "existing": "Current: {time} · Change",
+  "destination": {
+    "label": "Where should it be set?",
+    "inApp": "Dijital Asistan notification"
+  },
+  "confirm": "Set reminder",
+  "set": "Reminder set · {when}",
+  "cancelled": "Reminder cancelled",
+  "snoozeTitle": "Snooze until when?",
+  "notificationsOff": "Notifications are off, so the reminder won't arrive."
+}

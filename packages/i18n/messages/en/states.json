@@ -1,0 +1,227 @@
+{
+  "loading": {
+    "label": "Loading",
+    "briefingKicker": "Preparing your briefing…",
+    "aiWorking": "Preparing…",
+    "longRunningPush": "Your briefing is still being prepared; we'll notify you when it's ready.",
+    "longRunningInApp": "Your briefing is still being prepared; it will appear here when it's ready.",
+    "refreshed": "Up to date · {time}"
+  },
+  "empty": {
+    "today": {
+      "title": "Everything's under control.",
+      "body": "Nothing new needs your attention today.",
+      "bodyWithCount": "Nothing new needs your attention today. I read {count, plural, one {# email} other {# emails}} for you.",
+      "nextBriefing": "Next briefing at {time}.",
+      "cta": "Browse Flow"
+    },
+    "plan": {
+      "title": "Your calendar is quite calm today.",
+      "body": "You can use today to focus.",
+      "bodyWithNext": "Tomorrow starts with {event} at {time}. You can use today to focus.",
+      "cta": "Suggest a focus block"
+    },
+    "followups": {
+      "title": "No pending follow-ups.",
+      "body": "Every email you sent got a reply. If a reply is late, it will show up here.",
+      "cta": "OK"
+    },
+    "approvals": {
+      "title": "Nothing is waiting for your approval.",
+      "body": "Whenever I want to send an email or change your calendar, you'll see it here first.",
+      "cta": "View history"
+    },
+    "noAccount": {
+      "title": "Connect your email.",
+      "body": "Connect Gmail or Outlook to see what matters here.",
+      "hint": "Connect your email to see what matters here.",
+      "cta": "Connect an account"
+    },
+    "noCalendar": {
+      "title": "Connect your calendar.",
+      "body": "Once your calendar is connected, Plan shows your days and free time.",
+      "cta": "Connect calendar"
+    },
+    "noVip": {
+      "title": "No VIPs yet.",
+      "body": "Add important people to put their messages first.",
+      "cta": "Add a person"
+    },
+    "list": {
+      "title": "Nothing to show here."
+    }
+  },
+  "offline": {
+    "banner": "You're offline. Showing your last analysis from {time}.",
+    "refresh": "Refresh",
+    "todayKicker": "Briefing · {time} · Offline",
+    "notDownloaded": "Not downloaded",
+    "replyHint": "The reply draft will be prepared when you're back online.",
+    "assistant": "You can't ask questions while offline.",
+    "noCache": {
+      "title": "No internet connection.",
+      "body": "Everything updates automatically when you're back online.",
+      "cta": "Try again"
+    },
+    "queued": "Will be saved when you're back online.",
+    "queuedSend": "Will be sent when you're back online.",
+    "blockedReason": "This needs an internet connection.",
+    "blockedToast": "This can't be done while offline.",
+    "serverUnreachable": "We can't reach the server right now. Showing your last analysis from {time}.",
+    "reconnected": "Up to date · {time}",
+    "stillOffline": "Still offline."
+  },
+  "error": {
+    "loadFailed": {
+      "title": "{screen} couldn't be loaded.",
+      "body": "Check your connection and try again."
+    },
+    "refreshFailed": "Couldn't get the latest · Try again",
+    "action": {
+      "title": "Something went wrong.",
+      "body": "Would you like to try again?"
+    },
+    "card": "This card couldn't be loaded.",
+    "saveFailed": "Couldn't save. Try again.",
+    "fullScreen": {
+      "title": "Something went wrong.",
+      "body": "I couldn't load this screen. Your data is safe; you can try again.",
+      "errorCode": "Error code: {code}",
+      "report": "Report a problem"
+    },
+    "rateLimited": "Let's slow down a little; try again in a few seconds.",
+    "updateRequired": {
+      "title": "A new version is required.",
+      "body": "Update Dijital Asistan to continue.",
+      "cta": "Update"
+    },
+    "accountDisabled": {
+      "body": "Your account is temporarily disabled. Please contact support.",
+      "cta": "Support"
+    },
+    "oauthFailed": {
+      "title": "The connection couldn't be completed.",
+      "body": "Please reconnect."
+    },
+    "oauthExpired": {
+      "title": "Your {service} connection needs renewing.",
+      "bodyMail": "Your {identityProvider} session expired. New emails won't be analysed until you reconnect.",
+      "bodyCalendar": "Your {identityProvider} session expired. Your calendar won't update until you reconnect.",
+      "cta": "Reconnect",
+      "later": "Later",
+      "waiting": "Waiting for permission in {identityProvider}…",
+      "a11yLabel": "{service}, you need to reconnect",
+      "adminConsent": {
+        "title": "Admin approval required.",
+        "body": "Your organisation's admin needs to approve this app.",
+        "cta": "How do I do this?"
+      },
+      "declined": {
+        "title": "Access was declined.",
+        "body": "Permission wasn't granted in your {identityProvider} account. Tap below to try again."
+      },
+      "accountMismatch": "You signed in with a different account. Reconnect with {email}."
+    },
+    "syncDelayed": {
+      "title": "Sync is delayed.",
+      "body": "Last successful analysis at {time}. We're retrying; what you see may be {minutes, plural, one {# minute} other {# minutes}} old.",
+      "cta": "Try now",
+      "dismiss": "OK",
+      "deviceTitle": "{calendar} last synced at {time}.",
+      "deviceBody": "The device calendar updates while the app is open.",
+      "deviceCta": "Sync now",
+      "rateLimited": "We just tried; we'll try again in a few minutes."
+    },
+    "aiUnavailable": {
+      "title": "The assistant can't respond right now.",
+      "body": "Your briefing and priorities are ready; only new questions and drafts may take a few minutes.",
+      "cta": "Try again",
+      "secondary": "Back to briefing",
+      "outputInvalid": {
+        "title": "I couldn't prepare this reliably right now.",
+        "body": "Try again."
+      }
+    }
+  },
+  "partial": {
+    "title": "We can't get data from some of your accounts.",
+    "body": "Until your {service} connection is renewed, {service} emails aren't in this list.",
+    "cta": "Details",
+    "onlyWith": "Using {sources} data only",
+    "sourceOff": "Calendar analysis is off for this account.",
+    "sourceOffCta": "Turn on",
+    "provenance": "{source} · last synced {time}",
+    "regionLabel": "Missing data notice"
+  },
+  "permission": {
+    "calendar": {
+      "title": "Calendar access not granted.",
+      "body": "Meeting prep and conflict alerts need calendar access. Everything else works.",
+      "cta": "Allow",
+      "why": "Why is this needed?",
+      "sheetBody": "I read your calendar to prepare your meetings and show conflicts and free time. I only add something to your calendar with your approval."
+    },
+    "notifications": {
+      "title": "Notifications are off",
+      "body": "Dijital Asistan notifications aren't allowed in your phone settings, so none are arriving.",
+      "cta": "Open Settings"
+    },
+    "exactAlarm": {
+      "body": "Your reminders need the “Alarms & reminders” permission to arrive on time.",
+      "cta": "Allow"
+    },
+    "deniedAgainCta": "Open Settings",
+    "notNow": "Not now"
+  },
+  "limit": {
+    "ai": {
+      "title": "You've used today's AI analyses.",
+      "freeBody": "Your allowance resets at {time}. Pro has a higher daily limit.",
+      "proBody": "Your allowance resets at {time}.",
+      "tomorrow": "Your allowance resets tomorrow.",
+      "writeMyself": "I'll write it myself"
+    },
+    "rules": "You can create up to {count, plural, one {# rule} other {# rules}}.",
+    "vip": "You can add up to {count, plural, one {# important person} other {# important people}}.",
+    "proLapsed": "Pro ended · {feature} paused",
+    "seePro": "See Pro",
+    "notNow": "Not now"
+  },
+  "entitlement": {
+    "title": "This is a Pro feature.",
+    "body": "You can use it with Pro. Your morning briefing is always free.",
+    "trialCta": "Try free for {days, plural, one {# day} other {# days}}",
+    "cta": "See Pro"
+  },
+  "unavailable": {
+    "credential": {
+      "generic": "This feature isn't configured in this environment (external credential required).",
+      "connect": "This connection isn't configured in this environment (external credential required).",
+      "purchases": "Purchases aren't configured in this environment (external credential required).",
+      "push": "Notification delivery isn't configured in this environment (external credential required).",
+      "rowMeta": "External credential required"
+    },
+    "semanticSearch": "Semantic search isn't available right now; I'm searching by keyword.",
+    "featureDisabled": "This feature isn't available right now.",
+    "providerOutage": "{service} isn't responding right now. We're retrying."
+  },
+  "notFound": {
+    "route": {
+      "title": "This page wasn't found.",
+      "body": "The link may be old, or the content may have been deleted."
+    },
+    "entity": {
+      "title": "This content is no longer available.",
+      "body": "It may have been deleted or reached the end of its retention period."
+    },
+    "account": {
+      "title": "This connection no longer exists.",
+      "cta": "Back to Connections"
+    },
+    "approval": {
+      "title": "This action no longer exists.",
+      "cta": "Back to Approval Center"
+    },
+    "sourceGone": "This email can no longer be found at its source."
+  }
+}

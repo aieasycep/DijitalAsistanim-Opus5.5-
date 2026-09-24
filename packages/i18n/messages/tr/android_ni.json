@@ -1,0 +1,25 @@
+{
+  "title": "Telefon Bildirimleri",
+  "subtitle": "Kargo, banka ve uygulama bildirimlerinden kişisel gelişmeleri çıkarırım.",
+  "status": {
+    "on": "Açık",
+    "off": "Kapalı",
+    "notGranted": "Bildirim erişimi verilmedi"
+  },
+  "grantCta": "Bildirim Erişimini Aç",
+  "modes": {
+    "selected": "Yalnızca seçtiğim uygulamalar",
+    "all": "Tüm uygulamalar"
+  },
+  "apps": "Uygulamalar",
+  "alwaysExcluded": "Her zaman hariç tutulanlar",
+  "alwaysExcludedBody": "Doğrulayıcı ve şifre yöneticisi uygulamaları, e-Devlet, bankacılık güvenlik uygulamaları, sohbet uygulamaları ve doğrulama kodu içeren bildirimler hiçbir zaman okunmaz.",
+  "signals": "Çıkarılan bilgiler",
+  "deleteAll": "Tümünü sil",
+  "deleteAllDone": "Çıkarılan bilgiler silindi.",
+  "disclosure": {
+    "title": "Bildirim erişimi hakkında",
+    "accept": "Anladım, devam et"
+  },
+  "pro": "Telefon bildirimleri zekâsı Pro'da."
+}

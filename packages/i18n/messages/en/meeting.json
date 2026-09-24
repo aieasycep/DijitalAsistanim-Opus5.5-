@@ -1,0 +1,30 @@
+{
+  "prep": {
+    "title": "Prepare for the meeting",
+    "ready": "Prep ready · {count, plural, one {# topic} other {# topics}}",
+    "countdown": "{minutes, plural, one {# minute} other {# minutes}} left",
+    "lastMeeting": "You last met {relative}.",
+    "takeNote": "Take a note",
+    "startMeeting": "Join meeting",
+    "generate": "Prepare",
+    "sections": {
+      "context": "Context",
+      "openItems": "Open items",
+      "people": "Attendees",
+      "lastDecisions": "Recent decisions"
+    }
+  },
+  "summary": {
+    "title": "2-minute summary"
+  },
+  "post": {
+    "title": "Anything you need to follow up on?",
+    "hint": "What was discussed? Type it or say it.",
+    "newCommitment": "New commitment",
+    "save": "Save"
+  },
+  "notes": {
+    "title": "Meeting note",
+    "hint": "Write your note…"
+  }
+}

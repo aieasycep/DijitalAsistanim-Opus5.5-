@@ -1,0 +1,133 @@
+{
+  "promise": "Sadece önemli olduğunda haber veririz.",
+  "dailyCap": "Kritik mail uyarıları dışında günde en fazla {dailyCap} bildirim gönderilir.",
+  "settings": {
+    "title": "Bildirimler",
+    "permission": {
+      "deniedTitle": "Bildirimler kapalı",
+      "deniedBody": "Telefon ayarlarında Dijital Asistan bildirimlerine izin vermediğin için hiçbir bildirim gelmiyor.",
+      "undeterminedTitle": "Bildirim izni verilmedi",
+      "allowCta": "Bildirimlere İzin Ver",
+      "provisionalTitle": "Bildirimler sessizce teslim ediliyor",
+      "provisionalCta": "Tam izin ver"
+    },
+    "smartFilter": {
+      "title": "Akıllı filtre",
+      "meta": "Yalnızca gerçekten önemliyse bildir"
+    },
+    "sections": {
+      "briefings": "Brifingler",
+      "instant": "Anlık bildirimler",
+      "lifeIntel": "Yaşam zekâsı",
+      "account": "Hesap",
+      "detail": "Bildirim içeriği",
+      "lockScreen": "Kilit ekranı",
+      "quietHours": "Sessiz saatler"
+    },
+    "categories": {
+      "morning": {
+        "title": "Sabah brifingi",
+        "meta": "Her sabah günlük özetin"
+      },
+      "midday": {
+        "title": "Öğle nabzı",
+        "meta": "Yalnızca anlamlı bir değişiklik olduğunda"
+      },
+      "evening": {
+        "title": "Akşam kapanışı",
+        "meta": "Günün özeti ve yarına hazırlık"
+      },
+      "weekly": {
+        "title": "Haftalık özet",
+        "meta": "Pazar {time}"
+      },
+      "critical_email": {
+        "title": "Kritik mailler",
+        "meta": "Yüksek öncelikli mesajlar"
+      },
+      "meeting": {
+        "title": "Toplantılar",
+        "meta": "Toplantı hatırlatmaları"
+      },
+      "deadline": {
+        "title": "Son tarihler",
+        "meta": "Yaklaşan teslim tarihleri"
+      },
+      "follow_up": {
+        "title": "Takip hatırlatmaları",
+        "meta": "Yanıt bekleyen mailler"
+      },
+      "approval": {
+        "title": "Onay bekleyenler",
+        "meta": "Onayını bekleyen işlemler"
+      },
+      "life_intel": {
+        "title": "Yaşam zekâsı",
+        "meta": "Kargo, uçuş, ödeme ve güvenlik"
+      },
+      "account": {
+        "title": "Hesap ve bağlantılar",
+        "meta": "Yeniden bağlanma, abonelik ve güvenlik"
+      }
+    },
+    "briefingOff": "Brifing kapalı · Brifing ayarlarından aç",
+    "channelBlocked": "Android ayarlarında kapalı",
+    "detail": {
+      "full": {
+        "title": "Tam içerik",
+        "meta": "Kişi, konu ve saat görünür"
+      },
+      "title_only": {
+        "title": "Yalnızca başlık",
+        "meta": "Bildirimin türü görünür; kişi ve içerik görünmez"
+      },
+      "generic": {
+        "title": "Genel",
+        "meta": "Yalnızca “Yeni bir güncellemen var.” yazar"
+      }
+    },
+    "test": {
+      "cta": "Test bildirimi gönder",
+      "sent": "Test bildirimi gönderildi. Birkaç saniye içinde gelmesi gerekir.",
+      "suppressedQuiet": "Sessiz saatlerde olduğun için test bildirimi gönderilmedi.",
+      "quietHoursEnd": "Sessiz saatlerdesin; test bildirimi gönderilmedi. Sessiz saatler {time_loc} bitiyor.",
+      "noPermission": "Bu cihazda bildirim izni yok.",
+      "categoryDisabled": "Bu kategori kapalı."
+    },
+    "lockScreen": {
+      "toggle": "Kilit ekranı gizliliği",
+      "meta": "Açıkken bildirimlerde kişi adı ve konu gösterilmez; ayrıntılar uygulamayı açınca görünür.",
+      "iosPreviews": "Kilit ekranı önizlemeleri",
+      "previewAlways": "Her zaman",
+      "previewUnlocked": "Kilit açıkken",
+      "previewNever": "Hiçbir zaman",
+      "changeInSettings": "Ayarlar'da değiştir",
+      "iosCaption": "iPhone'da kilit ekranı önizlemelerini sistem ayarları da etkiler.",
+      "fullNeedsOff": "Tam içerik için kilit ekranı gizliliğini kapatman gerekir.",
+      "applyCta": "Kapat ve Uygula",
+      "fullVisibleNote": "Tam içerik kilit ekranında da görünebilir."
+    },
+    "quietHours": {
+      "title": "Sessiz saatler",
+      "toggle": "Sessiz saatleri kullan",
+      "start": "Başlangıç",
+      "end": "Bitiş",
+      "off": "Kapalı",
+      "range": "{start}–{end}",
+      "bypassSection": "Sessiz saatlerde de bildir",
+      "vip": {
+        "title": "VIP kişilerden gelenler",
+        "meta": "Sessiz saatlerde bile · yalnızca acil mailler, en fazla 3 bildirim"
+      },
+      "ownReminders": {
+        "title": "Kendi kurduğun hatırlatıcılar",
+        "meta": "Seçtiğin saatte her zaman gelir"
+      },
+      "note": "Sessiz saatlerde diğer bildirimler gönderilmez; önemli olanlar uygulamada ve bir sonraki brifingde seni bekler."
+    }
+  },
+  "prePrompt": {
+    "title": "Bildirimlere izin verelim mi?",
+    "body": "Brifingin hazır olduğunda ve önemli bir şey olduğunda haber veririz."
+  }
+}

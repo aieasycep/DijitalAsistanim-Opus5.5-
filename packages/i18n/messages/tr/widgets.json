@@ -1,0 +1,34 @@
+{
+  "small": {
+    "kicker": "Sıradaki önemli konu"
+  },
+  "medium": {
+    "kicker": "Bugün · {count} öncelik"
+  },
+  "large": {
+    "briefing": "Sabah brifingi",
+    "briefingCount": "Bugün bilmen gereken {count} şey var.",
+    "nextMeeting": "Sonraki toplantı",
+    "prepReady": "Hazırlık hazır · {count} konu",
+    "followUp": "Takip",
+    "noReplyDays": "{count} gündür yanıt yok"
+  },
+  "lock": {
+    "inline": "{count} önemli konu · ilki {time}",
+    "next": "Sonraki · {time}",
+    "important": "Önemli"
+  },
+  "android": {
+    "itemsReady": "{count} konu hazır"
+  },
+  "generic": "{count} önemli konu",
+  "empty": "Her şey kontrol altında.",
+  "signedOut": "Görmek için giriş yap",
+  "stale": "{time} itibarıyla",
+  "gallery": {
+    "name": "Dijital Asistan",
+    "smallDescription": "Sıradaki önemli konun",
+    "mediumDescription": "Bugünün öncelikleri",
+    "largeDescription": "Brifing, sonraki toplantı ve takip"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "small": {
+    "kicker": "Next important item"
+  },
+  "medium": {
+    "kicker": "Today · {count, plural, one {# priority} other {# priorities}}"
+  },
+  "large": {
+    "briefing": "Morning briefing",
+    "briefingCount": "There {count, plural, one {is # thing} other {are # things}} you need to know today.",
+    "nextMeeting": "Next meeting",
+    "prepReady": "Prep ready · {count, plural, one {# topic} other {# topics}}",
+    "followUp": "Follow-up",
+    "noReplyDays": "No reply for {count, plural, one {# day} other {# days}}"
+  },
+  "lock": {
+    "inline": "{count, plural, one {# important item} other {# important items}} · first at {time}",
+    "next": "Next · {time}",
+    "important": "Important"
+  },
+  "android": {
+    "itemsReady": "{count, plural, one {# item} other {# items}} ready"
+  },
+  "generic": "{count, plural, one {# important item} other {# important items}}",
+  "empty": "Everything's under control.",
+  "signedOut": "Sign in to see this",
+  "stale": "as of {time}",
+  "gallery": {
+    "name": "Dijital Asistan",
+    "smallDescription": "Your next important item",
+    "mediumDescription": "Today's priorities",
+    "largeDescription": "Briefing, next meeting and follow-up"
+  }
+}

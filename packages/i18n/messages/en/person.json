@@ -1,0 +1,26 @@
+{
+  "askHint": "Ask about {name}…",
+  "sections": {
+    "summary": "Summary",
+    "openItems": "Open items",
+    "recentMail": "Recent emails",
+    "meetings": "Meetings",
+    "commitments": "Commitments"
+  },
+  "lastContact": "Last contact {relative}",
+  "vipSuggestion": "You've emailed {name} {count, plural, one {# time} other {# times}} in the last 30 days. Make them a VIP?",
+  "makeVip": "Make VIP",
+  "removeVip": "Remove from VIPs",
+  "relationships": {
+    "spouse": "Spouse",
+    "family": "Family",
+    "manager": "Manager",
+    "key_client": "Key client",
+    "friend": "Friend",
+    "other": "Other"
+  },
+  "vipList": {
+    "title": "Important people",
+    "add": "Add a person"
+  }
+}

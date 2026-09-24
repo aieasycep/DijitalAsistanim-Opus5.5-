@@ -1,0 +1,64 @@
+{
+  "title": "Onay Merkezi",
+  "pendingTitle": "Onay Bekleyenler",
+  "pendingCount": "{count} işlem onayını bekliyor",
+  "noPending": "Bekleyen işlem yok",
+  "tabs": {
+    "pending": "Bekleyenler",
+    "history": "Geçmiş"
+  },
+  "statuses": {
+    "pending": "Bekliyor",
+    "approved": "Onaylandı",
+    "rejected": "Reddedildi",
+    "executing": "İşleniyor",
+    "executed": "Tamamlandı",
+    "failed": "Başarısız",
+    "expired": "Süresi doldu"
+  },
+  "types": {
+    "email_send": "Mail gönder",
+    "calendar_create": "Etkinlik ekle",
+    "calendar_update": "Etkinlik güncelle",
+    "calendar_move": "Etkinlik taşı",
+    "task_create": "Görev oluştur",
+    "reminder_create": "Hatırlatıcı oluştur",
+    "commitment_create": "Taahhüt kaydet"
+  },
+  "card": {
+    "why": "Neden",
+    "change": "Değişim",
+    "where": "Nereye",
+    "whichSource": "Hangi kaynak nedeniyle?",
+    "sideEffectAttendees": "Katılımcılara güncelleme gönderilir"
+  },
+  "progress": {
+    "approved": "Onaylandı",
+    "sending": "Gönderiliyor…",
+    "processing": "İşleniyor…",
+    "rejected": "Reddedildi",
+    "expired": "Süresi doldu · {time} geçti"
+  },
+  "results": {
+    "email_send": "Mail gönderildi.",
+    "calendar_create": "Takvimine eklendi.",
+    "calendar_update": "Etkinlik güncellendi.",
+    "task_create": "Görev oluşturuldu.",
+    "reminder_create": "Hatırlatıcı kuruldu.",
+    "commitment_create": "Taahhüt kaydedildi."
+  },
+  "actions": {
+    "approve": "Onayla",
+    "edit": "Düzenle",
+    "reject": "Reddet",
+    "retry": "Tekrar dene",
+    "viewResult": "Sonucu gör",
+    "repropose": "Yeniden öner"
+  },
+  "undo": "Onaylandı · {count} işlem",
+  "scopeUpgrade": {
+    "title": "Bir izin daha gerekiyor",
+    "body": "Bu işlemi yapabilmem için {service} hesabından ek izin vermen gerekiyor. İzin yalnızca onayladığın işlemler için kullanılır.",
+    "cta": "İzin Ver"
+  }
+}
