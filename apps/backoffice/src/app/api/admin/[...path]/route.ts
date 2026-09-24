@@ -14,6 +14,10 @@ import { checkFetchSite } from '@/server/csrf';
 
 export const dynamic = 'force-dynamic';
 
+/** `support-access/grants/<uuid>/content/<scope>` (BACKOFFICE_PLAN §9). */
+const SUPPORT_CONTENT =
+  /^support-access\/grants\/([0-9a-f-]{36})\/content\/(pii|email_metadata|insights|notifications|captures|assistant_transcript|ai_feedback)$/;
+
 function failureResponse(error: AdminApiFailure): NextResponse {
   const status = error.code === 'REQUEST_INVALID' ? 422 : error.status >= 400 ? error.status : 502;
   return NextResponse.json(
@@ -36,7 +40,25 @@ export async function GET(
     return NextResponse.json({ error: { code: 'FORBIDDEN' } }, { status: 403 });
   }
   const { path } = await context.params;
-  switch (path.join('/')) {
+  const joined = path.join('/');
+  const content = SUPPORT_CONTENT.exec(joined);
+  if (content !== null) {
+    // An explicit "Göster" click in the Support Access banner: admin activity, audited server-side.
+    const result = await adminApi(
+      'GET /support-access/grants/:id/content/:scope',
+      {
+        params: { id: content[1] ?? '', scope: content[2] ?? '' },
+        query: {
+          entity_type: request.nextUrl.searchParams.get('entity_type') ?? '',
+          entity_id: request.nextUrl.searchParams.get('entity_id') ?? '',
+        },
+      },
+      { activity: 'user' },
+    );
+    if (!result.ok) return failureResponse(result.error);
+    return NextResponse.json(result.data, { headers: { 'Cache-Control': 'no-store' } });
+  }
+  switch (joined) {
     case 'search': {
       const q = request.nextUrl.searchParams.get('q') ?? '';
       const result = await adminApi('GET /search', { query: { q } }, { activity: 'background' });

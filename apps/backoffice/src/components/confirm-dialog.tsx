@@ -61,7 +61,13 @@ export interface ConfirmDialogProps<T> {
   readonly onConfirm: (envelope: ConfirmEnvelope) => Promise<ConfirmResult<T>>;
   readonly onSuccess?: (data: T) => void;
   /** Toast after success; `null` for none (e.g. the action navigates away). */
-  readonly successMessage?: string | null;
+  readonly successMessage?: string | null | ((data: T) => string | null);
+  /** Route-specific inputs (durations, scopes, targeting…), rendered above the reason field. */
+  readonly fields?: ReactNode;
+  /** Client-side check of `fields` before anything is sent; returns the error copy or `null`. */
+  readonly validate?: () => string | null;
+  /** Wider dialog for editors and diffs. */
+  readonly wide?: boolean;
 }
 
 export const REASON_MIN = 10;
@@ -71,7 +77,7 @@ export function ConfirmDialog<T>(props: ConfirmDialogProps<T>) {
   return (
     <Dialog open={props.open} onOpenChange={props.onOpenChange}>
       {props.open ? (
-        <DialogContent>
+        <DialogContent className={props.wide === true ? 'max-w-3xl' : undefined}>
           <ConfirmForm {...props} />
         </DialogContent>
       ) : null}
@@ -96,6 +102,8 @@ function ConfirmForm<T>({
   onConfirm,
   onSuccess,
   successMessage,
+  fields,
+  validate: validateFields,
 }: ConfirmDialogProps<T>) {
   const t = useTranslations('backoffice.confirm');
   const message = useMessage();
@@ -134,6 +142,11 @@ function ConfirmForm<T>({
   function submit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     setServerError(null);
+    const fieldError = validateFields?.() ?? null;
+    if (fieldError !== null) {
+      setServerError(fieldError);
+      return;
+    }
     if (!validate()) return;
     const envelope: ConfirmEnvelope = {
       confirm: true,
@@ -145,7 +158,9 @@ function ConfirmForm<T>({
       const result = await onConfirm(envelope);
       if (result.ok) {
         onOpenChange(false);
-        if (successMessage !== null) toast.show(successMessage ?? t('saved'));
+        const toastText =
+          typeof successMessage === 'function' ? successMessage(result.data) : successMessage;
+        if (toastText !== null) toast.show(toastText ?? t('saved'));
         onSuccess?.(result.data);
         return;
       }
@@ -182,6 +197,8 @@ function ConfirmForm<T>({
           </div>
         )}
       </div>
+
+      {fields === undefined ? null : <div className="grid gap-3">{fields}</div>}
 
       {requiresReason ? (
         <div className="grid gap-1.5">
@@ -273,7 +290,7 @@ function ConfirmForm<T>({
       {serverError === null ? null : (
         <p
           role="alert"
-          className="flex items-start gap-2 rounded-tile bg-tone-critical-soft p-3 text-bo-body text-tone-critical-text"
+          className="flex items-start gap-2 rounded-tile bg-tone-critical-soft p-3 text-bo-body text-tone-critical-text-strong"
         >
           <Icon name="error" size={16} className="mt-0.5" />
           <span>{serverError}</span>

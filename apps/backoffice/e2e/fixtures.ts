@@ -4,8 +4,6 @@
  */
 import { randomUUID } from 'node:crypto';
 
-import { ROLE_PERMISSIONS } from '@da/domain';
-
 export const MOCK_PORT = Number(process.env.MOCK_PORT ?? 54_329);
 export const APP_PORT = Number(process.env.APP_PORT ?? 3_100);
 export const APP_ORIGIN = `http://localhost:${String(APP_PORT)}`;
@@ -29,10 +27,6 @@ export const RECOVERY_CODES = [
   '2345-6789-AB',
   'CDEF-GHJK-PQ',
 ];
-
-export function operationsPermissions(): string[] {
-  return [...ROLE_PERMISSIONS.operations];
-}
 
 export function meta(nowMs: number = Date.now()): {
   correlation_id: string;

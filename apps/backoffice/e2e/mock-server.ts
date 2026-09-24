@@ -28,12 +28,22 @@ import {
   MFA_CODE,
   MOCK_PORT,
   RECOVERY_CODES,
-  chartPoints,
-  dashboardMetrics,
   meta,
-  operationsPermissions,
-  searchResults,
 } from './fixtures.ts';
+import {
+  accessDenied,
+  auditDenied,
+  auditMutation,
+  handleModule,
+  matchRoute,
+  mock,
+  permissionsOf,
+  requiresStepUp,
+  resetData,
+  type Ctx,
+  type PageInfo,
+} from './mock-admin.ts';
+import type { Role } from './mock-data.ts';
 
 type Json = Record<string, unknown>;
 
@@ -48,6 +58,7 @@ interface AdminSession {
   createdAt: number;
   lastActivity: number;
   ended: boolean;
+  stepUpUntil: number | null;
 }
 
 const IDLE_MS = 30 * 60_000;
@@ -85,7 +96,19 @@ const state = {
   }[],
 };
 
-function reset(options: { enrolled?: boolean } = {}): void {
+const ROLES: readonly Role[] = [
+  'super_admin',
+  'operations',
+  'support',
+  'finance',
+  'ai_ops',
+  'analyst',
+  'readonly',
+];
+
+function reset(options: { enrolled?: boolean; role?: string } = {}): void {
+  const role = ROLES.find((r) => r === options.role) ?? 'operations';
+  resetData(serverNow(), role);
   state.factors = options.enrolled === true ? [{ id: randomUUID(), status: 'verified' }] : [];
   state.sessions.clear();
   state.refresh.clear();
@@ -181,7 +204,7 @@ function issueSession(aal: 'aal1' | 'aal2', sessionId: string = randomUUID()): J
     aal,
     amr,
     session_id: sessionId,
-    admin_role: 'operations',
+    admin_role: mock.role,
     iat: now,
     exp: now + 3600,
   });
@@ -234,8 +257,9 @@ function reply(
   key: keyof typeof adminRoutes,
   data: unknown,
   status = 200,
+  page?: PageInfo,
 ): void {
-  const body = { data, meta: meta(serverNow()) };
+  const body = { data, meta: { ...meta(serverNow()), ...page } };
   const parsed = adminRoutes[key].response.safeParse(body);
   if (!parsed.success) {
     console.error(`mock-admin-api: contract drift on ${key}: ${parsed.error.message}`);
@@ -374,18 +398,21 @@ function meData(session: AdminSession): Json {
       id: ADMIN_ID,
       email: ADMIN_EMAIL,
       display_name: 'Ayşe Operasyon',
-      role: 'operations',
+      role: mock.role,
       status: 'active',
       mfa_enrolled: state.factors.some((f) => f.status === 'verified'),
       mfa_factor_count: state.factors.filter((f) => f.status === 'verified').length,
       recovery_codes_remaining: state.recoveryCodesRemaining,
     },
-    permissions: operationsPermissions(),
+    permissions: permissionsOf(mock.role),
     session: {
       id: session.id,
       idle_expires_at: deadlines.idle,
       absolute_expires_at: deadlines.absolute,
-      step_up_valid_until: null,
+      step_up_valid_until:
+        session.stepUpUntil !== null && session.stepUpUntil > serverNow()
+          ? new Date(session.stepUpUntil).toISOString()
+          : null,
     },
     preferences: state.preferences,
   };
@@ -398,7 +425,6 @@ async function handleAdmin(
   url: URL,
 ): Promise<void> {
   const method = req.method ?? 'GET';
-  const key = `${method} ${path}` as keyof typeof adminRoutes;
   const body = method === 'GET' ? {} : await readBody(req);
   state.calls.push({
     method,
@@ -418,12 +444,22 @@ async function handleAdmin(
     adminError(res, 401, 'AUTH_REQUIRED', { reason: 'bff_required' });
     return;
   }
-  const route = adminRoutes[key] as (typeof adminRoutes)[keyof typeof adminRoutes] | undefined;
-  if (route === undefined) {
+  const matched = matchRoute(method, path);
+  if (matched === null) {
     adminError(res, 404, 'NOT_FOUND');
     return;
   }
-  if (route.request.body !== undefined && !route.request.body.safeParse(body).success) {
+  const { key } = matched;
+  const route = adminRoutes[key];
+  const request = route.request as {
+    params?: { safeParse(v: unknown): { success: boolean; data?: unknown } };
+    query?: { safeParse(v: unknown): { success: boolean; data?: unknown } };
+    body?: { safeParse(v: unknown): { success: boolean; data?: unknown } };
+  };
+  const params = request.params?.safeParse(matched.params);
+  const query = request.query?.safeParse(Object.fromEntries(url.searchParams.entries()));
+  const parsedBody = request.body?.safeParse(body);
+  if (params?.success === false || query?.success === false || parsedBody?.success === false) {
     adminError(res, 422, 'VALIDATION_FAILED');
     return;
   }
@@ -477,12 +513,13 @@ async function handleAdmin(
       createdAt: now,
       lastActivity: now,
       ended: false,
+      stepUpUntil: null,
     };
     state.sessions.set(session.authSessionId, session);
     const deadlines = sessionDeadlines(session);
     reply(res, key, {
-      admin: { id: ADMIN_ID, email: ADMIN_EMAIL, role: 'operations', mfa_enrolled: true },
-      permissions: operationsPermissions(),
+      admin: { id: ADMIN_ID, email: ADMIN_EMAIL, role: mock.role, mfa_enrolled: true },
+      permissions: permissionsOf(mock.role),
       idle_expires_at: deadlines.idle,
       absolute_expires_at: deadlines.absolute,
     });
@@ -505,6 +542,25 @@ async function handleAdmin(
   }
   if (req.headers['x-da-activity'] !== 'background') session.lastActivity = now;
 
+  const ctx: Ctx = {
+    key,
+    params: (params?.data ?? {}) as Record<string, string>,
+    query: (query?.data ?? {}) as Record<string, unknown>,
+    body: (parsedBody?.data ?? {}) as Json,
+    now,
+    permissions: permissionsOf(mock.role),
+  };
+  const denied = accessDenied(ctx);
+  if (denied !== null) {
+    auditDenied(ctx, denied);
+    adminError(res, 403, 'FORBIDDEN', { reason: 'permission_denied', permission: denied });
+    return;
+  }
+  if (requiresStepUp(key) && (session.stepUpUntil === null || session.stepUpUntil < now)) {
+    adminError(res, 403, 'FORBIDDEN', { reason: 'step_up_required' });
+    return;
+  }
+
   switch (key) {
     case 'GET /me': {
       reply(res, key, meData(session));
@@ -515,24 +571,26 @@ async function handleAdmin(
       return;
     }
     case 'POST /session/step-up': {
-      reply(res, key, { step_up_valid_until: new Date(now + 10 * 60_000).toISOString() });
+      session.stepUpUntil = now + 10 * 60_000;
+      reply(res, key, { step_up_valid_until: new Date(session.stepUpUntil).toISOString() });
       return;
     }
-    case 'POST /me/recovery-codes':
+    case 'POST /me/recovery-codes': {
       state.recoveryCodesRemaining = RECOVERY_CODES.length;
-      {
-        reply(res, key, { codes: RECOVERY_CODES, generated_at: new Date(now).toISOString() }, 201);
-        return;
-      }
-    case 'POST /session/logout':
+      auditMutation(ctx);
+      reply(res, key, { codes: RECOVERY_CODES, generated_at: new Date(now).toISOString() }, 201);
+      return;
+    }
+    case 'POST /session/logout': {
       session.ended = true;
-      {
-        reply(res, key, { ended_sessions: 1 });
-        return;
-      }
+      reply(res, key, { ended_sessions: 1 });
+      return;
+    }
     case 'POST /session/logout-all': {
       let ended = 0;
+      const othersOnly = (ctx.body as { scope?: string }).scope === 'others';
       for (const s of state.sessions.values()) {
+        if (othersOnly && s === session) continue;
         if (!s.ended) ended += 1;
         s.ended = true;
       }
@@ -543,29 +601,26 @@ async function handleAdmin(
       reply(res, key, state.preferences);
       return;
     }
-    case 'PATCH /preferences':
-      state.preferences = { ...state.preferences, ...(body as Json) };
-      {
-        reply(res, key, state.preferences);
-        return;
-      }
-    case 'GET /dashboard/metrics': {
-      reply(res, key, dashboardMetrics());
+    case 'PATCH /preferences': {
+      state.preferences = { ...state.preferences, ...ctx.body };
+      reply(res, key, state.preferences);
       return;
     }
-    case 'GET /dashboard/charts': {
-      reply(res, key, { points: chartPoints(url.searchParams.get('series') ?? 'user_growth') });
-      return;
-    }
-    case 'GET /search': {
-      reply(res, key, { results: searchResults(url.searchParams.get('q') ?? '') });
-      return;
-    }
-    default: {
-      adminError(res, 404, 'NOT_FOUND');
-      return;
-    }
+    default:
+      break;
   }
+
+  const outcome = handleModule(ctx);
+  if (outcome === null) {
+    adminError(res, 404, 'NOT_FOUND');
+    return;
+  }
+  if (!outcome.ok) {
+    adminError(res, outcome.status, outcome.code, outcome.details);
+    return;
+  }
+  if (method !== 'GET') auditMutation(ctx);
+  reply(res, key, outcome.data, route.status, outcome.page);
 }
 
 // ── Control endpoints (tests only) ───────────────────────────────────────────
@@ -579,7 +634,7 @@ async function handleControl(
     return;
   }
   if (path === '/reset' && req.method === 'POST') {
-    reset((await readBody(req)) as { enrolled?: boolean });
+    reset((await readBody(req)) as { enrolled?: boolean; role?: string });
     send(res, 200, { ok: true });
     return;
   }
@@ -603,6 +658,7 @@ async function handleControl(
       sessions: [...state.sessions.values()].map((s) => ({ ended: s.ended })),
       preferences: state.preferences,
       factors: state.factors,
+      audit: mock.data.audit.map((entry) => entry.row),
     });
     return;
   }

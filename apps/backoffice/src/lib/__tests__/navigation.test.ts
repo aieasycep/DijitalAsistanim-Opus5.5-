@@ -149,6 +149,7 @@ describe('sidebar IA (BACKOFFICE_PLAN §5.2, M§46)', () => {
     expect(activeNavItem('/ai')?.item.key).toBe('aiOperations');
     expect(activeNavItem('/nowhere')).toBeNull();
     expect(isBuiltPath('/dashboard?range=7d')).toBe(true);
-    expect(isBuiltPath('/users/0190f5e0-1111-7000-8000-00000000abcd')).toBe(false);
+    expect(isBuiltPath('/users/0190f5e0-1111-7000-8000-00000000abcd')).toBe(true);
+    expect(isBuiltPath('/nowhere')).toBe(false);
   });
 });

@@ -26,7 +26,7 @@ export function Badge({
 }) {
   const tones = {
     neutral: 'bg-tone-neutral-soft text-tone-neutral-text',
-    critical: 'bg-tone-critical-soft text-tone-critical-text',
+    critical: 'bg-tone-critical-soft text-tone-critical-text-strong',
     warning: 'bg-tone-warning-soft text-tone-warning-text',
     success: 'bg-tone-success-soft text-tone-success-text',
     info: 'bg-tone-info-soft text-tone-info-text',

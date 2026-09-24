@@ -60,7 +60,14 @@ function clampSize(size: number): PageSize {
  */
 export function toAdminListQuery(
   state: TableUrlState,
-  options: { sortable: readonly string[]; filterKeys?: readonly string[] },
+  options: {
+    sortable: readonly string[];
+    filterKeys?: readonly string[];
+    /** Per-filter conversion (e.g. a `YYYY-MM-DD` day → an ISO bound); `undefined` drops it. */
+    transform?: Readonly<Record<string, (values: readonly string[]) => string | undefined>>;
+    /** `false` for routes whose contract has no `q` (identifier search). */
+    search?: boolean;
+  },
 ): Record<string, string | number | undefined> {
   const query: Record<string, string | number | undefined> = {
     page: Math.max(1, Math.floor(state.page)),
@@ -68,14 +75,32 @@ export function toAdminListQuery(
     order: state.order,
   };
   if (state.sort !== null && options.sortable.includes(state.sort)) query.sort = state.sort;
-  if (state.q !== null && state.q.trim() !== '') query.q = state.q.trim();
+  if (options.search !== false && state.q !== null && state.q.trim() !== '') {
+    query.q = state.q.trim();
+  }
   for (const key of options.filterKeys ?? []) {
     const values = state[`f.${key}`];
     if (values !== null && values !== undefined && values.length > 0) {
-      query[`filter[${key}]`] = values.join(',');
+      const convert = options.transform?.[key];
+      const value = convert === undefined ? values.join(',') : convert(values);
+      if (value !== undefined) query[`filter[${key}]`] = value;
     }
   }
   return query;
+}
+
+/** `YYYY-MM-DD` → the ISO instant at the start (`from`) or end (`to`) of that UTC day. */
+export function dayBound(edge: 'from' | 'to') {
+  return (values: readonly string[]): string | undefined => {
+    const day = values[0];
+    if (day === undefined || !/^\d{4}-\d{2}-\d{2}$/.test(day)) return undefined;
+    return edge === 'from' ? `${day}T00:00:00Z` : `${day}T23:59:59Z`;
+  };
+}
+
+/** Keeps only the first value (routes whose filter takes one enum value). */
+export function firstValue(values: readonly string[]): string | undefined {
+  return values[0];
 }
 
 /** True when any filter or identifier search narrows the list (drives the filtered-empty copy). */

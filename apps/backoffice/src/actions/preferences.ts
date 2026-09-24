@@ -1,11 +1,16 @@
 'use server';
 
+import { IanaTimeZone } from '@da/validation/api/common';
 import { cookies } from 'next/headers';
 import { z } from 'zod';
 
 import { currentOriginCheck, failure, toActionFailure, type ActionResult } from '@/server/action';
 import { adminApi } from '@/server/admin-api';
-import { PREFERENCE_COOKIE_OPTIONS, THEME_COOKIE } from '@/server/preference-cookies';
+import {
+  LOCALE_COOKIE,
+  PREFERENCE_COOKIE_OPTIONS,
+  THEME_COOKIE,
+} from '@/server/preference-cookies';
 
 /*
  * Level-1 preferences (BACKOFFICE_PLAN §5.4 L1, §6.24): no dialog, not audited. Each change is
@@ -41,6 +46,30 @@ export async function setThemeAction(theme: unknown): Promise<ActionResult<{ sav
   if (!origin.ok) return failure('CSRF_ORIGIN', 'errors.csrf', 403);
   (await cookies()).set(THEME_COOKIE, parsed.data, PREFERENCE_COOKIE_OPTIONS);
   return patchPreferences({ theme: parsed.data });
+}
+
+/** "Dil": Türkçe / English, mirrored into the locale cookie so the next render uses it (§5.8). */
+export async function setLocaleAction(locale: unknown): Promise<ActionResult<{ saved: true }>> {
+  const parsed = z.enum(['tr', 'en']).safeParse(locale);
+  if (!parsed.success) return failure('VALIDATION_FAILED', 'errors.validation', 422);
+  const origin = await currentOriginCheck();
+  if (!origin.ok) return failure('CSRF_ORIGIN', 'errors.csrf', 403);
+  (await cookies()).set(LOCALE_COOKIE, parsed.data, PREFERENCE_COOKIE_OPTIONS);
+  return patchPreferences({ locale: parsed.data });
+}
+
+/** "Saat dilimi": the IANA zone every date in the backoffice is shown in (§5.8). */
+export async function setTimezoneAction(timezone: unknown): Promise<ActionResult<{ saved: true }>> {
+  const parsed = IanaTimeZone.safeParse(timezone);
+  if (!parsed.success) return failure('VALIDATION_FAILED', 'errors.validation', 422);
+  return patchPreferences({ timezone: parsed.data });
+}
+
+/** "Yoğunluk": comfortable or compact table rows (§5.3 Density). */
+export async function setDensityAction(density: unknown): Promise<ActionResult<{ saved: true }>> {
+  const parsed = z.enum(['comfortable', 'compact']).safeParse(density);
+  if (!parsed.success) return failure('VALIDATION_FAILED', 'errors.validation', 422);
+  return patchPreferences({ density: parsed.data });
 }
 
 /** Sidebar 248 px ↔ 64 px, remembered in `admin_preferences.sidebar_collapsed` (§5.1 Layout). */

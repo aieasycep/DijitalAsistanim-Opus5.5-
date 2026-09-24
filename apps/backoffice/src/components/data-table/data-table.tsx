@@ -75,6 +75,14 @@ export interface DataTableProps<Row> {
   readonly filters?: readonly DataTableFilter[];
   /** Identifier search box (`q`, never a content search, M§69). */
   readonly searchable?: boolean;
+  /** Allowed identifier shape for the search box (regex source). */
+  readonly searchPattern?: string;
+  /** Per-row actions (a menu or buttons), rendered in a trailing column. */
+  readonly rowActions?: (row: Row) => ReactNode;
+  /** Accessible header of the actions column. */
+  readonly actionsLabel?: string;
+  /** A row the admin opened (detail panel), highlighted with `aria-current`. */
+  readonly selectedRowId?: string;
   readonly emptyTitle?: string;
   readonly density?: 'comfortable' | 'compact';
   readonly prefs?: DataTablePrefs;
@@ -101,6 +109,10 @@ export function DataTable<Row extends RowData>({
   error,
   filters = [],
   searchable = false,
+  searchPattern,
+  rowActions,
+  actionsLabel,
+  selectedRowId,
   emptyTitle,
   density = 'comfortable',
   prefs,
@@ -237,6 +249,7 @@ export function DataTable<Row extends RowData>({
         filters={filters}
         state={state}
         searchable={searchable}
+        {...(searchPattern === undefined ? {} : { searchPattern })}
         onFilterChange={(key, values) => {
           void setUrl({ [`f.${key}`]: values.length === 0 ? null : values, page: null });
         }}
@@ -275,6 +288,17 @@ export function DataTable<Row extends RowData>({
                         className={cellPadding}
                       />
                     ))}
+                    {rowActions === undefined ? null : (
+                      <th
+                        scope="col"
+                        className={cn(
+                          cellPadding,
+                          'text-right text-bo-meta font-semibold text-ink-2',
+                        )}
+                      >
+                        <span className="sr-only">{actionsLabel ?? t('rowActions')}</span>
+                      </th>
+                    )}
                   </tr>
                 ))}
               </thead>
@@ -284,7 +308,11 @@ export function DataTable<Row extends RowData>({
                   return (
                     <tr
                       key={row.id}
-                      className="border-t border-border-row hover:bg-surface-pressed"
+                      aria-current={selectedRowId === row.id ? 'true' : undefined}
+                      className={cn(
+                        'border-t border-border-row hover:bg-surface-pressed',
+                        selectedRowId === row.id && 'bg-primary-soft hover:bg-primary-soft',
+                      )}
                     >
                       {row.getVisibleCells().map((cell, index) => {
                         const align = columns.find((c) => c.id === cell.column.id)?.align;
@@ -307,6 +335,13 @@ export function DataTable<Row extends RowData>({
                           </td>
                         );
                       })}
+                      {rowActions === undefined ? null : (
+                        <td className={cn(cellPadding, 'text-right whitespace-nowrap')}>
+                          <div className="inline-flex items-center justify-end gap-1">
+                            {rowActions(row.original)}
+                          </div>
+                        </td>
+                      )}
                     </tr>
                   );
                 })}
