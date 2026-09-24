@@ -383,7 +383,7 @@ export interface LifeEventInsert {
   readonly amount_evidence: StoredEvidence[] | null;
   readonly tracking_url: string | null;
   readonly dedupe_key: string;
-  readonly source_type: 'email_message';
+  readonly source_type: 'email_message' | 'android_notification';
   readonly source_id: string;
   readonly source_provider: Provider;
   readonly source_timestamp: string;
@@ -421,7 +421,10 @@ function titleOf(c: LifeCandidate, locale: CopyLocale): string {
   }
 }
 
-/** A candidate → `life_events` insert (provenance of the source message). */
+/**
+ * A candidate → `life_events` insert (provenance of the source). `messageId` is the source row id:
+ * the e-mail message, or the `android_notification_signals` row when `sourceType` says so.
+ */
 export function lifeEventRow(
   c: LifeCandidate,
   source: {
@@ -431,6 +434,7 @@ export function lifeEventRow(
     readonly receivedAt: string;
     readonly text: string;
     readonly locale: CopyLocale;
+    readonly sourceType?: LifeEventInsert['source_type'];
   },
 ): LifeEventInsert {
   const trackingUrl =
@@ -453,7 +457,7 @@ export function lifeEventRow(
     amount_evidence: c.amount === null ? null : [c.amount.evidence],
     tracking_url: trackingUrl,
     dedupe_key: lifeEventDedupeKey(c.type, c.identity),
-    source_type: 'email_message',
+    source_type: source.sourceType ?? 'email_message',
     source_id: source.messageId,
     source_provider: source.provider,
     source_timestamp: source.receivedAt,

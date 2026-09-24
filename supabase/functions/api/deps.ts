@@ -40,6 +40,7 @@ export interface JobQueue {
 }
 import type { IntelApi } from './routes/intel-api.ts';
 import type { AssistApi } from './routes/assist-api.ts';
+import type { AniSignalsRepo } from '../_shared/services/android-ni/ingest.ts';
 
 /** Per-request repositories bound to the caller (their RLS client plus scoped system access). */
 export interface RequestRepos {
@@ -96,6 +97,8 @@ export interface ApiDeps {
   readonly intel?: IntelApi;
   /** AI pipeline part 2 (T-5.09…T-5.15): replies, meetings, assistant, captures, plan, onboarding. */
   readonly assist?: AssistApi;
+  /** Android Notification Intelligence ingest (API-ANI-01); the route is mounted when present. */
+  readonly androidSignals?: AniSignalsRepo;
 }
 
 export interface RouteKit {
