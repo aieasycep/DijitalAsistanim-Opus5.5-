@@ -1712,7 +1712,7 @@ The **Time Sensitive** entitlement is `com.apple.developer.usernotifications.tim
 `critical` is never used.
 
 ### 9.5 Detail-mode rendering (server-side in `worker`; default `title_only`)
-- Payload `data` = `{type, entity_id, deeplink, notification_id}`. It never contains mail content (ADR-12, M§86).
+- Payload `data` = exactly `{type, entity_id, deeplink}` (MASTER_PLAN §12). It never contains mail content (ADR-12, M§86).
 - **Names and subjects appear only in `full` mode (C-14).**
 - `generic` for every category: title "Dijital Asistan", body "Yeni bir güncellemen var."
 - `lock_screen_private` (default true): on iOS the server caps the detail at `title_only`, because it cannot know whether the device is locked. On Android the `PRIVATE` channel hides content on the secure lock screen, so the chosen detail mode is sent unchanged. This difference is documented in KNOWN_PLATFORM_LIMITATIONS.

@@ -3871,7 +3871,7 @@ NotificationPayload = z.object({ user_id: Uuid, notification_id: Uuid.optional()
   3. **Persist** `notifications` with `decision` (`scheduled` | `sent` | `suppressed` | `deduplicated` | `failed`), `decision_reason`, `detail_mode` and `correlation_id`. Suppressed sends are counted in backoffice metrics (M§55).
   4. **Send** via Expo Push `POST https://exp.host/--/api/v2/push/send`:
      - Headers: `Authorization: Bearer EXPO_ACCESS_TOKEN`, gzip. Batches of up to 100.
-     - Message fields: `to`, `title`, `body`, `data: {type, entity_id, deeplink, notification_id}` (never content), `channelId`, `priority`, `interruptionLevel`, `ttl`, `collapseId = sha1(dedupe_key)`, `categoryId`.
+     - Message fields: `to`, `title`, `body`, `data: {type, entity_id, deeplink}` exactly (MASTER_PLAN §12; never content), `channelId`, `priority`, `interruptionLevel`, `ttl`, `collapseId = sha1(dedupe_key)`, `categoryId`.
      - Android channels (R-12): created at first launch, before the permission prompt. Every channel has `lockscreenVisibility = PRIVATE`, including `account`. The channels are:
        - `briefings` (morning/midday/evening/weekly);
        - `critical_email`, `meetings`, `deadlines`, `follow_up`, `life_intel`, `approvals`;
