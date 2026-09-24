@@ -16,8 +16,10 @@ export function denoSafe({ tsconfigRootDir } = {}) {
           {
             patterns: [
               {
-                regex: '^(?!\\.{1,2}/|zod$|zod/|date-fns$|date-fns/|@date-fns/tz$).*',
-                message: 'Deno-safe packages may import only zod, date-fns and @date-fns/tz.',
+                regex:
+                  '^(?!\\.{1,2}/|zod$|zod/|date-fns$|date-fns/|@date-fns/tz$|@da/domain$|@da/domain/).*',
+                message:
+                  'Deno-safe packages may import only zod, date-fns, @date-fns/tz and @da/domain.',
               },
               {
                 regex: '^\\.{1,2}/(?!.*\\.ts$).*',
