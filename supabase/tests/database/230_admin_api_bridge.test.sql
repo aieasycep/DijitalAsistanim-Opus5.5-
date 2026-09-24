@@ -4,7 +4,7 @@
 -- never bypasses quiet hours (R-13, TEST_PLAN UT-NTF-17), feedback rows, app versions below the
 -- minimum, model config clears and the new functions in the RBAC map (DB-05 extension).
 begin;
-select plan(40);
+select plan(41);
 
 -- ─── Fixtures ────────────────────────────────────────────────────────────────────────────────
 select tests.create_user('kerem@bridge.test');
@@ -145,6 +145,9 @@ select is((select j.payload ->> 'bypass_quiet_hours' from public.jobs j where j.
           'false', 'the test push never bypasses quiet hours');
 select is((select j.payload ->> 'notification_id' from public.jobs j where j.id = (select (r ->> 'job_id')::uuid from push)),
           (select r ->> 'notification_id' from push), 'the reserved notification id travels in the job');
+select is((select n.decision::text || ':' || n.detail_mode::text || ':' || n.is_test::text from public.notifications n
+           where n.id = (select (r ->> 'notification_id')::uuid from push)), 'scheduled:generic:true',
+          'the test push is a scheduled, generic test row the notification job picks up');
 select is(private.quiet_hours_until(tests.user_id('kerem@bridge.test'), now() + interval '3 hours'), null,
           'outside the window nothing is deferred');
 select tests.authenticate_as(md5('da-test-admin:root@bridge.test')::uuid, 'aal2');

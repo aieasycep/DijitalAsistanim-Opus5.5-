@@ -792,8 +792,10 @@ end
 $$;
 
 -- Generic test push ("Dijital Asistan" / "Test bildirimi"); never bypasses quiet hours (R-13).
--- The notification id is reserved here and carried in the job payload, so the response can name
--- the row the notification job writes; deferred_until predicts the quiet-hours delay.
+-- The `scheduled` ledger row is created here (category account, generic detail, is_test) and its
+-- id travels in the job payload: the notification job (JOB-18) processes an existing scheduled row
+-- by `notification_id`, so the response names the row that is finally sent or deferred.
+-- deferred_until predicts the quiet-hours delay.
 create or replace function admin_api.notification_send_test(p_user uuid, p_reason text, p_installation uuid default null)
   returns jsonb
   language plpgsql
@@ -804,6 +806,7 @@ declare
   v_admin public.admin_users := private.require_admin('push.test');
   v_reason text := private.admin_require_reason(p_reason);
   v_notification uuid := gen_random_uuid();
+  v_existing uuid;
   v_deferred timestamptz;
   v_job uuid;
 begin
@@ -819,9 +822,17 @@ begin
                        'notification_id', v_notification, 'bypass_caps', true, 'bypass_quiet_hours', false,
                        'admin_id', v_admin.user_id),
     p_user, null, now(), 10, 3, null);
-  -- A second request in the same minute reuses the queued job and its reserved id.
-  select coalesce((j.payload ->> 'notification_id')::uuid, v_notification) into v_notification
+  -- A second request in the same minute reuses the queued job and its row.
+  select coalesce((j.payload ->> 'notification_id')::uuid, v_notification) into v_existing
   from public.jobs j where j.id = v_job;
+  if v_existing = v_notification then
+    insert into public.notifications (id, user_id, category, decision, dedupe_key, detail_mode, data, android_channel,
+                                      scheduled_for, job_id, is_test)
+    values (v_notification, p_user, 'account', 'scheduled', 'admin_test_push:' || v_job, 'generic',
+            jsonb_build_object('type', 'admin_test', 'deeplink', 'dijitalasistan://today'), 'account',
+            coalesce(v_deferred, now()), v_job, true);
+  end if;
+  v_notification := v_existing;
   perform private.admin_audit(v_admin, 'notifications.test_sent', 'user', p_user::text, p_user, v_reason,
                               jsonb_build_object('job_id', v_job, 'installation_id', p_installation,
                                                  'notification_id', v_notification, 'deferred_until', v_deferred));
