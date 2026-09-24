@@ -4,6 +4,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { scanFunctions } from '../check-guards.ts';
+import { isSharedSource, lcovLines } from '../deno-tasks.ts';
 import {
   buildConfigs,
   FUNCTION_NAMES,
@@ -80,4 +81,24 @@ test('serviceClient outside the allow-list and model-ID literals are findings', 
 
 test('the real functions tree is clean', () => {
   assert.deepEqual(scanFunctions(), []);
+});
+
+test('coverage: lcov line totals and the _shared source filter (T-12.04)', () => {
+  const lcov = [
+    `SF:file://${FUNCTIONS_DIR}/_shared/a.ts`,
+    'LF:10',
+    'LH:8',
+    'end_of_record',
+    `SF:${FUNCTIONS_DIR}/api/b.ts`,
+    'LF:4',
+    'LH:1',
+    'end_of_record',
+  ].join('\n');
+  const files = lcovLines(lcov);
+  assert.deepEqual(files.get(`${FUNCTIONS_DIR}/_shared/a.ts`), { found: 10, hit: 8 });
+  assert.deepEqual(files.get(`${FUNCTIONS_DIR}/api/b.ts`), { found: 4, hit: 1 });
+  assert.equal(isSharedSource(`${FUNCTIONS_DIR}/_shared/services/x.ts`), true);
+  assert.equal(isSharedSource(`${FUNCTIONS_DIR}/_shared/services/x.test.ts`), false);
+  assert.equal(isSharedSource(`${FUNCTIONS_DIR}/_shared/testing/fake.ts`), false);
+  assert.equal(isSharedSource(`${FUNCTIONS_DIR}/api/app.ts`), false);
 });

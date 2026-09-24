@@ -14,14 +14,15 @@
     "deno:check": "deno check src/index.ts"
   },
   "dependencies": {
+    "@da/domain": "workspace:*",
     "@date-fns/tz": "catalog:",
     "date-fns": "catalog:",
-    "zod": "catalog:",
-    "@da/domain": "workspace:*"
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@da/config": "workspace:*",
     "@types/node": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

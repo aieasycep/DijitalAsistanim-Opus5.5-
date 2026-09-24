@@ -5,12 +5,15 @@
  *   every module and test with the workspace config;
  * - `lint`:  `deno lint` plus `check-guards.ts` (service-client allow-list, model-ID literals);
  * - `test`:  `deno test` with env and read permissions only — no network, so a test can never reach
- *   a real provider.
+ *   a real provider;
+ * - `coverage`: `test` with `--coverage`, then the line coverage of `_shared/` (tests and test
+ *   helpers excluded) from the lcov report; exits 1 below `SHARED_LINE_THRESHOLD` (T-12.04).
  *
- * Usage: node scripts/functions/deno-tasks.ts <check|lint|test> [extra deno args]
+ * Usage: node scripts/functions/deno-tasks.ts <check|lint|test|coverage> [extra deno args]
  */
 import { spawnSync } from 'node:child_process';
-import { existsSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { scanFunctions } from './check-guards.ts';
@@ -79,13 +82,66 @@ function test(extra: string[]): void {
   ]);
 }
 
+/** T-12.04: minimum line coverage of `supabase/functions/_shared` (percent). */
+export const SHARED_LINE_THRESHOLD = 80;
+
+/** Line totals per source file from an lcov report (`SF:` … `LF:` / `LH:` … `end_of_record`). */
+export function lcovLines(lcov: string): Map<string, { found: number; hit: number }> {
+  const files = new Map<string, { found: number; hit: number }>();
+  let current: { found: number; hit: number } | null = null;
+  for (const line of lcov.split('\n')) {
+    if (line.startsWith('SF:')) {
+      current = { found: 0, hit: 0 };
+      files.set(line.slice(3).replace(/^file:\/\//, ''), current);
+    } else if (current !== null && line.startsWith('LF:')) {
+      current.found = Number(line.slice(3));
+    } else if (current !== null && line.startsWith('LH:')) {
+      current.hit = Number(line.slice(3));
+    } else if (line === 'end_of_record') {
+      current = null;
+    }
+  }
+  return files;
+}
+
+/** `_shared` product sources only: no tests, no test doubles, no fixtures. */
+export function isSharedSource(path: string): boolean {
+  const rel = relative(join(FUNCTIONS_DIR, '_shared'), path);
+  if (rel.startsWith('..')) return false;
+  return !/(^|\/)(testing|fixtures|evals)\//.test(rel) && !rel.endsWith('.test.ts');
+}
+
+function coverage(extra: string[]): void {
+  const dir = mkdtempSync(join(tmpdir(), 'da-deno-cov-'));
+  try {
+    test([`--coverage=${dir}`, ...extra]);
+    const lcovFile = join(dir, 'shared.lcov');
+    deno(['coverage', dir, '--lcov', `--output=${lcovFile}`]);
+    let found = 0;
+    let hit = 0;
+    for (const [path, totals] of lcovLines(readFileSync(lcovFile, 'utf8'))) {
+      if (!isSharedSource(path)) continue;
+      found += totals.found;
+      hit += totals.hit;
+    }
+    const pct = found === 0 ? 0 : (hit / found) * 100;
+    console.info(
+      `functions _shared line coverage: ${pct.toFixed(2)}% (${String(hit)}/${String(found)}), threshold ${String(SHARED_LINE_THRESHOLD)}%`,
+    );
+    if (pct < SHARED_LINE_THRESHOLD) process.exit(1);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
 function main(): void {
   const [task, ...extra] = process.argv.slice(2);
   if (task === 'check') check(extra);
   else if (task === 'lint') lint(extra);
   else if (task === 'test') test(extra);
+  else if (task === 'coverage') coverage(extra);
   else {
-    console.error('usage: node scripts/functions/deno-tasks.ts <check|lint|test>');
+    console.error('usage: node scripts/functions/deno-tasks.ts <check|lint|test|coverage>');
     process.exit(2);
   }
 }

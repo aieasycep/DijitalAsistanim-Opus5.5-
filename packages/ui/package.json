@@ -14,7 +14,7 @@
     "icons": "node scripts/gen-icons.ts",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json",
-    "test": "jest"
+    "test": "jest --coverage"
   },
   "dependencies": {
     "@da/design-tokens": "workspace:*",

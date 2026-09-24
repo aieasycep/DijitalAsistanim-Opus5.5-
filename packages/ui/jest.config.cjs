@@ -12,6 +12,10 @@ module.exports = {
   resolver: require.resolve('react-native-worklets/jest/resolver.js'),
   setupFiles: ['react-native-gesture-handler/jestSetup'],
   setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
+  // T-12.04: `pnpm test` runs with coverage and enforces ≥70% lines for the kit.
+  collectCoverageFrom: ['<rootDir>/src/**/*.{ts,tsx}'],
+  coverageReporters: ['text-summary'],
+  coverageThreshold: { global: { lines: 70 } },
   transformIgnorePatterns: [
     'node_modules/(?!(\\.pnpm|(jest-)?react-native|@react-native(-community)?|react-native-(svg|reanimated|worklets|gesture-handler|safe-area-context)|@formatjs|@date-fns|date-fns)/)',
   ],

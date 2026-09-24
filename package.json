@@ -39,6 +39,7 @@
     "functions:check": "node scripts/functions/deno-tasks.ts check",
     "functions:lint": "node scripts/functions/deno-tasks.ts lint",
     "functions:test": "node scripts/functions/deno-tasks.ts test",
+    "functions:coverage": "node scripts/functions/deno-tasks.ts coverage",
     "ai:prompts": "node scripts/gen-prompt-migration.ts",
     "ai:eval": "node scripts/gen-prompt-migration.ts --check && deno test --config supabase/functions/deno.json --allow-env --allow-read --no-prompt supabase/functions/_shared/ai/evals"
   },
