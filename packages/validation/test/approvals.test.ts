@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   APPROVAL_ACTION_TYPES,
   APPROVAL_PAYLOAD_SCHEMAS,
+  ApprovalApproveResponse,
   ApprovalChangeSet,
   ApprovalExecution,
   ApprovalPayload,
@@ -18,11 +19,13 @@ import {
   TS_LATER,
   calendarCreatePayload,
   evidence,
+  ok,
   recipient,
   sourceRef,
   uuid,
   withPath,
 } from './fixtures/samples.ts';
+import { deviceApprovalView, devicePayload } from './fixtures/api-fixtures.ts';
 
 const emailSend = {
   action_type: 'email_send',
@@ -304,6 +307,37 @@ describe('ApprovalExecution (API-APR-03)', () => {
     expect(
       ApprovalExecution.safeParse({ mode: 'device', device_token: B64_32, instructions: null })
         .success,
+    ).toBe(false);
+    expect(
+      ApprovalExecution.safeParse({ mode: 'server', device_token: null, instructions }).success,
+    ).toBe(false);
+  });
+
+  it('allows a device approval awaiting its claim on another installation (§6.7)', () => {
+    expect(
+      ApprovalExecution.safeParse({ mode: 'device', device_token: null, instructions: null })
+        .success,
+    ).toBe(true);
+    const response = (status: string, token: string | null) =>
+      ok({
+        approval: { ...deviceApprovalView, status },
+        job: null,
+        execution: {
+          mode: 'device',
+          device_token: token,
+          instructions: token === null ? null : devicePayload,
+        },
+      });
+    expect(ApprovalApproveResponse.safeParse(response('approved', null)).success).toBe(true);
+    expect(ApprovalApproveResponse.safeParse(response('executing', B64_32)).success).toBe(true);
+    expect(
+      ApprovalApproveResponse.safeParse(
+        ok({
+          approval: { ...deviceApprovalView, executor: 'server', device_installation_id: null },
+          job: null,
+          execution: { mode: 'device', device_token: null, instructions: null },
+        }),
+      ).success,
     ).toBe(false);
   });
 });

@@ -24,6 +24,18 @@ import type { ReferralRepo } from '../_shared/services/referrals/repo.ts';
 import type { Sentry } from '../_shared/observability/sentry.ts';
 import type { AnalyticsRepo } from './routes/analytics.ts';
 import type { SupportRepo } from './routes/support.ts';
+import type { EnqueueInput } from '../_shared/jobs/types.ts';
+import type { ApprovalsRepo } from '../_shared/services/approvals/model.ts';
+import type { EventPreconditionReader } from '../_shared/services/approvals/context.ts';
+import type { NotificationsRepo } from '../_shared/services/notifications/model.ts';
+import type { RemindersRepo } from '../_shared/services/reminders.ts';
+import type { WidgetSources } from '../_shared/services/widgets/snapshot.ts';
+
+/** Job queue access for routes that enqueue follow-up work (service role). */
+export interface JobQueue {
+  enqueue(input: EnqueueInput): Promise<string>;
+  byKey(key: string): Promise<{ id: string; status: string } | null>;
+}
 
 /** Per-request repositories bound to the caller (their RLS client plus scoped system access). */
 export interface RequestRepos {
@@ -32,6 +44,13 @@ export interface RequestRepos {
   readonly entitlements: EntitlementReader;
   readonly analytics: AnalyticsRepo;
   readonly support: SupportRepo;
+  readonly approvals: ApprovalsRepo;
+  readonly reminders: RemindersRepo;
+  readonly notifications: NotificationsRepo;
+  readonly widgets: WidgetSources;
+  readonly jobs: JobQueue;
+  /** Provider GET of an event's etag / organizer flag (`calendar_update`); absent → stored etag. */
+  readonly eventPrecondition?: EventPreconditionReader;
 }
 
 /**

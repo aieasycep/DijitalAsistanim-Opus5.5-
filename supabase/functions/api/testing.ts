@@ -41,6 +41,13 @@ import { createApiApp } from './app.ts';
 import type { ApiDeps } from './deps.ts';
 import type { AnalyticsRow } from './routes/analytics.ts';
 import type { FeedbackInsert, TicketInsert, TicketView } from './routes/support.ts';
+import {
+  memoryApprovals,
+  memoryNotifications,
+  memoryQueue,
+  memoryReminders,
+  memoryWidgets,
+} from '../_shared/testing/workflows.ts';
 
 export const NOW = new Date('2026-09-23T07:00:00.000Z');
 
@@ -192,9 +199,20 @@ export interface Harness {
   readonly fetchCalls: ReturnType<typeof stubFetch>['calls'];
   readonly announcements: AnnouncementRow[];
   readonly accountRows: AccountRow[];
+  /** Approvals, reminders, notification ledger, widgets and the job queue (T-6.x). */
+  readonly workflow: ReturnType<typeof createWorkflow>;
   /** Business fakes (T-7.01…T-7.03): the plan gate (Free unless set Pro), referrals, billing. */
   readonly business: { gate: MemoryGate; referrals: MemoryReferrals; billing: MemoryBilling };
   token(sub?: string, extra?: Record<string, unknown>): Promise<string>;
+}
+
+function createWorkflow(now: () => Date) {
+  const queue = memoryQueue(now);
+  const approvals = memoryApprovals(queue, now);
+  const notifications = memoryNotifications(now);
+  const reminders = memoryReminders(queue, notifications, now);
+  const widgets = memoryWidgets();
+  return { queue, approvals, notifications, reminders, widgets };
 }
 
 export async function createHarness(
@@ -218,6 +236,7 @@ export async function createHarness(
   const appleSubs = new Map<string, string>();
   const announcements: AnnouncementRow[] = [];
   const accountRows: AccountRow[] = [accountRow()];
+  const workflow = createWorkflow(() => NOW);
   const stub = stubFetch(options.fetch ?? (() => new Response('unexpected', { status: 599 })));
   let keyring: Promise<TokenKeyring> | null = null;
   const business = {
@@ -357,6 +376,11 @@ export async function createHarness(
           return Promise.resolve({ id: crypto.randomUUID() });
         },
       },
+      approvals: workflow.approvals.repo,
+      reminders: workflow.reminders.repo,
+      notifications: workflow.notifications.repo,
+      widgets: workflow.widgets.sources,
+      jobs: { enqueue: workflow.queue.enqueue, byKey: workflow.queue.byKey },
     }),
     business: {
       gate: () => business.gate,
@@ -383,6 +407,7 @@ export async function createHarness(
     fetchCalls: stub.calls,
     announcements,
     accountRows,
+    workflow,
     business,
     token: (sub, extra = {}) => issuer.sign(userClaims(sub, extra)),
   };

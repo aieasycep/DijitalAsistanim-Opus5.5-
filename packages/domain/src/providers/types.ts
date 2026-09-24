@@ -340,6 +340,8 @@ export interface EventPatchSpec {
   end?: EventTime;
   title?: string;
   location?: string | null;
+  /** Approved text only (the one change a non-organizer may make, API_CONTRACTS §6.2). */
+  description?: string | null;
   sendUpdates: 'all' | 'none';
   marker: IdempotencyMarker;
 }

@@ -570,7 +570,15 @@
     }
   },
   "test": {
-    "titlePrefix": "Test · {title}"
+    "titlePrefix": "Test · {title}",
+    "demo": {
+      "subject": "Revised offer",
+      "action": "Waiting for your reply by 17:00 today.",
+      "highlights": "The Kuzey Lojistik offer and the 14:30 meeting",
+      "meeting": "Kuzey Lojistik call",
+      "title": "Offer revision",
+      "summary": "Adding the Kuzey Lojistik call to your calendar"
+    }
   },
   "ios": {
     "hiddenPreview": "Dijital Asistan update"
