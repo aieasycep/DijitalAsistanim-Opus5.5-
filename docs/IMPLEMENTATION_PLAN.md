@@ -848,7 +848,7 @@ A missing credential never blocks development.
 | `C-DB` | Container: `bash scripts/db/tier-c.sh`. CI: `bash scripts/db/tier-a.sh` |
 | `C-FN` | `pnpm functions:imports && pnpm functions:check && pnpm functions:lint && pnpm functions:test` |
 | `C-MOB` | `pnpm turbo run lint typecheck test --filter=@da/mobile --filter=@da/ui` |
-| `C-MOB-SMOKE` | `EXPO_OFFLINE=1 pnpm --filter @da/mobile exec expo install --check`<br>`pnpm --filter @da/mobile exec expo export --platform ios,android --output-dir .expo-export`<br>`bash scripts/mobile/prebuild-smoke.sh` (runs `expo prebuild --clean --no-install` in a temp copy for every `APP_ENV`) |
+| `C-MOB-SMOKE` | `EXPO_OFFLINE=1 pnpm --filter @da/mobile exec expo install --check`<br>`pnpm --filter @da/mobile exec expo export --platform ios --platform android --output-dir .expo-export`<br>`bash scripts/mobile/prebuild-smoke.sh` (runs `expo prebuild --clean --no-install` in a temp copy for every `APP_ENV`) |
 | `C-WEB` / `C-BO` | `pnpm turbo run lint typecheck test build --filter=@da/web` (or `--filter=@da/backoffice`) |
 | `C-E2E` | `pnpm e2e:web` and/or `pnpm e2e:backoffice` |
 | `C-GATE` | `pnpm quality-gate` |

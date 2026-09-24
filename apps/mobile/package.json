@@ -1,0 +1,81 @@
+{
+  "name": "@da/mobile",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.ts",
+  "scripts": {
+    "start": "expo start --dev-client",
+    "export": "expo export --platform ios --platform android --output-dir .expo-export",
+    "prebuild:smoke": "bash ../../scripts/mobile/prebuild-smoke.sh",
+    "mobile:check": "EXPO_OFFLINE=1 expo install --check && expo export --platform ios --platform android --output-dir .expo-export && bash ../../scripts/mobile/prebuild-smoke.sh",
+    "assets": "node ../../scripts/mobile/render-assets.ts",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "jest"
+  },
+  "expo": {
+    "install": {
+      "exclude": [
+        "@sentry/react-native"
+      ]
+    }
+  },
+  "dependencies": {
+    "@bacons/apple-targets": "catalog:expo",
+    "@da/design-tokens": "workspace:*",
+    "@da/i18n": "workspace:*",
+    "@da/validation": "workspace:*",
+    "@expo-google-fonts/geist": "catalog:expo",
+    "@expo-google-fonts/lora": "catalog:expo",
+    "@expo/metro-runtime": "catalog:expo",
+    "@react-native-google-signin/google-signin": "catalog:expo",
+    "@sentry/react-native": "catalog:expo",
+    "expo": "catalog:expo",
+    "expo-apple-authentication": "catalog:expo",
+    "expo-audio": "catalog:expo",
+    "expo-background-task": "catalog:expo",
+    "expo-build-properties": "catalog:expo",
+    "expo-calendar": "catalog:expo",
+    "expo-constants": "catalog:expo",
+    "expo-dev-client": "catalog:expo",
+    "expo-font": "catalog:expo",
+    "expo-image-picker": "catalog:expo",
+    "expo-linking": "catalog:expo",
+    "expo-local-authentication": "catalog:expo",
+    "expo-localization": "catalog:expo",
+    "expo-notifications": "catalog:expo",
+    "expo-router": "catalog:expo",
+    "expo-secure-store": "catalog:expo",
+    "expo-share-intent": "catalog:expo",
+    "expo-speech-recognition": "catalog:expo",
+    "expo-splash-screen": "catalog:expo",
+    "expo-status-bar": "catalog:expo",
+    "expo-system-ui": "catalog:expo",
+    "expo-task-manager": "catalog:expo",
+    "expo-updates": "catalog:expo",
+    "react": "catalog:",
+    "react-native": "catalog:expo",
+    "react-native-gesture-handler": "catalog:expo",
+    "react-native-reanimated": "catalog:expo",
+    "react-native-safe-area-context": "catalog:expo",
+    "react-native-screens": "catalog:expo",
+    "react-native-worklets": "catalog:expo",
+    "use-intl": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@babel/core": "catalog:expo",
+    "@da/config": "workspace:*",
+    "@jest/globals": "catalog:expo",
+    "@react-native/jest-preset": "catalog:expo",
+    "@testing-library/react-native": "catalog:expo",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "babel-preset-expo": "catalog:expo",
+    "eslint": "catalog:",
+    "jest": "catalog:expo",
+    "jest-expo": "catalog:expo",
+    "test-renderer": "catalog:expo",
+    "typescript": "catalog:"
+  }
+}

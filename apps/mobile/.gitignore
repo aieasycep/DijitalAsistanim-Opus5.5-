@@ -1,0 +1,6 @@
+# Continuous native generation: `expo prebuild` output is never committed.
+ios/
+android/
+.expo/
+.expo-export/
+expo-env.d.ts
