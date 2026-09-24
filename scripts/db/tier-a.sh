@@ -60,4 +60,6 @@ echo "==> supabase test db (${#tests[@]} file(s))" >&2
 supabase_cli test db "${tests[@]}"
 
 echo "==> supabase db lint" >&2
-supabase_cli db lint --level warning --fail-on error
+# Only our schemas: pgTAP (installed into `extensions` for the test run) ships functions that
+# plpgsql_check cannot resolve statically, and extension code is not ours to lint.
+supabase_cli db lint --schema public,private,admin_api --level warning --fail-on error
