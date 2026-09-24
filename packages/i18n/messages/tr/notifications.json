@@ -124,6 +124,11 @@
         "meta": "Seçtiğin saatte her zaman gelir"
       },
       "note": "Sessiz saatlerde diğer bildirimler gönderilmez; önemli olanlar uygulamada ve bir sonraki brifingde seni bekler."
+    },
+    "preview": {
+      "sender": "Örnek Kişi",
+      "subject": "Teklif revizyonu",
+      "action": "Bugün cevap bekleniyor"
     }
   },
   "prePrompt": {

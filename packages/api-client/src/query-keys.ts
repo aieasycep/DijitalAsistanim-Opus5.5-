@@ -54,6 +54,38 @@ export const qk = {
     all: ['assistant'] as const,
     threads: () => ['assistant', 'threads'] as const,
   },
+  // T-8.19…T-8.22 settings, privacy, rules, subscription
+  settings: {
+    all: ['settings'] as const,
+    counts: () => ['settings', 'counts'] as const,
+  },
+  support: {
+    all: ['support'] as const,
+    tickets: () => ['support', 'tickets'] as const,
+  },
+  privacy: {
+    all: ['privacy'] as const,
+    exportLatest: () => ['privacy', 'export', 'latest'] as const,
+    historyLatest: () => ['privacy', 'history', 'latest'] as const,
+    accountDeletion: () => ['privacy', 'account', 'latest'] as const,
+    historyPreview: (olderThan: string | null) =>
+      ['privacy', 'history-preview', { olderThan }] as const,
+  },
+  rules: {
+    all: ['rules'] as const,
+    list: () => ['rules', 'list'] as const,
+    detail: (id: string) => ['rules', 'detail', id] as const,
+    preview: (hash: string) => ['rules', 'preview', hash] as const,
+    suggestions: () => ['rules', 'suggestions'] as const,
+  },
+  learned: {
+    all: ['learned'] as const,
+    list: () => ['learned', 'list'] as const,
+  },
+  purchases: {
+    all: ['rc'] as const,
+    offerings: () => ['rc', 'offerings'] as const,
+  },
 } as const;
 
 export const mk = {
@@ -79,5 +111,21 @@ export const mk = {
   briefings: {
     eveningReady: ['briefings', 'evening-ready'] as const,
     retry: ['briefings', 'retry'] as const,
+  },
+  // T-8.19…T-8.22
+  settings: {
+    notificationTest: ['settings', 'notification-test'] as const,
+    supportTicket: ['settings', 'support-ticket'] as const,
+    feedback: ['settings', 'feedback'] as const,
+  },
+  privacy: {
+    export: ['privacy', 'export'] as const,
+    exportDownload: ['privacy', 'export-download'] as const,
+    deleteHistory: ['privacy', 'delete-history'] as const,
+    deleteAccount: ['privacy', 'delete-account'] as const,
+  },
+  business: {
+    referralApply: ['business', 'referral-apply'] as const,
+    purchasesSync: ['business', 'purchases-sync'] as const,
   },
 } as const;

@@ -21,6 +21,7 @@ import {
   DEMO_ROOT_SCREENS,
   ONBOARDING_ROOT_SCREENS,
   ROOT_SCREEN_OPTIONS,
+  SETTINGS_ROOT_SCREENS,
   SIGNED_OUT_ROOT_SCREENS,
 } from '../src/lib/router-guards';
 import { AppProviders } from '../src/providers/AppProviders';
@@ -28,6 +29,9 @@ import { AppProviders } from '../src/providers/AppProviders';
 import '../src/features/onboarding/post-sign-in';
 import '../src/features/integrations/callback-handler';
 import '../src/features/briefing/audio-cache';
+// T-8.22: RevenueCat log-in/log-out hooks and the pending referral code after sign-in.
+import '../src/lib/purchases';
+import '../src/features/referral/pending';
 
 export { RootErrorBoundary as ErrorBoundary } from '../src/features/shell/ShellErrorBoundary';
 
@@ -61,6 +65,11 @@ function RootNavigator() {
         </Stack.Protected>
         <Stack.Protected guard={flags.app}>
           {APP_ROOT_SCREENS.map((name) => (
+            <Stack.Screen key={name} name={name} options={ROOT_SCREEN_OPTIONS[name]} />
+          ))}
+        </Stack.Protected>
+        <Stack.Protected guard={flags.app || flags.deletionStatus}>
+          {SETTINGS_ROOT_SCREENS.map((name) => (
             <Stack.Screen key={name} name={name} options={ROOT_SCREEN_OPTIONS[name]} />
           ))}
         </Stack.Protected>

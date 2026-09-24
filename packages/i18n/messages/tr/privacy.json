@@ -34,7 +34,8 @@
     "exportPreparing": "Hazırlanıyor",
     "deleteHistory": "Analiz geçmişini sil",
     "deleteAccount": "Hesabımı sil",
-    "policyLink": "Gizlilik Politikası"
+    "policyLink": "Gizlilik Politikası",
+    "promiseTitle": "Sözümüz"
   },
   "permissions": {
     "title": "İzinler",
@@ -214,5 +215,50 @@
     "completedTitle": "Hesabın silindi.",
     "completedBody": "Bu cihazdaki veriler de temizlendi.",
     "timeout": "Silme işlemi sürüyor. En geç 24 saat içinde tamamlanır. Bu cihazdaki verilerin temizlendi ve oturumun kapatıldı. Durumu web sitemizdeki Veri Silme sayfasından e-posta doğrulamasıyla görebilirsin."
+  },
+  "permissionsScreen": {
+    "noAccount": "Henüz bağlı hesap yok.",
+    "unknown": "Bilinmiyor"
+  },
+  "retentionScreen": {
+    "bodyNoCount": "{days} günden eski özetler, öncelik kararları ve hafıza kayıtları bir sonraki temizlikte (en geç 24 saat içinde) kalıcı olarak silinir.",
+    "nothingToDelete": "Silinecek eski veri yok."
+  },
+  "historyScreen": {
+    "nothing": "Silinecek analiz geçmişi yok.",
+    "willDeleteNoCount": "Özetler, öncelik kararları, hafıza kayıtları ve öğrenilen tercihler silinir.",
+    "submitFailed": "Talep gönderilemedi; hiçbir şey silinmedi. Tekrar dene.",
+    "reauthExpired": "Doğrulama süresi doldu, tekrar doğrula."
+  },
+  "exportScreen": {
+    "requestFailed": "Talep gönderilemedi. Tekrar dene.",
+    "rateLimited": "Bugün için dışa aktarma sınırına ulaştın. Yarın tekrar deneyebilirsin.",
+    "linkFailed": "İndirme bağlantısı oluşturulamadı. Tekrar dene.",
+    "downloadFailed": "İndirme tamamlanamadı. Tekrar dene.",
+    "progress": "İndiriliyor · %{percent}"
+  },
+  "deleteAccountScreen": {
+    "confirmTitle": "Son adım",
+    "confirmPrompt": "Onaylamak için SİL yaz",
+    "confirmA11y": "Onay kelimesi, SİL yaz",
+    "ackRequired": "Devam etmek için bu kutuyu işaretle.",
+    "submitFailed": "Talep gönderilemedi; hesabın silinmedi. Tekrar dene.",
+    "reauthExpired": "Doğrulama süresi doldu, tekrar doğrula.",
+    "completedBody": "“Tamam”a dokunduğunda bu cihazdaki veriler de temizlenir.",
+    "timeoutBody": "Silme işlemi sürüyor. En geç 24 saat içinde tamamlanır. “Tamam”a dokunduğunda bu cihazdaki verilerin temizlenir ve oturumun kapanır. Durumu web sitemizdeki Veri Silme sayfasından e-posta doğrulamasıyla görebilirsin.",
+    "appleAndroid": "Bu cihazda Apple ile doğrulama yapılamıyorsa iPhone'undan veya web sitemizdeki Veri Silme sayfasından devam edebilirsin."
+  },
+  "reauth": {
+    "apple": "Apple ile doğrula",
+    "google": "Google ile doğrula",
+    "microsoft": "Microsoft ile doğrula",
+    "emailBody": "{email} adresine 6 haneli kod göndereceğiz.",
+    "sendCode": "Kod gönder",
+    "codeLabel": "6 haneli kod",
+    "resend": "Kodu tekrar gönder",
+    "wrongCode": "Kod hatalı.",
+    "mismatch": "Farklı bir hesapla giriş yapıldı. Silmek istediğin hesapla doğrulamalısın.",
+    "failed": "Doğrulama tamamlanamadı. Tekrar dene.",
+    "unavailable": "Bu hesap için bu cihazda doğrulama yapılamıyor. Web sitemizdeki Veri Silme sayfasından devam edebilirsin."
   }
 }

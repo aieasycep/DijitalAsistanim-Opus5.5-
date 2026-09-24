@@ -124,6 +124,11 @@
         "meta": "Always arrive at the time you chose"
       },
       "note": "Other notifications aren't sent during quiet hours; anything important waits for you in the app and in your next briefing."
+    },
+    "preview": {
+      "sender": "Sample Person",
+      "subject": "Proposal revision",
+      "action": "A reply is expected today"
     }
   },
   "prePrompt": {

@@ -166,7 +166,13 @@ export async function resetAppState(): Promise<void> {
   resetUiPrefsForTests();
   resetAnalyticsForTests();
   resetPendingLinksForTests();
-  setGuardSnapshot({ auth: 'loading', signedOut: false, onboarding: false, app: false });
+  setGuardSnapshot({
+    auth: 'loading',
+    signedOut: false,
+    onboarding: false,
+    app: false,
+    deletionStatus: false,
+  });
   onlineManager.setOnline(true);
   if (isEncryptedStorageOpen()) {
     encryptedStorage().cache.clearAll();

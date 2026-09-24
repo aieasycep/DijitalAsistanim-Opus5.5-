@@ -25,6 +25,7 @@ import {
 import {
   APP_ROOT_SCREENS,
   DEMO_ROOT_SCREENS,
+  SETTINGS_ROOT_SCREENS,
   ONBOARDING_ROOT_SCREENS,
   ONBOARDING_STEP_ROUTES,
   PUBLIC_ROOT_SCREENS,
@@ -184,7 +185,7 @@ describe('screen registry', () => {
     expect(isScreenAvailable('/demo/setup', false)).toBe(false);
     expect(isScreenAvailable('/demo/setup', true)).toBe(true);
     expect(isScreenAvailable('/today?src=push', false)).toBe(true);
-    expect(isScreenAvailable('/settings', false)).toBe(false);
+    expect(isScreenAvailable('/settings/android-notifications', false)).toBe(false);
   });
 
   it('has a screen for every onboarding step (T-8.06)', () => {
@@ -202,6 +203,7 @@ describe('screen registry', () => {
       SIGNED_OUT_ROOT_SCREENS,
       ONBOARDING_ROOT_SCREENS,
       APP_ROOT_SCREENS,
+      SETTINGS_ROOT_SCREENS,
       DEMO_ROOT_SCREENS,
     ];
     const listed = classes.flat();

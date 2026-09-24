@@ -30,5 +30,21 @@
   "nothingToRestore": "No purchases were found to restore.",
   "upgrade": "Go Pro",
   "dataKept": "Your data and settings are kept even if Pro ends.",
-  "storeManaged": "Your subscription is managed through {store}."
+  "storeManaged": "Your subscription is managed through {store}.",
+  "hero": {
+    "freeTitle": "Free plan",
+    "freeBody": "1 email account, 1 calendar, the morning briefing and limited AI analysis.",
+    "trialRenews": "The trial ends on {date}. It then renews as {plan}.",
+    "trialEnds": "The trial ends on {date}; auto-renew is off.",
+    "activeTitle": "Pro · {plan}",
+    "renews": "Renews: {date}",
+    "billingIssue": "You need to update your {store} payment method; Pro stays on for now.",
+    "grantTitle": "Pro · {source}",
+    "until": "Until {date}"
+  },
+  "sources": "Sources",
+  "storeSource": "{store} subscription · {plan}",
+  "grantRange": "{start} – {end}",
+  "changePlan": "Change plan",
+  "grantNote": "Referral and support rewards are separate from the store subscription; cancelling the store subscription does not affect them."
 }

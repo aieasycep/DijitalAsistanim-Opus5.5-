@@ -671,7 +671,7 @@ export function TodayScreen() {
               accessibilityLabel: t('header.profileA11y'),
               onPress: () => {
                 track('avatar_tapped');
-                router.push('/settings');
+                router.push('/settings?from=today');
               },
             },
           }

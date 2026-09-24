@@ -19,5 +19,43 @@
   "codeHint": "Davet kodu",
   "apply": "Uygula",
   "applied": "Davet kodun eklendi. Koşullar tamamlanınca ikiniz de Pro kazanırsınız.",
-  "landing": "Bir arkadaşın seni davet etti"
+  "landing": "Bir arkadaşın seni davet etti",
+  "send": "Davet Gönder",
+  "copied": "Bağlantı kopyalandı",
+  "linkA11y": "Davet bağlantın, kod {code}",
+  "emptyTitle": "Henüz davetin yok.",
+  "emptyBody": "Bağlantını paylaştığında katılan arkadaşların burada görünür.",
+  "footer": "Toplam kazanılan: {days} gün Pro · Sınır: yılda en fazla {cap} ödül",
+  "capReached": "Bu yılki ödül sınırına ulaştın; davetlerin yine de arkadaşlarına ödül kazandırır.",
+  "statusMeta": {
+    "pending": "Katıldı · hesabını bağlayıp ilk brifingini alınca ödül verilir",
+    "flagged": "İnceleniyor",
+    "qualified": "Koşullar tamamlandı · ödül işleniyor",
+    "rewarded": "Ödül verildi",
+    "rejected": "Koşullar sağlanmadı"
+  },
+  "badges": {
+    "pending": "Bekliyor",
+    "flagged": "Bekliyor",
+    "qualified": "İşleniyor",
+    "rewarded": "+{days} gün",
+    "rejected": "Geçersiz"
+  },
+  "referee": {
+    "title": "Davet koduyla katıldın",
+    "reward": "Ödülün: ilk brifinginden sonra {days} gün Pro"
+  },
+  "codeSheet": {
+    "title": "Davet kodunu gir",
+    "body": "Kod, kayıt olduktan sonraki {days} gün içinde eklenebilir.",
+    "cta": "Kodu Uygula",
+    "success": "Davet kodu eklendi. İlk brifinginden sonra ikiniz de Pro kazanacaksınız."
+  },
+  "errors": {
+    "invalid": "Bu kod geçerli değil.",
+    "self": "Kendi davet kodunu kullanamazsın.",
+    "windowClosed": "Davet kodu yalnızca kayıttan sonraki 7 gün içinde eklenebilir.",
+    "alreadyApplied": "Zaten bir davet kodu kullandın.",
+    "failed": "Kod uygulanamadı. Tekrar dene."
+  }
 }

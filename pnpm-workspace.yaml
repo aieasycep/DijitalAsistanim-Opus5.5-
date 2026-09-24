@@ -111,6 +111,8 @@ catalogs:
     react-native-mmkv: 4.3.2
     react-native-nitro-modules: 0.37.1
     react-native-purchases: 10.10.1
+    expo-clipboard: ~57.0.2
+    expo-store-review: ~57.0.3
     '@sentry/react-native': 8.27.0
     '@react-native-google-signin/google-signin': 16.1.5
     expo-share-intent: 8.0.1
