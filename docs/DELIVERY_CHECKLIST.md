@@ -1830,7 +1830,7 @@ A failing test never produces a question to the user.
 | `C-DB` | `bash scripts/db/tier-c.sh` (container) / `bash scripts/db/tier-a.sh` (CI) |
 | `C-FN` | `pnpm functions:imports && pnpm functions:check && pnpm functions:lint && pnpm functions:test` |
 | `C-MOB` | `pnpm turbo run lint typecheck test --filter=@da/mobile --filter=@da/ui` |
-| `C-MOB-SMOKE` | `EXPO_OFFLINE=1 pnpm --filter @da/mobile exec expo install --check`; `pnpm --filter @da/mobile exec expo export --platform ios,android --output-dir .expo-export`; `bash scripts/mobile/prebuild-smoke.sh` |
+| `C-MOB-SMOKE` | `EXPO_OFFLINE=1 pnpm --filter @da/mobile exec expo install --check`; `pnpm --filter @da/mobile exec expo export --platform ios --platform android --output-dir .expo-export`; `bash scripts/mobile/prebuild-smoke.sh` |
 | `C-WEB` / `C-BO` | `pnpm turbo run lint typecheck test build --filter=@da/web` (or `@da/backoffice`) |
 | `C-E2E` | `pnpm e2e:web` and/or `pnpm e2e:backoffice` |
 | `C-GATE` | `pnpm quality-gate` |

@@ -1,0 +1,43 @@
+// @ts-check
+/**
+ * Metro for the pnpm monorepo (ADR-01, isolated linker).
+ * - `watchFolders` is the repository root, so workspace packages (`@da/*`, symlinked to
+ *   `packages/*`) and the virtual store (`node_modules/.pnpm`) are inside the file map; Metro
+ *   0.84 follows pnpm's symlinks natively.
+ * - `nodeModulesPaths` lets any file (including the realpath of a workspace package) resolve the
+ *   app's direct dependencies first and the root store second; hierarchical lookup stays on,
+ *   because pnpm puts each package's own dependencies next to it inside `.pnpm`.
+ * - Package `exports` are honoured, which the `@da/*` subpath exports need.
+ * - Agent worktrees, other apps' build output and native projects never enter the file map.
+ */
+const path = require('node:path');
+const { getDefaultConfig } = require('expo/metro-config');
+
+const projectRoot = __dirname;
+const workspaceRoot = path.resolve(projectRoot, '../..');
+
+const escape = (/** @type {string} */ value) => value.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&');
+const under = (/** @type {string} */ ...segments) =>
+  new RegExp(`^${escape(path.join(workspaceRoot, ...segments))}(/.*)?$`);
+
+const config = getDefaultConfig(projectRoot);
+const defaultBlockList = config.resolver.blockList ?? [];
+
+config.watchFolders = [workspaceRoot];
+config.resolver.nodeModulesPaths = [
+  path.join(projectRoot, 'node_modules'),
+  path.join(workspaceRoot, 'node_modules'),
+];
+config.resolver.unstable_enablePackageExports = true;
+config.resolver.blockList = [
+  ...(Array.isArray(defaultBlockList) ? defaultBlockList : [defaultBlockList]),
+  under('.claude'),
+  under('.git'),
+  under('.turbo'),
+  under('apps', 'mobile', 'ios'),
+  under('apps', 'mobile', 'android'),
+  under('apps', 'mobile', '.expo-export'),
+  /\/\.next\/.*/,
+];
+
+module.exports = config;

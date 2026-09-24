@@ -10,4 +10,6 @@ design/reference/
 supabase/.temp
 apps/mobile/ios
 apps/mobile/android
+.expo
+.expo-export
 .claude/

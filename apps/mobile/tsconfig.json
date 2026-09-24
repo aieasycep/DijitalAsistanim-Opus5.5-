@@ -1,0 +1,17 @@
+{
+  "extends": "@da/config/tsconfig/expo.json",
+  "compilerOptions": {
+    "target": "ESNext",
+    "lib": ["ES2023"],
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "moduleDetection": "force",
+    "customConditions": ["react-native"],
+    "jsx": "react-jsx",
+    "verbatimModuleSyntax": true,
+    "resolveJsonModule": true,
+    "erasableSyntaxOnly": true,
+    "types": ["node"]
+  },
+  "include": ["app/**/*", "src/**/*", "test/**/*", "app.config.ts", "index.ts"]
+}

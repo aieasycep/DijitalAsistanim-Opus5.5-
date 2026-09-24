@@ -94,7 +94,7 @@ All names come from the master plan.
 |---|---|---|---|---|---|
 | `development` | `development` | `com.dijitalasistan.app.dev` | `dijitalasistan-dev` | `group.com.dijitalasistan.app.dev` | yes |
 | `preview` | `preview` | `com.dijitalasistan.app.preview` | `dijitalasistan-preview` | `group.com.dijitalasistan.app.preview` | yes |
-| `e2e` | `e2e` | `com.dijitalasistan.app.preview` | `dijitalasistan-preview` | `group.com.dijitalasistan.app.preview` | yes (required) |
+| `e2e` | `e2e` | `com.dijitalasistan.app.e2e` | `dijitalasistan-e2e` | `group.com.dijitalasistan.app.e2e` | yes (required) |
 | `production` | `production` | `com.dijitalasistan.app` | `dijitalasistan` | `group.com.dijitalasistan.app` | no, unless `ALLOW_DEMO_IN_PRODUCTION=true` |
 
 Extension bundle IDs:
@@ -1913,7 +1913,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       ['@sentry/react-native/expo', { organization: process.env.SENTRY_ORG, project: 'da-mobile' }],
     ],
     extra: { eas: { projectId: process.env.EXPO_PUBLIC_EAS_PROJECT_ID, build: { experimental: { ios: { appExtensions: [
-      { targetName: 'DijitalAsistan', bundleIdentifier: `${v.bundleId}.share-extension`, entitlements: { 'com.apple.security.application-groups': [v.appGroup] } },
+      { targetName: 'DijitalAsistanaEkle', bundleIdentifier: `${v.bundleId}.share-extension`, entitlements: { 'com.apple.security.application-groups': [v.appGroup] } },
       { targetName: 'widget', bundleIdentifier: `${v.bundleId}.widget`, entitlements: { 'com.apple.security.application-groups': [v.appGroup] } },
     ] } } } } },
   };
@@ -2029,7 +2029,7 @@ const SHARE_INTENT_OPTIONS = (v) => ({
     'ANY $attachment.registeredTypeIdentifiers UTI-CONFORMS-TO "public.url" || ' +
     'ANY $attachment.registeredTypeIdentifiers UTI-CONFORMS-TO "public.plain-text").@count >= 1).@count >= 1',
   iosAppGroupIdentifier: v.appGroup,
-  iosShareExtensionName: 'Dijital Asistan',           // target "DijitalAsistan"
+  iosShareExtensionName: "Dijital Asistan'a Ekle",   // target "DijitalAsistanaEkle" (capture.title; "Dijital Asistan" would reuse the production app target)
   androidIntentFilters: ['text/*', 'image/*', 'application/pdf'],      // ACTION_SEND
   androidMultiIntentFilters: ['image/*', 'application/pdf'],           // ACTION_SEND_MULTIPLE
   androidMainActivityAttributes: { 'android:launchMode': 'singleTask' },
