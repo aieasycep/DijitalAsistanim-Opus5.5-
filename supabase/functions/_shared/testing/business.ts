@@ -634,10 +634,11 @@ export function memoryReferralRepo(now: () => Date = () => new Date()): MemoryRe
             email_hash: x.email_hash,
             device_hash: x.device_hash,
           })),
+        // Mirrors 20260924002700: legs rejected as a loop stay in the walk.
         edges: referrals
           .filter(
             (x) =>
-              x.status !== 'rejected' &&
+              (x.status !== 'rejected' || x.reject_reason === 'loop') &&
               x.referrer_id !== null &&
               x.referee_id !== null &&
               x.id !== r.id,
