@@ -5,6 +5,9 @@
  */
 import type { AppEnv } from '@da/validation/env';
 
+/** M§108 web origin; universal links, legal pages and the store fallback derive from it. */
+export const DEFAULT_WEB_URL = 'https://dijitalasistan.app';
+
 /** Identifier suffix per variant; production has none. */
 export const VARIANT_SUFFIX: Readonly<Record<AppEnv, string>> = {
   development: 'dev',

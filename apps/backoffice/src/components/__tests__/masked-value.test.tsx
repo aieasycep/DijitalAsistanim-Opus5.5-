@@ -40,7 +40,7 @@ describe('MaskedValue + RevealButton (BACKOFFICE_PLAN §5.5)', () => {
       />,
       { admin: adminContext({ permissions: ['users.read', 'users.pii.reveal'] }) },
     );
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     await user.click(screen.getByRole('button', { name: 'E-posta değerini göster' }));
     const dialog = await screen.findByRole('dialog', { name: 'Bilgiyi göster' });
     expect(dialog).toHaveTextContent('60 saniye');
@@ -72,7 +72,7 @@ describe('MaskedValue + RevealButton (BACKOFFICE_PLAN §5.5)', () => {
       />,
       { admin: adminContext({ permissions: ['users.pii.reveal'] }) },
     );
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     await user.click(screen.getByRole('button', { name: 'E-posta değerini göster' }));
     await user.type(await screen.findByLabelText('Gerekçe'), REASON);
     await user.click(screen.getByRole('button', { name: 'Göster' }));

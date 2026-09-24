@@ -74,7 +74,7 @@ function renderTable(
     />,
     { searchParams: options.searchParams ?? '', onUrlUpdate },
   );
-  return { ...view, updates, user: userEvent.setup() };
+  return { ...view, updates, user: userEvent.setup({ delay: null }) };
 }
 
 describe('DataTable (BACKOFFICE_PLAN §5.3)', () => {

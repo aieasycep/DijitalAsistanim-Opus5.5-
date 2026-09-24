@@ -34,7 +34,9 @@ describe('state components (BACKOFFICE_PLAN §5.6)', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('Veriler yüklenemedi.');
     expect(screen.getByText('SERVICE_UNAVAILABLE')).toBeInTheDocument();
     expect(screen.getByText('Hata kimliği: corr-7')).toBeInTheDocument();
-    await userEvent.setup().click(screen.getByRole('button', { name: 'Tekrar dene' }));
+    await userEvent
+      .setup({ delay: null })
+      .click(screen.getByRole('button', { name: 'Tekrar dene' }));
     expect(onRetry).toHaveBeenCalledOnce();
     expect(screen.getByRole('button', { name: 'Hata kimliğini kopyala' })).toBeInTheDocument();
     expect(await axeViolations(container)).toEqual([]);
@@ -72,7 +74,9 @@ describe('charts (BACKOFFICE_PLAN §5.7)', () => {
       <ChartCard title="Kullanıcı büyümesi" points={POINTS} kind="info" />,
     );
     expect(screen.getByText('Toplam 4.450; en yüksek değer 1.850 (18 Eyl).')).toBeInTheDocument();
-    await userEvent.setup().click(screen.getByRole('button', { name: 'Tablo olarak göster' }));
+    await userEvent
+      .setup({ delay: null })
+      .click(screen.getByRole('button', { name: 'Tablo olarak göster' }));
     const table = screen.getByRole('table', { name: 'Kullanıcı büyümesi' });
     expect(table).toHaveTextContent('1.850');
     expect(screen.getByRole('button', { name: 'Grafik olarak göster' })).toHaveAttribute(

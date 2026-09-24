@@ -3,13 +3,15 @@
     "name": "Dijital Asistan",
     "tagline": "Bugün bilmen gerekenleri, sen sormadan söyler.",
     "version": "Sürüm {version} ({build})",
-    "copyright": "© {year} Dijital Asistan"
+    "copyright": "© {year} Dijital Asistan",
+    "loadingA11y": "Dijital Asistan yükleniyor"
   },
   "tabs": {
     "today": "Bugün",
     "flow": "Akış",
     "plan": "Plan",
-    "assistant": "Asistan"
+    "assistant": "Asistan",
+    "a11yLabel": "{label}, sekme {index}/{count}"
   },
   "actions": {
     "approve": "Onayla",
@@ -222,7 +224,9 @@
   },
   "demo": {
     "banner": "Demo modu — örnek veriler gösteriliyor.",
-    "row": "Demo modu · Örnek verilerle çalışıyor"
+    "row": "Demo modu · Örnek verilerle çalışıyor",
+    "setupWorking": "Demo hazırlanıyor…",
+    "setupInvalid": "Bu demo bağlantısı geçersiz."
   },
   "a11y": {
     "loading": "Yükleniyor",
