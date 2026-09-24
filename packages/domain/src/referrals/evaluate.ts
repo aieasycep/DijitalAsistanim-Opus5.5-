@@ -11,6 +11,7 @@
  * once; the reward is keyed `referral:{referral_id}:{side}` (credits and grants), so evaluating or
  * rewarding twice produces the same two keys and the database keeps one row per side.
  */
+import { referralCreditKey } from '../ids.ts';
 import type { ReferralSide, ReferralStatus } from '../enums.ts';
 import { isValidReferralCode, normalizeReferralCode } from './code.ts';
 import type { ReferralPolicy } from './policy.ts';
@@ -40,10 +41,6 @@ const TRANSITIONS: Readonly<Record<ReferralStatus, readonly ReferralStatus[]>> =
 
 export function canTransitionReferral(from: ReferralStatus, to: ReferralStatus): boolean {
   return TRANSITIONS[from].includes(to);
-}
-
-export function referralCreditKey(referralId: string, side: ReferralSide): string {
-  return `referral:${referralId}:${side}`;
 }
 
 export interface ReferralRewardSide {

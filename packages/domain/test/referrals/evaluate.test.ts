@@ -6,13 +6,13 @@ import {
   type EntitlementGrantRow,
 } from '../../src/entitlements/effective.ts';
 import { generateReferralCode } from '../../src/referrals/code.ts';
+import { referralCreditKey } from '../../src/ids.ts';
 import {
   REFERRAL_REJECT_REASONS,
   canTransitionReferral,
   checkReferralApply,
   evaluateReferral,
   planReferralReward,
-  referralCreditKey,
   reviewFlaggedReferral,
   type ReferralRecord,
 } from '../../src/referrals/evaluate.ts';

@@ -1,0 +1,108 @@
+[
+  {
+    "name": "real deadline and amount survive",
+    "source": "Merhaba, revize teklifi Cuma'ya kadar bekliyoruz. Toplam tutar 1.842 TL olarak güncellendi.",
+    "claims": [
+      { "field": "due_at", "kind": "date", "evidence": { "ref": "m1", "quote": "Cuma'ya kadar" } },
+      {
+        "field": "amount",
+        "kind": "amount",
+        "evidence": { "ref": "m1", "quote": "Toplam tutar 1.842 TL" }
+      }
+    ],
+    "verified": ["due_at", "amount"],
+    "dropped": []
+  },
+  {
+    "name": "fabricated deadline is removed",
+    "source": "Merhaba, teklifi inceledik. Uygun gördüğünüzde görüşelim.",
+    "claims": [
+      { "field": "due_at", "kind": "date", "evidence": { "ref": "m1", "quote": "Cuma'ya kadar" } }
+    ],
+    "verified": [],
+    "dropped": ["due_at"]
+  },
+  {
+    "name": "fabricated amount is removed",
+    "source": "Aidat ödemeniz alınmıştır. Teşekkür ederiz.",
+    "claims": [
+      { "field": "amount", "kind": "amount", "evidence": { "ref": "m1", "quote": "1.250 TL" } }
+    ],
+    "verified": [],
+    "dropped": ["amount"]
+  },
+  {
+    "name": "changed digits in the quote are rejected",
+    "source": "Elektrik faturanızın tutarı 1.842,50 TL olup son ödeme tarihi 30 Eylül.",
+    "claims": [
+      {
+        "field": "amount",
+        "kind": "amount",
+        "evidence": { "ref": "m1", "quote": "tutarı 1.824,50 TL" }
+      },
+      {
+        "field": "due_at",
+        "kind": "date",
+        "evidence": { "ref": "m1", "quote": "son ödeme tarihi 30 Eylül" }
+      }
+    ],
+    "verified": ["due_at"],
+    "dropped": ["amount"]
+  },
+  {
+    "name": "a quote with two amounts is ambiguous",
+    "source": "Ana para 1.842 TL, faiz 300 TL.",
+    "claims": [
+      {
+        "field": "amount",
+        "kind": "amount",
+        "evidence": { "ref": "m1", "quote": "Ana para 1.842 TL, faiz 300 TL" }
+      }
+    ],
+    "verified": [],
+    "dropped": ["amount"]
+  },
+  {
+    "name": "unknown ref is dropped",
+    "source": "Toplantı yarın 14:00'te.",
+    "claims": [
+      { "field": "due_at", "kind": "date", "evidence": { "ref": "m7", "quote": "yarın 14:00'te" } },
+      {
+        "field": "start_at",
+        "kind": "date",
+        "evidence": { "ref": "user-123", "quote": "yarın 14:00'te" }
+      }
+    ],
+    "verified": [],
+    "dropped": ["due_at", "start_at"]
+  },
+  {
+    "name": "a date far outside the window is dropped",
+    "source": "Sözleşme 1 Ocak 2031 tarihinde yenilenecek.",
+    "claims": [
+      { "field": "renews_at", "kind": "date", "evidence": { "ref": "m1", "quote": "1 Ocak 2031" } }
+    ],
+    "verified": [],
+    "dropped": ["renews_at"]
+  },
+  {
+    "name": "flight, PNR and tracking identifiers are validated",
+    "source": "Uçuşunuz TK2412 · İstanbul → Antalya. PNR: X7K2QA. Kargo: RR123456785TR, eski kod RR123456784TR.",
+    "claims": [
+      { "field": "flight_no", "kind": "flight", "evidence": { "ref": "m1", "quote": "TK2412" } },
+      { "field": "pnr", "kind": "pnr", "evidence": { "ref": "m1", "quote": "PNR: X7K2QA" } },
+      {
+        "field": "tracking_no",
+        "kind": "tracking",
+        "evidence": { "ref": "m1", "quote": "RR123456785TR" }
+      },
+      {
+        "field": "tracking_old",
+        "kind": "tracking",
+        "evidence": { "ref": "m1", "quote": "RR123456784TR" }
+      }
+    ],
+    "verified": ["flight_no", "pnr", "tracking_no"],
+    "dropped": ["tracking_old"]
+  }
+]
