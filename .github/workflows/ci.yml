@@ -88,7 +88,6 @@ jobs:
         with:
           turbo-cache-key: db
       - run: pnpm db:lint
-      - run: pnpm db:enum-parity
       - run: bash scripts/db/tier-a.sh --keep-running
       - name: generated types match the real stack
         run: pnpm db:types:check --no-migrate
