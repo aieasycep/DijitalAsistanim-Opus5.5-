@@ -1,0 +1,117 @@
+name: Deploy Supabase
+
+# Hosted Supabase deploy (IMPLEMENTATION_PLAN T-12.03, docs/DEPLOYMENT.md): migrations, hosted
+# config, the nine Edge Functions and the two Vault entries pg_cron uses to poke the worker.
+# Runs only by hand, in the protected `production` environment: its required reviewers are the
+# manual approval (repository settings → Environments; a manual external step).
+# The dry run (default) changes nothing: it prints the missing-secret report and the pending
+# migrations. Secret values never reach the log; every check works on names.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Report missing secrets and pending migrations only (no changes)
+        type: boolean
+        default: true
+
+concurrency:
+  group: deploy-supabase
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: supabase (${{ inputs.dry_run && 'dry run' || 'deploy' }})
+    runs-on: ubuntu-24.04
+    environment: production
+    env:
+      TURBO_TELEMETRY_DISABLED: '1'
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      CRON_SECRET: ${{ secrets.CRON_SECRET }}
+      # `supabase config push` substitutes these into config.toml (env(...)) and turns SMTP on.
+      SUPABASE_AUTH_EMAIL_SMTP_ENABLED: 'true'
+      SUPABASE_AUTH_SMTP_HOST: ${{ secrets.SUPABASE_AUTH_SMTP_HOST }}
+      SUPABASE_AUTH_SMTP_PORT: ${{ secrets.SUPABASE_AUTH_SMTP_PORT }}
+      SUPABASE_AUTH_SMTP_USER: ${{ secrets.SUPABASE_AUTH_SMTP_USER }}
+      SUPABASE_AUTH_SMTP_PASS: ${{ secrets.SUPABASE_AUTH_SMTP_PASS }}
+      SUPABASE_AUTH_SMTP_SENDER: ${{ secrets.SUPABASE_AUTH_SMTP_SENDER }}
+      SUPABASE_AUTH_EXTERNAL_APPLE_CLIENT_ID: ${{ secrets.SUPABASE_AUTH_EXTERNAL_APPLE_CLIENT_ID }}
+      SUPABASE_AUTH_EXTERNAL_APPLE_SECRET: ${{ secrets.SUPABASE_AUTH_EXTERNAL_APPLE_SECRET }}
+      SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID: ${{ secrets.SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID }}
+      SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET: ${{ secrets.SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET }}
+      SUPABASE_AUTH_EXTERNAL_AZURE_CLIENT_ID: ${{ secrets.SUPABASE_AUTH_EXTERNAL_AZURE_CLIENT_ID }}
+      SUPABASE_AUTH_EXTERNAL_AZURE_SECRET: ${{ secrets.SUPABASE_AUTH_EXTERNAL_AZURE_SECRET }}
+      HAS_PROJECT: ${{ secrets.SUPABASE_ACCESS_TOKEN != '' && secrets.SUPABASE_PROJECT_REF != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+        with:
+          turbo-cache-key: deploy
+      - name: Edge Function import maps are current
+        run: pnpm functions:imports --check
+
+      - name: Secret names (report)
+        run: |
+          if [[ "$HAS_PROJECT" == "true" ]]; then
+            pnpm exec supabase secrets list --project-ref "$SUPABASE_PROJECT_REF" -o json > "$RUNNER_TEMP/secrets.json"
+          else
+            echo '[]' > "$RUNNER_TEMP/secrets.json"
+            echo "::warning::SUPABASE_ACCESS_TOKEN or SUPABASE_PROJECT_REF is not set; every Edge secret is reported missing."
+          fi
+          node scripts/deploy/check-secrets.ts --secrets "$RUNNER_TEMP/secrets.json" ${{ inputs.dry_run && '--report-only' || '' }}
+
+      - name: Link the project
+        if: env.HAS_PROJECT == 'true'
+        run: pnpm exec supabase link --project-ref "$SUPABASE_PROJECT_REF"
+
+      - name: Pending migrations (dry run)
+        if: env.HAS_PROJECT == 'true' && inputs.dry_run
+        run: pnpm exec supabase db push --dry-run
+
+      - name: Apply migrations
+        if: ${{ !inputs.dry_run }}
+        run: pnpm exec supabase db push --yes
+
+      - name: Push hosted config (auth, SMTP, MFA, hooks, function settings)
+        if: ${{ !inputs.dry_run }}
+        run: pnpm exec supabase config push --project-ref "$SUPABASE_PROJECT_REF" --yes
+
+      - name: Deploy Edge Functions
+        if: ${{ !inputs.dry_run }}
+        run: |
+          for fn in api oauth webhooks-google webhooks-microsoft webhooks-revenuecat worker admin-api public-api health; do
+            echo "::group::deploy $fn"
+            pnpm exec supabase functions deploy "$fn" --project-ref "$SUPABASE_PROJECT_REF" --use-api
+            echo "::endgroup::"
+          done
+
+      - name: Vault entries for the cron worker poke (da_project_url, da_cron_secret)
+        if: ${{ !inputs.dry_run }}
+        env:
+          DA_PROJECT_URL: https://${{ secrets.SUPABASE_PROJECT_REF }}.supabase.co
+        run: |
+          psql "$SUPABASE_DB_URL" -X -q -v ON_ERROR_STOP=1 <<'SQL'
+          \getenv project_url DA_PROJECT_URL
+          \getenv cron_secret CRON_SECRET
+          select vault.update_secret(s.id, :'project_url') from vault.secrets s where s.name = 'da_project_url';
+          select vault.create_secret(:'project_url', 'da_project_url')
+            where not exists (select 1 from vault.secrets where name = 'da_project_url');
+          select vault.update_secret(s.id, :'cron_secret') from vault.secrets s where s.name = 'da_cron_secret';
+          select vault.create_secret(:'cron_secret', 'da_cron_secret')
+            where not exists (select 1 from vault.secrets where name = 'da_cron_secret');
+          SQL
+
+      - name: Health probe
+        if: ${{ !inputs.dry_run }}
+        run: |
+          # /live takes the automations secret (Bearer), like the pg_cron poke.
+          status="$(curl -sS -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $CRON_SECRET" \
+            "https://$SUPABASE_PROJECT_REF.supabase.co/functions/v1/health/live")"
+          echo "health/live → $status"
+          [[ "$status" == "200" ]]

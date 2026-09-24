@@ -423,6 +423,7 @@ export const buildEnvShape = {
     .string()
     .regex(/^sbp_[A-Za-z0-9]+$/)
     .optional(),
+  SUPABASE_DB_PASSWORD: z.string().optional(),
   GOOGLE_IOS_URL_SCHEME: z
     .string()
     .regex(/^com\.googleusercontent\.apps\.[0-9]+-[a-z0-9]+$/)
