@@ -2762,7 +2762,7 @@ ReferralMeResponse = Success(z.object({ code: z.string(), share_url: z.url(),   
 ```
 
 - **Validation:** none.
-- **DB effects:** lazily creates `referral_codes` (unique per user; 8 chars from the unambiguous alphabet; retry on collision).
+- **DB effects:** lazily creates `referral_codes` (unique per user; 7 chars (6 payload + 1 check character) from the unambiguous alphabet; retry on collision).
 - **External provider effects:** none.
 - **Idempotency:** creation is idempotent (unique user).
 - **Error codes:** common.

@@ -310,7 +310,7 @@ Source kinds: the user's own sent mail, received mail, post-meeting note. Anchor
 | UT-REF-08 | Signal hash present in `privacy_tombstones` (deleted-then-recreated account) | `rejected: tombstoned` |
 | UT-REF-09 | Credit keys | `referral:{referral_id}:referrer` and `…:referee`; evaluating twice → the same two keys |
 | UT-REF-10 | Stacking: an existing grant ends 2026-10-01T00:00Z; new +14 days | new grant 2026-10-01 → 2026-10-15 (non-overlapping) |
-| UT-REF-11 | Code alphabet | 8 chars from `23456789ABCDEFGHJKMNPQRSTUVWXYZ` (no 0/O/1/I/L); 10k generated codes are unique |
+| UT-REF-11 | Code alphabet | 7 chars (6 payload + 1 check character) from `23456789ABCDEFGHJKMNPQRSTUVWXYZ` (no 0/O/1/I/L); a single-character typo fails the checksum; 10k generated codes are unique |
 
 ### 2.9 Entitlement logic and plan limits — `packages/domain/src/entitlements/*` (M§43, M§44; plan §15; ADR-11)
 
@@ -1172,7 +1172,7 @@ Each flow file lives in `flows/acceptance/` and composes subflows. The assertion
 | BO-E2E-14 | `jobs.retry.spec.ts` | operations | **sync job retry** | dead_letter → retry → queued → the worker completes → attempts timeline; bulk retry summary; cancel; readonly has no buttons |
 | BO-E2E-15 | `correlation.spec.ts` | operations | sync & jobs | the chain webhook → sync → email_analysis → ai_request → briefing → notification; the links navigate |
 | BO-E2E-16 | `briefings.spec.ts` | operations | **briefing operation** | per-kind metrics (scheduled / generated / delivered / failed / skipped / latency / AI cost); regenerate today's failed briefing → job + audit; an older briefing has the button disabled |
-| BO-E2E-17 | `notifications.spec.ts` | support | notifications | suppression breakdown; push test (`POST /notifications/test-push`) → `is_test` row + audit; the test push uses `generic` content and, inside the user's quiet hours, is scheduled for the quiet-hours end (R-13) |
+| BO-E2E-17 | `notifications.spec.ts` | operations | notifications | suppression breakdown; push test (`POST /notifications/test-push`) → `is_test` row + audit; the test push uses `generic` content and, inside the user's quiet hours, is scheduled for the quiet-hours end (R-13) |
 | BO-E2E-18 | `ai.costs.spec.ts` | ai_ops | **AI cost** | cost KPIs, daily / feature / model charts, p50/p95 equal the fixture; model page "configured / not configured" without secret values; model update → audit |
 | BO-E2E-19 | `prompts.spec.ts` | ai_ops | **prompt activation** | draft → edit → diff → activate → rollback; a single active version; audit |
 | BO-E2E-20 | `ai-feedback.spec.ts` | ai_ops | AI feedback | aggregates by feature / model / version; comment hidden → reveal is audited |

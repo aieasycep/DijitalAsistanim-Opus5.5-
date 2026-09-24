@@ -2143,7 +2143,7 @@ Toggle ↔ capability map:
 | `briefings.read` | ✓ | ✓ | ✓ | — | ✓ | — | ✓ |
 | `briefings.regenerate` | ✓ | ✓ | — | — | — | — | — |
 | `notifications.read` | ✓ | ✓ | ✓ | — | — | — | ✓ |
-| `push.test` | ✓ | ✓ | ✓ | — | — | — | — |
+| `push.test` | ✓ | ✓ | — | — | — | — | — |
 | `ai.read` | ✓ | ✓ | — | — | ✓ | — | ✓ |
 | `ai.models.write` | ✓ | — | — | — | ✓ | — | — |
 | `prompts.read` | ✓ | ✓ | — | — | ✓ | — | ✓ |
@@ -2773,22 +2773,22 @@ Both are created in production with `select vault.create_secret('<value>','da_pr
 
 | # | File | Contents |
 |---|---|---|
-| 0001 | `20260923000001_extensions_schemas_enums.sql` | `alter database … set timezone 'UTC'`; schemas `private`, `admin_api` (+ grants §1.1); extensions with guards (§1.8); `private.tr_search`; `private.immutable_unaccent`; all enums (§2); check helpers (`valid_evidence`, etc.); `private.set_updated_at`, `private.mask_email`, `private.hash_subject` |
-| 0002 | `20260923000002_identity_settings.sql` | `profiles`, `user_preferences`, `notification_preferences`, `app_installations`, `push_tokens`; `private.handle_new_user` + `on_auth_user_created`; tz validation trigger |
-| 0003 | `20260923000003_integrations.sql` | `connected_accounts`, `oauth_credentials`, `oauth_states`, `calendars`, `sync_states`, view `connected_account_sync_health` (security invoker), `provider_quota_usage`, `webhook_events`, `private.demo_fixture_state` |
-| 0004 | `20260923000004_content.sql` | `contacts`, `vip_people`, `email_threads`, `email_messages`, `calendar_events`, `tasks`, `commitments`, `reminders`, `meeting_notes`, `meeting_preps`, `life_events`, `captures`, `android_notification_signals` (FKs to `approval_actions`/`priority_rules`/`prompt_versions`/`notifications` are added with `alter table … add constraint` in 0005–0008) |
-| 0005 | `20260923000005_intelligence.sql` | `priority_rules`, `learned_preferences`, `insights`, `briefings`, `briefing_items`, `reply_drafts`, `ai_feedback`, `ai_requests`, `ai_usage_daily`, `ai_model_config`, `prompt_versions`, `ai_result_cache`, `ai_budget_reservations`, `ai_model_prices`, `ai_calibration_versions`, `ai_batches` + **reference data**: `ai_model_config` routing seeds for both profiles `balanced` and `lean` (per AI_PIPELINE_PLAN §3.3/§3.4, from `supabase/seed/ai_model_config.sql`), `ai_model_prices` (from `supabase/seed/ai_model_prices.sql`) and `prompt_versions` v1 `active` for every key (text generated from `supabase/prompts/*.md` by `scripts/gen-prompt-migration.ts` at authoring time); deferred FKs from 0004 |
-| 0006 | `20260923000006_approvals.sql` | `approval_actions`, `approval_events`; guard/immutability triggers; deferred FKs (`tasks`, `commitments`, `reminders`, `calendar_events`, `reply_drafts`, `oauth_states` → `approval_actions`) |
-| 0007 | `20260923000007_assistant_memory.sql` | `assistant_threads`, `assistant_messages`, `memory_chunks` + HNSW + GIN |
-| 0008 | `20260923000008_notifications.sql` | `notifications`, `push_tickets`; FK `reminders.notification_id` |
-| 0009 | `20260923000009_business.sql` | `subscriptions`, `billing_events`, `entitlement_grants`, `plan_limits` (+ seed §4.6), `referral_codes`, `referrals`, `referral_credits` |
-| 0010 | `20260923000010_ops_product.sql` | `jobs`, `job_attempts`, `analytics_events`, `feature_flags` (+ R-10 seed), `feature_flag_overrides`, `announcements`, `announcement_dismissals`, `user_feedback`, `system_health_checks`, `rate_limits`, `api_idempotency_keys`, `app_settings` (+ seed), `metrics_daily`, `ai_metrics_daily`, `web_analytics_daily` |
-| 0011 | `20260923000011_privacy.sql` | `data_export_requests`, `data_deletion_requests`, `privacy_tombstones` |
-| 0012 | `20260923000012_admin_audit.sql` | `admin_users`, `admin_sessions`, `admin_preferences`, `audit_logs`, `support_tickets` (+ `public_ref` sequence), `support_notes`, `support_access_grants`; `private.admin_role_permissions` (table seeded from BACKOFFICE_PLAN §4.2), `admin_mfa_recovery_codes`; audit chain functions + immutability; last-super-admin trigger; deferred admin FKs |
-| 0013 | `20260923000013_functions_rpcs.sql` | Every §6 function (jobs, scheduler, retention, purge, entitlements, limits, budgets, rate limits, approvals, search, person intelligence, preview rule, flags, token hook, `require_admin`, all `admin_api.*`); plan-limit, status and referral triggers; `revoke`/`grant execute` |
-| 0014 | `20260923000014_rls_policies_grants.sql` | Baseline (§3.1) for every table; owner policies; column grants; restrictive aal2 policies; `plan_limits` read policy; `alter default privileges` |
-| 0015 | `20260923000015_cron_schedules.sql` | §9 (guarded) |
-| 0016 | `20260923000016_storage.sql` | §8 buckets + `storage.objects` policies |
+| 0001 | `20260924000100_extensions_schemas_enums.sql` | `alter database … set timezone 'UTC'`; schemas `private`, `admin_api` (+ grants §1.1); extensions with guards (§1.8); `private.tr_search`; `private.immutable_unaccent`; all enums (§2); check helpers (`valid_evidence`, etc.); `private.set_updated_at`, `private.mask_email`, `private.hash_subject` |
+| 0002 | `20260924000200_identity_settings.sql` | `profiles`, `user_preferences`, `notification_preferences`, `app_installations`, `push_tokens`; `private.handle_new_user` + `on_auth_user_created`; tz validation trigger |
+| 0003 | `20260924000300_integrations.sql` | `connected_accounts`, `oauth_credentials`, `oauth_states`, `calendars`, `sync_states`, view `connected_account_sync_health` (security invoker), `provider_quota_usage`, `webhook_events`, `private.demo_fixture_state` |
+| 0004 | `20260924000400_content.sql` | `contacts`, `vip_people`, `email_threads`, `email_messages`, `calendar_events`, `tasks`, `commitments`, `reminders`, `meeting_notes`, `meeting_preps`, `life_events`, `captures`, `android_notification_signals` (FKs to `approval_actions`/`priority_rules`/`prompt_versions`/`notifications` are added with `alter table … add constraint` in 0005–0008) |
+| 0005 | `20260924000500_intelligence.sql` | `priority_rules`, `learned_preferences`, `insights`, `briefings`, `briefing_items`, `reply_drafts`, `ai_feedback`, `ai_requests`, `ai_usage_daily`, `ai_model_config`, `prompt_versions`, `ai_result_cache`, `ai_budget_reservations`, `ai_model_prices`, `ai_calibration_versions`, `ai_batches` + **reference data**: `ai_model_config` routing seeds for both profiles `balanced` and `lean` (per AI_PIPELINE_PLAN §3.3/§3.4, from `supabase/seed/ai_model_config.sql`), `ai_model_prices` (from `supabase/seed/ai_model_prices.sql`) and `prompt_versions` v1 `active` for every key (text generated from `supabase/prompts/*.md` by `scripts/gen-prompt-migration.ts` at authoring time); deferred FKs from 0004 |
+| 0006 | `20260924000600_approvals.sql` | `approval_actions`, `approval_events`; guard/immutability triggers; deferred FKs (`tasks`, `commitments`, `reminders`, `calendar_events`, `reply_drafts`, `oauth_states` → `approval_actions`) |
+| 0007 | `20260924000700_assistant_memory.sql` | `assistant_threads`, `assistant_messages`, `memory_chunks` + HNSW + GIN |
+| 0008 | `20260924000800_notifications.sql` | `notifications`, `push_tickets`; FK `reminders.notification_id` |
+| 0009 | `20260924000900_business.sql` | `subscriptions`, `billing_events`, `entitlement_grants`, `plan_limits` (+ seed §4.6), `referral_codes`, `referrals`, `referral_credits` |
+| 0010 | `20260924001000_ops_product.sql` | `jobs`, `job_attempts`, `analytics_events`, `feature_flags` (+ R-10 seed), `feature_flag_overrides`, `announcements`, `announcement_dismissals`, `user_feedback`, `system_health_checks`, `rate_limits`, `api_idempotency_keys`, `app_settings` (+ seed), `metrics_daily`, `ai_metrics_daily`, `web_analytics_daily` |
+| 0011 | `20260924001100_privacy.sql` | `data_export_requests`, `data_deletion_requests`, `privacy_tombstones` |
+| 0012 | `20260924001200_admin_audit.sql` | `admin_users`, `admin_sessions`, `admin_preferences`, `audit_logs`, `support_tickets` (+ `public_ref` sequence), `support_notes`, `support_access_grants`; `private.admin_role_permissions` (table seeded from BACKOFFICE_PLAN §4.2), `admin_mfa_recovery_codes`; audit chain functions + immutability; last-super-admin trigger; deferred admin FKs |
+| 0013 | `20260924001300_functions_rpcs.sql` | Every §6 function (jobs, scheduler, retention, purge, entitlements, limits, budgets, rate limits, approvals, search, person intelligence, preview rule, flags, token hook, `require_admin`, all `admin_api.*`); plan-limit, status and referral triggers; `revoke`/`grant execute` |
+| 0014 | `20260924001400_rls_policies_grants.sql` | Baseline (§3.1) for every table; owner policies; column grants; restrictive aal2 policies; `plan_limits` read policy; `alter default privileges` |
+| 0015 | `20260924001500_cron_schedules.sql` | §9 (guarded) |
+| 0016 | `20260924001600_storage.sql` | §8 buckets + `storage.objects` policies |
 
 `supabase/config.toml`:
 - `[api] schemas=["public","admin_api"]`, `extra_search_path=["public","extensions"]`.
