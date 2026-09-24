@@ -356,7 +356,7 @@ select set_eq(
         'notifications.cap.follow_up', 'notifications.cap.life_intel', 'notifications.cap.deadline',
         'followup.wait_thresholds_days', 'first_analysis.mail_window_hours', 'first_analysis.calendar_window_hours',
         'first_analysis.slow_threshold_s', 'first_analysis.timeout_s', 'today.max_priorities', 'pro_gate.snooze_days',
-        'web.pricing_display', 'pricing.estimates'],
+        'web.pricing_display', 'pricing.estimates', 'billing.sandbox_allowed_app_user_ids'],
   'app_settings seeded with the documented keys (the gateway digest is written by the deploy job, and by 000_helpers in tests)'
 );
 select throws_ok(

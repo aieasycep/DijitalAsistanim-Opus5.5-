@@ -101,6 +101,120 @@ export const DB_FN = {
     'audit_log_append',
     '(p_actor_type text, p_actor_id uuid, p_actor_role text, p_action text, p_target_type text, p_target_id text, p_target_user_id uuid, p_reason text, p_result text, p_details jsonb, p_correlation_id uuid, p_ip_hash bytea) returns bigint',
   ),
+  // Business: entitlement gates, RevenueCat mirror, referrals (T-7.01…T-7.03; migrations 2200/2210)
+  checkPlanLimit: fn(
+    'public',
+    'check_plan_limit',
+    '(p_key text, p_increment int, p_user_id uuid) returns jsonb {key, allowed, limit?, used?, plan, resets_at?}',
+  ),
+  planLimit: fn('public', 'plan_limit', '(p_user uuid, p_key text) returns jsonb'),
+  recordBillingEvent: fn(
+    'public',
+    'record_billing_event',
+    '(p_event_id text, p_event_type text, p_app_user_id text, p_environment text, p_store text, p_product_id text, p_event_timestamp timestamptz, p_transferred_from text[], p_transferred_to text[], p_payload jsonb, p_payload_digest bytea, p_sync_ids text[], p_correlation_id uuid) returns jsonb {inserted, billing_event_id?, user_id?, jobs}',
+  ),
+  billingSyncContext: fn(
+    'public',
+    'billing_sync_context',
+    '(p_app_user_id text, p_event_id text) returns jsonb {user_id, sandbox_allowed, locale, event, mirror}',
+  ),
+  billingMarkEvent: fn(
+    'public',
+    'billing_mark_event',
+    '(p_event_id text, p_status text) returns void',
+  ),
+  billingApplyMirror: fn(
+    'public',
+    'billing_apply_mirror',
+    '(p_user uuid, p_rc_app_user_id text, p_snapshot jsonb, p_event_id text) returns jsonb {skipped, previous, current, event_type, effective_before, effective_after}',
+  ),
+  ensureReferralCode: fn(
+    'public',
+    'ensure_referral_code',
+    '(p_user uuid, p_candidate text) returns text',
+  ),
+  referralOverview: fn(
+    'public',
+    'referral_overview',
+    '(p_user uuid, p_now timestamptz) returns jsonb',
+  ),
+  referralApplyContext: fn(
+    'public',
+    'referral_apply_context',
+    '(p_referee uuid, p_code text, p_installation uuid) returns jsonb {code_owner, referee, owner}',
+  ),
+  applyReferral: fn(
+    'public',
+    'apply_referral',
+    '(p_referee uuid, p_referrer uuid, p_code text, p_source text, p_device_hash bytea, p_email_hash bytea, p_signals jsonb, p_run_after timestamptz, p_correlation_id uuid) returns jsonb {referral_id, status, applied_at}',
+  ),
+  referralEvaluationContext: fn(
+    'public',
+    'referral_evaluation_context',
+    '(p_referral_id uuid, p_now timestamptz) returns jsonb',
+  ),
+  referralTombstoneMatch: fn(
+    'public',
+    'referral_tombstone_match',
+    '(p_signals jsonb) returns boolean',
+  ),
+  referralDecide: fn(
+    'public',
+    'referral_decide',
+    '(p_referral_id uuid, p_decision text, p_reject_reason text, p_risk_score int, p_assessment jsonb, p_qualification jsonb, p_correlation_id uuid) returns jsonb',
+  ),
+  // public-api (T-9.04/T-9.05 backend; migration 2220)
+  publicSupportTicket: fn(
+    'public',
+    'public_support_ticket',
+    '(p_email citext, p_name text, p_category ticket_category, p_subject text, p_message text) returns jsonb {id, reference, duplicate}',
+  ),
+  supportInboundNote: fn(
+    'public',
+    'support_inbound_note',
+    '(p_message_id text, p_reference text, p_sender citext, p_body text, p_digest bytea) returns jsonb {stored, reason?}',
+  ),
+  publicDeletionSubject: fn(
+    'public',
+    'public_deletion_subject',
+    '(p_email citext) returns jsonb {user_id, is_admin, state} | null',
+  ),
+  publicOtpLockSeconds: fn(
+    'public',
+    'public_otp_lock_seconds',
+    '(p_subject text, p_lock_seconds int) returns int',
+  ),
+  publicOtpRecordFailure: fn(
+    'public',
+    'public_otp_record_failure',
+    '(p_subject text, p_max int, p_window_seconds int, p_lock_seconds int) returns jsonb {locked, failures, retry_after}',
+  ),
+  createDeletionRequest: fn(
+    'public',
+    'create_deletion_request',
+    '(p_user uuid, p_kind deletion_kind, p_origin text, p_confirmation text, p_status_token_hash bytea, p_subject_email_hash bytea, p_scope text, p_account uuid, p_source text, p_correlation_id uuid) returns jsonb {request_id, status, created, created_at, job_id}',
+  ),
+  publicSubscriptionActive: fn(
+    'public',
+    'public_subscription_active',
+    '(p_user uuid) returns boolean',
+  ),
+  publicDeletionStatus: fn(
+    'public',
+    'public_deletion_status',
+    '(p_request_id uuid) returns jsonb | null',
+  ),
+  publicPlans: fn('public', 'public_plans', '() returns jsonb {free, pricing, updated_at}'),
+  publicReferralResolve: fn(
+    'public',
+    'public_referral_resolve',
+    '(p_code text) returns jsonb {valid, reward_days, apply_window_days}',
+  ),
+  webAnalyticsIncrement: fn(
+    'public',
+    'web_analytics_increment',
+    '(p_day date, p_event text, p_dims jsonb) returns void',
+  ),
   // Admin gateway (DB §6.10, BACKOFFICE_PLAN §2.6)
   adminAuthorize: fn('admin_api', 'authorize', '(p_permission text) returns jsonb'),
 } as const satisfies Record<string, DbFunction>;
