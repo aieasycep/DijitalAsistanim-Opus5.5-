@@ -32,6 +32,13 @@ import { supabaseBootstrapSources } from '../../../_shared/services/bootstrap.ts
 import { supabaseCredentialsRepo } from '../../../_shared/services/credentials.ts';
 import { supabaseDevicesRepo } from '../../../_shared/services/devices.ts';
 import { supabaseEntitlementReader } from '../../../_shared/services/entitlements.ts';
+import { supabaseEntitlementGate } from '../../../_shared/services/entitlements/gate.ts';
+import { supabaseBillingRepo } from '../../../_shared/services/billing/repo.ts';
+import {
+  createRevenueCatClient,
+  revenueCatConfig,
+} from '../../../_shared/services/billing/revenuecat.ts';
+import { supabaseReferralRepo } from '../../../_shared/services/referrals/repo.ts';
 import { supabaseFlagSource } from '../../../_shared/services/flags.ts';
 import type { ApiDeps } from '../../deps.ts';
 import { supabaseAnalyticsRepo } from '../../routes/analytics.ts';
@@ -60,6 +67,8 @@ export function createApiDeps(input: {
   );
   let keyring: Promise<TokenKeyring> | null = null;
   const ai = createAiProviders(raw);
+  const gate = supabaseEntitlementGate(system);
+  const revenueCat = revenueCatConfig(env);
 
   return {
     env,
@@ -83,6 +92,12 @@ export function createApiDeps(input: {
       microsoftOauth: credentialStatus('microsoft_oauth', raw).status === 'configured',
       purchases: credentialStatus('revenuecat', raw).status === 'configured',
       push: credentialStatus('expo_push', raw).status === 'configured',
+    },
+    business: {
+      gate: () => gate,
+      referrals: supabaseReferralRepo(system),
+      billing: supabaseBillingRepo(system),
+      revenueCat: revenueCat === null ? null : createRevenueCatClient({ config: revenueCat }),
     },
     repos: (auth) => {
       const user = userClient(auth.jwt, config);

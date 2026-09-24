@@ -19,6 +19,15 @@ import type {
   ServiceCapabilities,
 } from '../_shared/services/bootstrap.ts';
 import { memoryCredentials } from '../_shared/testing/credentials.ts';
+import {
+  type MemoryBilling,
+  memoryBillingRepo,
+  type MemoryGate,
+  memoryEntitlementGate,
+  type MemoryReferrals,
+  memoryReferralRepo,
+} from '../_shared/testing/business.ts';
+import type { RevenueCatClient } from '../_shared/services/billing/revenuecat.ts';
 import type {
   DevicesRepo,
   InstallationUpsert,
@@ -183,6 +192,8 @@ export interface Harness {
   readonly fetchCalls: ReturnType<typeof stubFetch>['calls'];
   readonly announcements: AnnouncementRow[];
   readonly accountRows: AccountRow[];
+  /** Business fakes (T-7.01…T-7.03): the plan gate (Free unless set Pro), referrals, billing. */
+  readonly business: { gate: MemoryGate; referrals: MemoryReferrals; billing: MemoryBilling };
   token(sub?: string, extra?: Record<string, unknown>): Promise<string>;
 }
 
@@ -191,6 +202,7 @@ export async function createHarness(
     env?: Record<string, string | undefined>;
     fetch?: StubHandler;
     capabilities?: Partial<ServiceCapabilities>;
+    revenueCat?: RevenueCatClient | null;
   } = {},
 ): Promise<Harness> {
   const raw: RawEnv = testEnv(options.env ?? {});
@@ -208,19 +220,43 @@ export async function createHarness(
   const accountRows: AccountRow[] = [accountRow()];
   const stub = stubFetch(options.fetch ?? (() => new Response('unexpected', { status: 599 })));
   let keyring: Promise<TokenKeyring> | null = null;
+  const business = {
+    gate: memoryEntitlementGate(),
+    referrals: memoryReferralRepo(() => NOW),
+    billing: memoryBillingRepo(),
+  };
 
+  // The store mirror written by the billing fake is what `effective_entitlement` reports.
   const entitlements: EntitlementReader = {
-    effective: () =>
-      Promise.resolve({
-        is_active: false,
-        source: 'none',
-        is_trial: false,
-        will_renew: false,
-        store_expires_at: null,
+    effective: (userId) => {
+      const mirror = business.billing.mirrors.get(userId);
+      const active = mirror?.is_active === true;
+      return Promise.resolve({
+        is_active: active,
+        source: active ? 'store' : 'none',
+        is_trial: active && mirror?.period_type === 'trial',
+        will_renew: active && mirror?.will_renew === true,
+        store_expires_at: active ? (mirror?.expires_at ?? null) : null,
         grant_ends_at: null,
-        active_until: null,
-      }),
-    subscription: () => Promise.resolve(null),
+        active_until: active ? (mirror?.expires_at ?? null) : null,
+      });
+    },
+    subscription: (userId) => {
+      const mirror = business.billing.mirrors.get(userId);
+      return Promise.resolve(
+        mirror === undefined
+          ? null
+          : {
+              is_active: mirror.is_active,
+              store: mirror.store,
+              product_id: mirror.product_id,
+              period_type: mirror.period_type,
+              will_renew: mirror.will_renew,
+              expires_at: mirror.expires_at,
+              billing_issue_at: null,
+            },
+      );
+    },
     grants: () => Promise.resolve([]),
     usage: () =>
       Promise.resolve([
@@ -322,6 +358,12 @@ export async function createHarness(
         },
       },
     }),
+    business: {
+      gate: () => business.gate,
+      referrals: business.referrals,
+      billing: business.billing,
+      revenueCat: options.revenueCat ?? null,
+    },
     fetch: stub.fetch,
     now: () => NOW,
   };
@@ -341,6 +383,7 @@ export async function createHarness(
     fetchCalls: stub.calls,
     announcements,
     accountRows,
+    business,
     token: (sub, extra = {}) => issuer.sign(userClaims(sub, extra)),
   };
 }
