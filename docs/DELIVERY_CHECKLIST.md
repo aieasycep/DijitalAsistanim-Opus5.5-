@@ -1764,7 +1764,7 @@ Copy this checklist into the PR description of every feature PR. A feature is do
 | QG-24 | Prototype fakes | `Android Frame\|Tasarım Sistemi\|Widget Showcase\|App Store Görseller\|yunus@example\.com\|14 gün kaldı\|Çözüldü!` | `apps/mobile/**` | 0 |
 | QG-25 | Realtime unused (R-19) | pgTAP: `select count(*) from pg_publication_tables where pubname='supabase_realtime'` = 0; grep `\.channel\(\|postgres_changes\|supabase\.realtime` | DB, `apps/**` | 0 |
 | QG-26 | Analytics catalogue (R-21) | every tracked event name literal is in the generated `packages/domain/analytics/events.ts`; props match the SECURITY_AND_PRIVACY_PLAN rules | `apps/**`, `supabase/functions/**` | 0 |
-| QG-27 | Canonical-name drift | `\bget_today\b\|device-result\|captures/:id/cancel\|\bperson_overview\b\|\bplan_timeline\b\|\bmail_digest\b\|\bflow_meta\b\|vector\(1536\)\|\bonly_important\b\|\bgate_dismissals\b\|user_preferences\.locale\|android_ni_settings\|claude-fable-` | `apps/**`, `packages/**`, `supabase/**` | 0 |
+| QG-27 | Canonical-name drift | `\bget_today\b\|device-result\|captures/:id/cancel\|\bperson_overview\b\|\bplan_timeline\b\|\bmail_digest\b\|vector\(1536\)\|\bonly_important\b\|\bgate_dismissals\b\|user_preferences\.locale\|android_ni_settings\|claude-fable-` | `apps/**`, `packages/**`, `supabase/**` | 0 |
 
 ### 5.3 Security gate
 

@@ -1,0 +1,260 @@
+{
+  "source": "design/reference/primary/01 Tasarim Sistemi.dc.html",
+  "colors": {
+    "brand/primary": {
+      "value": "#5B5CE2",
+      "on": "#fff",
+      "use": "Birincil buton, AI işareti, seçili sekme"
+    },
+    "brand/primary-pressed": {
+      "value": "#4B4CCB",
+      "on": "#fff",
+      "use": "Basılı durum"
+    },
+    "brand/soft": {
+      "value": "#EDEDFC",
+      "on": "#4547C9",
+      "use": "Tonal buton, AI kart parıltısı"
+    },
+    "brand/text-on-soft": {
+      "value": "#4547C9",
+      "on": "#fff",
+      "use": "Ghost buton, bağlantı"
+    },
+    "brand/dark-glow": {
+      "value": "#A9AAF5",
+      "on": "#1A1917",
+      "use": "Koyu yüzeyde AI işareti"
+    },
+    "critical": {
+      "value": "#E0553F",
+      "on": "#fff",
+      "use": "İkon, çakışma çizgisi"
+    },
+    "critical/soft": {
+      "value": "#FCEDE9",
+      "on": "#C7432F",
+      "use": "ACİL rozet zemini"
+    },
+    "critical/text": {
+      "value": "#C7432F",
+      "on": "#fff",
+      "use": "Rozet metni, yıkıcı buton"
+    },
+    "warning": {
+      "value": "#E09A1C",
+      "on": "#1A1917",
+      "use": "İkon (yoğunluk, bekleme)"
+    },
+    "warning/soft": {
+      "value": "#FDF2DC",
+      "on": "#9A6300",
+      "use": "SON TARİH, BEKLİYOR"
+    },
+    "warning/text": {
+      "value": "#9A6300",
+      "on": "#fff",
+      "use": "Rozet metni"
+    },
+    "success": {
+      "value": "#2FA062",
+      "on": "#fff",
+      "use": "Tamamlandı ikonu"
+    },
+    "success/soft": {
+      "value": "#E4F5EA",
+      "on": "#1E7A47",
+      "use": "ONAYLANDI, güvence kutusu"
+    },
+    "success/text": {
+      "value": "#1E7A47",
+      "on": "#fff",
+      "use": "Rozet metni"
+    },
+    "info": {
+      "value": "#3B82E6",
+      "on": "#fff",
+      "use": "Ulaşım ikonu"
+    },
+    "info/soft": {
+      "value": "#E7F0FD",
+      "on": "#2262BE",
+      "use": "TAKVİM rozeti"
+    },
+    "neutral/bg": {
+      "value": "#F5F4F0",
+      "on": "#6B6860",
+      "use": "Uygulama zemini (sıcak)"
+    },
+    "neutral/surface": {
+      "value": "#FFFFFF",
+      "on": "#6B6860",
+      "use": "Kart"
+    },
+    "neutral/surface-2": {
+      "value": "#F0EFEB",
+      "on": "#6B6860",
+      "use": "İkon karosu, nötr rozet"
+    },
+    "neutral/hairline": {
+      "value": "#E9E7E1",
+      "on": "#6B6860",
+      "use": "Ayırıcı (rgba 27,25,23,.06)"
+    },
+    "ink": {
+      "value": "#1A1917",
+      "on": "#fff",
+      "use": "Birincil metin, koyu kart"
+    },
+    "ink/secondary": {
+      "value": "#6B6860",
+      "on": "#fff",
+      "use": "İkincil metin"
+    },
+    "ink/tertiary": {
+      "value": "#9B978E",
+      "on": "#fff",
+      "use": "Kicker, meta"
+    },
+    "ink/disabled": {
+      "value": "#B8B4AA",
+      "on": "#fff",
+      "use": "Pasif ikon"
+    },
+    "editorial/paper": {
+      "value": "#FBFAF7",
+      "on": "#6B6860",
+      "use": "Haftalık özet, okuma görünümü"
+    },
+    "gradient/dawn": {
+      "value": "linear-gradient(160deg,#1E1E4C 0%,#3B3CA8 58%,#7071EA 100%)",
+      "on": "#fff",
+      "use": "Sabah brifingi, marka anı"
+    },
+    "gradient/night": {
+      "value": "linear-gradient(180deg,#15153A 0%,#25266A 60%,#3B3CA8 100%)",
+      "on": "#fff",
+      "use": "Ses, sesli brifing, analiz"
+    },
+    "gradient/dusk": {
+      "value": "linear-gradient(160deg,#2A1E3F 0%,#4A3A8A 55%,#8C6BD6 100%)",
+      "on": "#fff",
+      "use": "Akşam kapanışı"
+    }
+  },
+  "dark": {
+    "bg": "#141311",
+    "surface": "#1F1E1B",
+    "surface-2": "rgba(255,255,255,.08)",
+    "text": "#F2F0EB",
+    "secondary": "#A39F96",
+    "tertiary": "#7A776F",
+    "primary": "#8586F2",
+    "primary-glow": "#A9AAF5",
+    "critical-text": "#F08B78",
+    "warning-text": "#F0B85A",
+    "success-text": "#6FCF97",
+    "on-primary": "#0F0F2A"
+  },
+  "typography": {
+    "display": {
+      "fontFamily": "Geist",
+      "fontSize": "34px",
+      "lineHeight": "40px",
+      "fontWeight": 600,
+      "letterSpacing": "-.025em",
+      "textTransform": "none",
+      "spec": "34 / 40 · 600 · −2.5%"
+    },
+    "h1": {
+      "fontFamily": "Geist",
+      "fontSize": "28px",
+      "lineHeight": "34px",
+      "fontWeight": 600,
+      "letterSpacing": "-.02em",
+      "textTransform": "none",
+      "spec": "28 / 34 · 600 · −2%"
+    },
+    "h2": {
+      "fontFamily": "Geist",
+      "fontSize": "22px",
+      "lineHeight": "28px",
+      "fontWeight": 600,
+      "letterSpacing": "-.02em",
+      "textTransform": "none",
+      "spec": "22 / 28 · 600 · −2%"
+    },
+    "h3": {
+      "fontFamily": "Geist",
+      "fontSize": "17px",
+      "lineHeight": "23px",
+      "fontWeight": 600,
+      "letterSpacing": "-.01em",
+      "textTransform": "none",
+      "spec": "17 / 23 · 600 · −1%"
+    },
+    "body": {
+      "fontFamily": "Geist",
+      "fontSize": "15px",
+      "lineHeight": "22px",
+      "fontWeight": 400,
+      "letterSpacing": "0",
+      "textTransform": "none",
+      "spec": "15 / 22 · 400"
+    },
+    "secondary": {
+      "fontFamily": "Geist",
+      "fontSize": "14px",
+      "lineHeight": "20px",
+      "fontWeight": 400,
+      "letterSpacing": "0",
+      "textTransform": "none",
+      "spec": "14 / 20 · 400 · secondary"
+    },
+    "caption / kicker": {
+      "fontFamily": "Geist",
+      "fontSize": "12px",
+      "lineHeight": "16px",
+      "fontWeight": 600,
+      "letterSpacing": ".08em",
+      "textTransform": "uppercase",
+      "spec": "12 / 16 · 600 · +8% · caps"
+    },
+    "micro / badge": {
+      "fontFamily": "Geist",
+      "fontSize": "11px",
+      "lineHeight": "14px",
+      "fontWeight": 700,
+      "letterSpacing": ".05em",
+      "textTransform": "none",
+      "spec": "11 / 14 · 700 · +5%"
+    },
+    "editorial": {
+      "fontFamily": "Lora, Georgia, serif",
+      "fontSize": "18px",
+      "lineHeight": "29px",
+      "fontWeight": 400,
+      "letterSpacing": "0",
+      "textTransform": "none",
+      "spec": "Lora 18 / 29 · brifing anlatısı"
+    },
+    "editorial-display": {
+      "fontFamily": "Lora, Georgia, serif",
+      "fontSize": "34px",
+      "lineHeight": "40px",
+      "fontWeight": 500,
+      "letterSpacing": "-.02em",
+      "textTransform": "none",
+      "spec": "Lora 34–38 · haftalık özet"
+    }
+  },
+  "space": [4, 8, 12, 16, 20, 24, 32, 40],
+  "radius": {
+    "çip ikon karosu": 10,
+    "satır içi buton": 12,
+    "buton": 14,
+    "küçük kart": 16,
+    "kart": 20,
+    "hero / sayfa": 28
+  }
+}

@@ -1,0 +1,4 @@
+{
+  "extends": "@da/config/tsconfig/scripts.json",
+  "include": ["scripts/**/*.ts"]
+}

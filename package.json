@@ -1,0 +1,29 @@
+{
+  "name": "dijital-asistan",
+  "private": true,
+  "packageManager": "pnpm@11.27.1",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "type": "module",
+  "scripts": {
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "build": "turbo run build",
+    "generate": "turbo run generate",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "quality-gate": "node scripts/quality-gate/run.ts",
+    "test:scripts": "node --test \"scripts/**/*.test.ts\"",
+    "design:extract": "node scripts/design/extract-tokens.ts && node scripts/design/extract-icons.ts && node scripts/design/extract-copy.ts"
+  },
+  "devDependencies": {
+    "@da/config": "workspace:*",
+    "@types/node": "24.13.6",
+    "eslint": "9.39.5",
+    "prettier": "3.9.9",
+    "turbo": "2.11.3",
+    "typescript": "catalog:"
+  }
+}

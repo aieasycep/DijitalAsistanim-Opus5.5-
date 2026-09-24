@@ -1,0 +1,134 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+
+catalog:
+  react: 19.2.3
+  react-dom: 19.2.3
+  '@types/react': ~19.2.18
+  '@types/react-dom': ~19.2.7
+  typescript: ~6.0.3
+  zod: 4.6.5
+  date-fns: 4.4.0
+  '@date-fns/tz': 1.5.0
+  '@supabase/supabase-js': 2.117.0
+  '@supabase/ssr': 0.12.7
+  '@tanstack/react-query': 5.103.2
+  zustand: 5.0.15
+  react-hook-form: 7.88.0
+  '@hookform/resolvers': 5.9.1
+  next-intl: 4.14.6
+  use-intl: 4.14.6
+  intl-messageformat: 11.1.0
+  next: 16.3.6
+  eslint-config-next: 16.3.6
+  babel-plugin-react-compiler: 1.0.0
+  tailwindcss: 4.3.3
+  '@tailwindcss/postcss': 4.3.3
+  '@sentry/nextjs': 10.75.2
+  '@t3-oss/env-nextjs': 0.13.11
+  server-only: 0.0.1
+  clsx: 2.1.1
+  tailwind-merge: 3.7.0
+  class-variance-authority: 0.7.1
+  radix-ui: 1.6.7
+  '@tanstack/react-table': 9.2.4
+  '@tanstack/react-virtual': 3.14.13
+  recharts: 3.10.1
+  cmdk: 1.1.1
+  sonner: 2.0.8
+  next-themes: 0.4.6
+  nuqs: 2.10.1
+  react-day-picker: 10.0.1
+  tw-animate-css: 1.4.0
+  vitest: 4.1.11
+  '@vitest/coverage-v8': 4.1.11
+  vite: 8.3.0
+  happy-dom: 20.14.5
+  '@playwright/test': 1.63.0
+  eslint: 9.39.5
+  '@eslint/js': 9.39.5
+  typescript-eslint: 8.70.1
+  eslint-plugin-react-hooks: 7.1.1
+  globals: 17.12.0
+  prettier: 3.9.9
+  prettier-plugin-tailwindcss: 0.8.1
+  '@types/node': 24.13.6
+
+catalogs:
+  expo:
+    expo: ~57.0.24
+    react-native: 0.86.3
+    expo-router: ~57.0.22
+    react-native-reanimated: 4.5.1
+    react-native-worklets: 0.10.1
+    react-native-gesture-handler: ~2.32.0
+    react-native-screens: ~4.26.0
+    react-native-safe-area-context: ~5.7.0
+    react-native-svg: 15.15.4
+    react-native-keyboard-controller: 1.21.9
+    '@shopify/flash-list': 2.0.2
+    '@react-native-community/netinfo': 12.0.1
+    expo-notifications: ~57.0.20
+    expo-calendar: ~57.0.4
+    expo-secure-store: ~57.0.4
+    expo-audio: ~57.0.5
+    expo-speech: ~57.0.3
+    expo-image-picker: ~57.0.19
+    expo-document-picker: ~57.0.2
+    expo-file-system: ~57.0.7
+    expo-sharing: ~57.0.21
+    expo-dev-client: ~57.0.19
+    expo-updates: ~57.0.23
+    expo-background-task: ~57.0.19
+    expo-task-manager: ~57.0.19
+    expo-apple-authentication: ~57.0.2
+    expo-web-browser: ~57.0.3
+    expo-linking: ~57.0.10
+    expo-localization: ~57.0.2
+    expo-crypto: ~57.0.3
+    expo-local-authentication: ~57.0.3
+    expo-haptics: ~57.0.3
+    expo-image: ~57.0.5
+    expo-font: ~57.0.4
+    expo-splash-screen: ~57.0.9
+    expo-system-ui: ~57.0.4
+    expo-status-bar: ~57.0.1
+    expo-constants: ~57.0.19
+    expo-device: ~57.0.2
+    expo-application: ~57.0.3
+    expo-build-properties: ~57.0.21
+    react-native-mmkv: 4.3.2
+    react-native-nitro-modules: 0.37.1
+    react-native-purchases: 10.10.1
+    '@sentry/react-native': 8.27.0
+    '@react-native-google-signin/google-signin': 16.1.5
+    expo-share-intent: 8.0.1
+    '@bacons/apple-targets': 5.0.0
+    expo-speech-recognition: 57.1.0
+    '@expo-google-fonts/geist': 0.4.2
+    '@expo-google-fonts/lora': 0.4.2
+    '@material-symbols/svg-400': 0.47.5
+    '@tanstack/react-query-persist-client': 5.103.2
+    '@tanstack/query-async-storage-persister': 5.103.2
+    jest-expo: ~57.0.5
+    jest: 29.7.0
+    '@testing-library/react-native': 14.0.1
+    test-renderer: 1.3.0
+    '@react-native/jest-preset': 0.86.3
+
+overrides:
+  react: 19.2.3
+  react-dom: 19.2.3
+  react-native: 0.86.3
+
+allowBuilds:
+  esbuild: true
+  unrs-resolver: true
+  deno: true
+  '@sentry/cli': true
+  supabase: true
+  core-js: false
+  msw: false
+
+minimumReleaseAge: 1440

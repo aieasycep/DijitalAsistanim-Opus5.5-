@@ -3866,7 +3866,7 @@ All mobile tasks share `C-MOB`. Tasks that touch native modules or config also r
   - missing RLS (queries `pg_class` on tier C);
   - a diff of the No-Dead-Action inventory against DELIVERY_CHECKLIST;
   - Realtime unused (R-19): no client channel subscription and an empty `supabase_realtime` publication;
-  - canonical-name drift: retired names such as `get_today`, `mail_digest`, `flow_meta`, `get_person`, `person_overview`, `search_memory`, `device-result`, `captures/:id/cancel`, `only_important` and `vector(1536)` do not appear.
+  - canonical-name drift: retired names such as `get_today`, `mail_digest`, `get_person`, `person_overview`, `search_memory`, `device-result`, `captures/:id/cancel`, `only_important` and `vector(1536)` do not appear.
 
   The check IDs and patterns are DELIVERY_CHECKLIST §5 (QG-01…QG-27, SG-1…SG-8); banned markers follow R-17.
 - **Commands:** `C-GATE`
@@ -4281,7 +4281,7 @@ Each item below is used by this plan but is not in the spine. Where another draf
 
     Full definitions belong in DATABASE_AND_RLS_PLAN.
 16. SQL functions:
-    - RPCs (names per API_CONTRACTS §15, R-20): `today_overview`, `flow_feed` (with `meta`; `flow_meta` is rejected), `mail_intelligence`, `plan_range`, `plan_week_density`, `person_intelligence`, `vip_suggestions`, `get_explanation`, `submit_ai_correction`, `apply_insight_feedback` / `revert_insight_feedback` (kept by R-24), `set_commitment_status`, `search_user_content`, `preview_priority_rule`, `get_usage_summary`, `list_approvals`, `dismiss_announcement`, `mark_briefing_opened`, `history_deletion_preview` and `upsert_manual_contact` (R-24). The retired names `get_today`, `mail_digest`, `get_person`, `person_overview`, `plan_timeline` and `search_memory` are not used.
+    - RPCs (names per API_CONTRACTS §15, R-20): `today_overview`, `flow_feed`, `flow_meta` (RPC-20, the Flow header counts), `mail_intelligence`, `plan_range`, `plan_week_density`, `person_intelligence`, `vip_suggestions`, `get_explanation`, `submit_ai_correction`, `apply_insight_feedback` / `revert_insight_feedback` (kept by R-24), `set_commitment_status`, `search_user_content`, `preview_priority_rule`, `get_usage_summary`, `list_approvals`, `dismiss_announcement`, `mark_briefing_opened`, `history_deletion_preview` and `upsert_manual_contact` (R-24). The retired names `get_today`, `mail_digest`, `get_person`, `person_overview`, `plan_timeline` and `search_memory` are not used.
     - Private helpers are listed in T-2.15, with the canonical renames `private.is_pro` (not `has_pro` / `require_pro`), `private.evaluate_flags`, `private.audit_log_append`, `private.audit_verify_chain`, the `private.admin_role_permissions` table, `private.poke_worker`, `admin_api.prompt_activate` and `public.effective_entitlement`. Approval expiry is step 9 of `scheduler_tick`.
 17. Cron jobs: the DATABASE_AND_RLS_PLAN §9 set of 8: `da_scheduler_tick`, `da_worker_poke`, `da_push_receipts`, `da_health_check`, `da_reconciliation`, `da_retention`, `da_billing_reconcile` and `da_cron_housekeeping`. Metrics rollups run inside `scheduler_tick`; `da-metrics-rollup` and `da-cron-history-prune` are rejected. The Vault secrets are `da_project_url` and `da_cron_secret`.
 

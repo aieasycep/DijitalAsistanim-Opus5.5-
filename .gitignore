@@ -1,0 +1,51 @@
+# dependencies & build output
+node_modules/
+.pnpm-store/
+.turbo/
+.next/
+out/
+dist/
+build/
+coverage/
+.cache/
+*.tsbuildinfo
+
+# Expo / React Native (continuous native generation)
+.expo/
+.expo-export/
+apps/mobile/ios/
+apps/mobile/android/
+*.apk
+*.aab
+*.ipa
+
+# env & credentials — never commit real secrets
+.env
+.env.*
+!.env.example
+*.p8
+*.pem
+*.p12
+*.jks
+*.keystore
+google-services.json
+GoogleService-Info.plist
+
+# design archives (extracted locally; tokens/icons/copy are committed under design/)
+design/reference/
+
+# Supabase local state
+supabase/.temp/
+supabase/.branches/
+
+# test output
+playwright-report/
+test-results/
+blob-report/
+
+# OS / editor
+.DS_Store
+*.log
+.idea/
+.vscode/*
+!.vscode/extensions.json

@@ -1,0 +1,45 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": [".nvmrc", "pnpm-workspace.yaml"],
+  "tasks": {
+    "generate": {
+      "outputs": ["src/generated/**", "generated/**"]
+    },
+    "lint": {
+      "dependsOn": ["^generate"]
+    },
+    "typecheck": {
+      "dependsOn": ["^generate", "generate"]
+    },
+    "test": {
+      "dependsOn": ["^generate", "generate"],
+      "outputs": ["coverage/**"]
+    },
+    "build": {
+      "dependsOn": ["^generate", "generate", "^build"],
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"],
+      "env": ["NEXT_PUBLIC_*", "SENTRY_*", "APP_ENV"]
+    },
+    "dev": {
+      "persistent": true,
+      "cache": false
+    },
+    "mobile:check": {
+      "cache": false
+    },
+    "db:test": {
+      "cache": false
+    },
+    "functions:test": {
+      "cache": false
+    },
+    "e2e:web": {
+      "dependsOn": ["build"],
+      "cache": false
+    },
+    "e2e:backoffice": {
+      "dependsOn": ["build"],
+      "cache": false
+    }
+  }
+}

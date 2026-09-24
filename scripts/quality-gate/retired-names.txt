@@ -1,0 +1,13 @@
+# Retired canonical names (DELIVERY_CHECKLIST QG-27, docs/CANONICAL_REGISTRY.md). One regex per line.
+\bget_today\b
+device-result
+captures/:id/cancel
+\bperson_overview\b
+\bplan_timeline\b
+\bmail_digest\b
+vector\(1536\)
+\bonly_important\b
+\bgate_dismissals\b
+user_preferences\.locale
+android_ni_settings
+claude-fable-

@@ -1,0 +1,2 @@
+# Allowed occurrences of otherwise-flagged text. Format: <path-substring> | <line-substring> | <justification>
+# Every entry must carry a justification.
