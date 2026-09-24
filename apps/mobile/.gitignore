@@ -1,6 +1,7 @@
-# Continuous native generation: `expo prebuild` output is never committed.
-ios/
-android/
+# Continuous native generation: `expo prebuild` output is never committed. Anchored to this
+# directory so the native sources of local modules (`modules/*/android`, `modules/*/ios`) are kept.
+/ios/
+/android/
 .expo/
 .expo-export/
 expo-env.d.ts

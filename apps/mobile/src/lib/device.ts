@@ -6,6 +6,7 @@ import * as Application from 'expo-application';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
+import { androidNiRegistration } from '../features/android-ni/choice';
 import { deviceLocale, deviceTimeZone } from '../i18n/I18nProvider';
 import { getUiPrefs } from './ui-prefs';
 
@@ -67,8 +68,12 @@ export async function pushPermission(): Promise<PushPermission> {
   }
 }
 
-/** `POST /devices/register` body without a push token (T-8.24 adds the token after the prompt). */
+/**
+ * `POST /devices/register` body without a push token (T-8.24 adds the token after the prompt). On
+ * Android it carries the `android_ni` mirror of the notification listener (T-8.26, API-DEV-01).
+ */
 export async function deviceRegisterBody(installationId: string) {
+  const androidNi = androidNiRegistration();
   return {
     installation_id: installationId,
     platform: platform(),
@@ -79,5 +84,6 @@ export async function deviceRegisterBody(installationId: string) {
     timezone: deviceTimeZone(),
     push: { permission: await pushPermission(), expo_push_token: null },
     device_fingerprint_hash: null,
+    ...(androidNi === undefined ? {} : { android_ni: androidNi }),
   };
 }

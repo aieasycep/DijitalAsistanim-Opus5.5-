@@ -8,7 +8,7 @@
   },
   "grantCta": "Bildirim Erişimini Aç",
   "modes": {
-    "selected": "Yalnızca seçtiğim uygulamalar",
+    "selected": "Seçili uygulamalar",
     "all": "Tüm uygulamalar"
   },
   "apps": "Uygulamalar",
@@ -21,5 +21,102 @@
     "title": "Bildirim erişimi hakkında",
     "accept": "Anladım, devam et"
   },
-  "pro": "Telefon bildirimleri zekâsı Pro'da."
+  "pro": "Telefon bildirimleri zekâsı Pro'da.",
+  "screen": {
+    "title": "Telefon bildirimleri",
+    "subtitle": "Kargo, banka ve uygulama bildirimlerinden kişisel sinyaller çıkarırım.",
+    "notGrantedTitle": "Bildirim erişimi kapalı",
+    "notGrantedBody": "Android ayarlarından Dijital Asistan'a bildirim erişimi vermen gerekiyor.",
+    "enabledTitle": "Açık · Son 24 saatte {count, plural, one {# sinyal} other {# sinyal}}",
+    "pausedTitle": "Erişim açık, analiz kapalı",
+    "lapsedTitle": "Pro sona erdi · analiz duraklatıldı",
+    "lapsedBody": "Pro'ya döndüğünde analiz kaldığı yerden devam eder.",
+    "statusLoading": "Durum kontrol ediliyor",
+    "unsupported": "Bu cihaz bildirim erişimini desteklemiyor.",
+    "toggle": "Telefon bildirimlerini analiz et",
+    "toggleNeedsAccess": "Önce bildirim erişimini aç.",
+    "modeSection": "Erişim modu",
+    "modeAllMeta": "Hariç tutulanlar dışında",
+    "categoriesSection": "Kategoriler",
+    "pickApps": "Uygulama seç",
+    "pickAppsMeta": "{count, plural, =0 {Elle seçilen uygulama yok} one {# uygulama elle seçildi} other {# uygulama elle seçildi}}",
+    "lockedRow": "Güvenlik ve mesajlaşma uygulamaları her zaman hariç",
+    "lockedA11y": "Güvenlik ve mesajlaşma uygulamaları her zaman hariç, değiştirilemez",
+    "signalsSection": "Son sinyaller",
+    "signalsEmpty": "Henüz sinyal yok. Seçtiğin uygulamalardan bildirim geldiğinde burada görünür.",
+    "signalsPartial": "Hesabındaki sinyaller şu an okunamadı; bu cihazdakiler gösteriliyor.",
+    "signalTitle": "{app} · {category}",
+    "deleteSignalA11y": "{app} sinyalini sil",
+    "signalDeleted": "Sinyal silindi.",
+    "deleteAllTitle": "Tüm sinyaller silinsin mi?",
+    "deleteAllBody": "Bu cihazdaki ve hesabındaki çıkarılan bilgiler silinir. Bu işlem geri alınamaz.",
+    "removeAccess": "Sistem erişimini kaldır",
+    "restrictedHelp": "İzin açılamıyorsa: Ayarlar → Uygulamalar → Dijital Asistan → ⋮ → Kısıtlı ayarlara izin ver, sonra tekrar dene.",
+    "settingsFailed": "Ayarlar açılamadı.",
+    "grantedToast": "Telefon bildirimleri açık"
+  },
+  "category": {
+    "cargo": "Kargo",
+    "bank_payment": "Ödeme",
+    "flight": "Uçuş",
+    "reservation": "Rezervasyon",
+    "other": "Diğer"
+  },
+  "tracking": {
+    "created": "Sipariş alındı",
+    "in_transit": "Yolda",
+    "out_for_delivery": "Dağıtımda",
+    "delivered": "Teslim edildi",
+    "exception": "Teslimatta sorun"
+  },
+  "detail": {
+    "gate": "Kapı {gate}",
+    "due": "Son tarih {date}"
+  },
+  "disclosureSheet": {
+    "messagingTitle": "Mesajlaşma",
+    "messagingMeta": "WhatsApp, Telegram, SMS · her zaman hariç",
+    "messagingA11y": "Mesajlaşma uygulamaları her zaman hariç, değiştirilemez",
+    "chatNote": "Sohbet ve SMS uygulamaları da her zaman hariç tutulur.",
+    "footnote": "Android Ayarlar → Bildirim erişimi ekranı açılır."
+  },
+  "picker": {
+    "title": "Uygulama seç",
+    "search": "Uygulama ara",
+    "senders": "Bildirim gönderenler",
+    "others": "Diğer uygulamalar",
+    "seenMeta": "Son 7 günde {count, plural, one {# bildirim} other {# bildirim}}",
+    "locked": "Her zaman hariç",
+    "empty": "Uygulama bulunamadı.",
+    "noApps": "Bu cihazda listelenecek uygulama bulunamadı.",
+    "tuneA11y": "{app} için önem",
+    "importance": {
+      "important": "Önemli",
+      "normal": "Normal",
+      "ignore": "Yok say"
+    },
+    "ruleFailed": "Önem ayarı kaydedilemedi.",
+    "viaCategory": "{category} kategorisiyle seçili",
+    "offlineImportance": "Önem ayarı için internet bağlantısı gerekiyor."
+  },
+  "denylist": {
+    "title": "Her zaman hariç tutulanlar",
+    "groups": {
+      "authenticator": "Doğrulama uygulamaları",
+      "password_manager": "Şifre yöneticileri",
+      "e_devlet": "e-Devlet",
+      "messaging": "Mesajlaşma ve SMS",
+      "google_play_services": "Google Play hizmetleri",
+      "own_app": "Dijital Asistan"
+    },
+    "note": "Bu uygulamaların bildirimleri hiçbir modda okunmaz. Ayrıca doğrulama kodu içeren her bildirim, uygulamadan bağımsız olarak yok sayılır.",
+    "ownApp": "Bu uygulama"
+  },
+  "onboardingStep": {
+    "notGrantedTitle": "Bildirim erişimi verilmedi.",
+    "notGrantedBody": "İstersen daha sonra Ayarlar › Telefon Bildirimleri'nden açabilirsin.",
+    "retry": "Tekrar Dene",
+    "troubleTitle": "Sorun mu yaşıyorsun?",
+    "troubleBody": "Uygulama bilgisi → ⋮ → Kısıtlı ayarlara izin ver"
+  }
 }

@@ -163,6 +163,8 @@ export const SETTINGS_SCREENS: readonly string[] = [
   'priority-rules/[id]',
   'subscription',
   'referral',
+  // T-8.26 Android Notification Intelligence (M-ANI-01; iOS redirects to the hub).
+  'android-notifications',
 ];
 /** The one settings page a `deletion_pending` account can reach (M-SET-39 status). */
 export const DELETION_STATUS_SCREEN = 'privacy/delete-account';
