@@ -49,17 +49,19 @@ $$;
 alter table public.support_notes add column if not exists kind text not null default 'internal';
 alter table public.support_notes
   add constraint support_notes_kind_values_check
-    check (kind in ('internal', 'outbound_reply', 'inbound_reply', 'system'));
+    check (kind in ('internal', 'outbound_reply', 'inbound_reply', 'system')) not valid;
+-- Inbound replies and system notes have no admin author; the check below keeps admin notes attributed.
+-- squawk-ignore ban-drop-not-null
 alter table public.support_notes alter column author_admin_id drop not null;
 alter table public.support_notes
   add constraint support_notes_author_kind_check
-    check (kind not in ('internal', 'outbound_reply') or author_admin_id is not null);
+    check (kind not in ('internal', 'outbound_reply') or author_admin_id is not null) not valid;
 
 alter table public.webhook_events drop constraint webhook_events_source_check;
 alter table public.webhook_events
   add constraint webhook_events_source_check
     check (source in ('google_gmail', 'google_calendar', 'microsoft_graph', 'microsoft_lifecycle', 'revenuecat',
-                      'support_inbound'));
+                      'support_inbound')) not valid;
 
 -- Stores one inbound reply as an `inbound_reply` note (≤ 5,000 characters) when the ticket exists
 -- and the sender is the ticket's contact e-mail; moves waiting_user → open. The provider message

@@ -358,29 +358,26 @@ declare
   v_end timestamptz := (p_day + 1)::timestamp at time zone v_tz;
   v_metrics integer;
   v_ai integer;
+  -- Real (non-demo, non-internal) users; an array keeps the function statically checkable.
+  v_population uuid[];
 begin
   perform pg_advisory_xact_lock(hashtext('da_rollup:' || p_day::text));
   delete from public.metrics_daily m where m.day = p_day;
   delete from public.ai_metrics_daily m where m.day = p_day;
 
-  if to_regclass('pg_temp.da_rollup_population') is null then
-    create temporary table da_rollup_population (user_id uuid primary key) on commit drop;
-  else
-    truncate pg_temp.da_rollup_population;
-  end if;
-  insert into pg_temp.da_rollup_population select m.user_id from private.metric_population() m;
+  v_population := array(select m.user_id from private.metric_population() m);
 
   insert into public.metrics_daily (day, metric_key, dim1, dim2, dim3, value, value_sum, latency_hist)
   -- briefings.status (kind, status)
   select p_day, 'briefings.status', b.kind::text, b.status::text, '', count(*), null::numeric, null::integer[]
-  from public.briefings b join pg_temp.da_rollup_population u on u.user_id = b.user_id
+  from public.briefings b join unnest(v_population) as u(user_id) on u.user_id = b.user_id
   where b.scheduled_for >= v_start and b.scheduled_for < v_end
   group by b.kind, b.status
   union all
   -- briefings.gen_latency (kind)
   select p_day, 'briefings.gen_latency', b.kind::text, '', '', count(*), sum(b.latency_ms),
          private.latency_hist(array_agg(b.latency_ms))
-  from public.briefings b join pg_temp.da_rollup_population u on u.user_id = b.user_id
+  from public.briefings b join unnest(v_population) as u(user_id) on u.user_id = b.user_id
   where b.scheduled_for >= v_start and b.scheduled_for < v_end and b.latency_ms is not null
   group by b.kind
   union all
@@ -388,20 +385,20 @@ begin
   select p_day, 'briefings.delivery_delay', b.kind::text, '', '', count(*),
          sum(extract(epoch from (b.delivered_at - b.scheduled_for)) * 1000),
          private.latency_hist(array_agg((extract(epoch from (b.delivered_at - b.scheduled_for)) * 1000)::integer))
-  from public.briefings b join pg_temp.da_rollup_population u on u.user_id = b.user_id
+  from public.briefings b join unnest(v_population) as u(user_id) on u.user_id = b.user_id
   where b.scheduled_for >= v_start and b.scheduled_for < v_end and b.delivered_at is not null
   group by b.kind
   union all
   -- notifications.decision (category, decision, reason)
   select p_day, 'notifications.decision', n.category::text, n.decision::text, coalesce(n.suppression_reason, ''), count(*),
          null, null
-  from public.notifications n join pg_temp.da_rollup_population u on u.user_id = n.user_id
+  from public.notifications n join unnest(v_population) as u(user_id) on u.user_id = n.user_id
   where n.created_at >= v_start and n.created_at < v_end and not n.is_test
   group by n.category, n.decision, n.suppression_reason
   union all
   -- push.receipts (status, error)
   select p_day, 'push.receipts', t.status, coalesce(t.error_code, ''), '', count(*), null, null
-  from public.push_tickets t join pg_temp.da_rollup_population u on u.user_id = t.user_id
+  from public.push_tickets t join unnest(v_population) as u(user_id) on u.user_id = t.user_id
   where t.sent_at >= v_start and t.sent_at < v_end
   group by t.status, t.error_code
   union all
@@ -409,7 +406,7 @@ begin
   select p_day, 'jobs.finished', j.type::text, j.status::text, '', count(*), null, null
   from public.jobs j
   where j.status in ('completed', 'failed', 'dead_letter') and j.updated_at >= v_start and j.updated_at < v_end
-    and (j.user_id is null or j.user_id in (select u.user_id from pg_temp.da_rollup_population u))
+    and (j.user_id is null or j.user_id = any(v_population))
   group by j.type, j.status
   union all
   -- jobs.attempts (type, outcome)
@@ -417,24 +414,24 @@ begin
          private.latency_hist(array_agg(a.duration_ms))
   from public.job_attempts a join public.jobs j on j.id = a.job_id
   where a.started_at >= v_start and a.started_at < v_end
-    and (a.user_id is null or a.user_id in (select u.user_id from pg_temp.da_rollup_population u))
+    and (a.user_id is null or a.user_id = any(v_population))
   group by j.type, a.outcome
   union all
   -- email.triage (decision_tier)
   select p_day, 'email.triage', coalesce(m.classification_tier::text, 'unclassified'), '', '', count(*), null, null
-  from public.email_messages m join pg_temp.da_rollup_population u on u.user_id = m.user_id
+  from public.email_messages m join unnest(v_population) as u(user_id) on u.user_id = m.user_id
   where m.received_at >= v_start and m.received_at < v_end
   group by m.classification_tier
   union all
   -- approvals.created (action_type)
   select p_day, 'approvals.created', a.action_type::text, '', '', count(*), null, null
-  from public.approval_actions a join pg_temp.da_rollup_population u on u.user_id = a.user_id
+  from public.approval_actions a join unnest(v_population) as u(user_id) on u.user_id = a.user_id
   where a.created_at >= v_start and a.created_at < v_end
   group by a.action_type
   union all
   -- approvals.final (action_type, status)
   select p_day, 'approvals.final', a.action_type::text, a.status::text, '', count(*), null, null
-  from public.approval_actions a join pg_temp.da_rollup_population u on u.user_id = a.user_id
+  from public.approval_actions a join unnest(v_population) as u(user_id) on u.user_id = a.user_id
   where a.status in ('executed', 'failed', 'rejected', 'expired')
     and coalesce(a.executed_at, a.failed_at, a.rejected_at, a.updated_at) >= v_start
     and coalesce(a.executed_at, a.failed_at, a.rejected_at, a.updated_at) < v_end
@@ -442,7 +439,7 @@ begin
   union all
   -- ai_feedback.rating (feature, model, rating)
   select p_day, 'ai_feedback.rating', f.feature::text, coalesce(f.model, ''), f.rating::text, count(*), null, null
-  from public.ai_feedback f join pg_temp.da_rollup_population u on u.user_id = f.user_id
+  from public.ai_feedback f join unnest(v_population) as u(user_id) on u.user_id = f.user_id
   where f.created_at >= v_start and f.created_at < v_end
   group by f.feature, f.model, f.rating;
   get diagnostics v_metrics = row_count;
@@ -457,7 +454,7 @@ begin
          private.latency_hist(array_agg(r.latency_ms))
   from public.ai_requests r
   where r.created_at >= v_start and r.created_at < v_end
-    and (r.user_id is null or r.user_id in (select u.user_id from pg_temp.da_rollup_population u))
+    and (r.user_id is null or r.user_id = any(v_population))
   group by r.feature, r.provider, r.model, r.prompt_version_id, coalesce(r.plan, 'free'), r.profile, r.status;
   get diagnostics v_ai = row_count;
 

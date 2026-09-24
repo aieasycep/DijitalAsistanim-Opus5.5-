@@ -14,7 +14,7 @@ set local statement_timeout = '10min';
 -- ═══ Ledger: unknown RevenueCat event types are stored, never rejected (WH-05) ════════════════
 alter table public.billing_events drop constraint billing_events_event_type_check;
 alter table public.billing_events
-  add constraint billing_events_event_type_check check (event_type ~ '^[A-Z][A-Z0-9_]{0,63}$');
+  add constraint billing_events_event_type_check check (event_type ~ '^[A-Z][A-Z0-9_]{0,63}$') not valid;
 comment on column public.billing_events.event_type is
   'RevenueCat event type; the known set lives in packages/validation (REVENUECAT_EVENT_TYPES), unknown types are stored and ignored.';
 

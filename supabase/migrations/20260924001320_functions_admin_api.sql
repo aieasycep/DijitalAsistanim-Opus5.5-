@@ -1115,12 +1115,13 @@ create function admin_api.users_list(
   set search_path = ''
   as $$
 declare
+  v_sql text;
   v_admin public.admin_users := private.require_admin('users.read');
   v_order text := private.admin_order(p_sort, '{"created_at":"f.created_at","last_active_at":"f.last_active_at","last_sync_at":"f.last_sync_at"}',
                                       'f.created_at desc');
   v_result jsonb;
 begin
-  execute format($q$
+  v_sql := format($q$
     with base as (
       select p.user_id, p.created_at, p.last_active_at, p.state, p.is_internal, p.is_demo, u.email,
              e.is_active as pro, e.is_trial,
@@ -1157,7 +1158,8 @@ begin
               order by %1$s, f.user_id), '[]'::jsonb),
       'total', coalesce(max(f.total), (select count(*) from filtered)))
     from paged f
-  $q$, v_order)
+  $q$, v_order);
+  execute v_sql
   into v_result
   using coalesce(p_filter, '{}'::jsonb), private.admin_page_size(p_page_size), private.admin_offset(p_page, p_page_size),
         private.app_setting_int('metrics.inactive_after_days', 14);
@@ -1683,12 +1685,13 @@ create function admin_api.tickets_list(
   set search_path = ''
   as $$
 declare
+  v_sql text;
   v_admin public.admin_users := private.require_admin('support.read');
   v_order text := private.admin_order(p_sort, '{"created_at":"t.created_at","updated_at":"t.updated_at","priority":"t.priority","status":"t.status"}',
                                       't.created_at desc');
   v_result jsonb;
 begin
-  execute format($q$
+  v_sql := format($q$
     with f as (
       select t.*, count(*) over () as total from public.support_tickets t
       where ($1 ->> 'status' is null or t.status::text = $1 ->> 'status')
@@ -1704,7 +1707,8 @@ begin
              'contact_email_masked', private.mask_email(t.contact_email), 'user_id', t.user_id)
            order by %1$s, t.id), '[]'::jsonb), 'total', coalesce(max(t.total), 0))
     from f as t
-  $q$, v_order)
+  $q$, v_order);
+  execute v_sql
   into v_result
   using coalesce(p_filter, '{}'::jsonb), private.admin_page_size(p_page_size), private.admin_offset(p_page, p_page_size);
   return v_result || jsonb_build_object('page', greatest(coalesce(p_page, 1), 1), 'page_size', private.admin_page_size(p_page_size));
@@ -1975,12 +1979,13 @@ create function admin_api.integrations_overview(
   set search_path = ''
   as $$
 declare
+  v_sql text;
   v_admin public.admin_users := private.require_admin('integrations.read');
   v_order text := private.admin_order(p_sort, '{"created_at":"a.created_at","last_sync_at":"a.last_successful_sync_at","status":"a.status::text"}',
                                       'a.created_at desc');
   v_result jsonb;
 begin
-  execute format($q$
+  v_sql := format($q$
     with f as (
       select a.*, count(*) over () as total,
              (select min(s.watch_expires_at) from public.sync_states s where s.connected_account_id = a.id and s.watch_kind <> 'none') as watch_expires_at,
@@ -2004,7 +2009,8 @@ begin
              'watch_expires_at', a.watch_expires_at, 'key_version', a.key_version)
            order by %1$s, a.id), '[]'::jsonb), 'total', coalesce(max(a.total), 0))
     from f as a
-  $q$, v_order)
+  $q$, v_order);
+  execute v_sql
   into v_result
   using coalesce(p_filter, '{}'::jsonb), private.admin_page_size(p_page_size), private.admin_offset(p_page, p_page_size);
   return v_result || jsonb_build_object('page', greatest(coalesce(p_page, 1), 1), 'page_size', private.admin_page_size(p_page_size));
@@ -2152,12 +2158,13 @@ create function admin_api.jobs_list(
   set search_path = ''
   as $$
 declare
+  v_sql text;
   v_admin public.admin_users := private.require_admin('jobs.read');
   v_order text := private.admin_order(p_sort, '{"created_at":"j.created_at","updated_at":"j.updated_at","run_after":"j.run_after","attempts":"j.attempts","type":"j.type::text"}',
                                       'j.created_at desc');
   v_result jsonb;
 begin
-  execute format($q$
+  v_sql := format($q$
     with f as (
       select j.*, count(*) over () as total from public.jobs j
       where ($1 ->> 'type' is null or j.type::text = $1 ->> 'type')
@@ -2175,7 +2182,8 @@ begin
              'connected_account_id', j.connected_account_id)
            order by %1$s, j.id), '[]'::jsonb), 'total', coalesce(max(j.total), 0))
     from f as j
-  $q$, v_order)
+  $q$, v_order);
+  execute v_sql
   into v_result
   using coalesce(p_filter, '{}'::jsonb), private.admin_page_size(p_page_size), private.admin_offset(p_page, p_page_size);
   return v_result || jsonb_build_object('page', greatest(coalesce(p_page, 1), 1), 'page_size', private.admin_page_size(p_page_size));
@@ -2414,12 +2422,13 @@ create function admin_api.briefings_list(
   set search_path = ''
   as $$
 declare
+  v_sql text;
   v_admin public.admin_users := private.require_admin('briefings.read');
   v_order text := private.admin_order(p_sort, '{"local_date":"b.local_date","scheduled_for":"b.scheduled_for","latency_ms":"b.latency_ms"}',
                                       'b.scheduled_for desc');
   v_result jsonb;
 begin
-  execute format($q$
+  v_sql := format($q$
     with f as (
       select b.*, count(*) over () as total from public.briefings b
       where ($1 ->> 'user_id' is null or b.user_id::text = $1 ->> 'user_id')
@@ -2434,7 +2443,8 @@ begin
              'origin', b.origin, 'version', b.version, 'audio_status', b.audio_status)
            order by %1$s, b.id), '[]'::jsonb), 'total', coalesce(max(b.total), 0))
     from f as b
-  $q$, v_order)
+  $q$, v_order);
+  execute v_sql
   into v_result
   using coalesce(p_filter, '{}'::jsonb), private.admin_page_size(p_page_size), private.admin_offset(p_page, p_page_size);
   return v_result || jsonb_build_object('page', greatest(coalesce(p_page, 1), 1), 'page_size', private.admin_page_size(p_page_size));
@@ -2834,12 +2844,13 @@ create function admin_api.ai_requests_list(
   set search_path = ''
   as $$
 declare
+  v_sql text;
   v_admin public.admin_users := private.require_admin('ai.read');
   v_order text := private.admin_order(p_sort, '{"created_at":"r.created_at","latency_ms":"r.latency_ms","cost":"r.cost_usd_micros","model":"r.model"}',
                                       'r.created_at desc');
   v_result jsonb;
 begin
-  execute format($q$
+  v_sql := format($q$
     with f as (
       select r.*, count(*) over () as total from public.ai_requests r
       where ($1 ->> 'feature' is null or r.feature::text = $1 ->> 'feature')
@@ -2863,7 +2874,8 @@ begin
              'injection_suspected', r.injection_suspected, 'correlation_id', r.correlation_id, 'job_id', r.job_id)
            order by %1$s, r.id), '[]'::jsonb), 'total', coalesce(max(r.total), 0))
     from f as r
-  $q$, v_order)
+  $q$, v_order);
+  execute v_sql
   into v_result
   using coalesce(p_filter, '{}'::jsonb), private.admin_page_size(p_page_size), private.admin_offset(p_page, p_page_size);
   return v_result || jsonb_build_object('page', greatest(coalesce(p_page, 1), 1), 'page_size', private.admin_page_size(p_page_size));
@@ -3448,12 +3460,13 @@ create function admin_api.ai_feedback_list(
   set search_path = ''
   as $$
 declare
+  v_sql text;
   v_admin public.admin_users := private.require_admin('ai_feedback.read');
   v_order text := private.admin_order(p_sort, '{"created_at":"f.created_at","rating":"f.rating","feature":"f.feature::text"}',
                                       'f.created_at desc');
   v_result jsonb;
 begin
-  execute format($q$
+  v_sql := format($q$
     with q as (
       select f.*, count(*) over () as total from public.ai_feedback f
       where ($1 ->> 'feature' is null or f.feature::text = $1 ->> 'feature')
@@ -3471,7 +3484,8 @@ begin
              'has_comment', f.comment is not null, 'created_at', f.created_at)
            order by %1$s, f.id), '[]'::jsonb), 'total', coalesce(max(f.total), 0))
     from q as f
-  $q$, v_order)
+  $q$, v_order);
+  execute v_sql
   into v_result
   using coalesce(p_filter, '{}'::jsonb), private.admin_page_size(p_page_size), private.admin_offset(p_page, p_page_size);
   return v_result || jsonb_build_object('page', greatest(coalesce(p_page, 1), 1), 'page_size', private.admin_page_size(p_page_size));
@@ -3602,12 +3616,13 @@ create function admin_api.subscriptions_list(
   set search_path = ''
   as $$
 declare
+  v_sql text;
   v_admin public.admin_users := private.require_admin('subscriptions.read');
   v_order text := private.admin_order(p_sort, '{"expires_at":"s.expires_at","updated_at":"s.updated_at","status":"s.status::text"}',
                                       's.updated_at desc');
   v_result jsonb;
 begin
-  execute format($q$
+  v_sql := format($q$
     with f as (
       select s.*, count(*) over () as total from public.subscriptions s
       where ($1 ->> 'status' is null or s.status::text = $1 ->> 'status')
@@ -3623,7 +3638,8 @@ begin
              'environment', s.environment, 'synced_at', s.synced_at, 'source', 'store')
            order by %1$s, s.user_id), '[]'::jsonb), 'total', coalesce(max(s.total), 0))
     from f as s
-  $q$, v_order)
+  $q$, v_order);
+  execute v_sql
   into v_result
   using coalesce(p_filter, '{}'::jsonb), private.admin_page_size(p_page_size), private.admin_offset(p_page, p_page_size);
   return v_result || jsonb_build_object('page', greatest(coalesce(p_page, 1), 1), 'page_size', private.admin_page_size(p_page_size));
@@ -3638,12 +3654,13 @@ create function admin_api.billing_events_list(
   set search_path = ''
   as $$
 declare
+  v_sql text;
   v_admin public.admin_users := private.require_admin('billing_events.read');
   v_order text := private.admin_order(p_sort, '{"event_at":"b.event_timestamp","received_at":"b.received_at","type":"b.event_type"}',
                                       'b.event_timestamp desc');
   v_result jsonb;
 begin
-  execute format($q$
+  v_sql := format($q$
     with f as (
       select b.id, b.event_id, b.user_id, b.event_type, b.environment, b.store, b.product_id, b.event_timestamp,
              b.process_status, b.processed_at, b.received_at, count(*) over () as total
@@ -3661,7 +3678,8 @@ begin
              'processed', b.process_status = 'processed', 'process_status', b.process_status)
            order by %1$s, b.id), '[]'::jsonb), 'total', coalesce(max(b.total), 0))
     from f as b
-  $q$, v_order)
+  $q$, v_order);
+  execute v_sql
   into v_result
   using coalesce(p_filter, '{}'::jsonb), private.admin_page_size(p_page_size), private.admin_offset(p_page, p_page_size);
   return v_result || jsonb_build_object('page', greatest(coalesce(p_page, 1), 1), 'page_size', private.admin_page_size(p_page_size));
@@ -3753,12 +3771,13 @@ create function admin_api.entitlement_grants_list(
   set search_path = ''
   as $$
 declare
+  v_sql text;
   v_admin public.admin_users := private.require_admin('subscriptions.read');
   v_order text := private.admin_order(p_sort, '{"starts_at":"g.starts_at","ends_at":"g.ends_at","created_at":"g.created_at"}',
                                       'g.starts_at desc');
   v_result jsonb;
 begin
-  execute format($q$
+  v_sql := format($q$
     with f as (
       select g.*, case when g.revoked_at is not null then 'revoked' when g.starts_at > now() then 'scheduled'
                        when g.ends_at <= now() then 'ended' else 'active' end as state,
@@ -3778,7 +3797,8 @@ begin
              'revoked_by', g.revoked_by_admin_id)
            order by %1$s, g.id), '[]'::jsonb), 'total', coalesce(max(g.total), 0))
     from f as g
-  $q$, v_order)
+  $q$, v_order);
+  execute v_sql
   into v_result
   using coalesce(p_filter, '{}'::jsonb), private.admin_page_size(p_page_size), private.admin_offset(p_page, p_page_size);
   return v_result || jsonb_build_object('page', greatest(coalesce(p_page, 1), 1), 'page_size', private.admin_page_size(p_page_size));
@@ -3917,12 +3937,13 @@ create function admin_api.referrals_list(
   set search_path = ''
   as $$
 declare
+  v_sql text;
   v_admin public.admin_users := private.require_admin('referrals.read');
   v_order text := private.admin_order(p_sort, '{"created_at":"r.created_at","risk_score":"r.risk_score","status":"r.status::text"}',
                                       'r.created_at desc');
   v_result jsonb;
 begin
-  execute format($q$
+  v_sql := format($q$
     with f as (
       select r.*, count(*) over () as total from public.referrals r
       where ($1 ->> 'status' is null or r.status::text = $1 ->> 'status')
@@ -3939,7 +3960,8 @@ begin
              'rewarded_at', r.rewarded_at, 'reviewed_at', r.reviewed_at)
            order by %1$s, r.id), '[]'::jsonb), 'total', coalesce(max(r.total), 0))
     from f as r
-  $q$, v_order)
+  $q$, v_order);
+  execute v_sql
   into v_result
   using coalesce(p_filter, '{}'::jsonb), private.admin_page_size(p_page_size), private.admin_offset(p_page, p_page_size);
   return v_result || jsonb_build_object('page', greatest(coalesce(p_page, 1), 1), 'page_size', private.admin_page_size(p_page_size));
@@ -4007,12 +4029,13 @@ create function admin_api.feedback_list(
   set search_path = ''
   as $$
 declare
+  v_sql text;
   v_admin public.admin_users := private.require_admin('feedback.read');
   v_order text := private.admin_order(p_sort, '{"created_at":"f.created_at","rating":"f.rating","status":"f.status"}',
                                       'f.created_at desc');
   v_result jsonb;
 begin
-  execute format($q$
+  v_sql := format($q$
     with q as (
       select f.*, count(*) over () as total from public.user_feedback f
       where ($1 ->> 'type' is null or f.type::text = $1 ->> 'type')
@@ -4028,7 +4051,8 @@ begin
              'assigned_admin_id', f.assigned_admin_id, 'created_at', f.created_at, 'updated_at', f.updated_at)
            order by %1$s, f.id), '[]'::jsonb), 'total', coalesce(max(f.total), 0))
     from q as f
-  $q$, v_order)
+  $q$, v_order);
+  execute v_sql
   into v_result
   using coalesce(p_filter, '{}'::jsonb), private.admin_page_size(p_page_size), private.admin_offset(p_page, p_page_size);
   return v_result || jsonb_build_object('page', greatest(coalesce(p_page, 1), 1), 'page_size', private.admin_page_size(p_page_size));
