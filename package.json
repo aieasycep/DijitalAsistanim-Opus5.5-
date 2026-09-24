@@ -24,14 +24,21 @@
     "db:test:local": "bash scripts/db/tier-c.sh",
     "db:reset-twice": "bash scripts/db/reset-twice.sh",
     "db:seed-blocks": "bash scripts/db/sync-seed-blocks.sh --write",
-    "db:psql": "bash scripts/db/psql.sh"
+    "db:psql": "bash scripts/db/psql.sh",
+    "db:lint": "bash scripts/db/lint-migrations.sh",
+    "db:types": "bash scripts/db/gen-types.sh",
+    "db:types:check": "bash scripts/db/gen-types.sh --check",
+    "db:enum-parity": "node scripts/db/enum-parity.ts",
+    "db:seed:demo": "bash scripts/db/seed-demo.sh"
   },
   "devDependencies": {
     "@da/config": "workspace:*",
+    "@supabase/postgres-meta": "0.99.0",
     "@types/node": "24.13.6",
     "deno": "2.1.4",
     "eslint": "9.39.5",
     "prettier": "3.9.9",
+    "squawk-cli": "2.65.0",
     "supabase": "2.117.0",
     "turbo": "2.11.3",
     "typescript": "catalog:"

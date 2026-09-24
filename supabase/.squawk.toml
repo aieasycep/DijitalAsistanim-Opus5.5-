@@ -1,0 +1,14 @@
+# Squawk 2.65.0 migration lint (IMPLEMENTATION_PLAN T-2.26; run through scripts/db/lint-migrations.sh).
+# Migrations must stay PostgreSQL 16 compatible (tier C) and each file runs in one transaction.
+pg_version = "16.0"
+assume_in_transaction = true
+
+# Excluded for every migration, with the reason:
+excluded_rules = [
+  # Integer widths follow docs/DATABASE_AND_RLS_PLAN.md §4: int/smallint columns are bounded by
+  # check constraints (days, counts, positions, versions); ids are uuid or bigint identity.
+  "prefer-bigint-over-int",
+  "prefer-bigint-over-smallint",
+  # char(3) holds ISO 4217 currency codes (life_events.currency, android_notification_signals.currency).
+  "ban-char-field",
+]

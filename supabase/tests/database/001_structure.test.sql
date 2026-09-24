@@ -349,7 +349,7 @@ select is_empty(
   'analyst and readonly hold read permissions only'
 );
 select set_eq(
-  $$ select key from public.app_settings $$,
+  $$ select key from public.app_settings where key <> 'admin.gateway_secret_sha256' $$,
   array['session.idle_minutes', 'session.absolute_hours', 'metrics.inactive_after_days', 'metrics.reporting_timezone',
         'referral.reward_days', 'referral.min_account_age_hours', 'referral.velocity_max_per_hour',
         'referral.risk_threshold', 'referral.apply_window_days', 'support_access.max_minutes',
@@ -357,7 +357,7 @@ select set_eq(
         'followup.wait_thresholds_days', 'first_analysis.mail_window_hours', 'first_analysis.calendar_window_hours',
         'first_analysis.slow_threshold_s', 'first_analysis.timeout_s', 'today.max_priorities', 'pro_gate.snooze_days',
         'web.pricing_display', 'pricing.estimates'],
-  'app_settings seeded with the documented keys'
+  'app_settings seeded with the documented keys (the gateway digest is written by the deploy job, and by 000_helpers in tests)'
 );
 select throws_ok(
   $$ update public.app_settings set value = '45' where key = 'session.idle_minutes' $$,

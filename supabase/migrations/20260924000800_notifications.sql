@@ -9,9 +9,10 @@ create table public.notifications (
   user_id uuid not null,
   category public.notification_category not null,
   decision public.notification_decision not null,
+  -- late_delivery: the decision engine drops pushes that would arrive more than 90 minutes late.
   suppression_reason text check (suppression_reason in (
     'quiet_hours', 'category_disabled', 'frequency_cap', 'low_relevance', 'deduplicated', 'no_device',
-    'not_entitled', 'os_permission_denied', 'smart_filter', 'snoozed')),
+    'not_entitled', 'os_permission_denied', 'smart_filter', 'snoozed', 'late_delivery')),
   dedupe_key text not null,
   priority smallint not null default 50 check (priority between 0 and 100),
   detail_mode public.notification_detail not null,
