@@ -18,5 +18,8 @@
   "empty": {
     "title": "I couldn't find that.",
     "body": "Try a different word."
+  },
+  "generated": {
+    "notFound": "I could not find this in your records."
   }
 }

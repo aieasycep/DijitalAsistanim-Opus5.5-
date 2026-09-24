@@ -27,5 +27,13 @@
   },
   "dueOn": "Due: {date}",
   "renewsOn": "Renews on {date}",
-  "securityNote": "Links in security alerts aren't opened; check the source instead."
+  "securityNote": "Links in security alerts aren't opened; check the source instead.",
+  "generated": {
+    "shipment": "{merchant, select, none {Package} other {{merchant}}} · {status, select, ordered {Order received} shipped {Shipped} in_transit {In transit} out_for_delivery {Out for delivery} delivered {Delivered} delivery_failed {Delivery failed} other {Shipment update}}",
+    "flight": "{flight, select, none {Flight} other {Flight {flight}}}{route, select, none {} other { · {route}}}",
+    "reservation": "{venue, select, none {Reservation} other {Reservation at {venue}}}",
+    "payment": "{payee, select, none {Payment} other {{payee}}} · {status, select, due {Payment due} paid {Paid} failed {Payment failed} refund {Refund} other {Payment notice}}",
+    "subscription": "{service, select, none {Subscription} other {{service}}} · {event, select, renewal_upcoming {Renewal coming up} renewed {Renewed} trial_ending {Trial ending} cancelled {Cancelled} price_change {Price change} other {Subscription notice}}",
+    "security": "{service, select, none {Account} other {{service}}} · {event, select, password_changed {Password changed} recovery_changed {Recovery details changed} suspicious_activity {Suspicious activity} new_sign_in {New sign-in} other {Security alert}}"
+  }
 }

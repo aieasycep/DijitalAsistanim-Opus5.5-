@@ -3,8 +3,9 @@
  * tests, CI and the demo stack, at cost 0 (`ai_requests.provider='fixture'`).
  *
  * - Structured calls: `_shared/ai/fixtures/<Schema>.json` holds outputs keyed by the SHA-256 of the
- *   prompt input (`by_input`) plus a schema-valid `default`; every output is parsed with the
- *   requested schema, so a fixture can never bypass validation.
+ *   prompt input (`by_input`); without an entry, `fixtures/generate.ts` derives a grounded answer
+ *   from the prompt's documents, and the file's schema-valid `default` is the last resort. Every
+ *   output is parsed with the requested schema, so a fixture can never bypass validation.
  * - Streaming answers cite the first sentence of the first search result.
  * - Embeddings: a deterministic, L2-normalised feature-hashing vector of the folded tokens.
  * - STT / TTS: a fixture transcript and silent MPEG audio.
@@ -32,6 +33,7 @@ import type {
   TranscribeResult,
 } from '../types.ts';
 import { emptyUsage } from '../types.ts';
+import { generateFixture } from '../fixtures/generate.ts';
 import AssistantGroundedJsonV1 from '../fixtures/AssistantGroundedJsonV1.json' with { type: 'json' };
 import AssistantIntentV1 from '../fixtures/AssistantIntentV1.json' with { type: 'json' };
 import BriefingMorningV1 from '../fixtures/BriefingMorningV1.json' with { type: 'json' };
@@ -134,7 +136,8 @@ export function createFixtureProvider(options: { now?: () => number } = {}): LLM
       const file = STRUCTURED_FIXTURES[params.schemaName];
       if (file === undefined) throw new AiError('NOT_CONFIGURED', 'fixture');
       const key = await fixtureInputKey(params as GenerateStructuredParams<unknown>);
-      const candidate = file.by_input[key] ?? file.default;
+      const candidate =
+        file.by_input[key] ?? generateFixture(params as GenerateStructuredParams<unknown>) ?? file.default;
       const parsed = params.schema.safeParse(candidate);
       if (!parsed.success) throw new AiError('SCHEMA_VALIDATION', 'fixture');
       return {

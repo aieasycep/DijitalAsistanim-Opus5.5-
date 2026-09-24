@@ -11,12 +11,16 @@ import {
 } from '../../_shared/services/credentials.ts';
 import { billingSyncJob, type BillingSyncJobDeps } from './billing_sync.ts';
 import { referralEvaluateJob, type ReferralEvaluateJobDeps } from './referral_evaluate.ts';
+import type { IntelDeps } from './intel.ts';
+import { intelJobDefinitions } from './intel-jobs.ts';
 
 export interface HandlerDeps {
   readonly credentials: CredentialsRepo;
   readonly keyring: () => Promise<TokenKeyring>;
   /** T-7.01 / T-7.03: `billing_sync` (JOB-24) and `referral_evaluate` (JOB-25). */
   readonly business: { billing: BillingSyncJobDeps; referrals: ReferralEvaluateJobDeps };
+  /** AI pipeline (T-5.01…T-5.08, T-5.17). */
+  readonly intel?: IntelDeps;
 }
 
 export function jobDefinitions(deps: HandlerDeps): JobDefinition<never>[] {
@@ -27,6 +31,7 @@ export function jobDefinitions(deps: HandlerDeps): JobDefinition<never>[] {
     }) as unknown as JobDefinition<never>,
     billingSyncJob(deps.business.billing) as unknown as JobDefinition<never>,
     referralEvaluateJob(deps.business.referrals) as unknown as JobDefinition<never>,
+    ...(deps.intel === undefined ? [] : intelJobDefinitions(deps.intel)),
   ];
 }
 

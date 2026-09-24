@@ -43,6 +43,12 @@ import { supabaseFlagSource } from '../../../_shared/services/flags.ts';
 import type { ApiDeps } from '../../deps.ts';
 import { supabaseAnalyticsRepo } from '../../routes/analytics.ts';
 import { supabaseSupportRepo } from '../../routes/support.ts';
+import { supabaseIntelApi } from '../../routes/intel-api.ts';
+import { createAiServices } from '../../../_shared/services/ai/runtime.ts';
+import {
+  supabaseMailStore,
+  supabaseMemoryStore,
+} from '../../../_shared/services/intel/supabase-store.ts';
 
 export function createApiDeps(input: {
   readonly env: FunctionEnv;
@@ -118,5 +124,13 @@ export function createApiDeps(input: {
         support: supabaseSupportRepo(system),
       };
     },
+    intel: supabaseIntelApi({
+      system,
+      config,
+      ai: createAiServices(system, raw, input.log),
+      mail: supabaseMailStore(system),
+      memory: supabaseMemoryStore(system),
+      bodies: null,
+    }),
   };
 }

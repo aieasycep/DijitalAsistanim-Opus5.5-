@@ -58,6 +58,8 @@ export interface JobDefinition<P = unknown> {
   readonly payload: z.ZodType<P>;
   readonly timeoutMs: number;
   readonly handler: JobHandler<P>;
+  /** Scoped definition predicate (see `defineJob`). */
+  readonly match?: (payload: unknown) => boolean;
 }
 
 /**

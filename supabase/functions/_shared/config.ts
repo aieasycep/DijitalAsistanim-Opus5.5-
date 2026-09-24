@@ -56,6 +56,10 @@ export const RATE_LIMITS = {
   support_ticket: { limit: 5, windowSeconds: 3600, subject: 'user' },
   feedback: { limit: 10, windowSeconds: 3600, subject: 'user' },
   analytics: { limit: 60, windowSeconds: 60, subject: 'installation' },
+  search: { limit: 30, windowSeconds: 60, subject: 'user' },
+  thread_summary: { limit: 20, windowSeconds: 60, subject: 'user' },
+  /** API-BRF-04: 1 per 10 min per briefing (enforced with the briefing id as the subject). */
+  briefing_retry: { limit: 1, windowSeconds: 600, subject: 'user' },
 } as const satisfies Record<string, RateLimitClass>;
 export type RateLimitClassName = keyof typeof RATE_LIMITS;
 

@@ -24,6 +24,9 @@ import { registerMeRoutes } from './routes/me.ts';
 import { registerSupportRoutes } from './routes/support.ts';
 import { registerBusinessRoutes } from './routes/business.ts';
 import { registerReferralRoutes } from './routes/referrals.ts';
+import { registerThreadSummaryRoutes } from './routes/mail-summary.ts';
+import { registerSearchRoutes } from './routes/search.ts';
+import { registerBriefingRoutes } from './routes/briefings.ts';
 
 /** `extra` registrars mount after the built-in routes (tests use it for the Pro-gate matrix). */
 export function createApiApp(deps: ApiDeps, extra: readonly RouteRegistrar[] = []): Hono<AppEnv> {
@@ -59,5 +62,8 @@ export function createApiApp(deps: ApiDeps, extra: readonly RouteRegistrar[] = [
   registerBusinessRoutes(app, kit);
   registerReferralRoutes(app, kit);
   for (const register of extra) register(app, kit);
+  registerThreadSummaryRoutes(app, kit);
+  registerSearchRoutes(app, kit);
+  registerBriefingRoutes(app, kit);
   return app;
 }

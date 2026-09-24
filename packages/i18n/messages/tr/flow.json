@@ -34,5 +34,88 @@
   "empty": {
     "title": "Bu filtrede şu an bir şey yok.",
     "body": "Yeni bir gelişme olduğunda burada görünür."
+  },
+  "generated": {
+    "why": {
+      "vip": "{name} VIP listende.",
+      "rule": "Kuralın: “{rule}” → {outcome, select, always_important {Her zaman önemli say} high {Önemli say} low {Düşük öncelikli say} always_notify {Her zaman bildir} mute {Sessize al} other {Uygula}}.",
+      "learned": "Öğrendiğim tercih: {statement}.",
+      "ai": "AI değerlendirmesi: {reason} · Güven: {confidence, select, high {yüksek} medium {orta} other {düşük}}",
+      "aiDefault": "Önemli görünüyor",
+      "signal": {
+        "security_verified": "Hesap güvenliği bildirimi.",
+        "deadline_today": "Bugün son tarih içeriyor.",
+        "deadline_tomorrow": "Yarın son tarih içeriyor.",
+        "list_unsubscribe": "Toplu gönderim (bülten) olarak işaretli.",
+        "precedence_bulk": "Toplu gönderim olarak işaretli.",
+        "auto_submitted": "Otomatik gönderilmiş bir mesaj.",
+        "category_promotions": "Tanıtım maili.",
+        "category_social": "Sosyal ağ bildirimi.",
+        "category_forums": "Forum veya grup mesajı.",
+        "category_updates": "Otomatik bir güncelleme.",
+        "esp_bulk": "Toplu gönderim servisinden geldi.",
+        "noreply_sender": "Yanıt beklenmeyen bir adresten geldi.",
+        "cc_only_unknown": "Yalnızca bilgi (Cc) olarak eklendin.",
+        "transactional": "İşlem bildirimi (sipariş, ödeme veya rezervasyon).",
+        "security_unverified": "Güvenlik bildirimi doğrulanamadı; bağlantılara dokunma.",
+        "awaiting_my_reply": "Senden yanıt bekleniyor.",
+        "other": "Kesin sinyallere göre sınıflandırıldı."
+      },
+      "kind": {
+        "follow_up": "{days, plural, one {# gündür yanıt bekliyorsun.} other {# gündür yanıt bekliyorsun.}}",
+        "commitment_user": "Bu sözü sen verdin.",
+        "commitment_they": "{name, select, none {Sana bir söz verildi.} other {{name} sana söz verdi.}}",
+        "conflict": "İki etkinliğin aynı saate denk geliyor.",
+        "back_to_back": "Toplantılarının arasında mola yok.",
+        "meeting_prep": "Dışarıdan katılımcılar var; hazırlık iyi olur.",
+        "schedule_request": "Mailde toplantı zamanı soruluyor.",
+        "schedule_suggestion": "Son tarihten önce takviminde boş zaman var.",
+        "life": "Kaynağı doğrulanmış bir bildirim.",
+        "security": "Hesap güvenliği bildirimi.",
+        "approval": "Onayın olmadan hiçbir işlem yapılmaz.",
+        "task_due": "Görevinin son tarihi yaklaşıyor.",
+        "deadline": "Son tarih: {due}."
+      }
+    },
+    "insight": {
+      "replyNeeded": {
+        "title": "{sender} yanıt bekliyor"
+      },
+      "deadline": {
+        "title": "Son tarih: {what}",
+        "body": "{due} tarihine kadar"
+      },
+      "task": {
+        "title": "Görev: {title}"
+      },
+      "followUp": {
+        "title": "{person, select, none {Yanıt gelmedi} other {{person} yanıt vermedi}}",
+        "body": "{days, plural, one {# gündür bekliyor} other {# gündür bekliyor}} · {subject}"
+      },
+      "commitment": {
+        "userTitle": "Sözün: {text}",
+        "theyTitle": "{name, select, none {Sana verilen söz} other {{name} söz vermişti}}: {text}",
+        "body": "Son tarih: {due}"
+      },
+      "conflict": {
+        "title": "Takvim çakışması",
+        "body": "{timeA} {eventA} ile {timeB} {eventB} çakışıyor."
+      },
+      "backToBack": {
+        "title": "Arka arkaya {count} toplantı",
+        "body": "{day} · aralarında en fazla {gap} dakika"
+      },
+      "prep": {
+        "title": "{event} için hazırlan",
+        "body": "{time} · {reason, select, vip {Önemli bir kişi katılıyor} other {Dışarıdan katılımcılar var}}"
+      },
+      "schedule": {
+        "title": "{title} için zaman ayır",
+        "body": "{day} {start}–{end} arası boş görünüyor."
+      },
+      "approval": {
+        "title": "{count, plural, one {# işlem onayını bekliyor} other {# işlem onayını bekliyor}}"
+      }
+    }
   }
 }

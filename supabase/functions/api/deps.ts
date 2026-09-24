@@ -24,6 +24,7 @@ import type { ReferralRepo } from '../_shared/services/referrals/repo.ts';
 import type { Sentry } from '../_shared/observability/sentry.ts';
 import type { AnalyticsRepo } from './routes/analytics.ts';
 import type { SupportRepo } from './routes/support.ts';
+import type { IntelApi } from './routes/intel-api.ts';
 
 /** Per-request repositories bound to the caller (their RLS client plus scoped system access). */
 export interface RequestRepos {
@@ -65,6 +66,8 @@ export interface ApiDeps {
   readonly business: ApiBusiness;
   readonly fetch?: typeof fetch;
   readonly now?: () => Date;
+  /** AI pipeline routes (API-MAIL-07, API-SRCH-01, API-BRF-02…04). */
+  readonly intel?: IntelApi;
 }
 
 export interface RouteKit {

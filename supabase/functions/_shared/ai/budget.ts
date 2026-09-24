@@ -102,3 +102,80 @@ export function supabaseBudgetGate(client: DbClient): BudgetGate {
     },
   };
 }
+
+// ── Organisation ceiling (T-5.17, AI_PIPELINE_PLAN §8.10 L3) ────────────────
+
+/** Result of `private.ai_org_budget_evaluate` (spend of the UTC day against the org ceiling). */
+export interface OrgBudgetState {
+  readonly status: 'ok' | 'disabled' | 'not_configured';
+  readonly spentMicros: number;
+  readonly ceilingMicros: number | null;
+  readonly pct: number;
+  readonly tripped: boolean;
+  readonly alerts: readonly number[];
+}
+
+export function parseOrgBudgetState(raw: unknown): OrgBudgetState {
+  const r = (raw ?? {}) as Record<string, unknown>;
+  const status =
+    r.status === 'ok' || r.status === 'disabled' || r.status === 'not_configured'
+      ? r.status
+      : 'not_configured';
+  return {
+    status,
+    spentMicros: Number(r.spent_micros ?? 0),
+    ceilingMicros: r.ceiling_micros === undefined ? null : Number(r.ceiling_micros),
+    pct: Number(r.pct ?? 0),
+    tripped: r.tripped === true,
+    alerts: Array.isArray(r.alerts) ? r.alerts.map(Number) : [],
+  };
+}
+
+export type OrgBudgetEvaluator = () => Promise<OrgBudgetState>;
+
+export function supabaseOrgBudgetEvaluator(client: DbClient): OrgBudgetEvaluator {
+  return async () =>
+    parseOrgBudgetState(
+      await rpc<unknown>(client, DB_FN.aiOrgBudgetEvaluate, { p_now: new Date().toISOString() }),
+    );
+}
+
+/**
+ * Evaluates the org ceiling after settlements, at most once per `intervalMs` per isolate (the
+ * scheduler evaluates it every 5 minutes as well). The trip itself (`ai.model.large.enabled=false`)
+ * happens in SQL and is audited; flag caches pick it up within their TTL.
+ */
+export function withOrgBudgetGuard(
+  gate: BudgetGate,
+  evaluate: OrgBudgetEvaluator,
+  options: { intervalMs?: number; now?: () => number; onTrip?: (s: OrgBudgetState) => void } = {},
+): BudgetGate & { lastState(): OrgBudgetState | null } {
+  const interval = options.intervalMs ?? 60_000;
+  const now = options.now ?? Date.now;
+  let lastAt = -Infinity;
+  let last: OrgBudgetState | null = null;
+  let inflight: Promise<void> | null = null;
+  const check = (): Promise<void> => {
+    if (inflight !== null) return inflight;
+    if (now() - lastAt < interval) return Promise.resolve();
+    lastAt = now();
+    inflight = evaluate()
+      .then((state) => {
+        last = state;
+        if (state.tripped) options.onTrip?.(state);
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        inflight = null;
+      });
+    return inflight;
+  };
+  return {
+    reserve: (input) => gate.reserve(input),
+    async settle(input) {
+      await gate.settle(input);
+      await check();
+    },
+    lastState: () => last,
+  };
+}

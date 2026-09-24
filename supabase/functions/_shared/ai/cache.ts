@@ -43,7 +43,8 @@ export interface CachedResult {
 
 export interface ResultCache {
   get(key: CacheKey): Promise<CachedResult | null>;
-  put(key: CacheKey, value: CachedResult): Promise<void>;
+  /** `replace` overwrites an existing entry (a user-requested refresh). */
+  put(key: CacheKey, value: CachedResult, options?: { readonly replace?: boolean }): Promise<void>;
 }
 
 export function supabaseResultCache(client: DbClient, now: () => number = Date.now): ResultCache {
@@ -73,7 +74,7 @@ export function supabaseResultCache(client: DbClient, now: () => number = Date.n
       if (updateError !== null) throw mapDbError(updateError);
       return { result: row.result, model: row.model };
     },
-    async put(key, value) {
+    async put(key, value, options) {
       const { error } = await table().upsert(
         {
           user_id: key.userId,
@@ -83,7 +84,10 @@ export function supabaseResultCache(client: DbClient, now: () => number = Date.n
           model: value.model,
           result: value.result,
         },
-        { onConflict: 'user_id,feature,content_hash,prompt_version_id', ignoreDuplicates: true },
+        {
+          onConflict: 'user_id,feature,content_hash,prompt_version_id',
+          ignoreDuplicates: options?.replace !== true,
+        },
       );
       if (error !== null) throw mapDbError(error);
     },

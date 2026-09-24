@@ -15,6 +15,7 @@ import {
 import { supabaseReferralRepo } from '../_shared/services/referrals/repo.ts';
 import { createWorkerApp } from './app.ts';
 import { createHandlerRegistry } from './handlers/index.ts';
+import { createIntelDeps } from './handlers/intel-wiring.ts';
 
 const raw = processEnv();
 assertDemoAllowed(raw);
@@ -22,6 +23,7 @@ const env = loadEnv(raw);
 const system = serviceClient(clientConfigFromEnv(raw));
 let keyring: Promise<TokenKeyring> | null = null;
 const revenueCat = revenueCatConfig(env);
+const log = createLogger({ fn: 'worker' });
 const app = createWorkerApp({
   secret: env.CRON_SECRET,
   repo: supabaseJobsRepo(system),
@@ -36,8 +38,9 @@ const app = createWorkerApp({
       },
       referrals: { repo: supabaseReferralRepo(system), pepper: env },
     },
+    intel: createIntelDeps(system, raw, log),
   }),
-  log: createLogger({ fn: 'worker' }),
+  log,
   sentry: createSentry({ dsn: env.SENTRY_DSN, environment: env.APP_ENV }),
 });
 

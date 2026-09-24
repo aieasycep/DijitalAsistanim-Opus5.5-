@@ -18,5 +18,8 @@
   "empty": {
     "title": "Aradığını bulamadım.",
     "body": "Farklı bir kelime dene."
+  },
+  "generated": {
+    "notFound": "Bunu kayıtlarında bulamadım."
   }
 }
