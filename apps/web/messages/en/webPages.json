@@ -1,0 +1,682 @@
+{
+  "common": {
+    "logoHome": "Dijital Asistan home",
+    "skipToContent": "Skip to content",
+    "mainNav": "Main",
+    "footerNav": "Site links",
+    "menu": "Menu",
+    "closeMenu": "Close menu",
+    "switchLocale": "TR",
+    "switchLocaleLabel": "Türkçe'ye geç",
+    "otherLocaleName": "Türkçe",
+    "proTag": "PRO",
+    "proTagLabel": "Pro feature",
+    "included": "Included",
+    "notIncluded": "Not included",
+    "backToTop": "Back to top",
+    "devNotice": "External credential required: {keys}",
+    "offline": "You're offline. You can continue once you're connected.",
+    "emailLink": "Email {email}",
+    "regionEuCentral1": "the EU (Frankfurt)"
+  },
+  "nav": {
+    "howItWorks": "How it works",
+    "features": "Features",
+    "security": "Security",
+    "pricing": "Pricing",
+    "faq": "FAQ",
+    "getStarted": "Get started free"
+  },
+  "footer": {
+    "tagline": "See what matters, not the noise.",
+    "product": "Product",
+    "supportTitle": "Support",
+    "legal": "Legal",
+    "features": "Features",
+    "pricing": "Pricing",
+    "faq": "FAQ",
+    "support": "Support",
+    "deletion": "Data deletion",
+    "privacy": "Privacy Policy",
+    "kvkk": "KVKK Notice",
+    "terms": "Terms of Use",
+    "language": "Language",
+    "copyright": "© {year} {company}",
+    "legalLine": "Dijital Asistan is not affiliated with or endorsed by Google, Microsoft or Apple. Gmail, Google Calendar, Google Tasks and Google Play are trademarks of Google LLC; Outlook and Microsoft To Do are trademarks of Microsoft Corporation; Apple, iPhone and App Store are trademarks of Apple Inc."
+  },
+  "seo": {
+    "home": {
+      "title": "Dijital Asistan — What you need to know today, before you ask",
+      "description": "Dijital Asistan understands your email, calendar and open tasks and prepares a short daily briefing. For iPhone and Android."
+    },
+    "pricing": {
+      "title": "Pricing — Dijital Asistan",
+      "description": "Start with the Free plan; go Pro for midday and evening briefings, meeting prep, smart follow-up and AI memory. Prices are App Store and Google Play store prices."
+    },
+    "privacy": {
+      "title": "Privacy Policy — Dijital Asistan",
+      "description": "Explains which data we process and why, our AI sub-processors, retention periods and your rights."
+    },
+    "terms": {
+      "title": "Terms of Use — Dijital Asistan",
+      "description": "The terms for using Dijital Asistan: approved actions, AI output, the Free plan and Pro, subscriptions, the referral programme and your rights."
+    },
+    "support": {
+      "title": "Support and FAQ — Dijital Asistan",
+      "description": "Answers to common questions about Dijital Asistan, and a support form for everything else."
+    },
+    "deletion": {
+      "title": "Delete your account and data — Dijital Asistan",
+      "description": "Request deletion of your Dijital Asistan account and data with email verification; see what is deleted and how long it takes."
+    },
+    "referral": {
+      "title": "Invitation — Dijital Asistan",
+      "description": "A friend invited you to Dijital Asistan."
+    },
+    "oauthDone": {
+      "title": "Connection — Dijital Asistan",
+      "description": "Account connections finish in the Dijital Asistan app."
+    },
+    "appLink": {
+      "title": "Open in the app — Dijital Asistan",
+      "description": "This link opens in the Dijital Asistan app."
+    },
+    "notFound": {
+      "title": "Page not found — Dijital Asistan",
+      "description": "The page you're looking for couldn't be found."
+    }
+  },
+  "og": {
+    "home": {
+      "headline": "Tells you what you need to know today — before you ask.",
+      "sub": "Dijital Asistan understands your email, calendar and open tasks, and prepares a short briefing for you every day."
+    },
+    "pricing": {
+      "headline": "Start free. Go Pro when you need more.",
+      "sub": "Your morning briefing is always free."
+    },
+    "privacy": {
+      "headline": "Privacy Policy",
+      "sub": "What we process and why, in plain words."
+    },
+    "terms": {
+      "headline": "Terms of Use",
+      "sub": "Nothing happens without your approval."
+    },
+    "support": {
+      "headline": "Support and FAQ",
+      "sub": "Answers and ways to reach us."
+    },
+    "deletion": {
+      "headline": "Delete your account and data",
+      "sub": "With email verification and honest status."
+    },
+    "referral": {
+      "headline": "A friend invited you.",
+      "sub": "Meet the conditions and you both get {days, plural, one {# day} other {# days}} of Pro."
+    },
+    "briefKicker": "BRIEFING READY · 07:58",
+    "briefTitle": "You have 5 things to know today.",
+    "briefMeta": "4 important emails · 4 events · 2 follow-ups",
+    "sample": "Sample data"
+  },
+  "download": {
+    "appStore": "Download on the App Store",
+    "appStorePlatform": "For iPhone",
+    "googlePlay": "Get it on Google Play",
+    "googlePlayPlatform": "For Android",
+    "badgesLabel": "Download the app",
+    "qrTitle": "Scan with your phone",
+    "qrSub": "Point your camera at the code to open the right store.",
+    "qrAlt": "QR code to download the app",
+    "qrButton": "Download with QR",
+    "close": "Close",
+    "title": "Have your briefing ready tomorrow morning.",
+    "body": "Download the app and connect your email and calendar. The first analysis reviews your last 72 hours.",
+    "trust": "Free plan · Delete anytime"
+  },
+  "home": {
+    "hero": {
+      "kicker": "DIJITAL ASISTAN",
+      "title": "Tells you what you need to know today — before you ask.",
+      "lead": "Dijital Asistan understands your email, calendar and open tasks, and prepares a short briefing for you every day.",
+      "trust": "iPhone and Android · Turkish and English · Never sends an email or changes your calendar without your approval.",
+      "panelKicker": "MORNING BRIEFING",
+      "panelTitle": "Every morning, only what you need to know, in six parts.",
+      "panelFoot": "Every item shows where it came from."
+    },
+    "integrations": {
+      "kicker": "CONNECTIONS",
+      "title": "Works with the accounts you already use.",
+      "lead": "Connect Gmail and Outlook email, Google, Outlook and Apple calendars, and Google Tasks and Microsoft To Do. Signing in and connecting accounts are separate: you can sign in with Apple and connect Gmail.",
+      "groups": {
+        "mail": "Email",
+        "calendar": "Calendar",
+        "tasks": "Tasks"
+      },
+      "chips": {
+        "gmail": "Gmail",
+        "outlook": "Outlook",
+        "googleCalendar": "Google Calendar",
+        "outlookCalendar": "Outlook Calendar",
+        "appleCalendar": "Apple Calendar · iPhone",
+        "deviceCalendar": "Device calendar · Android",
+        "googleTasks": "Google Tasks",
+        "microsoftTodo": "Microsoft To Do",
+        "appleReminders": "Reminders · iPhone"
+      },
+      "reassurance": "Reads only what you allow. Remove a connection whenever you like.",
+      "planNote": "Free: {mail, plural, one {# email account} other {# email accounts}} and {cal, plural, one {# calendar} other {# calendars}}. Pro: more than one.",
+      "planNoteFallback": "The Free plan connects a limited number of accounts; Pro connects more than one."
+    },
+    "how": {
+      "kicker": "HOW IT WORKS",
+      "title": "Ready in three steps.",
+      "steps": {
+        "connect": {
+          "title": "Connect your accounts",
+          "body": "Connect your email and calendar. At every step you see what is accessed and why."
+        },
+        "analysis": {
+          "title": "See your first analysis",
+          "body": "It reviews your last 72 hours: how many emails arrived, how many really matter, what's on your calendar and who is waiting for a reply."
+        },
+        "daily": {
+          "title": "Get your briefing every day",
+          "body": "A short briefing is prepared at the time you choose. Notifications arrive only when they are worth it."
+        }
+      }
+    },
+    "briefing": {
+      "kicker": "MORNING BRIEFING",
+      "title": "Start the day knowing what matters.",
+      "lead": "Your briefing has six parts: {sections}. Every item shows where it came from.",
+      "free": "The morning briefing is included in the free plan.",
+      "pro": "Midday pulse, evening close and audio briefing are Pro. The midday pulse only arrives when something important changed since the morning.",
+      "listLabel": "Briefing sections"
+    },
+    "mail": {
+      "kicker": "MAIL INTELLIGENCE",
+      "title": "83 emails. Only 4 really matter.",
+      "sample": "A sample day; numbers depend on your inbox.",
+      "lead": "It sorts incoming email into six groups: {categories}. You see the AI summary first; every decision shows its reason, and you can correct it with one tap.",
+      "tones": "Drafts replies in four tones: Short, Professional, Friendly, Detailed. You edit the draft; nothing is sent until you approve.",
+      "inbox": "Nothing is deleted or moved; your inbox stays as it is.",
+      "pro": "Smart follow-up and commitment tracking are Pro.",
+      "listLabel": "Email groups"
+    },
+    "meeting": {
+      "kicker": "MEETING PREP",
+      "title": "Never walk into a meeting unprepared.",
+      "lead": "Before your meeting it gathers who you're meeting, your recent emails, open topics and promises on both sides on one page, and suggests three things to talk about.",
+      "summary": "Read or listen to the “2-minute summary” before you go in.",
+      "after": "When the meeting ends it asks “Anything you need to follow up on?”, turns what you say into a commitment proposal and asks for approval before saving.",
+      "cardTitle": "On the prep page",
+      "cardItems": {
+        "who": "Who you're meeting",
+        "threads": "Your recent emails",
+        "open": "Open topics",
+        "promises": "Promises on both sides",
+        "three": "Three things to talk about"
+      }
+    },
+    "planning": {
+      "kicker": "CALENDAR INTELLIGENCE",
+      "title": "It doesn't just show your calendar. It understands it.",
+      "lead": "It spots conflicts, back-to-back meetings, meetings that need preparation and your free time. When it finds a gap, it suggests how to use it.",
+      "example": "“You're free tomorrow 14:00–16:30. I can place the proposal task there.”",
+      "exampleLabel": "Sample suggestion",
+      "approval": "Your calendar never changes without your approval.",
+      "views": "Day and week views bring your calendar, tasks and commitments together."
+    },
+    "memory": {
+      "kicker": "ASSISTANT & AI MEMORY",
+      "title": "Ask your digital life.",
+      "lead": "It finds the answer in your email, calendar and saved notes and shows its sources. It never invents what isn't in a source; if it doesn't know, it says so.",
+      "questionsLabel": "Sample questions",
+      "questions": {
+        "q1": "“What did Mehmet and I last talk about?”",
+        "q2": "“Which deadlines do I have this week?”",
+        "q3": "“What was the flight I booked last month?”"
+      },
+      "pro": "AI memory is Pro; it is limited to the retention period you choose.",
+      "voice": "You can also ask by voice. If something needs to be written or changed, it still asks for your approval first."
+    },
+    "security": {
+      "kicker": "SECURITY & PRIVACY",
+      "title": "You're always in control.",
+      "lead": "Dijital Asistan suggests; you decide. Every important action comes to the Approval Center with what will happen, why and where: Approve, Edit or Reject.",
+      "promiseTitle": "Our promise",
+      "retentionChoice": "You choose how long analysis results are kept: 30 days, 90 days, 1 year or until you delete them.",
+      "exportDelete": "Export your data, or delete your history or account, whenever you want.",
+      "googleLine": "Use of information received from Google APIs adheres to the Google API Services User Data Policy, including the Limited Use requirements.",
+      "googleLink": "Details",
+      "rights": "You can exercise your rights under KVKK and GDPR in the app's Privacy Center or on this site.",
+      "policyLink": "Read the Privacy Policy"
+    },
+    "pricing": {
+      "kicker": "PRICING",
+      "title": "Start free. Go Pro when you need more.",
+      "freeItems": {
+        "accounts": "{mail, plural, one {# email account} other {# email accounts}} and {cal, plural, one {# calendar} other {# calendars}}",
+        "accountsFallback": "A limited number of email accounts and calendars",
+        "morning": "Morning briefing",
+        "important": "Important email and Today screen",
+        "drafts": "AI reply drafts and Approval Center",
+        "ai": "{n, plural, one {# AI analysis} other {# AI analyses}} per day",
+        "aiFallback": "Limited daily AI analyses"
+      },
+      "proItems": {
+        "accounts": "More than one email account and calendar",
+        "briefings": "Midday and evening briefings",
+        "meeting": "Meeting prep",
+        "followUp": "Smart follow-up and commitments",
+        "audio": "Audio briefing",
+        "memory": "AI memory and VIP people"
+      },
+      "note": "Pro is purchased in the app through the App Store or Google Play.",
+      "link": "See the full comparison"
+    },
+    "faq": {
+      "title": "Frequently asked questions",
+      "link": "All questions and support"
+    }
+  },
+  "pricing": {
+    "freePrice": "{price}",
+    "proTitle": "Pro",
+    "freeColumn": "Free",
+    "proColumn": "Pro",
+    "featureColumn": "Feature",
+    "priceUnavailable": "You'll see the current price in the app before you buy.",
+    "billingTitle": "Billing and subscription questions",
+    "storeRegionNote": "Prices shown are Turkey App Store and Google Play prices including VAT. Prices in your country are shown in the store before you buy.",
+    "downloadTitle": "Download the app and choose Pro in the app."
+  },
+  "legal": {
+    "versionLine": "Version {version} · Effective {date}",
+    "precedence": "If the Turkish and English texts differ, the Turkish text prevails.",
+    "toc": "Contents",
+    "backToTop": "Back to top",
+    "reviewNote": "This text describes how the app really works. Changes are announced in the app at least 15 days before they take effect.",
+    "retention": {
+      "caption": "Retention periods",
+      "colData": "Data",
+      "colPeriod": "Period",
+      "rows": {
+        "analysis": "Analysis results and synced content summaries (briefings, insights, email headers and previews, calendar and task copies, commitments, life cards, meeting notes, assistant conversations, the AI memory index, audio briefing files)",
+        "mailBodies": "Email bodies",
+        "captureFiles": "Capture files",
+        "exportFiles": "Export files",
+        "accessKeys": "Encrypted access keys",
+        "pushTokens": "Device notification tokens",
+        "productAnalytics": "Content-free product analytics",
+        "errorLogs": "Error logs",
+        "serverLogs": "Server logs",
+        "supportTickets": "Support requests",
+        "auditLogs": "Security audit logs",
+        "deletionRecords": "Deletion request record",
+        "referralSignals": "Referral abuse signals (irreversible digest)",
+        "backups": "Backups",
+        "aiProviders": "AI provider side"
+      },
+      "periods": {
+        "userChoice": "Your choice: 30 days, 90 days (default), 1 year or until you delete them",
+        "notStored": "Not stored",
+        "afterAnalysisHours": "At most {hours} hours after analysis",
+        "exportHours": "{hours} hours (deleted together with the download link)",
+        "untilDisconnect": "Until you disconnect the account or delete your account",
+        "untilSignOut": "Until you sign out, uninstall the app or delete your account",
+        "analyticsDays": "{days} days; after that only anonymous daily totals are kept",
+        "days": "{days} days",
+        "upToDays": "At most {days} days",
+        "yearsAfterClosure": "{years} years after closure",
+        "auditYears": "{years} years; your identity becomes an irreversible digest when your account is deleted",
+        "deletionYears": "{years} years after completion (reference, dates and an irreversible digest of the email only)",
+        "backupDays": "At most {days} days; only for disaster recovery",
+        "backupUnset": "For our hosting plan's backup cycle; only for disaster recovery",
+        "aiProviders": "Batch results are deleted from the provider right after we receive them; other content is not kept beyond the short abuse-monitoring periods in the provider agreement"
+      }
+    },
+    "subprocessors": {
+      "caption": "Sub-processors",
+      "colProvider": "Provider",
+      "colPurpose": "Purpose",
+      "colData": "Data processed",
+      "colLocation": "Location",
+      "colCondition": "When",
+      "rows": {
+        "supabase": {
+          "name": "Supabase",
+          "purpose": "Database, authentication, file storage and server functions",
+          "data": "All service data"
+        },
+        "vercel": {
+          "name": "Vercel",
+          "purpose": "Hosting this website",
+          "data": "Website requests"
+        },
+        "anthropic": {
+          "name": "Anthropic",
+          "purpose": "AI analysis (Claude)",
+          "data": "The parts of email, calendar, tasks and captures needed for analysis; your questions"
+        },
+        "openai": {
+          "name": "OpenAI",
+          "purpose": "Fallback AI analysis; fallback server-side speech recognition",
+          "data": "The same scope; voice recordings (not stored)"
+        },
+        "voyage": {
+          "name": "Voyage AI",
+          "purpose": "Semantic index (embeddings)",
+          "data": "Short derived texts"
+        },
+        "expo": {
+          "name": "Expo (650 Industries)",
+          "purpose": "Delivering notifications",
+          "data": "Device notification token, notification text"
+        },
+        "pushNetworks": {
+          "name": "Apple (APNs) and Google (FCM)",
+          "purpose": "Getting notifications to your device",
+          "data": "Notification token, notification text"
+        },
+        "revenuecat": {
+          "name": "RevenueCat",
+          "purpose": "Subscription management",
+          "data": "App user ID, subscription status"
+        },
+        "sentry": {
+          "name": "Sentry",
+          "purpose": "Error monitoring",
+          "data": "Scrubbed error reports"
+        },
+        "email": {
+          "name": "{provider}",
+          "purpose": "Verification code, deletion notice and support reply emails",
+          "data": "Email address, email content"
+        },
+        "pubsub": {
+          "name": "Google Cloud Pub/Sub",
+          "purpose": "Gmail change notifications",
+          "data": "Mailbox address and change number (no content)"
+        },
+        "tts": {
+          "name": "Premium voice provider (configured from Azure AI Speech, OpenAI or ElevenLabs)",
+          "purpose": "Turning briefing text into speech",
+          "data": "Briefing text"
+        },
+        "turnstile": {
+          "name": "Cloudflare (Turnstile)",
+          "purpose": "Bot protection on the support and data-deletion forms",
+          "data": "Browser and interaction signals, IP address"
+        }
+      },
+      "emailProviderGeneric": "Email delivery provider",
+      "locations": {
+        "euFrankfurt": "EU (Frankfurt, eu-central-1)",
+        "euEdge": "EU function region (Frankfurt) and global CDN",
+        "us": "United States",
+        "global": "Global",
+        "configured": "The data region we selected with the provider",
+        "custom": "{label}"
+      },
+      "conditions": {
+        "always": "Always",
+        "fallback": "When the primary provider doesn't respond; when on-device speech recognition isn't available",
+        "memory": "AI memory and search",
+        "push": "If you allowed notifications",
+        "gmail": "If you connected Gmail",
+        "premiumTts": "Only if premium voice is enabled",
+        "turnstile": "Only if bot protection is enabled"
+      }
+    }
+  },
+  "support": {
+    "categoriesLabel": "Topics",
+    "adminConsentUnavailable": "Your IT admin can approve Dijital Asistan for the whole organisation in the Microsoft Entra admin center.",
+    "form": {
+      "topics": {
+        "account": "Account",
+        "integration": "Integration",
+        "sync": "Sync",
+        "billing": "Billing",
+        "ai_quality": "AI quality",
+        "notification": "Notifications",
+        "privacy": "Privacy",
+        "other": "Other"
+      },
+      "topicChoose": "Choose a topic",
+      "counter": "{count}/5000",
+      "counterOver": "Your message is over 5000 characters.",
+      "errorSummary": "Some fields need your attention:",
+      "errors": {
+        "emailRequired": "Enter your email address.",
+        "emailInvalid": "Enter a valid email address.",
+        "topicRequired": "Choose a topic.",
+        "messageMin": "Your message needs at least 10 characters.",
+        "messageMax": "Your message can be at most 5000 characters.",
+        "nameMax": "Your name can be at most 120 characters.",
+        "rateLimited": "Too many requests. Please try again in an hour.",
+        "network": "Couldn't send. Check your connection and try again."
+      },
+      "retry": "Try again",
+      "honeypot": "Leave this field empty"
+    }
+  },
+  "deletion": {
+    "kicker": "DATA DELETION",
+    "title": "Delete your Dijital Asistan account and data",
+    "lead": "Request deletion of your Dijital Asistan account and all its data here. We verify it's you with a 6-digit code sent to your email. To delete only your analysis history and keep the account, use the app.",
+    "inApp": {
+      "title": "The fastest way: in the app",
+      "steps": {
+        "open": "Open Dijital Asistan.",
+        "profile": "Tap your profile picture at the top right.",
+        "privacy": "Choose Privacy & Security › Delete my account.",
+        "confirm": "Read what will be deleted and confirm."
+      },
+      "historyOnly": "History only: Privacy & Security › Delete analysis history."
+    },
+    "web": {
+      "title": "Request on the web"
+    },
+    "flow": {
+      "emailLabel": "Email address on your account",
+      "emailHelp": "If you signed in with Apple and hid your email, your address ends in …@privaterelay.appleid.com.",
+      "sendCode": "Send code",
+      "sending": "Sending…",
+      "codeInfo": "If an account exists for this address, we sent a 6-digit code. It's valid for 10 minutes.",
+      "codeLabel": "6-digit code",
+      "consequencesTitle": "Your account will be permanently deleted.",
+      "subscriptionReminder": "Deleting your account doesn't cancel an App Store or Google Play subscription.",
+      "microsoftReminder": "If you connected a Microsoft account, also remove the permission at Microsoft.",
+      "confirmLabel": "Type {word} to confirm",
+      "submit": "Delete my account",
+      "submitting": "Sending request…",
+      "resend": "Resend code",
+      "resendIn": "You can resend in {seconds} s",
+      "changeEmail": "Change email address",
+      "cancel": "Cancel",
+      "errors": {
+        "emailInvalid": "Enter a valid email address.",
+        "rateLimited": "Too many attempts. Try again in {minutes, plural, one {# minute} other {# minutes}}.",
+        "startNetwork": "Couldn't connect. Try again.",
+        "otpInvalid": "The code couldn't be verified. Check it or request a new one.",
+        "verifyNetwork": "Your request couldn't be sent. Try again.",
+        "serviceUnavailable": "The verification service can't be reached right now. Try again or delete in the app.",
+        "codeFormat": "The code has 6 digits.",
+        "confirmMismatch": "Type {word} to confirm."
+      },
+      "lockedTitle": "Too many incorrect attempts.",
+      "lockedBody": "For your security, this address can't be verified for 1 hour.",
+      "lockedInApp": "Delete in the app",
+      "lockedSupport": "Write to support",
+      "doneTitle": "Your deletion request was received.",
+      "reference": "Reference: {reference}",
+      "doneBody": "Your account and data are being deleted; this usually completes within 24 hours. We'll email {email} when it's done. The app on your phone is signed out.",
+      "subscriptionActive": "You have an active App Store or Google Play subscription. Deleting your account doesn't cancel it; cancel it to avoid charges.",
+      "statusCheck": "Check status",
+      "statusChecking": "Checking…",
+      "statusLine": "Current status: {status}",
+      "statusUnavailable": "The status can't be retrieved right now. We'll email you the result.",
+      "leave": "You can leave this page.",
+      "noScript": "The web request needs JavaScript. You can delete your account in the app or email destek@dijitalasistan.app with the topic “Privacy”."
+    },
+    "scope": {
+      "title": "What gets deleted?",
+      "caption": "Scope of account deletion and analysis history deletion",
+      "colData": "Data",
+      "colAccount": "Delete account (web or app)",
+      "colHistory": "Delete analysis history (app only)",
+      "rows": {
+        "profile": "Account and profile (name, email, sign-in methods)",
+        "connections": "Connected accounts and encrypted access keys",
+        "derived": "Information derived from email, calendar and tasks (previews, summaries, categories)",
+        "briefings": "Briefings and audio briefing files",
+        "decisions": "Priority decisions and learned preferences",
+        "rules": "Your explicit priority rules and VIP list",
+        "assistant": "Assistant conversations and the AI memory index",
+        "commitments": "Commitments, life cards, meeting preps and notes",
+        "captures": "Captures and files you uploaded",
+        "approvals": "Approval history",
+        "reminders": "In-app reminders",
+        "settings": "Settings and notification preferences",
+        "subscription": "Subscription record (RevenueCat)",
+        "referrals": "Your invite code and invitations",
+        "support": "Your support requests",
+        "pushTokens": "Device notification tokens",
+        "exports": "Export files",
+        "analytics": "Content-free product analytics",
+        "mailbox": "Your Gmail/Outlook mailbox, calendar and tasks",
+        "sentItems": "Emails you sent and events you created with the app"
+      },
+      "outcomes": {
+        "deleted": "Deleted",
+        "kept": "Kept",
+        "deletedRevoked": "Deleted; Google and Apple access is revoked",
+        "deletedPendingCancelled": "Deleted (pending approvals are cancelled)",
+        "deletedCancelStore": "Deleted (cancel the store subscription separately)",
+        "referralUnlinked": "Your invite code is deleted; invitation records are unlinked from you (rewards your friends earned are kept)",
+        "supportUnlinked": "The link to you and your email address are deleted; the request text is deleted 2 years after the request is closed",
+        "analyticsUnlinked": "Unlinked from you; the events stay anonymous and are deleted after 400 days",
+        "unaffected": "Not affected",
+        "staysInYourAccount": "Stays in your own account"
+      }
+    },
+    "also": {
+      "title": "Also do this",
+      "subscription": "Deleting your account doesn't cancel an App Store or Google Play subscription. Cancel it to avoid charges:",
+      "appStore": "Open App Store subscriptions",
+      "play": "Open Google Play subscriptions",
+      "microsoft": "If you connected a Microsoft account, also remove the permission at Microsoft:",
+      "microsoftPersonal": "personal account",
+      "microsoftWork": "work or school account",
+      "device": "The app on your phone notices you're signed out the next time it opens and clears the data on the device. You can also uninstall the app."
+    },
+    "duration": {
+      "title": "How long does it take?",
+      "body": "Your request is processed right after verification and usually completes within 24 hours; the legal maximum is 30 days. We email you when the account deletion is complete.",
+      "backups": "Copies in backups are deleted by the backup cycle within {days, plural, one {# day} other {# days}} and are kept only for disaster recovery until then.",
+      "backupsUnset": "Copies in backups are deleted by the backup cycle and are kept only for disaster recovery until then."
+    },
+    "kept": {
+      "title": "What may be kept?",
+      "body": "To show that we carried out the request, a deletion record (reference, request and completion times, an irreversible digest of the email address) is kept for 3 years. In security audit logs your identity becomes an irreversible digest. Aggregate statistics that don't identify you are not deleted. Purchase records are kept by Apple and Google."
+    },
+    "help": {
+      "title": "Having trouble?",
+      "relay": "If you signed in with Apple and hid your email, your address ends in …@privaterelay.appleid.com; on iPhone you can see it in Settings › [your name] › Sign-In & Security › Sign in with Apple › Dijital Asistan.",
+      "noAccess": "If you can't access your email, write to us through the <support>support form</support> with the topic “Privacy”, or send your request in writing; we verify your identity another way and process it.",
+      "kep": "KEP (registered email) address: {kep}",
+      "postal": "Postal address: {address}"
+    }
+  },
+  "referral": {
+    "kicker": "INVITATION",
+    "title": "A friend invited you to Dijital Asistan.",
+    "lead": "Dijital Asistan understands your email, calendar and open tasks, and prepares a short briefing for you every day.",
+    "codeLabel": "Your invite code",
+    "copy": "Copy",
+    "copied": "Code copied",
+    "selected": "Selected for copying",
+    "steps": {
+      "download": "Download the app.",
+      "add": "Within {window, plural, one {# day} other {# days}} of signing up, add the code: Profile › Invite friends › Have an invite code?",
+      "connect": "Connect an account and receive your first briefing."
+    },
+    "android": "On Android, if you install from the Google Play link on this page, the code is filled in for you.",
+    "reward": "When the conditions are met, you both get {days, plural, one {# day} other {# days}} of Pro. <terms>Referral terms</terms>",
+    "unverified": "Your invite code: {code}. It's checked when you add it in the app.",
+    "openInApp": "Open in the app",
+    "invalidTitle": "This invite link isn't valid.",
+    "invalidBody": "It may be mistyped or no longer in use. You can still download Dijital Asistan.",
+    "qrTitle": "Scan with your phone",
+    "qrSub": "If the app is installed, the code opens straight in the app."
+  },
+  "oauthDone": {
+    "providers": {
+      "google": "Google",
+      "microsoft": "Microsoft",
+      "demo": "Demo"
+    },
+    "pending": {
+      "title": "One step left.",
+      "body": "{provider} permission was received. Return to the Dijital Asistan app to finish; your account is connected once the app confirms it."
+    },
+    "denied": {
+      "title": "Connection cancelled.",
+      "body": "You didn't grant permission, so nothing was connected. Try again from the app any time."
+    },
+    "mismatch": {
+      "title": "A different account was chosen.",
+      "body": "Nothing was changed. Return to the app and try again with the right account."
+    },
+    "scope": {
+      "title": "Required permissions weren't granted.",
+      "body": "Nothing was connected. Try again from the app and approve the requested permissions."
+    },
+    "error": {
+      "title": "Connection couldn't be completed.",
+      "body": "Something went wrong. Return to the app and try again."
+    },
+    "expired": {
+      "title": "The connection request expired.",
+      "body": "For your security, a connection request is valid for 10 minutes. Start again from the app."
+    },
+    "admin": {
+      "title": "Your organisation's admin must approve.",
+      "body": "For a work or school account, your organisation's IT admin needs to approve Dijital Asistan.",
+      "link": "Information for your admin"
+    },
+    "returnToApp": "Return to the app",
+    "desktop": "This finishes in the Dijital Asistan app on your phone. Return to the app there."
+  },
+  "appLink": {
+    "title": "This link opens in the Dijital Asistan app.",
+    "body": "If the app is installed on your phone, tap the link there. If not, download it below.",
+    "openInApp": "Open in the app",
+    "qrTitle": "Scan with your phone",
+    "qrSub": "If the app is installed, the link opens straight in the app."
+  },
+  "links": {
+    "footerPrivacy": "Privacy",
+    "footerTerms": "Terms",
+    "footerSupport": "Support",
+    "languageTr": "Türkçe",
+    "languageEn": "English"
+  },
+  "errors": {
+    "notFound": {
+      "title": "Page not found.",
+      "body": "The link may be outdated or mistyped.",
+      "home": "Back to home"
+    },
+    "error": {
+      "title": "Something went wrong.",
+      "body": "Try reloading. If it continues, email destek@dijitalasistan.app.",
+      "retry": "Try again",
+      "home": "Home"
+    }
+  }
+}

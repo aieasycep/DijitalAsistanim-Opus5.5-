@@ -11,3 +11,5 @@ supabase/.temp
 apps/mobile/ios
 apps/mobile/android
 .claude/
+# Next.js regenerates this file on every build and typegen
+**/next-env.d.ts

@@ -1,0 +1,682 @@
+{
+  "common": {
+    "logoHome": "Dijital Asistan ana sayfa",
+    "skipToContent": "İçeriğe geç",
+    "mainNav": "Ana menü",
+    "footerNav": "Site bağlantıları",
+    "menu": "Menü",
+    "closeMenu": "Menüyü kapat",
+    "switchLocale": "EN",
+    "switchLocaleLabel": "Switch to English",
+    "otherLocaleName": "English",
+    "proTag": "PRO",
+    "proTagLabel": "Pro özelliği",
+    "included": "Dahil",
+    "notIncluded": "Dahil değil",
+    "backToTop": "Başa dön",
+    "devNotice": "Harici kimlik bilgisi gerekli: {keys}",
+    "offline": "İnternet bağlantısı yok. Bağlantı gelince devam edebilirsin.",
+    "emailLink": "{email} adresine e-posta gönder",
+    "regionEuCentral1": "AB (Frankfurt)"
+  },
+  "nav": {
+    "howItWorks": "Nasıl çalışır",
+    "features": "Özellikler",
+    "security": "Güvenlik",
+    "pricing": "Fiyatlar",
+    "faq": "SSS",
+    "getStarted": "Ücretsiz Başla"
+  },
+  "footer": {
+    "tagline": "Gürültüyü değil, önemli olanı gör.",
+    "product": "Ürün",
+    "supportTitle": "Destek",
+    "legal": "Yasal",
+    "features": "Özellikler",
+    "pricing": "Fiyatlar",
+    "faq": "SSS",
+    "support": "Destek",
+    "deletion": "Veri silme",
+    "privacy": "Gizlilik Politikası",
+    "kvkk": "KVKK Aydınlatma Metni",
+    "terms": "Kullanım Koşulları",
+    "language": "Dil",
+    "copyright": "© {year} {company}",
+    "legalLine": "Dijital Asistan; Google, Microsoft veya Apple ile bağlantılı değildir ve bu şirketlerce onaylanmamıştır. Gmail, Google Takvim, Google Tasks ve Google Play, Google LLC'nin; Outlook ve Microsoft To Do, Microsoft Corporation'ın; Apple, iPhone ve App Store, Apple Inc.'in ticari markalarıdır."
+  },
+  "seo": {
+    "home": {
+      "title": "Dijital Asistan — Bugün bilmen gerekenleri, sen sormadan söyler.",
+      "description": "Dijital Asistan mailini, takvimini ve açık işlerini anlayıp her gün sana kısa bir brifing hazırlar. iPhone ve Android için."
+    },
+    "pricing": {
+      "title": "Fiyatlar — Dijital Asistan",
+      "description": "Ücretsiz planla başla; öğle ve akşam brifingleri, toplantı hazırlığı, akıllı takip ve AI hafıza için Pro'ya geç. Fiyatlar App Store ve Google Play mağaza fiyatlarıdır."
+    },
+    "privacy": {
+      "title": "Gizlilik Politikası ve KVKK Aydınlatma Metni — Dijital Asistan",
+      "description": "Hangi verileri neden işlediğimizi, yapay zekâ alt işleyicilerimizi, saklama sürelerini ve haklarını açıklar."
+    },
+    "terms": {
+      "title": "Kullanım Koşulları — Dijital Asistan",
+      "description": "Dijital Asistan'ı kullanma koşulları: onaylı işlemler, yapay zekâ çıktıları, Ücretsiz plan ve Pro, abonelik, davet programı ve hakların."
+    },
+    "support": {
+      "title": "Destek ve Sık Sorulan Sorular — Dijital Asistan",
+      "description": "Dijital Asistan hakkında sık sorulan soruların cevapları; bulamadığın her şey için destek formu."
+    },
+    "deletion": {
+      "title": "Hesabını ve verilerini sil — Dijital Asistan",
+      "description": "Dijital Asistan hesabının ve verilerinin silinmesini e-posta doğrulamasıyla talep et; nelerin silindiğini ve ne kadar sürdüğünü gör."
+    },
+    "referral": {
+      "title": "Davet — Dijital Asistan",
+      "description": "Bir arkadaşın seni Dijital Asistan'a davet etti."
+    },
+    "oauthDone": {
+      "title": "Bağlantı — Dijital Asistan",
+      "description": "Hesap bağlantısı Dijital Asistan uygulamasında tamamlanır."
+    },
+    "appLink": {
+      "title": "Uygulamada aç — Dijital Asistan",
+      "description": "Bu bağlantı Dijital Asistan uygulamasında açılır."
+    },
+    "notFound": {
+      "title": "Sayfa bulunamadı — Dijital Asistan",
+      "description": "Aradığın sayfa bulunamadı."
+    }
+  },
+  "og": {
+    "home": {
+      "headline": "Bugün bilmen gerekenleri, sen sormadan söyler.",
+      "sub": "Dijital Asistan mailini, takvimini ve açık işlerini anlayıp her gün sana kısa bir brifing hazırlar."
+    },
+    "pricing": {
+      "headline": "Ücretsiz başla. İhtiyacın olduğunda Pro'ya geç.",
+      "sub": "Sabah brifingin her zaman ücretsiz."
+    },
+    "privacy": {
+      "headline": "Gizlilik Politikası",
+      "sub": "Hangi verileri neden işlediğimizi açıkça anlatıyoruz."
+    },
+    "terms": {
+      "headline": "Kullanım Koşulları",
+      "sub": "Sen onaylamadan hiçbir işlem yapılmaz."
+    },
+    "support": {
+      "headline": "Destek ve SSS",
+      "sub": "Sorularının cevapları ve bize ulaşma yolları."
+    },
+    "deletion": {
+      "headline": "Hesabını ve verilerini sil",
+      "sub": "E-posta doğrulamasıyla, dürüst durum bilgisiyle."
+    },
+    "referral": {
+      "headline": "Bir arkadaşın seni davet etti.",
+      "sub": "Koşullar sağlandığında ikiniz de {days} gün Pro kazanırsınız."
+    },
+    "briefKicker": "BRİFİNG HAZIR · 07:58",
+    "briefTitle": "Bugün bilmen gereken 5 şey var.",
+    "briefMeta": "4 önemli mail · 4 etkinlik · 2 takip",
+    "sample": "Örnek veriler"
+  },
+  "download": {
+    "appStore": "App Store'dan indir",
+    "appStorePlatform": "iPhone için",
+    "googlePlay": "Google Play'den al",
+    "googlePlayPlatform": "Android için",
+    "badgesLabel": "Uygulamayı indir",
+    "qrTitle": "Telefonunla tara",
+    "qrSub": "Kamerayı koda tut; doğru mağaza açılır.",
+    "qrAlt": "Uygulamayı indirmek için QR kod",
+    "qrButton": "QR ile indir",
+    "close": "Kapat",
+    "title": "Yarın sabah brifingin hazır olsun.",
+    "body": "Uygulamayı indir, mailini ve takvimini bağla. İlk analiz son 72 saatini inceler.",
+    "trust": "Ücretsiz plan · İstediğin zaman sil"
+  },
+  "home": {
+    "hero": {
+      "kicker": "DİJİTAL ASİSTAN",
+      "title": "Bugün bilmen gerekenleri, sen sormadan söyler.",
+      "lead": "Dijital Asistan mailini, takvimini ve açık işlerini anlayıp her gün sana kısa bir brifing hazırlar.",
+      "trust": "iPhone ve Android · Türkçe ve İngilizce · Sen onaylamadan mail göndermez, takvimine dokunmaz.",
+      "panelKicker": "SABAH BRİFİNGİ",
+      "panelTitle": "Her sabah altı başlıkta, sadece bilmen gerekenler.",
+      "panelFoot": "Her maddenin altında nereden çıktığı yazar."
+    },
+    "integrations": {
+      "kicker": "BAĞLANTILAR",
+      "title": "Zaten kullandığın hesaplarla çalışır.",
+      "lead": "Gmail ve Outlook maillerini, Google, Outlook ve Apple takvimlerini, Google Tasks ve Microsoft To Do görevlerini bağla. Uygulamaya girişin ile bağladığın hesaplar ayrıdır: Apple ile giriş yapıp Gmail'ini bağlayabilirsin.",
+      "groups": {
+        "mail": "Mail",
+        "calendar": "Takvim",
+        "tasks": "Görevler"
+      },
+      "chips": {
+        "gmail": "Gmail",
+        "outlook": "Outlook",
+        "googleCalendar": "Google Takvim",
+        "outlookCalendar": "Outlook Takvim",
+        "appleCalendar": "Apple Takvim · iPhone",
+        "deviceCalendar": "Cihaz takvimi · Android",
+        "googleTasks": "Google Tasks",
+        "microsoftTodo": "Microsoft To Do",
+        "appleReminders": "Anımsatıcılar · iPhone"
+      },
+      "reassurance": "Yalnızca izin verdiğin verileri okur. Bağlantıyı istediğin an kaldırabilirsin.",
+      "planNote": "Ücretsiz planda {mail} mail hesabı ve {cal} takvim; Pro'da birden fazla.",
+      "planNoteFallback": "Ücretsiz planda bağlanabilecek hesap sayısı sınırlıdır; Pro'da birden fazla."
+    },
+    "how": {
+      "kicker": "NASIL ÇALIŞIR",
+      "title": "Üç adımda hazır.",
+      "steps": {
+        "connect": {
+          "title": "Hesaplarını bağla",
+          "body": "Mailini ve takvimini bağla. Her adımda hangi verilere erişildiğini ve neden gerektiğini görürsün."
+        },
+        "analysis": {
+          "title": "İlk analizi gör",
+          "body": "Son 72 saatini inceler: kaç mail geldiğini, kaçının gerçekten önemli olduğunu, takviminde neler olduğunu ve kimin cevap beklediğini gösterir."
+        },
+        "daily": {
+          "title": "Her gün brifingini al",
+          "body": "Seçtiğin saatte kısa bir brifing hazırlanır. Bildirim yalnızca değer taşıdığında gelir."
+        }
+      }
+    },
+    "briefing": {
+      "kicker": "SABAH BRİFİNGİ",
+      "title": "Güne neyin önemli olduğunu bilerek başla.",
+      "lead": "Brifingin altı bölümden oluşur: {sections}. Her maddenin altında nereden çıktığı yazar.",
+      "free": "Sabah brifingi ücretsiz planda da var.",
+      "pro": "Öğle nabzı, akşam kapanışı ve sesli brifing Pro'da. Öğle nabzı yalnızca sabahtan beri önemli bir gelişme olduysa gelir.",
+      "listLabel": "Brifing bölümleri"
+    },
+    "mail": {
+      "kicker": "MAİL ZEKÂSI",
+      "title": "83 mail. Gerçekten önemli olan 4.",
+      "sample": "Örnek bir gün; rakamlar senin gelen kutuna göre değişir.",
+      "lead": "Gelen mailleri altı gruba ayırır: {categories}. Önce AI özetini görürsün; her kararın nedeni yazar, yanlışsa tek dokunuşla düzeltirsin.",
+      "tones": "Yanıt taslağını dört tonda hazırlar: Kısa, Profesyonel, Samimi, Detaylı. Taslağı düzenlersin; sen onaylamadan gönderilmez.",
+      "inbox": "Maillerin silinmez, taşınmaz; gelen kutun olduğu gibi kalır.",
+      "pro": "Akıllı takip ve taahhüt takibi Pro'da.",
+      "listLabel": "Mail grupları"
+    },
+    "meeting": {
+      "kicker": "TOPLANTI HAZIRLIĞI",
+      "title": "Toplantıya hazırlıksız girme.",
+      "lead": "Toplantından önce kiminle görüşeceğini, son yazışmalarınızı, açık konuları ve karşılıklı verilen sözleri tek sayfada toplar; konuşman gereken üç şeyi önerir.",
+      "summary": "“2 Dakikalık Özet” ile toplantıdan önce oku ya da dinle.",
+      "after": "Toplantı bittiğinde “Takip etmen gereken bir şey var mı?” diye sorar; söylediklerini taahhüt önerisine çevirir ve kaydetmeden önce onayını alır.",
+      "cardTitle": "Hazırlık sayfasında",
+      "cardItems": {
+        "who": "Kiminle görüşeceğin",
+        "threads": "Son yazışmalarınız",
+        "open": "Açık konular",
+        "promises": "Karşılıklı verilen sözler",
+        "three": "Konuşman gereken üç şey"
+      }
+    },
+    "planning": {
+      "kicker": "TAKVİM ZEKÂSI",
+      "title": "Takvimini sadece göstermez. Anlar.",
+      "lead": "Çakışmaları, arka arkaya toplantıları, hazırlık gerektiren görüşmeleri ve boş zamanlarını fark eder. Boşluk bulduğunda önerir.",
+      "example": "“Yarın 14:00–16:30 arasında boşsun. Teklif hazırlama görevini buraya yerleştirebilirim.”",
+      "exampleLabel": "Örnek öneri",
+      "approval": "Takvimin sen onaylamadan değişmez.",
+      "views": "Bugün ve haftalık görünümde takvimin, görevlerin ve taahhütlerin bir arada."
+    },
+    "memory": {
+      "kicker": "ASİSTAN VE AI HAFIZA",
+      "title": "Dijital hayatına sor.",
+      "lead": "Yanıtı mailin, takvimin ve kaydettiğin notlardan bulur, altında kaynaklarını gösterir. Kaynakta olmayan bir şeyi uydurmaz; bilmiyorsa söyler.",
+      "questionsLabel": "Örnek sorular",
+      "questions": {
+        "q1": "“Mehmet ile en son ne konuştuk?”",
+        "q2": "“Bu hafta hangi son tarihlerim var?”",
+        "q3": "“Geçen ay aldığım uçak bileti neydi?”"
+      },
+      "pro": "AI hafıza Pro'da; hafıza, seçtiğin saklama süresiyle sınırlıdır.",
+      "voice": "Sesle de sorabilirsin. Bir şey yazılması ya da değiştirilmesi gerekiyorsa yine önce onayını ister."
+    },
+    "security": {
+      "kicker": "GÜVENLİK VE GİZLİLİK",
+      "title": "Kontrol her zaman sende.",
+      "lead": "Dijital Asistan önerir, kararı sen verirsin. Önemli her işlem Onay Merkezi'nde ne yapılacağı, nedeni ve nereye uygulanacağıyla önüne gelir: Onayla, Düzenle ya da Reddet.",
+      "promiseTitle": "Sözümüz",
+      "retentionChoice": "Analiz sonuçlarının ne kadar saklanacağını sen seçersin: 30 gün, 90 gün, 1 yıl ya da sen silene kadar.",
+      "exportDelete": "Verilerini dışa aktarabilir, geçmişini ya da hesabını istediğin an silebilirsin.",
+      "googleLine": "Google API'lerinden alınan bilgilerin kullanımı, Sınırlı Kullanım şartları dahil Google API Hizmetleri Kullanıcı Verileri Politikası'na uygundur.",
+      "googleLink": "Ayrıntılar",
+      "rights": "KVKK ve GDPR kapsamındaki haklarını uygulamadaki Gizlilik Merkezi'nden ya da bu siteden kullanabilirsin.",
+      "policyLink": "Gizlilik Politikası'nı oku"
+    },
+    "pricing": {
+      "kicker": "FİYATLAR",
+      "title": "Ücretsiz başla. İhtiyacın olduğunda Pro'ya geç.",
+      "freeItems": {
+        "accounts": "{mail} mail hesabı ve {cal} takvim",
+        "accountsFallback": "Sınırlı sayıda mail hesabı ve takvim",
+        "morning": "Sabah brifingi",
+        "important": "Önemli mailler ve Bugün ekranı",
+        "drafts": "AI yanıt taslakları ve Onay Merkezi",
+        "ai": "Günde {n} AI analizi",
+        "aiFallback": "Sınırlı günlük AI analizi"
+      },
+      "proItems": {
+        "accounts": "Birden fazla mail hesabı ve takvim",
+        "briefings": "Öğle ve akşam brifingleri",
+        "meeting": "Toplantı hazırlığı",
+        "followUp": "Akıllı takip ve taahhütler",
+        "audio": "Sesli brifing",
+        "memory": "AI hafıza ve VIP kişiler"
+      },
+      "note": "Pro, uygulama içinden App Store veya Google Play üzerinden satın alınır.",
+      "link": "Tüm karşılaştırmayı gör"
+    },
+    "faq": {
+      "title": "Sık sorulan sorular",
+      "link": "Tüm sorular ve destek"
+    }
+  },
+  "pricing": {
+    "freePrice": "{price}",
+    "proTitle": "Pro",
+    "freeColumn": "Ücretsiz",
+    "proColumn": "Pro",
+    "featureColumn": "Özellik",
+    "priceUnavailable": "Güncel fiyatı uygulamada, satın almadan önce görürsün.",
+    "billingTitle": "Ödeme ve abonelik soruları",
+    "storeRegionNote": "Fiyatlar Türkiye App Store ve Google Play fiyatlarıdır.",
+    "downloadTitle": "Uygulamayı indir, Pro'yu uygulamada seç."
+  },
+  "legal": {
+    "versionLine": "Sürüm {version} · Yürürlük tarihi: {date}",
+    "precedence": "Türkçe ve İngilizce metinler arasında fark olursa Türkçe metin esas alınır.",
+    "toc": "İçindekiler",
+    "backToTop": "Başa dön",
+    "reviewNote": "Bu metin, uygulamanın gerçek işleyişini anlatır. Değişiklikler yürürlüğe girmeden en az 15 gün önce uygulamada duyurulur.",
+    "retention": {
+      "caption": "Saklama süreleri",
+      "colData": "Veri",
+      "colPeriod": "Süre",
+      "rows": {
+        "analysis": "Analiz sonuçları ve senkronize içerik özetleri (brifingler, içgörüler, mail başlıkları ve önizlemeleri, takvim ve görev kopyaları, taahhütler, yaşam kartları, toplantı notları, asistan konuşmaları, AI hafıza dizini, sesli brifing dosyaları)",
+        "mailBodies": "Mail gövdeleri",
+        "captureFiles": "Yakalama dosyaları",
+        "exportFiles": "Dışa aktarım dosyaları",
+        "accessKeys": "Şifreli erişim anahtarları",
+        "pushTokens": "Cihaz bildirim anahtarları",
+        "productAnalytics": "İçeriksiz ürün analitiği",
+        "errorLogs": "Hata kayıtları",
+        "serverLogs": "Sunucu kayıtları",
+        "supportTickets": "Destek talepleri",
+        "auditLogs": "Güvenlik denetim kayıtları",
+        "deletionRecords": "Silme talebi kaydı",
+        "referralSignals": "Davet kötüye kullanım sinyalleri (geri döndürülemez özet)",
+        "backups": "Yedekler",
+        "aiProviders": "AI sağlayıcı tarafı"
+      },
+      "periods": {
+        "userChoice": "Senin seçimin: 30 gün, 90 gün (varsayılan), 1 yıl ya da sen silene kadar",
+        "notStored": "Saklanmaz",
+        "afterAnalysisHours": "Analizden sonra en geç {hours} saat",
+        "exportHours": "{hours} saat (indirme bağlantısıyla birlikte silinir)",
+        "untilDisconnect": "Bağlantıyı kaldırana ya da hesabını silene kadar",
+        "untilSignOut": "Çıkış yapana, uygulama kaldırılana ya da hesabını silene kadar",
+        "analyticsDays": "{days} gün; kimliksiz günlük toplamlar sonrasında saklanır",
+        "days": "{days} gün",
+        "upToDays": "En fazla {days} gün",
+        "yearsAfterClosure": "Kapatıldıktan sonra {years} yıl",
+        "auditYears": "{years} yıl; hesap silinince kimliğin geri döndürülemez özete çevrilir",
+        "deletionYears": "Tamamlandıktan sonra {years} yıl (yalnızca referans, tarihler ve e-postanın geri döndürülemez özeti)",
+        "backupDays": "En fazla {days} gün; yalnızca felaket kurtarma için",
+        "backupUnset": "Barındırma planımızın yedek döngüsü boyunca; yalnızca felaket kurtarma için",
+        "aiProviders": "Toplu işlem sonuçları alındıktan hemen sonra sağlayıcıdan silinir; diğer içerikler sağlayıcı sözleşmesinde yazan kısa güvenlik denetimi süreleri dışında tutulmaz"
+      }
+    },
+    "subprocessors": {
+      "caption": "Alt işleyiciler",
+      "colProvider": "Sağlayıcı",
+      "colPurpose": "Amaç",
+      "colData": "İşlenen veri",
+      "colLocation": "Konum",
+      "colCondition": "Ne zaman",
+      "rows": {
+        "supabase": {
+          "name": "Supabase",
+          "purpose": "Veritabanı, kimlik doğrulama, dosya depolama ve sunucu işlevleri",
+          "data": "Tüm hizmet verileri"
+        },
+        "vercel": {
+          "name": "Vercel",
+          "purpose": "Bu web sitesinin barındırılması",
+          "data": "Site istekleri"
+        },
+        "anthropic": {
+          "name": "Anthropic",
+          "purpose": "AI analizi (Claude)",
+          "data": "Analiz için gereken mail, takvim, görev ve yakalama bölümleri; soruların"
+        },
+        "openai": {
+          "name": "OpenAI",
+          "purpose": "Yedek AI analizi; sunucu tarafı ses tanıma yedeği",
+          "data": "Aynı kapsam; ses kaydı (saklanmaz)"
+        },
+        "voyage": {
+          "name": "Voyage AI",
+          "purpose": "Anlam dizini (embedding)",
+          "data": "Türetilmiş kısa metinler"
+        },
+        "expo": {
+          "name": "Expo (650 Industries)",
+          "purpose": "Bildirim iletimi",
+          "data": "Cihaz bildirim anahtarı, bildirim metni"
+        },
+        "pushNetworks": {
+          "name": "Apple (APNs) ve Google (FCM)",
+          "purpose": "Bildirimin cihaza ulaştırılması",
+          "data": "Bildirim anahtarı, bildirim metni"
+        },
+        "revenuecat": {
+          "name": "RevenueCat",
+          "purpose": "Abonelik yönetimi",
+          "data": "Uygulama kullanıcı kimliği, abonelik durumu"
+        },
+        "sentry": {
+          "name": "Sentry",
+          "purpose": "Hata izleme",
+          "data": "Temizlenmiş hata kayıtları"
+        },
+        "email": {
+          "name": "{provider}",
+          "purpose": "Doğrulama kodu, silme bildirimi ve destek yanıtı e-postaları",
+          "data": "E-posta adresi, e-posta içeriği"
+        },
+        "pubsub": {
+          "name": "Google Cloud Pub/Sub",
+          "purpose": "Gmail değişiklik bildirimleri",
+          "data": "Posta adresi ve değişiklik numarası (içerik yok)"
+        },
+        "tts": {
+          "name": "Premium ses sağlayıcısı (Azure AI Speech, OpenAI veya ElevenLabs arasından yapılandırılan)",
+          "purpose": "Brifing metnini sese çevirme",
+          "data": "Brifing metni"
+        },
+        "turnstile": {
+          "name": "Cloudflare (Turnstile)",
+          "purpose": "Destek ve veri silme formlarında bot koruması",
+          "data": "Tarayıcı ve etkileşim sinyalleri, IP adresi"
+        }
+      },
+      "emailProviderGeneric": "E-posta gönderim sağlayıcısı",
+      "locations": {
+        "euFrankfurt": "AB (Frankfurt, eu-central-1)",
+        "euEdge": "AB işlev bölgesi (Frankfurt) ve küresel CDN",
+        "us": "ABD",
+        "global": "Küresel",
+        "configured": "Sağlayıcıda seçtiğimiz veri bölgesi",
+        "custom": "{label}"
+      },
+      "conditions": {
+        "always": "Her zaman",
+        "fallback": "Birincil sağlayıcı yanıt vermediğinde; cihaz ses tanıması yoksa",
+        "memory": "AI hafıza ve arama",
+        "push": "Bildirim izni verdiysen",
+        "gmail": "Gmail bağladıysan",
+        "premiumTts": "Yalnızca premium ses etkinse",
+        "turnstile": "Yalnızca bot koruması etkinse"
+      }
+    }
+  },
+  "support": {
+    "categoriesLabel": "Konular",
+    "adminConsentUnavailable": "BT yöneticin, Microsoft Entra yönetim merkezinde Dijital Asistan'a kuruluş genelinde izin verebilir.",
+    "form": {
+      "topics": {
+        "account": "Hesap",
+        "integration": "Entegrasyon",
+        "sync": "Senkronizasyon",
+        "billing": "Faturalandırma",
+        "ai_quality": "AI kalitesi",
+        "notification": "Bildirimler",
+        "privacy": "Gizlilik",
+        "other": "Diğer"
+      },
+      "topicChoose": "Bir konu seç",
+      "counter": "{count}/5000",
+      "counterOver": "Mesajın 5000 karakteri geçti.",
+      "errorSummary": "Formda düzeltmen gereken alanlar var:",
+      "errors": {
+        "emailRequired": "E-posta adresini yaz.",
+        "emailInvalid": "Geçerli bir e-posta adresi yaz.",
+        "topicRequired": "Bir konu seç.",
+        "messageMin": "Mesajın en az 10 karakter olmalı.",
+        "messageMax": "Mesajın en fazla 5000 karakter olabilir.",
+        "nameMax": "Adın en fazla 120 karakter olabilir.",
+        "rateLimited": "Çok fazla talep gönderildi. Lütfen bir saat sonra tekrar dene.",
+        "network": "Gönderilemedi. İnternet bağlantını kontrol edip tekrar dene."
+      },
+      "retry": "Tekrar Dene",
+      "honeypot": "Bu alanı boş bırak"
+    }
+  },
+  "deletion": {
+    "kicker": "VERİ SİLME",
+    "title": "Dijital Asistan hesabını ve verilerini sil",
+    "lead": "Dijital Asistan hesabının ve tüm verilerinin silinmesini buradan talep edebilirsin. Kimliğini, e-posta adresine göndereceğimiz 6 haneli kodla doğrularız. Hesabın kalırken yalnızca analiz geçmişini silmek istersen bunu uygulamadan yapabilirsin.",
+    "inApp": {
+      "title": "Uygulamadan silmek en hızlı yol",
+      "steps": {
+        "open": "Dijital Asistan'ı aç.",
+        "profile": "Sağ üstteki profil fotoğrafına dokun.",
+        "privacy": "Gizlilik ve Güvenlik › Hesabımı sil'i seç.",
+        "confirm": "Nelerin silineceğini oku ve onayla."
+      },
+      "historyOnly": "Yalnızca geçmişini silmek için: Gizlilik ve Güvenlik › Analiz geçmişini sil."
+    },
+    "web": {
+      "title": "Web üzerinden talep oluştur"
+    },
+    "flow": {
+      "emailLabel": "Hesabındaki e-posta adresi",
+      "emailHelp": "Apple ile giriş yaptıysan ve e-postanı gizlediysen adresin …@privaterelay.appleid.com ile biter.",
+      "sendCode": "Kod gönder",
+      "sending": "Gönderiliyor…",
+      "codeInfo": "Bu adrese bağlı bir Dijital Asistan hesabı varsa 6 haneli bir kod gönderdik. Kod 10 dakika geçerlidir.",
+      "codeLabel": "6 haneli kod",
+      "consequencesTitle": "Hesabın kalıcı olarak silinecek.",
+      "subscriptionReminder": "App Store veya Google Play aboneliğin hesap silmeyle iptal olmaz.",
+      "microsoftReminder": "Microsoft hesabı bağladıysan izni Microsoft'tan da kaldır.",
+      "confirmLabel": "Onaylamak için {word} yaz",
+      "submit": "Hesabımı sil",
+      "submitting": "Talep gönderiliyor…",
+      "resend": "Kodu tekrar gönder",
+      "resendIn": "{seconds} sn sonra tekrar gönderebilirsin",
+      "changeEmail": "E-posta adresini değiştir",
+      "cancel": "Vazgeç",
+      "errors": {
+        "emailInvalid": "Geçerli bir e-posta adresi yaz.",
+        "rateLimited": "Çok fazla deneme yapıldı. {minutes} dakika sonra tekrar dene.",
+        "startNetwork": "Bağlantı kurulamadı. Tekrar dene.",
+        "otpInvalid": "Kod doğrulanamadı. Kodu kontrol et ya da yeni kod iste.",
+        "verifyNetwork": "Talebin gönderilemedi. Tekrar dene.",
+        "serviceUnavailable": "Doğrulama hizmetine şu an ulaşılamıyor. Tekrar dene ya da uygulamadan sil.",
+        "codeFormat": "Kod 6 rakamdan oluşur.",
+        "confirmMismatch": "Onaylamak için {word} yaz."
+      },
+      "lockedTitle": "Çok fazla hatalı deneme yapıldı.",
+      "lockedBody": "Güvenliğin için bu adresle 1 saat boyunca doğrulama yapılamaz.",
+      "lockedInApp": "Uygulamadan sil",
+      "lockedSupport": "Destek ekibine yaz",
+      "doneTitle": "Silme talebin alındı.",
+      "reference": "Referans: {reference}",
+      "doneBody": "Hesabın ve verilerin sırayla siliniyor; bu genellikle 24 saat içinde tamamlanır. Tamamlandığında {email} adresine e-posta göndereceğiz. Telefonundaki uygulamada oturumun kapanır.",
+      "subscriptionActive": "Aktif bir App Store veya Google Play aboneliğin var. Hesabını silmek aboneliği iptal etmez; ücretlendirilmemek için aboneliğini iptal et.",
+      "statusCheck": "Durumu kontrol et",
+      "statusChecking": "Kontrol ediliyor…",
+      "statusLine": "Güncel durum: {status}",
+      "statusUnavailable": "Durum şu an alınamadı. Sonucu e-postayla bildireceğiz.",
+      "leave": "Bu sayfadan ayrılabilirsin.",
+      "noScript": "Web talebi için JavaScript gerekiyor. Hesabını uygulamadan silebilir ya da destek@dijitalasistan.app adresine “Gizlilik” konusuyla yazabilirsin."
+    },
+    "scope": {
+      "title": "Neler silinir?",
+      "caption": "Hesap silme ve analiz geçmişi silmenin kapsamı",
+      "colData": "Veri",
+      "colAccount": "Hesabı sil (web veya uygulama)",
+      "colHistory": "Analiz geçmişini sil (yalnızca uygulamada)",
+      "rows": {
+        "profile": "Hesap ve profil (ad, e-posta, giriş yöntemleri)",
+        "connections": "Bağlı hesaplar ve şifreli erişim anahtarları",
+        "derived": "Mail, takvim ve görevlerden çıkarılan bilgiler (önizlemeler, özetler, kategoriler)",
+        "briefings": "Brifingler ve sesli brifing dosyaları",
+        "decisions": "Öncelik kararları ve öğrenilen tercihler",
+        "rules": "Açık öncelik kuralların ve VIP listen",
+        "assistant": "Asistan konuşmaları ve AI hafıza dizini",
+        "commitments": "Taahhütler, yaşam kartları, toplantı hazırlıkları ve notları",
+        "captures": "Yakalamalar ve yüklediğin dosyalar",
+        "approvals": "Onay geçmişi",
+        "reminders": "Uygulama içi hatırlatıcılar",
+        "settings": "Ayarlar ve bildirim tercihleri",
+        "subscription": "Abonelik kaydı (RevenueCat)",
+        "referrals": "Davet kodun ve davetlerin",
+        "support": "Destek taleplerin",
+        "pushTokens": "Cihaz bildirim anahtarları",
+        "exports": "Dışa aktarım dosyaları",
+        "analytics": "İçeriksiz ürün analitiği",
+        "mailbox": "Gmail/Outlook mail kutun, takvimin ve görevlerin",
+        "sentItems": "Uygulamayla gönderdiğin mailler ve oluşturduğun etkinlikler"
+      },
+      "outcomes": {
+        "deleted": "Silinir",
+        "kept": "Kalır",
+        "deletedRevoked": "Silinir; Google ve Apple erişimi geri alınır",
+        "deletedPendingCancelled": "Silinir (bekleyen onaylar iptal edilir)",
+        "deletedCancelStore": "Silinir (mağaza aboneliğini ayrıca iptal et)",
+        "referralUnlinked": "Davet kodun silinir; davet kayıtlarının seninle bağı kaldırılır (arkadaşlarının kazandığı ödüller korunur)",
+        "supportUnlinked": "Seninle bağı ve e-posta adresin silinir; talep metni, talep kapandıktan 2 yıl sonra silinir",
+        "analyticsUnlinked": "Seninle bağı kaldırılır; olaylar kimliksiz kalır ve 400 gün sonra silinir",
+        "unaffected": "Etkilenmez",
+        "staysInYourAccount": "Kendi hesabında kalır"
+      }
+    },
+    "also": {
+      "title": "Ayrıca yapman gerekenler",
+      "subscription": "App Store veya Google Play aboneliğin hesap silmeyle iptal olmaz. Ücretlendirilmemek için iptal et:",
+      "appStore": "App Store aboneliklerini aç",
+      "play": "Google Play aboneliklerini aç",
+      "microsoft": "Microsoft hesabı bağladıysan izni Microsoft'tan da kaldır:",
+      "microsoftPersonal": "kişisel hesap",
+      "microsoftWork": "iş veya okul hesabı",
+      "device": "Telefonundaki uygulama, bir sonraki açılışta oturumun kapandığını görür ve cihazdaki verileri temizler. Uygulamayı cihazından da kaldırabilirsin."
+    },
+    "duration": {
+      "title": "Ne kadar sürer?",
+      "body": "Talebin doğrulandıktan hemen sonra işleme alınır ve genellikle 24 saat içinde tamamlanır; yasal azami süre 30 gündür. Hesap silme tamamlandığında sana e-posta göndeririz.",
+      "backups": "Yedeklerdeki kopyalar en fazla {days} gün içinde yedek döngüsüyle silinir ve bu süre boyunca yalnızca felaket kurtarma için tutulur.",
+      "backupsUnset": "Yedeklerdeki kopyalar yedek döngüsüyle silinir ve bu süre boyunca yalnızca felaket kurtarma için tutulur."
+    },
+    "kept": {
+      "title": "Neler saklanabilir?",
+      "body": "Talebi yerine getirdiğimizi gösterebilmek için silme kaydı (referans, talep ve tamamlanma zamanı, e-posta adresinin geri döndürülemez özeti) 3 yıl saklanır. Güvenlik denetim kayıtlarında kimliğin geri döndürülemez özete çevrilir. Seni tanımlamayan toplu istatistikler silinmez. Satın alma kayıtları Apple ve Google tarafından tutulur."
+    },
+    "help": {
+      "title": "Sorun mu yaşıyorsun?",
+      "relay": "Apple ile giriş yaptıysan ve e-postanı gizlediysen adresin …@privaterelay.appleid.com ile biter; iPhone'da Ayarlar › [adın] › Giriş Yapma ve Güvenlik › Apple ile Giriş Yap › Dijital Asistan bölümünde görebilirsin.",
+      "noAccess": "E-postana erişemiyorsan <support>destek formundan</support> “Gizlilik” konusuyla yaz ya da KVKK başvurunu yazılı olarak gönder; kimliğini başka yollarla doğrulayarak işleme alırız.",
+      "kep": "KEP adresi: {kep}",
+      "postal": "Posta adresi: {address}"
+    }
+  },
+  "referral": {
+    "kicker": "DAVET",
+    "title": "Bir arkadaşın seni Dijital Asistan'a davet etti.",
+    "lead": "Dijital Asistan mailini, takvimini ve açık işlerini anlayıp her gün sana kısa bir brifing hazırlar.",
+    "codeLabel": "Davet kodun",
+    "copy": "Kopyala",
+    "copied": "Kod kopyalandı",
+    "selected": "Kopyalamak için seçildi",
+    "steps": {
+      "download": "Uygulamayı indir.",
+      "add": "Kaydolduktan sonraki {window} gün içinde kodu ekle: Profil › Arkadaşını Davet Et › Davet kodun var mı?",
+      "connect": "Bir hesap bağla ve ilk brifingini al."
+    },
+    "android": "Android'de bu sayfadaki Google Play bağlantısıyla indirirsen kod uygulamada hazır gelir.",
+    "reward": "Koşullar sağlandığında ikiniz de {days} gün Pro kazanırsınız. <terms>Davet koşulları</terms>",
+    "unverified": "Davet kodun: {code}. Kodu uygulamada eklediğinde geçerliliği kontrol edilir.",
+    "openInApp": "Uygulamada aç",
+    "invalidTitle": "Bu davet bağlantısı geçerli değil.",
+    "invalidBody": "Bağlantı hatalı yazılmış ya da artık kullanılmıyor olabilir. Dijital Asistan'ı yine de indirebilirsin.",
+    "qrTitle": "Telefonunla tara",
+    "qrSub": "Kod, uygulama yüklüyse doğrudan uygulamada açılır."
+  },
+  "oauthDone": {
+    "providers": {
+      "google": "Google",
+      "microsoft": "Microsoft",
+      "demo": "Demo"
+    },
+    "pending": {
+      "title": "Bir adım kaldı.",
+      "body": "{provider} izni alındı. Bağlantıyı tamamlamak için Dijital Asistan uygulamasına dön; hesabın, uygulama onayladığında bağlanır."
+    },
+    "denied": {
+      "title": "Bağlantı iptal edildi.",
+      "body": "İzin vermediğin için hesap bağlanmadı. İstediğin zaman uygulamadan yeniden deneyebilirsin."
+    },
+    "mismatch": {
+      "title": "Farklı bir hesap seçildi.",
+      "body": "Hiçbir şey değişmedi. Uygulamaya dönüp doğru hesapla yeniden dene."
+    },
+    "scope": {
+      "title": "Gerekli izinler verilmedi.",
+      "body": "Hiçbir hesap bağlanmadı. Uygulamadan yeniden deneyip istenen izinleri onaylayabilirsin."
+    },
+    "error": {
+      "title": "Bağlantı tamamlanamadı.",
+      "body": "Bir sorun oluştu. Uygulamaya dönüp tekrar dene."
+    },
+    "expired": {
+      "title": "Bağlantı isteğinin süresi doldu.",
+      "body": "Güvenliğin için bir bağlantı isteği 10 dakika geçerlidir. Uygulamadan yeniden başlat."
+    },
+    "admin": {
+      "title": "Kurum yöneticisinin onayı gerekiyor.",
+      "body": "İş veya okul hesabın için kuruluşunun BT yöneticisinin Dijital Asistan'a izin vermesi gerekiyor.",
+      "link": "Yöneticin için bilgi"
+    },
+    "returnToApp": "Uygulamaya Dön",
+    "desktop": "Bu işlem telefonundaki Dijital Asistan uygulamasında tamamlanır. Telefonunda uygulamaya geri dönebilirsin."
+  },
+  "appLink": {
+    "title": "Bu bağlantı Dijital Asistan uygulamasında açılır.",
+    "body": "Uygulama telefonunda yüklüyse bağlantıya telefonundan dokun. Yüklü değilse aşağıdan indirebilirsin.",
+    "openInApp": "Uygulamada aç",
+    "qrTitle": "Telefonunla tara",
+    "qrSub": "Uygulama yüklüyse bağlantı doğrudan uygulamada açılır."
+  },
+  "links": {
+    "footerPrivacy": "Gizlilik",
+    "footerTerms": "Koşullar",
+    "footerSupport": "Destek",
+    "languageTr": "Türkçe",
+    "languageEn": "English"
+  },
+  "errors": {
+    "notFound": {
+      "title": "Aradığın sayfa bulunamadı.",
+      "body": "Bağlantı eskimiş ya da hatalı yazılmış olabilir.",
+      "home": "Ana sayfaya dön"
+    },
+    "error": {
+      "title": "Bir şeyler ters gitti.",
+      "body": "Sayfayı yenilemeyi dene. Sorun sürerse destek@dijitalasistan.app adresine yaz.",
+      "retry": "Tekrar dene",
+      "home": "Ana sayfa"
+    }
+  }
+}

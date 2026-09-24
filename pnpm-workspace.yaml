@@ -134,5 +134,7 @@ allowBuilds:
   supabase: true
   core-js: false
   msw: false
+  '@parcel/watcher': false
+  '@swc/core': false
 
 minimumReleaseAge: 1440
