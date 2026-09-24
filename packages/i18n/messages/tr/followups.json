@@ -9,5 +9,23 @@
     "followUp": "Takip Et",
     "remindTomorrow": "Yarın hatırlat",
     "close": "Kapat"
+  },
+  "screen": {
+    "closed": "Takip kapatıldı.",
+    "days": "{count} gün",
+    "draft": "Takip Mesajı Hazırla",
+    "draftFailed": "Takip mesajı hazırlanamadı.",
+    "gateBody": "Cevap gelmeyen maillerini izler, doğru zamanda kibar bir takip mesajı hazırlarım.",
+    "gateCount": "{count} mailine cevap gelmedi.",
+    "gateKicker": "Pro",
+    "gateTitle": "Takip hatırlatmaları Pro ile gelir.",
+    "hint": "Takip mesajları onaylamadan gönderilmez.",
+    "notImportant": "Önemli değil",
+    "remindTomorrow": "Yarın hatırlat",
+    "seeCommitments": "Taahhütleri Gör",
+    "sentAt": "Gönderildi: {when}",
+    "stopTracking": "Bu kişiyi takip etme",
+    "stopped": "{name} artık takip edilmiyor.",
+    "sub": "{count} konu · en eskisi {days} gün"
   }
 }

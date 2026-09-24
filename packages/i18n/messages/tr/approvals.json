@@ -121,5 +121,25 @@
   },
   "learned": {
     "statement": "“{type}” önerilerini daha seçici göster."
+  },
+  "row": {
+    "what": "Ne",
+    "why": "Neden",
+    "source": "Kaynak",
+    "sourceHint": "Kaynağı açar",
+    "change": "Değişim",
+    "destination": "Hesap",
+    "sideEffect": "Etkisi"
+  },
+  "m2": {
+    "updated": "Bu onay güncellendi; son hâlini incele.",
+    "networkFailed": "İşlem gönderilemedi · Tekrar dene",
+    "cancel": "İptal",
+    "expired": "Bu önerinin süresi doldu.",
+    "slow": "İşlem sürüyor. Bitince bildireceğim.",
+    "device": "Bu işlem cihaz takviminde tamamlanacak; Onay Merkezi'nden takip edebilirsin.",
+    "sheetTitle": "Onayın gerekiyor",
+    "close": "Kapat",
+    "openCenter": "Onay ayrıntıları"
   }
 }

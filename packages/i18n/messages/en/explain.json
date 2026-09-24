@@ -12,7 +12,8 @@
     "title": "Source",
     "quote": "Quote from the source",
     "open": "Open source",
-    "deviceStale": "Device calendar last synced at {time}"
+    "deviceStale": "Device calendar last synced at {time}",
+    "quoted": "“{quote}”"
   },
   "confidence": "{percent}% confidence"
 }

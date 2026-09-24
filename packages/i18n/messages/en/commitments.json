@@ -38,5 +38,53 @@
       "changeDue": "Will be added to your commitments: {text} · Due {due}",
       "sideEffect": "Only added to your commitment list in Dijital Asistan; no message is sent."
     }
+  },
+  "screen": {
+    "actionFailed": "The action could not be completed. Try again.",
+    "awaitingConfirmation": "Awaiting confirmation",
+    "backToList": "Back to Commitments",
+    "confirm": "Yes, a Commitment",
+    "corrected": "Corrected",
+    "doneSection": "Completed",
+    "editTitle": "Edit Commitment",
+    "emptyMine": "You have no open commitments.",
+    "emptyMineBody": "Promises you make in emails and meetings are collected here.",
+    "emptyTheirs": "No open promises made to you.",
+    "followUpDraft": "Prepare Follow-up",
+    "gateBody": "Track promises you made and those made to you, with their sources; I will remind you before the deadline.",
+    "gateKicker": "Pro",
+    "gateTitle": "Commitment tracking comes with Pro.",
+    "gone": "This commitment no longer exists.",
+    "isPromise": "Is this a commitment?",
+    "kicker": "Commitment",
+    "mine": "My promises",
+    "noSlot": "No free time found before the deadline.",
+    "pending": "Awaiting approval",
+    "proposalA11y": "Commitment proposal. Use the Yes, a Commitment button to approve it.",
+    "quote": "“{quote}”",
+    "quoteA11y": "Quoted from the source: {quote}",
+    "reject": "No",
+    "removeDue": "Remove Deadline",
+    "reopen": "Reopen",
+    "reopened": "Commitment reopened.",
+    "source": {
+      "document": "From a document",
+      "mail": "From an email",
+      "meeting": "From a meeting"
+    },
+    "status": {
+      "today": "Today",
+      "open": "Open",
+      "done": "Done",
+      "snoozed": "Snoozed",
+      "cancelled": "Cancelled",
+      "overdue": "Overdue"
+    },
+    "subMine": "{open} open · {overdue} overdue",
+    "subTheirs": "{count, plural, one {# open promise} other {# open promises}} made to you",
+    "textRequired": "The commitment text cannot be empty.",
+    "theirs": "Promised to me",
+    "title": "Commitments",
+    "updated": "Commitment updated."
   }
 }

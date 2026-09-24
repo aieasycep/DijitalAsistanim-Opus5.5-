@@ -19,6 +19,7 @@ import { setGuardSnapshot } from '../../src/lib/router-guards';
 import { encryptedStorage, isEncryptedStorageOpen } from '../../src/lib/storage';
 import { resetUiPrefsForTests } from '../../src/lib/ui-prefs';
 import { resetSheetsForTests } from '../../src/providers/SheetHost';
+import { fakeData, type FakeData } from './supabase-data';
 
 type Listener = (event: AuthChangeEvent, session: Session | null) => void;
 
@@ -46,6 +47,8 @@ export interface FakeSupabase {
   readonly auth: FakeAuth;
   /** Changes the session and emits the matching auth event. */
   setSession(next: Session | null): void;
+  /** PostgREST / RPC double (empty feeds by default). */
+  readonly data: FakeData;
 }
 
 export function fakeSupabase(initial: Session | null = null): FakeSupabase {
@@ -85,9 +88,11 @@ export function fakeSupabase(initial: Session | null = null): FakeSupabase {
     verifyOtp: jest.fn(),
     updateUser: jest.fn(() => Promise.resolve({ data: {}, error: null })),
   };
+  const data = fakeData();
   return {
-    client: { auth } as unknown as AppSupabaseClient,
+    client: { auth, rpc: data.rpc, from: data.from } as unknown as AppSupabaseClient,
     auth,
+    data,
     setSession(next) {
       current = next;
       emit(next === null ? 'SIGNED_OUT' : 'SIGNED_IN');

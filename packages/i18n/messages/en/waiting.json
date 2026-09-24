@@ -17,5 +17,20 @@
     "openMail": "Open the email",
     "prepareReply": "Draft a reply",
     "remind": "Remind me"
+  },
+  "screen": {
+    "done": "Marked as answered.",
+    "dueBy": "Expected: {when}",
+    "emptyBody": "Emails waiting for your reply appear here.",
+    "emptyTitle": "No one is waiting for you.",
+    "groups": {
+      "urgent": "Urgent",
+      "today": "Today",
+      "later": "Later"
+    },
+    "noReplyNeeded": "No reply needed",
+    "notImportant": "Not important",
+    "openMail": "Open Mail Intelligence",
+    "sub": "{count, plural, one {# person is} other {# people are}} waiting for your reply"
   }
 }

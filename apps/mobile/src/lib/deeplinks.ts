@@ -36,6 +36,21 @@ export const SCREEN_ROUTES: readonly string[] = [
   '/auth/callback',
   '/integrations/callback',
   '/demo/setup',
+  '/mail',
+  '/mail/category/:category',
+  '/mail/:id',
+  '/mail/:id/reply',
+  '/waiting',
+  '/followups',
+  '/commitments',
+  '/commitments/:id',
+  '/life/:id',
+  '/event/:id',
+  '/plan/proposal/:approvalId',
+  '/plan/conflict/:insightId',
+  '/meeting/:eventId/prep',
+  '/meeting/:eventId/summary',
+  '/meeting/:eventId/post',
 ];
 
 /** Screens compiled only into demo builds (`metro.config.js` drops their files otherwise). */

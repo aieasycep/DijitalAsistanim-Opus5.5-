@@ -146,6 +146,73 @@ describe('feed cards', () => {
     expect(screen.getByText('Özet hazırlanamadı')).toBeOnTheScreen();
   });
 
+  it('opens the "···" menu of waiting and follow-up cards', async () => {
+    const onWaiting = jest.fn();
+    const onFollowUp = jest.fn();
+    await renderUi(
+      <>
+        <WaitingCard
+          personName="Ahmet Yılmaz"
+          waitMeta="2 sa"
+          topic="Teklif"
+          onPress={jest.fn()}
+          onMore={onWaiting}
+          moreLabel="Bekleyen seçenekleri"
+        />
+        <FollowUpCard
+          personName="Selin Kaya"
+          topic="Sözleşme"
+          waitLabel="3 gün"
+          waitTone="warning"
+          status="Yanıt gelmedi."
+          draftAction={{ label: 'Takip Mesajı Hazırla', onPress: jest.fn() }}
+          onMore={onFollowUp}
+          moreLabel="Takip seçenekleri"
+        />
+      </>,
+    );
+    await fireEvent.press(screen.getByRole('button', { name: 'Bekleyen seçenekleri' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Takip seçenekleri' }));
+    expect(onWaiting).toHaveBeenCalledTimes(1);
+    expect(onFollowUp).toHaveBeenCalledTimes(1);
+  });
+
+  it('opens the "···" menu of mail summary cards', async () => {
+    const onMore = jest.fn();
+    await renderUi(
+      <MailSummaryCard
+        senderName="Ahmet Yılmaz"
+        summary="Teklif istiyor."
+        onPress={jest.fn()}
+        onMore={onMore}
+        moreLabel="Diğer seçenekler"
+      />,
+    );
+    await fireEvent.press(screen.getByRole('button', { name: 'Diğer seçenekler' }));
+    expect(onMore).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows the visible "···" twin of the swipe verbs on attention cards', async () => {
+    const onMore = jest.fn();
+    await renderUi(
+      <AttentionCard
+        title="Teklif"
+        summary="Revize teklif bekliyor."
+        sourceName="Gmail"
+        sourceIcon="mail"
+        onPress={jest.fn()}
+        onMore={onMore}
+        moreLabel="Diğer seçenekler"
+      />,
+    );
+    await fireEvent.press(screen.getByRole('button', { name: 'Diğer seçenekler' }));
+    expect(onMore).toHaveBeenCalledTimes(1);
+    const card = screen.getByTestId('ui.attentionCard');
+    expect(card.props.accessibilityActions).toEqual(
+      expect.arrayContaining([{ name: 'more', label: 'Diğer seçenekler' }]),
+    );
+  });
+
   it('renders mail summaries, life cards and announcements with their actions', async () => {
     const onDismiss = jest.fn();
     const onLife = jest.fn();

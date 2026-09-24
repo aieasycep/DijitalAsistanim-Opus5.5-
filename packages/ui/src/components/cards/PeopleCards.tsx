@@ -11,6 +11,7 @@ import { Card } from '../../primitives/Surface.tsx';
 import { Text } from '../../primitives/Text.tsx';
 import { useExitAnimation } from '../../primitives/useExitAnimation.ts';
 import { useTheme } from '../../theme/ThemeProvider.tsx';
+import { CardIconAction } from '../buttons/IconButton.tsx';
 import { Avatar } from '../avatar/Avatar.tsx';
 import { StatusPill, type StatusTone } from '../badges/Badge.tsx';
 import { Button } from '../buttons/Button.tsx';
@@ -49,6 +50,9 @@ export interface FollowUpCardProps {
   readonly exiting?: boolean;
   readonly onExited?: () => void;
   readonly onPress?: () => void;
+  /** Trailing "···" (stop tracking, why, correction). */
+  readonly onMore?: () => void;
+  readonly moreLabel?: string;
   readonly testID?: string;
 }
 
@@ -67,12 +71,16 @@ export function FollowUpCard({
   exiting = false,
   onExited,
   onPress,
+  onMore,
+  moreLabel,
   testID,
 }: FollowUpCardProps): JSX.Element {
   const theme = useTheme();
   const exit = useExitAnimation(exiting, onExited);
+  const hasMore = onMore !== undefined && moreLabel !== undefined;
   const a11y = cardA11y([
     ...a11yActions,
+    ...(hasMore ? [{ key: 'more', label: moreLabel, onPress: onMore }] : []),
     { key: 'draft', label: draftAction.label, onPress: draftAction.onPress },
     ...(remindAction === undefined
       ? []
@@ -98,6 +106,11 @@ export function FollowUpCard({
             </Text>
           </View>
           <StatusPill label={waitLabel} tone={waitTone} size="wait" />
+          {hasMore ? (
+            <View style={{ marginRight: -8 }}>
+              <CardIconAction kind="more" accessibilityLabel={moreLabel} onPress={onMore} />
+            </View>
+          ) : null}
         </View>
         <Text variant="bodySm" style={{ marginTop: 12 }}>
           {status}
@@ -163,6 +176,9 @@ export interface WaitingCardProps {
   readonly vip?: boolean;
   readonly vipLabel?: string;
   readonly onPress?: () => void;
+  /** Trailing "···" (open mail, remind, no reply needed, why). */
+  readonly onMore?: () => void;
+  readonly moreLabel?: string;
   readonly a11yActions?: readonly A11yAction[];
   readonly testID?: string;
 }
@@ -179,12 +195,16 @@ export function WaitingCard({
   vip = false,
   vipLabel,
   onPress,
+  onMore,
+  moreLabel,
   a11yActions = [],
   testID,
 }: WaitingCardProps): JSX.Element {
   const theme = useTheme();
+  const hasMore = onMore !== undefined && moreLabel !== undefined;
   const a11y = cardA11y([
     ...a11yActions,
+    ...(hasMore ? [{ key: 'more', label: moreLabel, onPress: onMore }] : []),
     ...(action === undefined
       ? []
       : [{ key: 'action', label: action.label, onPress: action.onPress }]),
@@ -221,6 +241,11 @@ export function WaitingCard({
             {waitMeta}
           </Text>
         </View>
+        {hasMore ? (
+          <View style={{ marginRight: -8 }}>
+            <CardIconAction kind="more" accessibilityLabel={moreLabel} onPress={onMore} />
+          </View>
+        ) : null}
       </View>
       <Text variant="bodyXs" tone="secondary" style={{ marginTop: 10 }}>
         {topic}

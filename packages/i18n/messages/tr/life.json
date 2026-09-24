@@ -35,5 +35,40 @@
     "payment": "{payee, select, none {Ödeme} other {{payee}}} · {status, select, due {Ödeme bekliyor} paid {Ödendi} failed {Ödeme başarısız} refund {İade} other {Ödeme bildirimi}}",
     "subscription": "{service, select, none {Abonelik} other {{service}}} · {event, select, renewal_upcoming {Yenileme yaklaşıyor} renewed {Yenilendi} trial_ending {Deneme bitiyor} cancelled {İptal edildi} price_change {Fiyat değişikliği} other {Abonelik bildirimi}}",
     "security": "{service, select, none {Hesap} other {{service}}} · {event, select, password_changed {Şifre değiştirildi} recovery_changed {Kurtarma bilgisi değişti} suspicious_activity {Şüpheli etkinlik} new_sign_in {Yeni oturum açıldı} other {Güvenlik uyarısı}}"
+  },
+  "screen": {
+    "confirm": "Rezervasyonu Doğrula",
+    "directions": "Yol Tarifi",
+    "dismissed": "Kaldırıldı.",
+    "failed": "İşlem tamamlanamadı. Tekrar dene.",
+    "fields": {
+      "accountRef": "Hesap / abone no",
+      "address": "Adres",
+      "airline": "Havayolu",
+      "carrier": "Kargo firması",
+      "device": "Cihaz",
+      "flightNo": "Uçuş no",
+      "location": "Konum",
+      "merchant": "Satıcı",
+      "payee": "Alıcı",
+      "pnr": "PNR",
+      "route": "Güzergâh",
+      "service": "Hizmet",
+      "time": "Zaman",
+      "trackingNo": "Takip no",
+      "venue": "Mekân",
+      "when": "Tarih"
+    },
+    "gone": "Bu kayıt artık yok.",
+    "itWasMe": "Bu Bendim",
+    "mineDone": "Tamam, bu girişi sen yaptın.",
+    "neverShow": "Bu türü bir daha gösterme",
+    "notImportant": "Önemli değil",
+    "paid": "Ödedim",
+    "paidDone": "Ödendi olarak işaretlendi.",
+    "pastKicker": "{type} · geçmiş",
+    "received": "Teslim Aldım",
+    "receivedDone": "Teslim alındı olarak işaretlendi.",
+    "securityGuidance": "Bu girişi sen yapmadıysan, şifreni hesabın kendi uygulamasından veya sitesinden değiştir. Maildeki bağlantılara tıklama."
   }
 }

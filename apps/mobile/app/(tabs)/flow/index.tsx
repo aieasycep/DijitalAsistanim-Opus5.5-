@@ -1,6 +1,6 @@
-// M-FLOW-01 tab root: shell header and bootstrap-driven state until the Flow (T-8.10) screen.
-import { TabRoot } from '../../../src/features/shell/TabRoot';
+// M-FLOW-01 · Akış tab root (T-8.10).
+import { FlowScreen } from '../../../src/features/flow/FlowScreen';
 
 export default function FlowTab() {
-  return <TabRoot tab="flow" />;
+  return <FlowScreen />;
 }

@@ -20,6 +20,7 @@ import {
   APP_ROOT_SCREENS,
   DEMO_ROOT_SCREENS,
   ONBOARDING_ROOT_SCREENS,
+  ROOT_SCREEN_PRESENTATION,
   SIGNED_OUT_ROOT_SCREENS,
 } from '../src/lib/router-guards';
 import { AppProviders } from '../src/providers/AppProviders';
@@ -56,7 +57,13 @@ function RootNavigator() {
         </Stack.Protected>
         <Stack.Protected guard={flags.app}>
           {APP_ROOT_SCREENS.map((name) => (
-            <Stack.Screen key={name} name={name} />
+            <Stack.Screen
+              key={name}
+              name={name}
+              {...(ROOT_SCREEN_PRESENTATION[name] === undefined
+                ? {}
+                : { options: { presentation: ROOT_SCREEN_PRESENTATION[name] } })}
+            />
           ))}
         </Stack.Protected>
         {demo ? DEMO_ROOT_SCREENS.map((name) => <Stack.Screen key={name} name={name} />) : null}

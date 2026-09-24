@@ -1,6 +1,6 @@
-// M-PLAN-01 tab root: shell header and bootstrap-driven state until the Plan (T-8.13) screen.
-import { TabRoot } from '../../../src/features/shell/TabRoot';
+// M-PLAN-01/02 · Plan tab root, day and week (T-8.13).
+import { PlanScreen } from '../../../src/features/plan/PlanScreen';
 
 export default function PlanTab() {
-  return <TabRoot tab="plan" />;
+  return <PlanScreen />;
 }

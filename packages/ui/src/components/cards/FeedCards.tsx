@@ -214,6 +214,9 @@ export interface AttentionCardProps {
   /** One action (feed rule). */
   readonly action?: CardAction;
   readonly onPress?: () => void;
+  /** Trailing "···" 44 pt button in row 1 (the visible twin of the swipe verbs, SREQ-82). */
+  readonly onMore?: () => void;
+  readonly moreLabel?: string;
   readonly a11yActions?: readonly A11yAction[];
   readonly done?: boolean;
   readonly exiting?: boolean;
@@ -234,6 +237,8 @@ export function AttentionCard({
   time,
   action,
   onPress,
+  onMore,
+  moreLabel,
   a11yActions = [],
   done = false,
   exiting = false,
@@ -243,7 +248,11 @@ export function AttentionCard({
 }: AttentionCardProps): JSX.Element {
   const theme = useTheme();
   const exit = useExitAnimation(exiting, onExited);
-  const a11y = cardA11y([...a11yActions, ...(action === undefined ? [] : [action])]);
+  const more =
+    onMore === undefined || moreLabel === undefined
+      ? []
+      : [{ key: 'more', label: moreLabel, onPress: onMore }];
+  const a11y = cardA11y([...a11yActions, ...more, ...(action === undefined ? [] : [action])]);
   const body = summary ?? summaryUnavailable;
   const label = accessibilityLabel ?? composeLabel([sourceName, badge?.label, time, title, body]);
   return (
@@ -265,6 +274,11 @@ export function AttentionCard({
             <Text variant="meta" tone="tertiaryStrong" numeric>
               {time}
             </Text>
+          )}
+          {onMore === undefined || moreLabel === undefined ? null : (
+            <View style={{ marginRight: -8 }}>
+              <CardIconAction kind="more" accessibilityLabel={moreLabel} onPress={onMore} />
+            </View>
           )}
         </View>
         <Text
@@ -304,6 +318,9 @@ export interface MailSummaryCardProps {
   readonly unread?: boolean;
   readonly action?: CardAction;
   readonly onPress?: () => void;
+  /** Trailing "···" (correction / provider actions, M-MAIL-04). */
+  readonly onMore?: () => void;
+  readonly moreLabel?: string;
   readonly accessibilityLabel?: string;
   readonly testID?: string;
 }
@@ -318,11 +335,17 @@ export function MailSummaryCard({
   unread = false,
   action,
   onPress,
+  onMore,
+  moreLabel,
   accessibilityLabel,
   testID,
 }: MailSummaryCardProps): JSX.Element {
   const theme = useTheme();
-  const a11y = cardA11y(action === undefined ? [] : [action]);
+  const more =
+    onMore === undefined || moreLabel === undefined
+      ? []
+      : [{ key: 'more', label: moreLabel, onPress: onMore }];
+  const a11y = cardA11y([...more, ...(action === undefined ? [] : [action])]);
   return (
     <Card
       testID={testID ?? 'ui.mailSummaryCard'}
@@ -343,6 +366,11 @@ export function MailSummaryCard({
           <Text variant="meta" tone="tertiaryStrong" numeric>
             {time}
           </Text>
+        )}
+        {onMore === undefined || moreLabel === undefined ? null : (
+          <View style={{ marginRight: -8 }}>
+            <CardIconAction kind="more" accessibilityLabel={moreLabel} onPress={onMore} />
+          </View>
         )}
       </View>
       <Text variant="bodySm" style={{ marginTop: 8 }}>

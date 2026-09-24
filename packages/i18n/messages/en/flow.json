@@ -117,5 +117,89 @@
         "title": "{count, plural, one {# action awaits your approval} other {# actions await your approval}}"
       }
     }
+  },
+  "actions": {
+    "failed": "Couldn't complete that · Try again"
+  },
+  "snooze": {
+    "title": "Snooze until when?",
+    "inHour": "In 1 hour",
+    "thisEvening": "This evening",
+    "tomorrowMorning": "Tomorrow morning",
+    "done": "Snoozed · {when}"
+  },
+  "reminder": {
+    "failed": "Couldn't set the reminder · Try again",
+    "noTimes": "No reminder time is left for this item.",
+    "offline": "Setting a reminder needs a connection."
+  },
+  "header": {
+    "profile": "Profile and settings"
+  },
+  "meta": {
+    "topics": "{count, plural, one {# item} other {# items}}",
+    "important": "{count} important",
+    "lastAnalysis": "Last analysis {time}",
+    "paused": "{count, plural, one {# account paused} other {# accounts paused}}"
+  },
+  "card": {
+    "openEvent": "Open event",
+    "followUpDraft": "Draft a follow-up",
+    "review": "Review",
+    "check": "Check",
+    "noSummary": "No summary available",
+    "why": "Where did this come from?",
+    "showMore": "Show this more often",
+    "dismissed": "Removed"
+  },
+  "feed": {
+    "empty": {
+      "openMail": "Open Mail Intelligence",
+      "all": {
+        "title": "Everything is under control.",
+        "body": "Nothing needs your attention right now. New developments will show up here."
+      },
+      "important": {
+        "title": "Nothing important.",
+        "body": "Everything marked important collects here.",
+        "cta": "Priority rules"
+      },
+      "mail": {
+        "title": "No email needs your attention.",
+        "body": "{count, plural, one {I read # email for you today.} other {I read # emails for you today.}}"
+      },
+      "calendar": {
+        "title": "Your calendar is quiet today.",
+        "body": "No upcoming meetings or deadlines.",
+        "cta": "Open Plan"
+      },
+      "calendarNone": {
+        "title": "No calendar connected.",
+        "body": "Connect your calendar to see meetings and deadlines here.",
+        "cta": "Connect calendar"
+      },
+      "followup": {
+        "cta": "See your commitments"
+      },
+      "personal": {
+        "title": "No personal signals.",
+        "body": "I pick up deliveries, flights, reservations, payments, subscriptions and security notices from your email and documents."
+      }
+    }
+  },
+  "gate": {
+    "kicker": "Follow-up · Pro",
+    "title": "Let me track your unanswered emails.",
+    "titleCount": "{count, plural, one {# email you sent has no reply.} other {# emails you sent have no reply.}}",
+    "body": "Follow-ups and commitments are in Pro. Your morning briefing is always free."
+  },
+  "proposal": {
+    "alreadyPending": "This is already waiting for your approval.",
+    "view": "View",
+    "proRequired": "This is available in Pro.",
+    "sourceOff": "Calendar writing is off for this account. You can turn it on in Settings.",
+    "failed": "Couldn't prepare the proposal · Try again",
+    "noCalendar": "No writable calendar found.",
+    "noSlot": "I couldn't find free time in this range."
   }
 }

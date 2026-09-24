@@ -165,7 +165,8 @@ describe('tabs', () => {
     await screen.findByText('Her şey kontrol altında.');
     await fireEvent.press(screen.getByRole('button', { name: 'Akışa göz at' }));
     expect(router.getPathname()).toBe('/flow');
-    expect(await screen.findByText('Bu filtrede şu an bir şey yok.')).toBeOnTheScreen();
+    // The Flow screen (T-8.10): the "Tümü" empty state of M-FLOW-01.
+    expect(await screen.findByTestId('flow.empty.all')).toBeOnTheScreen();
   });
 
   it('shows the connect state without a dead CTA while the accounts screen does not exist', async () => {

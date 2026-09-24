@@ -61,7 +61,34 @@ export const SIGNED_OUT_ROOT_SCREENS = ['(auth)'] as const;
  */
 export const ONBOARDING_ROOT_SCREENS: readonly string[] = [];
 /** Signed in, onboarded, supported version, active account: `(tabs)` and every detail route. */
-export const APP_ROOT_SCREENS: readonly string[] = ['(tabs)'];
+export const APP_ROOT_SCREENS: readonly string[] = [
+  '(tabs)',
+  'mail/index',
+  'mail/category/[category]',
+  'mail/[id]/index',
+  'mail/[id]/reply',
+  'waiting',
+  'followups',
+  'commitments/index',
+  'commitments/[id]',
+  'life/[id]',
+  'event/[id]',
+  'plan/proposal/[approvalId]',
+  'plan/conflict/[insightId]',
+  'meeting/[eventId]/prep',
+  'meeting/[eventId]/summary',
+  'meeting/[eventId]/post',
+];
+
+/** Root screens that are not plain stack pushes (SCREEN_AND_FLOW_MAP presentation column). */
+export const ROOT_SCREEN_PRESENTATION: Readonly<
+  Record<string, 'modal' | 'transparentModal' | 'formSheet'>
+> = {
+  'mail/[id]/reply': 'modal',
+  'life/[id]': 'transparentModal',
+  'plan/proposal/[approvalId]': 'modal',
+  'meeting/[eventId]/summary': 'modal',
+};
 /** Demo builds only. */
 export const DEMO_ROOT_SCREENS = ['demo/setup'] as const;
 
