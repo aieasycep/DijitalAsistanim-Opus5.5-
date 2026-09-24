@@ -9,6 +9,7 @@ import { JobError } from '../../jobs/types.ts';
 import { jsonResponse, type RecordedCall, stubFetch } from '../../testing/fetch.ts';
 import { USER_A } from '../../testing/jwt.ts';
 import { jobContext, memoryNotifications, memoryQueue } from '../../testing/workflows.ts';
+import { accountNotificationJob } from '../business/notify.ts';
 import { NotificationJobPayload } from './create.ts';
 import { createExpoPushClient, type ExpoMessage } from './expo-push.ts';
 import { processNotification, receiptsJobKey } from './pipeline.ts';
@@ -735,3 +736,23 @@ Deno.test('NotificationJobPayload: exactly one form; unknown templates are poiso
   );
   assert(NotificationJobPayload.safeParse({ user_id: USER_A, build: criticalBuild() }).success);
 });
+
+Deno.test(
+  'JOB-18 business account pushes (billing_sync, referral_evaluate) render through the pipeline',
+  async () => {
+    const s = setup(DAY);
+    s.n.addTarget(USER_A, { platform: 'android' });
+    const job = accountNotificationJob({
+      userId: USER_A,
+      template: 'account.trial_ending',
+      dedupeKey: 'trial_ending:1790000000',
+      path: '/settings/subscription',
+      params: { plan: 'Pro Aylık' },
+    });
+    const out = await s.run(job.payload as Record<string, unknown>, job.idempotencyKey);
+    assertEquals(out?.decision, 'sent');
+    assertEquals(s.sent[0]?.[0]?.title, 'Pro denemen yarın bitiyor');
+    assert(s.sent[0]?.[0]?.body.includes('Pro Aylık'));
+    assertEquals(s.sent[0]?.[0]?.data.deeplink, 'dijitalasistan://settings/subscription');
+  },
+);
