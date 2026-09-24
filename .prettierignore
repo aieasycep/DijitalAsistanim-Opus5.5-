@@ -10,3 +10,4 @@ design/reference/
 supabase/.temp
 apps/mobile/ios
 apps/mobile/android
+.claude/
