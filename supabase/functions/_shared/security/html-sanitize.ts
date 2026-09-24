@@ -5,7 +5,9 @@
  *   `math`, comments and hidden elements (`hidden`, `display:none`, `visibility:hidden`,
  *   `font-size:0`) are removed with their content;
  * - every attribute is dropped except `href` (rewritten) and `alt`/`title`/`colspan`/`rowspan`;
- * - images are never loaded: `img` becomes its `alt` text (remote images removed);
+ * - images are never loaded by default: `img` becomes its `alt` text (remote images removed); with
+ *   `allowRemoteImages` (API-MAIL-01 `remote_images=allowed`) an `https:` image keeps its `src` and
+ *   `alt` only (`cid:`, `data:` and non-https sources are always dropped);
  * - links keep only `https:` / `mailto:` targets and are rewritten to `da-link:` placeholders with
  *   the target in `data-href`, which the app opens through `LinkConfirmSheet`;
  * - zero-width and bidi control characters are stripped from text.
@@ -157,6 +159,8 @@ function escapeAttr(value: string): string {
 
 export interface SanitizeOptions {
   readonly maxTextChars?: number;
+  /** Keep `https:` image sources (the user chose to load remote images). */
+  readonly allowRemoteImages?: boolean;
 }
 
 type Frame = { readonly tag: string; readonly kind: 'drop' | 'hidden' | 'emit' | 'skip' };
@@ -190,6 +194,14 @@ export function sanitizeHtml(input: string, options: SanitizeOptions = {}): Sani
           attrs['aria-hidden'] === 'true';
         if (hiddenDepth > 0 || hidden) return push(tag, 'hidden');
         if (tag === 'img') {
+          const src = (attrs.src ?? '').trim();
+          if (options.allowRemoteImages === true && /^https:\/\/[^\s"'<>]+$/i.test(src)) {
+            const alt = (attrs.alt ?? '').replace(INVISIBLE, '').trim();
+            out.push(
+              `<img src="${escapeAttr(src)}" alt="${escapeAttr(alt)}" referrerpolicy="no-referrer">`,
+            );
+            return;
+          }
           removedImages++;
           const alt = (attrs.alt ?? '').replace(INVISIBLE, '').trim();
           if (alt !== '') {

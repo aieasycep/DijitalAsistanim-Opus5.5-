@@ -32,7 +32,8 @@ select tables_are(
   ],
   'public has exactly the DATABASE_AND_RLS_PLAN §4 tables'
 );
-select tables_are('private', array['demo_fixture_state', 'admin_role_permissions'], 'private has exactly its two tables');
+select tables_are('private', array['demo_fixture_state', 'admin_role_permissions', 'device_snapshot_uploads'],
+                  'private has exactly its tables (device_snapshot_uploads: migration 20260924002000)');
 select views_are('public', array['connected_account_sync_health'], 'public has exactly one view');
 select ok(
   (select coalesce('security_invoker=true' = any (c.reloptions), false)

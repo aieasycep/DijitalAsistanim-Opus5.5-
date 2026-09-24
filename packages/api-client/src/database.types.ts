@@ -6513,6 +6513,11 @@ export type Database = {
         };
         Returns: boolean;
       };
+      account_paused_by_plan: { Args: { p_account: string }; Returns: boolean };
+      acquire_sync_lease: {
+        Args: { p_owner: string; p_seconds?: number; p_sync_state: string };
+        Returns: boolean;
+      };
       ai_breaker_state: {
         Args: { p_model: string; p_provider: string };
         Returns: Json;
@@ -6536,12 +6541,20 @@ export type Database = {
         };
         Returns: undefined;
       };
+      apply_device_snapshot: {
+        Args: { p_account: string; p_snapshot: Json };
+        Returns: Json;
+      };
       apply_insight_feedback: {
         Args: {
           p_client_mutation_id?: string;
           p_insight_id: string;
           p_kind: string;
         };
+        Returns: Json;
+      };
+      apply_mail_changes: {
+        Args: { p_account: string; p_deleted: string[]; p_label_changes: Json };
         Returns: Json;
       };
       apply_referral: {
@@ -6556,6 +6569,10 @@ export type Database = {
           p_signals: Json;
           p_source: string;
         };
+        Returns: Json;
+      };
+      apply_staged_device_snapshot: {
+        Args: { p_account: string; p_content_hash: string };
         Returns: Json;
       };
       audit_log_append: {
@@ -6670,6 +6687,30 @@ export type Database = {
           p_source?: string;
           p_status_token_hash: string;
           p_subject_email_hash?: string;
+          p_user: string;
+        };
+        Returns: Json;
+      };
+      demo_state_get: { Args: { p_account: string }; Returns: Json };
+      demo_state_record_write: {
+        Args: {
+          p_account: string;
+          p_item: Json;
+          p_key: string;
+          p_resource: string;
+        };
+        Returns: Json;
+      };
+      demo_state_set_clock: {
+        Args: { p_account: string; p_clock: string; p_resource: string };
+        Returns: undefined;
+      };
+      disconnect_integration: {
+        Args: {
+          p_account: string;
+          p_correlation_id?: string;
+          p_purge_content: boolean;
+          p_revocation_mode: string;
           p_user: string;
         };
         Returns: Json;
@@ -6852,6 +6893,16 @@ export type Database = {
         Args: { p_older_than?: string };
         Returns: Json;
       };
+      integration_purge_batch: {
+        Args: {
+          p_account: string;
+          p_batch?: number;
+          p_disconnected_at: string;
+          p_purge_derived: boolean;
+          p_reason?: string;
+        };
+        Returns: Json;
+      };
       list_approvals: {
         Args: {
           p_cursor?: string;
@@ -6874,6 +6925,10 @@ export type Database = {
         Args: { p_briefing_id: string };
         Returns: undefined;
       };
+      mark_calendar_events_deleted: {
+        Args: { p_calendar: string; p_provider_event_ids: string[] };
+        Returns: number;
+      };
       memory_stats: { Args: { p_user: string }; Returns: Json };
       memory_vector_candidates: {
         Args: {
@@ -6884,6 +6939,29 @@ export type Database = {
           p_to?: string;
         };
         Returns: string[];
+      };
+      oauth_callback_store: {
+        Args: {
+          p_account?: Json;
+          p_credentials?: Json;
+          p_state: Json;
+          p_state_id: string;
+        };
+        Returns: Json;
+      };
+      oauth_close_flow: {
+        Args: { p_error_code?: string; p_result: string; p_state_id: string };
+        Returns: Json;
+      };
+      oauth_complete_binding: {
+        Args: {
+          p_account: Json;
+          p_account_id: string;
+          p_credentials?: Json;
+          p_state_id: string;
+          p_user: string;
+        };
+        Returns: Json;
       };
       person_intelligence: { Args: { p_contact_id: string }; Returns: Json };
       plan_limit: { Args: { p_key: string; p_user: string }; Returns: Json };
@@ -6896,6 +6974,15 @@ export type Database = {
           p_outcome: Database['public']['Enums']['rule_outcome'];
         };
         Returns: Json;
+      };
+      prune_calendar_events: {
+        Args: {
+          p_calendar: string;
+          p_since: string;
+          p_window_end?: string;
+          p_window_start?: string;
+        };
+        Returns: number;
       };
       pseudonymize_audit_subject: { Args: { p_user: string }; Returns: number };
       public_deletion_status: { Args: { p_request_id: string }; Returns: Json };
@@ -6978,6 +7065,10 @@ export type Database = {
         Returns: Json;
       };
       referral_tombstone_match: { Args: { p_signals: Json }; Returns: boolean };
+      release_sync_lease: {
+        Args: { p_owner: string; p_sync_state: string };
+        Returns: undefined;
+      };
       retention_cleanup: {
         Args: { p_batch?: number; p_now?: string };
         Returns: Json;
@@ -7102,6 +7193,10 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      stage_device_snapshot: {
+        Args: { p_account: string; p_snapshot: Json };
+        Returns: string;
+      };
       submit_ai_correction: {
         Args: {
           p_comment?: string;
@@ -7199,6 +7294,28 @@ export type Database = {
         Args: { p_job_id: string; p_progress: Json; p_worker_id: string };
         Returns: undefined;
       };
+      upsert_calendar_events: {
+        Args: {
+          p_account: string;
+          p_calendar: string;
+          p_events: Json;
+          p_origin: string;
+        };
+        Returns: Json;
+      };
+      upsert_calendars: {
+        Args: { p_account: string; p_calendars: Json };
+        Returns: Json;
+      };
+      upsert_device_account: {
+        Args: {
+          p_capabilities: Database['public']['Enums']['capability'][];
+          p_installation: string;
+          p_provider: Database['public']['Enums']['provider'];
+          p_user: string;
+        };
+        Returns: Json;
+      };
       upsert_learned_preference: {
         Args: {
           p_effect: Json;
@@ -7211,9 +7328,17 @@ export type Database = {
         };
         Returns: string;
       };
+      upsert_mail_messages: {
+        Args: { p_account: string; p_messages: Json };
+        Returns: Json;
+      };
       upsert_manual_contact: {
         Args: { p_display_name?: string; p_email: string };
         Returns: string;
+      };
+      upsert_tasks: {
+        Args: { p_account: string; p_tasks: Json };
+        Returns: Json;
       };
       user_apple_sub: { Args: { p_user: string }; Returns: string };
       vip_suggestions: { Args: Record<PropertyKey, never>; Returns: Json };

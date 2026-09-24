@@ -1,0 +1,151 @@
+{
+  "calendar_list": {
+    "items": [
+      {
+        "id": "yunus@gmail.com",
+        "summary": "yunus@gmail.com",
+        "timeZone": "Europe/Istanbul",
+        "accessRole": "owner",
+        "primary": true,
+        "backgroundColor": "#3F7D5B"
+      },
+      {
+        "id": "tr.turkish#holiday@group.v.calendar.google.com",
+        "summary": "Türkiye'deki tatiller",
+        "timeZone": "Europe/Istanbul",
+        "accessRole": "reader",
+        "backgroundColor": "#16a765"
+      },
+      {
+        "id": "is-takvimi@group.calendar.google.com",
+        "summary": "İş",
+        "timeZone": "Europe/Istanbul",
+        "accessRole": "writer",
+        "backgroundColor": "#2E5AAC"
+      }
+    ]
+  },
+  "settings_timezone": {
+    "value": "Europe/Istanbul"
+  },
+  "events_full": {
+    "items": [
+      {
+        "id": "evt-mehmet-0924",
+        "status": "confirmed",
+        "summary": "Mehmet ile müşteri toplantısı",
+        "description": "<p>Revize teklif ve 2026 bütçe kalemleri.</p>",
+        "location": "Yılmaz Endüstri Genel Merkez",
+        "start": {
+          "dateTime": "2026-09-24T14:30:00+03:00",
+          "timeZone": "Europe/Istanbul"
+        },
+        "end": {
+          "dateTime": "2026-09-24T15:30:00+03:00",
+          "timeZone": "Europe/Istanbul"
+        },
+        "organizer": {
+          "email": "yunus@gmail.com",
+          "self": true
+        },
+        "attendees": [
+          {
+            "email": "yunus@gmail.com",
+            "self": true,
+            "responseStatus": "accepted",
+            "organizer": true
+          },
+          {
+            "email": "mehmet@yilmazendustri.com",
+            "displayName": "Mehmet Yılmaz",
+            "responseStatus": "accepted"
+          }
+        ],
+        "hangoutLink": "https://meet.google.com/abc-defg-hij",
+        "etag": "\"3456789012345000\"",
+        "updated": "2026-09-20T09:00:00.000Z",
+        "iCalUID": "evt-mehmet-0924@google.com",
+        "extendedProperties": {
+          "private": {
+            "da_approval_id": "8a4f1c9e-1111-4222-8333-944455556666"
+          }
+        }
+      },
+      {
+        "id": "evt-phish-0925",
+        "status": "confirmed",
+        "summary": "Toplantı",
+        "start": {
+          "dateTime": "2026-09-25T10:00:00+03:00"
+        },
+        "end": {
+          "dateTime": "2026-09-25T11:00:00+03:00"
+        },
+        "organizer": {
+          "email": "someone@example.com"
+        },
+        "conferenceData": {
+          "entryPoints": [
+            {
+              "entryPointType": "video",
+              "uri": "https://zoom-login.evil.example.com/j/123"
+            }
+          ]
+        },
+        "updated": "2026-09-21T09:00:00.000Z"
+      },
+      {
+        "id": "evt-allday-0926",
+        "status": "confirmed",
+        "summary": "Bayram",
+        "start": {
+          "date": "2026-09-26"
+        },
+        "end": {
+          "date": "2026-09-27"
+        },
+        "transparency": "transparent",
+        "updated": "2026-09-01T09:00:00.000Z"
+      }
+    ],
+    "nextSyncToken": "CPDAlvWDx70CEPDAlvWDx70CGAU="
+  },
+  "events_delta": {
+    "items": [
+      {
+        "id": "evt-mehmet-0924",
+        "status": "cancelled",
+        "updated": "2026-09-24T08:00:00.000Z"
+      },
+      {
+        "id": "evt-new-0930",
+        "status": "confirmed",
+        "summary": "Selin ile sözleşme",
+        "start": {
+          "dateTime": "2026-09-30T11:00:00+03:00"
+        },
+        "end": {
+          "dateTime": "2026-09-30T12:00:00+03:00"
+        },
+        "organizer": {
+          "email": "selin.kaya@gmail.com"
+        },
+        "updated": "2026-09-24T08:05:00.000Z"
+      }
+    ],
+    "nextSyncToken": "CPDAlvWDx70CEPDAlvWDx70CGAY="
+  },
+  "sync_token_gone": {
+    "error": {
+      "code": 410,
+      "message": "Sync token is no longer valid, a full sync is required.",
+      "errors": [
+        {
+          "domain": "calendar",
+          "reason": "fullSyncRequired",
+          "message": "Sync token is no longer valid, a full sync is required."
+        }
+      ]
+    }
+  }
+}

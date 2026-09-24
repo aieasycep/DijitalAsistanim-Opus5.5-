@@ -56,6 +56,12 @@ export const RATE_LIMITS = {
   support_ticket: { limit: 5, windowSeconds: 3600, subject: 'user' },
   feedback: { limit: 10, windowSeconds: 3600, subject: 'user' },
   analytics: { limit: 60, windowSeconds: 60, subject: 'installation' },
+  // Integrations (API-INT-01/02 start / upgrade, API-INT-07 completion, API-INT-04 per account).
+  integrations_start: { limit: 10, windowSeconds: 60, subject: 'user' },
+  integrations_start_hourly: { limit: 30, windowSeconds: 3600, subject: 'user' },
+  integrations_complete: { limit: 20, windowSeconds: 600, subject: 'user' },
+  integrations_sync: { limit: 1, windowSeconds: 60, subject: 'user' },
+  mail_original: { limit: 60, windowSeconds: 60, subject: 'user' },
 } as const satisfies Record<string, RateLimitClass>;
 export type RateLimitClassName = keyof typeof RATE_LIMITS;
 

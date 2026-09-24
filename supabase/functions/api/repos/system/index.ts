@@ -40,6 +40,7 @@ import {
 } from '../../../_shared/services/billing/revenuecat.ts';
 import { supabaseReferralRepo } from '../../../_shared/services/referrals/repo.ts';
 import { supabaseFlagSource } from '../../../_shared/services/flags.ts';
+import { createIntegrationWiring } from '../../../_shared/system/integrations.ts';
 import type { ApiDeps } from '../../deps.ts';
 import { supabaseAnalyticsRepo } from '../../routes/analytics.ts';
 import { supabaseSupportRepo } from '../../routes/support.ts';
@@ -69,6 +70,13 @@ export function createApiDeps(input: {
   const ai = createAiProviders(raw);
   const gate = supabaseEntitlementGate(system);
   const revenueCat = revenueCatConfig(env);
+  const integrations = createIntegrationWiring({
+    env,
+    raw,
+    system,
+    log: input.log,
+    keyring: () => (keyring ??= loadKeyring(env)),
+  });
 
   return {
     env,
@@ -84,6 +92,7 @@ export function createApiDeps(input: {
     audit: supabaseAuditWriter(system),
     appleSub: (userId) => rpc<string | null>(system, DB_FN.userAppleSub, { p_user: userId }),
     keyring: () => (keyring ??= loadKeyring(env)),
+    integrations: integrations.runtime,
     capabilities: {
       aiGenerate: ai.available('anthropic') || ai.available('openai'),
       embeddings: ai.available('voyage'),

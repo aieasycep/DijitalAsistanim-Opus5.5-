@@ -217,6 +217,106 @@ export const DB_FN = {
   ),
   // Admin gateway (DB §6.10, BACKOFFICE_PLAN §2.6)
   adminAuthorize: fn('admin_api', 'authorize', '(p_permission text) returns jsonb'),
+  // Integrations (migration 20260924002000; IMPLEMENTATION_PLAN T-4.01…T-4.13)
+  accountCan: fn('public', 'account_can', '(p_account uuid, p_cap capability) returns boolean'),
+  tryLockCredentialRefresh: fn(
+    'public',
+    'try_lock_credential_refresh',
+    '(p_account uuid, p_owner text, p_seconds int) returns boolean',
+  ),
+  accountPausedByPlan: fn('public', 'account_paused_by_plan', '(p_account uuid) returns boolean'),
+  acquireSyncLease: fn(
+    'public',
+    'acquire_sync_lease',
+    '(p_sync_state uuid, p_owner text, p_seconds int) returns boolean',
+  ),
+  releaseSyncLease: fn(
+    'public',
+    'release_sync_lease',
+    '(p_sync_state uuid, p_owner text) returns void',
+  ),
+  oauthCallbackStore: fn(
+    'public',
+    'oauth_callback_store',
+    '(p_state_id uuid, p_state jsonb, p_account jsonb, p_credentials jsonb) returns jsonb',
+  ),
+  oauthCompleteBinding: fn(
+    'public',
+    'oauth_complete_binding',
+    '(p_state_id uuid, p_user uuid, p_account_id uuid, p_account jsonb, p_credentials jsonb) returns jsonb',
+  ),
+  oauthCloseFlow: fn(
+    'public',
+    'oauth_close_flow',
+    '(p_state_id uuid, p_result text, p_error_code text) returns jsonb',
+  ),
+  upsertMailMessages: fn(
+    'public',
+    'upsert_mail_messages',
+    '(p_account uuid, p_messages jsonb) returns jsonb [{id, provider_message_id, thread_id, inserted}]',
+  ),
+  applyMailChanges: fn(
+    'public',
+    'apply_mail_changes',
+    '(p_account uuid, p_label_changes jsonb, p_deleted text[]) returns jsonb',
+  ),
+  upsertCalendarEvents: fn(
+    'public',
+    'upsert_calendar_events',
+    '(p_account uuid, p_calendar uuid, p_events jsonb, p_origin text) returns jsonb',
+  ),
+  markCalendarEventsDeleted: fn(
+    'public',
+    'mark_calendar_events_deleted',
+    '(p_calendar uuid, p_provider_event_ids text[]) returns int',
+  ),
+  pruneCalendarEvents: fn(
+    'public',
+    'prune_calendar_events',
+    '(p_calendar uuid, p_since timestamptz, p_window_start timestamptz, p_window_end timestamptz) returns int',
+  ),
+  upsertCalendars: fn(
+    'public',
+    'upsert_calendars',
+    '(p_account uuid, p_calendars jsonb) returns jsonb {calendars, missing}',
+  ),
+  upsertTasks: fn('public', 'upsert_tasks', '(p_account uuid, p_tasks jsonb) returns jsonb'),
+  upsertDeviceAccount: fn(
+    'public',
+    'upsert_device_account',
+    '(p_user uuid, p_provider provider, p_installation uuid, p_capabilities capability[]) returns jsonb',
+  ),
+  stageDeviceSnapshot: fn(
+    'public',
+    'stage_device_snapshot',
+    '(p_account uuid, p_snapshot jsonb) returns uuid',
+  ),
+  applyStagedDeviceSnapshot: fn(
+    'public',
+    'apply_staged_device_snapshot',
+    '(p_account uuid, p_content_hash text) returns jsonb',
+  ),
+  disconnectIntegration: fn(
+    'public',
+    'disconnect_integration',
+    '(p_account uuid, p_user uuid, p_revocation_mode text, p_purge_content boolean, p_correlation_id uuid) returns jsonb',
+  ),
+  integrationPurgeBatch: fn(
+    'public',
+    'integration_purge_batch',
+    '(p_account uuid, p_disconnected_at timestamptz, p_purge_derived boolean, p_batch int, p_reason text) returns jsonb',
+  ),
+  demoStateGet: fn('public', 'demo_state_get', '(p_account uuid) returns jsonb'),
+  demoStateRecordWrite: fn(
+    'public',
+    'demo_state_record_write',
+    '(p_account uuid, p_resource text, p_key text, p_item jsonb) returns jsonb {created, item}',
+  ),
+  demoStateSetClock: fn(
+    'public',
+    'demo_state_set_clock',
+    '(p_account uuid, p_resource text, p_clock timestamptz) returns void',
+  ),
 } as const satisfies Record<string, DbFunction>;
 
 export type DbFunctionName = keyof typeof DB_FN;
