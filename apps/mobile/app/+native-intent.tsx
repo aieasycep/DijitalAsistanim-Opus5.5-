@@ -13,6 +13,7 @@ import {
   savePendingLink,
   savePendingReferralCode,
 } from '../src/lib/deeplinks';
+import { widgetOpenFromHref } from '../src/features/widgets/analytics';
 import { track } from '../src/lib/events';
 import { accessForPattern, guardSnapshot } from '../src/lib/router-guards';
 
@@ -35,7 +36,14 @@ export function redirectSystemPath({ path }: { path: string; initial: boolean })
       return link.href;
     case 'route': {
       const guarded = accessForPattern(link.pattern) === 'app' && !guardSnapshot().app;
-      track('deep_link_opened', { route_pattern: link.pattern, source: 'link', guarded });
+      // Widget taps carry `?src=widget&w=<family>` (T-8.25, §11.5).
+      const widget = widgetOpenFromHref(link.href, link.pattern);
+      track('deep_link_opened', {
+        route_pattern: link.pattern,
+        source: widget === null ? 'link' : 'widget',
+        guarded,
+      });
+      if (widget !== null) track('widget_opened', widget);
       if (guarded) {
         savePendingLink(link.href);
         return '/';

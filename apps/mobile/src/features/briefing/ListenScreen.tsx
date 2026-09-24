@@ -3,15 +3,26 @@
  * `POST /briefings/:id/audio` (API-BRF-01, used as a query; 402 for Free → the gate):
  * - premium: the signed file is downloaded (cached per version) and played with expo-audio —
  *   play/pause, exact ±15 s seeks, scrubbing, 1.0/1.25/1.5×, chapters, lock-screen controls;
- * - native: the chapter script is read with expo-speech sentence by sentence (D-19: estimated
- *   positions, ±15 s by sentences, Android pause = stop and resume from the sentence), with the
- *   honest notice "Cihaz sesiyle okunuyor". The on-device synth-to-file module is T-8.27.
+ * - native: the chapter script is synthesized on the device into one file per chapter
+ *   (`da-tts`, T-8.27: tr-TR voice, cached per briefing) and played as an expo-audio playlist with
+ *   exact seeks, speeds and chapters; when the module is missing or synthesis fails
+ *   (`briefing_audio_fallback{reason:'tts_unavailable'}`) the script is read with expo-speech
+ *   sentence by sentence as the last resort (D-19: estimated positions, ±15 s by sentences,
+ *   Android pause = stop and resume from the sentence). Both carry the honest notice "Cihaz
+ *   sesiyle okunuyor".
  * A failed file offers the device voice (`prefer:'native'`); offline plays a cached file.
  */
 import { briefingAudioQueryOptions, useApiClient } from '@da/api-client/react';
 import { formatDatePattern } from '@da/i18n';
 import { useQuery } from '@tanstack/react-query';
-import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
+import {
+  setAudioModeAsync,
+  useAudioPlayer,
+  useAudioPlayerStatus,
+  useAudioPlaylist,
+  useAudioPlaylistStatus,
+  type AudioPlaylist,
+} from 'expo-audio';
 import * as FileSystem from 'expo-file-system/legacy';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Speech from 'expo-speech';
@@ -21,6 +32,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocale, useTranslations } from 'use-intl';
 import { Button, ErrorCard, FullPlayer, GradientSurface, Spinner, Text, useTheme } from '@da/ui';
 
+import { isTtsAvailable, synthesizeChapters, type TtsTrack } from '../../../modules/da-tts/src';
 import { track } from '../../lib/events';
 import { cachedBootstrap } from '../../lib/postgrest';
 import { useOnline } from '../../lib/query/online-manager';
@@ -360,6 +372,259 @@ function NativePlayer({
   );
 }
 
+/** Start of each synthesized file on the briefing timeline. */
+export function trackOffsets(tracks: readonly TtsTrack[]): number[] {
+  const offsets: number[] = [];
+  let at = 0;
+  for (const item of tracks) {
+    offsets.push(at);
+    at += item.durationS;
+  }
+  return offsets;
+}
+
+/** The file and the position inside it for a position on the whole timeline. */
+export function locateTrack(
+  tracks: readonly TtsTrack[],
+  seconds: number,
+): { index: number; offset: number } {
+  const offsets = trackOffsets(tracks);
+  let index = 0;
+  for (let i = 0; i < tracks.length; i++) {
+    if ((offsets[i] ?? 0) <= seconds) index = i;
+    else break;
+  }
+  const durationS = tracks[index]?.durationS ?? 0;
+  return { index, offset: Math.max(0, Math.min(durationS, seconds - (offsets[index] ?? 0))) };
+}
+
+/** The playlist speed is a property of the native shared object. */
+function setPlaylistRate(playlist: AudioPlaylist, rate: number): void {
+  playlist.playbackRate = rate;
+}
+
+/** Device voice synthesized to files (T-8.27): exact seeks, speeds and chapters. */
+function SynthesizedPlayer({
+  chrome,
+  tracks,
+  chapterTitles,
+  autoplay,
+}: {
+  readonly chrome: PlayerChrome;
+  readonly tracks: readonly TtsTrack[];
+  readonly chapterTitles: ReadonlyMap<number, string>;
+  readonly autoplay: boolean;
+}) {
+  const t = useTranslations('briefing.audio');
+  const sources = useMemo(() => tracks.map((item) => ({ uri: item.uri })), [tracks]);
+  const playlist = useAudioPlaylist({ sources });
+  const status = useAudioPlaylistStatus(playlist);
+  const [rate, setRate] = useState<Rate>(1);
+  const offsets = useMemo(() => trackOffsets(tracks), [tracks]);
+  const duration = tracks.reduce((sum, item) => sum + item.durationS, 0);
+  const position = Math.min(duration, (offsets[status.currentIndex] ?? 0) + status.currentTime);
+  const positionRef = useRef(0);
+  useEffect(() => {
+    positionRef.current = position;
+  }, [position]);
+
+  useEffect(() => {
+    void setAudioModeAsync({
+      playsInSilentMode: true,
+      shouldPlayInBackground: true,
+      interruptionMode: 'doNotMix',
+    });
+    if (autoplay) playlist.play();
+    return () => {
+      track('briefing_audio_played', {
+        kind: chrome.kind,
+        mode: 'native_tts',
+        completion_bucket: bucketOf(positionRef.current, duration),
+      });
+    };
+    // Set up once per playlist.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playlist]);
+
+  const seek = (seconds: number, method: 'skip' | 'scrub' | 'chapter') => {
+    track('briefing_audio_seek', { method });
+    const target = locateTrack(tracks, Math.max(0, Math.min(duration, seconds)));
+    if (target.index !== status.currentIndex) playlist.skipTo(target.index);
+    void playlist.seekTo(target.offset);
+  };
+  const chapters = [...new Set(tracks.map((item) => item.chapter))].map((chapter) => {
+    const first = tracks.findIndex((item) => item.chapter === chapter);
+    return {
+      key: String(chapter),
+      title: chapterTitles.get(chapter) ?? '',
+      startS: offsets[first] ?? 0,
+      durationS: tracks
+        .filter((item) => item.chapter === chapter)
+        .reduce((sum, item) => sum + item.durationS, 0),
+    };
+  });
+  const active = [...chapters].reverse().find((c) => c.startS <= position) ?? chapters[0];
+  const atEnd =
+    status.currentIndex === tracks.length - 1 &&
+    (status.didJustFinish || (duration > 0 && position >= duration - 0.25));
+  return (
+    <FullPlayer
+      kicker={chrome.kicker}
+      title={chrome.title}
+      meta={[chrome.date, clock(duration), active?.title ?? ''].filter((p) => p !== '').join(' · ')}
+      onCollapse={chrome.onClose}
+      collapseLabel={t('close')}
+      notice={t('nativeNotice')}
+      speed={{
+        label: t('rateLabel', { rate: rate === 1 ? '1.0' : String(rate) }),
+        accessibilityLabel: t('speedA11y', { rate: String(rate) }),
+        onPress: () => {
+          const next = nextRate(rate);
+          setRate(next);
+          setPlaylistRate(playlist, next);
+          track('briefing_audio_speed_changed', { rate: next === 1 ? '1' : String(next) });
+        },
+      }}
+      progress={duration > 0 ? position / duration : 0}
+      playing={status.playing}
+      scrubber={{
+        positionS: position,
+        durationS: duration,
+        onSeek: (seconds) => {
+          seek(seconds, 'scrub');
+        },
+        valueText: t('seekA11y', { position: clock(position), duration: clock(duration) }),
+        accessibilityLabel: t('scrubber'),
+        step: SKIP_S,
+      }}
+      transport={{
+        playing: status.playing,
+        loading: !status.isLoaded,
+        onPlayPause: () => {
+          if (status.playing) {
+            playlist.pause();
+            track('briefing_audio_pause');
+          } else {
+            if (atEnd) {
+              playlist.skipTo(0);
+              void playlist.seekTo(0);
+            }
+            playlist.play();
+          }
+        },
+        onSkipBack: () => {
+          seek(clampSeek(position, -SKIP_S, duration), 'skip');
+        },
+        onSkipForward: () => {
+          seek(clampSeek(position, SKIP_S, duration), 'skip');
+        },
+        playLabel: t('play'),
+        pauseLabel: t('pause'),
+        skipBackLabel: t('back15'),
+        skipForwardLabel: t('forward15'),
+        skipCaption: String(SKIP_S),
+      }}
+      chapters={{
+        chapters: chapters.map((c, i) => ({
+          key: c.key,
+          index: String(i + 1),
+          title: c.title,
+          duration: clock(c.durationS),
+        })),
+        ...(active === undefined ? {} : { activeKey: active.key }),
+        onSelect: (key) => {
+          const chapter = chapters.find((c) => c.key === key);
+          if (chapter !== undefined) seek(chapter.startS, 'chapter');
+        },
+        playingLabel: t('nowPlaying'),
+      }}
+      testID="player.synthesized"
+    />
+  );
+}
+
+type DeviceVoiceState =
+  | { readonly kind: 'synthesizing' }
+  | { readonly kind: 'files'; readonly tracks: readonly TtsTrack[] }
+  | { readonly kind: 'speech' };
+
+/**
+ * Native mode: synthesized files when `da-tts` is linked (T-8.27), expo-speech as the last resort.
+ */
+function DeviceVoicePlayer({
+  chrome,
+  briefingId,
+  chapters,
+  language,
+  autoplay,
+}: {
+  readonly chrome: PlayerChrome;
+  readonly briefingId: string;
+  readonly chapters: readonly { index: number; title: string; text: string }[];
+  readonly language: string;
+  readonly autoplay: boolean;
+}) {
+  const t = useTranslations('briefing');
+  const common = useTranslations('common');
+  const [state, setState] = useState<DeviceVoiceState>(() =>
+    isTtsAvailable() && chapters.length > 0 ? { kind: 'synthesizing' } : { kind: 'speech' },
+  );
+  const titles = useMemo(() => new Map(chapters.map((c) => [c.index, c.title])), [chapters]);
+
+  useEffect(() => {
+    if (state.kind !== 'synthesizing') return;
+    let active = true;
+    synthesizeChapters({ key: briefingId, language, chapters }).then(
+      (result) => {
+        if (active) setState({ kind: 'files', tracks: result.tracks });
+      },
+      () => {
+        if (!active) return;
+        track('briefing_audio_fallback', { reason: 'tts_unavailable' });
+        setState({ kind: 'speech' });
+      },
+    );
+    return () => {
+      active = false;
+    };
+  }, [state.kind, briefingId, language, chapters]);
+
+  if (state.kind === 'synthesizing') {
+    return (
+      <View
+        style={styles.loading}
+        accessible
+        accessibilityLabel={t('audio.preparing')}
+        testID="listen.synthesizing"
+      >
+        <Spinner tone="onGradient" size={22} />
+        <Text variant="body" tone="onGradient">
+          {t('audio.preparing')}
+        </Text>
+        <Button
+          label={common('actions.close')}
+          variant="ghost"
+          onPress={chrome.onClose}
+          testID="listen.synthesizing.close"
+        />
+      </View>
+    );
+  }
+  if (state.kind === 'files') {
+    return (
+      <SynthesizedPlayer
+        chrome={chrome}
+        tracks={state.tracks}
+        chapterTitles={titles}
+        autoplay={autoplay}
+      />
+    );
+  }
+  return (
+    <NativePlayer chrome={chrome} chapters={chapters} language={language} autoplay={autoplay} />
+  );
+}
+
 export function ListenScreen() {
   const t = useTranslations('briefing');
   const common = useTranslations('common');
@@ -508,8 +773,9 @@ export function ListenScreen() {
     );
   } else if (audio.data.mode === 'native') {
     body = (
-      <NativePlayer
+      <DeviceVoicePlayer
         chrome={chrome}
+        briefingId={id}
         chapters={audio.data.chapters}
         language={audio.data.language}
         autoplay={autoplay}

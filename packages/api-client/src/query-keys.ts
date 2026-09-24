@@ -181,6 +181,11 @@ export const qk = {
     all: ['rc'] as const,
     offerings: () => ['rc', 'offerings'] as const,
   },
+  // T-8.25 widget snapshot (API-WDG-01).
+  widgets: {
+    all: ['widgets'] as const,
+    snapshot: () => ['widgets', 'snapshot'] as const,
+  },
 } as const;
 
 export const mk = {

@@ -10,6 +10,8 @@ design/reference/
 supabase/.temp
 apps/mobile/ios
 apps/mobile/android
+# Rewritten by @bacons/apple-targets on every prebuild (widget colour sets, T-8.25).
+apps/mobile/targets/*/Assets.xcassets
 .expo
 .expo-export
 .claude/

@@ -25,6 +25,7 @@ import { isOffline } from '../../lib/query/online-manager';
 import { getQueryClient } from '../../lib/query/client';
 import { encryptedStorage, isEncryptedStorageOpen } from '../../lib/storage';
 import { showToast } from '../../providers/ToastHost';
+import { applyLocalWidgetPrivacy, refreshWidgetSnapshot } from '../widgets/snapshot';
 import { flushFeedbackOutbox } from './outbox';
 
 export type OwnTable = 'user_preferences' | 'notification_preferences' | 'profiles';
@@ -127,15 +128,24 @@ export function saveUserPreferences(
 export function saveNotificationPreferences(
   patch: Partial<BootstrapData['notification_preferences']>,
 ): Promise<SaveResult> {
-  return saveOwnRow('notification_preferences', patch, (data) => ({
+  const saving = saveOwnRow('notification_preferences', patch, (data) => ({
     ...data,
     notification_preferences: { ...data.notification_preferences, ...patch },
   }));
+  if (patch.detail_level === undefined && patch.lock_screen_private === undefined) return saving;
+  // Widgets follow the detail level (T-8.25, §11.2): the stored snapshot is re-filtered at once
+  // (offline too); once the server has the new level the snapshot is re-fetched.
+  void applyLocalWidgetPrivacy().catch(() => undefined);
+  return saving.then((result) => {
+    if (result === 'saved') void refreshWidgetSnapshot('settings', { force: true });
+    return result;
+  });
 }
 
 /** Replays the pending patches in table order; a failed table stays pending. */
 export async function flushPendingSettings(): Promise<void> {
   load();
+  let widgetInputs = false;
   for (const table of ['profiles', 'user_preferences', 'notification_preferences'] as const) {
     const patch = pending[table];
     if (patch === undefined || isOffline()) continue;
@@ -144,10 +154,13 @@ export async function flushPendingSettings(): Promise<void> {
       const rest = { ...pending };
       Reflect.deleteProperty(rest, table);
       publish(rest);
+      if (table !== 'user_preferences') widgetInputs = true;
     } catch {
       // Kept for the next reconnect.
     }
   }
+  // A replayed locale or detail level changes what the widget snapshot may show (T-8.25).
+  if (widgetInputs) void refreshWidgetSnapshot('settings', { force: true });
 }
 
 function subscribe(listener: () => void): () => void {

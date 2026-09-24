@@ -19,6 +19,7 @@ import { track } from '../../lib/events';
 import { updateUiPrefs, useUiPrefs } from '../../lib/ui-prefs';
 import { deviceLocale } from '../../i18n/I18nProvider';
 import { ensureAndroidChannels } from '../onboarding/push';
+import { refreshWidgetSnapshot } from '../widgets/snapshot';
 import { saveOwnRow } from './save';
 import { zoneLabel } from './timezones';
 import { Caption, SettingsGroup, SettingsPage } from './ui';
@@ -29,10 +30,17 @@ export async function changeLanguage(locale: Locale): Promise<void> {
   track('locale_changed', { locale });
   updateUiPrefs({ locale });
   const tag = locale === 'en' ? 'en-US' : 'tr-TR';
-  await saveOwnRow('profiles', { locale: tag }, (data) => ({ ...data, locale: tag }), {
-    silent: true,
-    onFailure: 'keep',
-  });
+  const saved = await saveOwnRow(
+    'profiles',
+    { locale: tag },
+    (data) => ({ ...data, locale: tag }),
+    {
+      silent: true,
+      onFailure: 'keep',
+    },
+  );
+  // The widget text is rendered server-side in the profile locale (T-8.25, M-SET-62).
+  if (saved === 'saved') void refreshWidgetSnapshot('settings', { force: true });
   await ensureAndroidChannels();
   const install = installationId();
   if (install === null) return;

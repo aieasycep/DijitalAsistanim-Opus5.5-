@@ -41,11 +41,11 @@ Components read semantic keys only (`color[scheme].text.tertiaryStrong`), never 
 The output is a pure function of `src/` (declaration order, no timestamps) and is committed; CI
 regenerates and fails on drift (`pnpm generate && git diff --exit-code`).
 
-**Widget wiring (T-8.25).** The mobile app does not exist yet, so the native sources are emitted
-here. Task T-8.25 (widgets) wires them into the app: `WidgetColors.swift` into
+**Widget wiring (T-8.25).** The native sources are emitted here and copied verbatim into the app
+by `pnpm --filter @da/mobile widgets:generate`: `WidgetColors.swift` into
 `apps/mobile/targets/widget/Generated/` and `DaColors.kt` into
-`apps/mobile/modules/da-widgets/android/src/main/java/expo/modules/dawidgets/generated/`, either by
-copying them in the widget build step or by pointing the generator's output there.
+`apps/mobile/modules/da-widgets/android/src/main/java/expo/modules/dawidgets/generated/`. The mobile
+test `test/widgets.test.ts` fails when a copy drifts from this package.
 
 ## Contrast guarantees
 

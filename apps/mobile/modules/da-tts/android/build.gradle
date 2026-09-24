@@ -1,0 +1,20 @@
+// da-tts (T-8.27): TextToSpeech.synthesizeToFile for the briefing player.
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'expo.modules.datts'
+version = '1.0.0'
+
+expoModule {
+  canBePublished false
+}
+
+android {
+  namespace "expo.modules.datts"
+  defaultConfig {
+    versionCode 1
+    versionName "1.0.0"
+  }
+}

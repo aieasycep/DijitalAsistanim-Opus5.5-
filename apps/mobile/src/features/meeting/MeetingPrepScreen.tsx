@@ -177,9 +177,10 @@ export function MeetingPrepScreen() {
   const session = useSessionContext();
   const online = useOnline();
   const blocked = useOfflineGuard();
-  const params = useLocalSearchParams<{ eventId: string; origin?: string }>();
+  const params = useLocalSearchParams<{ eventId: string; origin?: string; src?: string }>();
   const eventId = params.eventId;
-  const origin: PrepOrigin = PREP_ORIGINS.find((o) => o === params.origin) ?? 'deeplink';
+  const origin: PrepOrigin =
+    PREP_ORIGINS.find((o) => o === (params.origin ?? params.src)) ?? 'deeplink';
   const back = useBack('/plan');
   const tick = useNow();
   const [openedAt, setOpenedAt] = useState(() => now().getTime());

@@ -5,8 +5,9 @@
 # node_modules is a symlink to the real one, runs
 #   EXPO_OFFLINE=1 npx expo prebuild --clean --no-install --platform all
 # with a clean environment (identifier defaults only), and asserts the generated native projects:
-# bundle ID / package, URL scheme, App Group, entitlements, share extension, SDK levels, usage
-# strings and app links. Production must carry exactly the M§108 identifiers.
+# bundle ID / package, URL scheme, App Group, entitlements, share extension, WidgetKit extension
+# and Glance receivers (T-8.25), SDK levels, usage strings and app links, plus the autolinking of
+# the local native modules (da-widgets, da-tts). Production must carry exactly the M§108 identifiers.
 #
 # Usage: bash scripts/mobile/prebuild-smoke.sh [APP_ENV ...]   (default: all four variants)
 #        KEEP_PREBUILD=1 keeps the temp directory for inspection.
@@ -127,6 +128,18 @@ assert_variant() {
     "share extension App Group"
   expect_contains "$ios/$project/PrivacyInfo.xcprivacy" "1C8F.1" "App Group UserDefaults reason"
 
+  # Widgets (T-8.25): the WidgetKit target (@bacons/apple-targets), its App Group, and the
+  # DAAppGroup key the da-widgets module and the extension read.
+  expect_contains "$pbxproj" "PRODUCT_BUNDLE_IDENTIFIER = $id.widget;" \
+    "widget extension bundle ID $id.widget"
+  expect_contains "$pbxproj" "INFOPLIST_FILE = ../targets/widget/Info.plist;" "widget Info.plist"
+  expect_contains "$dest/targets/widget/Info.plist" "com.apple.widgetkit-extension" \
+    "WidgetKit extension point"
+  expect_contains "$ios/.targets/widget/generated.entitlements" "<string>$group</string>" \
+    "widget App Group"
+  expect_contains "$plist" "<key>DAAppGroup</key>" "DAAppGroup key"
+  expect_contains "$plist" "<string>$group</string>" "DAAppGroup $group"
+
   # Android: package, scheme, links, permissions, SDK levels.
   expect_contains "$android/app/build.gradle" "applicationId '$id'" "applicationId $id"
   expect_contains "$android/app/build.gradle" "namespace '$id'" "namespace $id"
@@ -144,6 +157,14 @@ assert_variant() {
     "blocked AD_ID"
   expect_contains "$manifest" "android:mimeType=\"application/pdf\"" "PDF share intent"
   expect_contains "$manifest" "android:launchMode=\"singleTask\"" "singleTask launch mode"
+  # Glance widgets (T-8.25): 2×2 "Sıradaki" and 4×2 "Bugün" receivers with their providers.
+  expect_contains "$manifest" "android:name=\"expo.modules.dawidgets.DaNextWidgetReceiver\"" \
+    "2×2 widget receiver"
+  expect_contains "$manifest" "android:name=\"expo.modules.dawidgets.DaTodayWidgetReceiver\"" \
+    "4×2 widget receiver"
+  expect_contains "$manifest" "android:resource=\"@xml/da_next_widget_info\"" "2×2 widget provider"
+  expect_contains "$manifest" "android:resource=\"@xml/da_today_widget_info\"" "4×2 widget provider"
+  expect_contains "$manifest" "android.appwidget.action.APPWIDGET_UPDATE" "widget update action"
   expect_contains "$android/gradle.properties" "android.compileSdkVersion=36" "compileSdk 36"
   expect_contains "$android/gradle.properties" "android.targetSdkVersion=36" "targetSdk 36"
   expect_contains "$android/gradle.properties" "android.minSdkVersion=24" "minSdk 24"
@@ -159,6 +180,19 @@ assert_variant() {
       expect_absent "$entitlements" "group.$BASE_ID.$other" "a .$other App Group"
     done
   fi
+}
+
+# The local native modules (modules/da-widgets, modules/da-tts) are autolinked on both platforms.
+assert_autolinking() {
+  local dest="$1" apple android class
+  apple="$(cd "$dest" && npx --no expo-modules-autolinking resolve --platform apple --json 2>/dev/null || true)"
+  android="$(cd "$dest" && npx --no expo-modules-autolinking resolve --platform android --json 2>/dev/null || true)"
+  for class in DaWidgetsModule DaTtsModule; do
+    [[ "$apple" == *"\"class\":\"$class\""* ]] || fail "iOS autolinking lacks $class"
+  done
+  for class in expo.modules.dawidgets.DaWidgetsModule expo.modules.datts.DaTtsModule; do
+    [[ "$android" == *"\"classifier\":\"$class\""* ]] || fail "Android autolinking lacks $class"
+  done
 }
 
 VARIANTS=("$@")
@@ -183,10 +217,11 @@ for app_env in "${VARIANTS[@]}"; do
   before=$FAILURES
   if run_prebuild "$dest" "$app_env"; then
     assert_variant "$dest" "$app_env" "$suffix" "$project"
+    assert_autolinking "$dest"
   fi
   if [[ $FAILURES -eq $before ]]; then
     id="$BASE_ID${suffix:+.$suffix}"
-    echo "  ✓ $id · ${BASE_SCHEME}${suffix:+-$suffix} · group.$id · ios/$project + $SHARE_TARGET · android"
+    echo "  ✓ $id · ${BASE_SCHEME}${suffix:+-$suffix} · group.$id · ios/$project + $SHARE_TARGET + widget · android + widgets"
   fi
 done
 

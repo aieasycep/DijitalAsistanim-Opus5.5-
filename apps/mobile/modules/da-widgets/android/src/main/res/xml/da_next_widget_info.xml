@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- M-WGT-07 · 2×2 "Sıradaki" (DaNextWidgetReceiver). Home screen only; read-only. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/da_widget_next_description"
+    android:initialLayout="@layout/glance_default_loading_layout"
+    android:minWidth="110dp"
+    android:minHeight="110dp"
+    android:targetCellWidth="2"
+    android:targetCellHeight="2"
+    android:resizeMode="none"
+    android:updatePeriodMillis="1800000"
+    android:widgetCategory="home_screen" />

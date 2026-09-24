@@ -1,0 +1,3 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <!-- The widget receivers are declared in the app manifest by the da-widgets config plugin. -->
+</manifest>
