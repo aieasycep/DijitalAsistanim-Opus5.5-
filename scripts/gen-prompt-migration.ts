@@ -25,7 +25,12 @@ import { toWireJsonSchema } from '../packages/validation/src/ai/wire.ts';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 export const PROMPTS_DIR = join(ROOT, 'supabase', 'prompts');
-export const MIGRATION = join(ROOT, 'supabase', 'migrations', '20260924002410_prompt_versions_seed.sql');
+export const MIGRATION = join(
+  ROOT,
+  'supabase',
+  'migrations',
+  '20260924002410_prompt_versions_seed.sql',
+);
 const QUOTE_TAG = '$da_prompt$';
 const ROLES = new Set(['classifier', 'reasoning', 'assistant']);
 /** Static prefix minimums per tier (AI_PIPELINE_PLAN §5.1 activation checks). */
@@ -45,14 +50,16 @@ export function parsePromptFile(text: string, file: string): PromptSource {
   const match = /^---\n([\s\S]*?)\n---\n([\s\S]*)$/.exec(text.replace(/\r\n/g, '\n'));
   if (match === null) throw new Error(`${file}: missing front matter`);
   const meta: Record<string, string> = {};
-  for (const line of match[1]!.split('\n')) {
+  const [, head = '', body = ''] = match;
+  for (const line of head.split('\n')) {
     const kv = /^([a-z_]+):\s*(.*)$/.exec(line.trim());
-    if (kv !== null) meta[kv[1]!] = kv[2]!.trim();
+    const [, key, value] = kv ?? [];
+    if (key !== undefined && value !== undefined) meta[key] = value.trim();
   }
-  const body = match[2]!;
   const sys = body.indexOf('\n# System\n');
   const usr = body.indexOf('\n# User template\n');
-  if (sys === -1 || usr === -1 || usr < sys) throw new Error(`${file}: needs "# System" then "# User template"`);
+  if (sys === -1 || usr === -1 || usr < sys)
+    throw new Error(`${file}: needs "# System" then "# User template"`);
   const system = body.slice(sys + '\n# System\n'.length, usr).trim();
   const userTemplate = body.slice(usr + '\n# User template\n'.length).trim();
   const source: PromptSource = {
@@ -69,23 +76,31 @@ export function parsePromptFile(text: string, file: string): PromptSource {
 }
 
 function validate(p: PromptSource, file: string): void {
-  if (!(PROMPT_KEY_VALUES as readonly string[]).includes(p.prompt_key)) throw new Error(`${file}: unknown prompt_key`);
+  if (!(PROMPT_KEY_VALUES as readonly string[]).includes(p.prompt_key))
+    throw new Error(`${file}: unknown prompt_key`);
   if (`${p.prompt_key}.md` !== file) throw new Error(`${file}: file name must be <prompt_key>.md`);
   if (!Number.isInteger(p.version) || p.version < 1) throw new Error(`${file}: version must be ≥1`);
   if (!(p.output_schema_ref in AI_SCHEMAS)) throw new Error(`${file}: unknown output_schema_ref`);
   if (!ROLES.has(p.model_role)) throw new Error(`${file}: unknown model_role`);
-  if (p.system.length === 0 || p.system.length > 40_000) throw new Error(`${file}: system prompt length`);
-  if (p.userTemplate.length === 0 || p.userTemplate.length > 20_000) throw new Error(`${file}: user template length`);
-  if (p.system.includes(QUOTE_TAG) || p.userTemplate.includes(QUOTE_TAG)) throw new Error(`${file}: reserved quote tag`);
+  if (p.system.length === 0 || p.system.length > 40_000)
+    throw new Error(`${file}: system prompt length`);
+  if (p.userTemplate.length === 0 || p.userTemplate.length > 20_000)
+    throw new Error(`${file}: user template length`);
+  if (p.system.includes(QUOTE_TAG) || p.userTemplate.includes(QUOTE_TAG))
+    throw new Error(`${file}: reserved quote tag`);
   if (/\b(?:claude|gpt|voyage)-[a-z0-9]/i.test(`${p.system}\n${p.userTemplate}`)) {
     throw new Error(`${file}: model identifiers never appear in prompts`);
   }
 }
 
 export function schemaHash(ref: string): string {
-  const entry = (AI_SCHEMAS as Record<string, { schema: Parameters<typeof toWireJsonSchema>[0] }>)[ref];
+  const entry = (AI_SCHEMAS as Record<string, { schema: Parameters<typeof toWireJsonSchema>[0] }>)[
+    ref
+  ];
   if (entry === undefined) throw new Error(`unknown schema ${ref}`);
-  return createHash('sha256').update(JSON.stringify(toWireJsonSchema(entry.schema))).digest('hex');
+  return createHash('sha256')
+    .update(JSON.stringify(toWireJsonSchema(entry.schema)))
+    .digest('hex');
 }
 
 function literal(value: string): string {
@@ -140,7 +155,9 @@ function main(): void {
       current = '';
     }
     if (current !== sql) {
-      process.stderr.write('gen-prompt-migration: drift — run `node scripts/gen-prompt-migration.ts`\n');
+      process.stderr.write(
+        'gen-prompt-migration: drift — run `node scripts/gen-prompt-migration.ts`\n',
+      );
       process.exit(1);
     }
     process.stdout.write('gen-prompt-migration: no drift\n');

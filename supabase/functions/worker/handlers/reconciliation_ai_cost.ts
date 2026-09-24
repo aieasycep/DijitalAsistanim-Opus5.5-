@@ -8,7 +8,11 @@
 import { z } from 'zod';
 import { defineJob } from '../../_shared/jobs/registry.ts';
 import type { JobContext } from '../../_shared/jobs/types.ts';
-import { anthropicBill, openaiBill, reconciliationRows } from '../../_shared/services/ai/reconcile.ts';
+import {
+  anthropicBill,
+  openaiBill,
+  reconciliationRows,
+} from '../../_shared/services/ai/reconcile.ts';
 import type { IntelDeps } from './intel.ts';
 
 export const AiCostReconciliationPayload = z.object({
@@ -58,6 +62,8 @@ export function aiCostReconciliationJob(deps: IntelDeps) {
     payload: AiCostReconciliationPayload,
     handler: async (ctx) => ({ ...(await runAiCostReconciliation(deps, ctx)) }),
     match: (payload) =>
-      typeof payload === 'object' && payload !== null && (payload as { scope?: unknown }).scope === 'ai_cost',
+      typeof payload === 'object' &&
+      payload !== null &&
+      (payload as { scope?: unknown }).scope === 'ai_cost',
   });
 }

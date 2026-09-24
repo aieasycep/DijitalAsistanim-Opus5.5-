@@ -69,10 +69,7 @@ export function parseUntrusted(
   const re =
     /<untrusted_content id="([a-z]{1,3}\d{1,3})" kind="([a-z_]+)" nonce="([a-f0-9]+)">\n([\s\S]*?)\n<\/untrusted_content nonce="\3">/g;
   for (const m of untrusted.matchAll(re)) {
-    const body = (m[4] ?? '')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&amp;/g, '&');
+    const body = (m[4] ?? '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
     out.push({ ref: m[1] ?? '', kind: m[2] ?? '', text: body });
   }
   return out;

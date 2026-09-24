@@ -85,7 +85,10 @@ export function organizationFor(email: string): string | null {
   const name = labels[labels.length - 1] ?? '';
   if (name.length < 2 || SUFFIX_LABELS.has(name)) return null;
   const words = name.split('-').filter((w) => w !== '');
-  return words.map((w) => w.charAt(0).toLocaleUpperCase('tr-TR') + w.slice(1)).join(' ').slice(0, 120);
+  return words
+    .map((w) => w.charAt(0).toLocaleUpperCase('tr-TR') + w.slice(1))
+    .join(' ')
+    .slice(0, 120);
 }
 
 function isOwn(email: string, own: ReadonlySet<string>): boolean {

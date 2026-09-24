@@ -36,7 +36,10 @@ export function weekPeriod(localDay: string): { start: string; end: string } {
   return { start, end: addDaysToLocalDate(start, 6) };
 }
 
-export function weeklyStats(counts: WeeklyCounts, period: { start: string; end: string }): WeeklyStatsV1 {
+export function weeklyStats(
+  counts: WeeklyCounts,
+  period: { start: string; end: string },
+): WeeklyStatsV1 {
   const saved = computeTimeSavedV1({
     mails_analyzed: counts.mailsAnalyzed,
     important_count: Math.min(counts.importantCount, counts.mailsAnalyzed),
@@ -57,7 +60,11 @@ export function weeklyStats(counts: WeeklyCounts, period: { start: string; end: 
     busiest_day:
       counts.busiest === null
         ? null
-        : { weekday: counts.busiest.weekday, meetings: counts.busiest.meetings, max_gap_min: counts.busiest.maxGapMin },
+        : {
+            weekday: counts.busiest.weekday,
+            meetings: counts.busiest.meetings,
+            max_gap_min: counts.busiest.maxGapMin,
+          },
     time_saved_min: saved.time_saved_min,
     time_saved_basis: {
       formula_version: TIME_SAVED_V1.formula_version,
@@ -78,7 +85,8 @@ export function weekLabel(locale: CopyLocale, period: { start: string; end: stri
   const b = formatDay(locale, `${period.end}T12:00:00Z`, tz);
   const [dayA, ...monthA] = a.split(' ');
   const [dayB, ...monthB] = b.split(' ');
-  if (locale === 'tr' && monthA.join(' ') === monthB.join(' ')) return `${dayA}–${dayB} ${monthB.join(' ')}`;
+  if (locale === 'tr' && monthA.join(' ') === monthB.join(' '))
+    return `${dayA}–${dayB} ${monthB.join(' ')}`;
   return `${a} – ${b}`;
 }
 
@@ -105,7 +113,11 @@ export function weeklyPrompt(pipeline: PipelineContext, input: WeeklyInput): Wee
     { ref: 's1', kind: 'summary', text: `${stats.mails_analyzed} mail analiz edildi` },
     { ref: 's2', kind: 'summary', text: `${stats.important_count} önemli konu` },
     { ref: 's3', kind: 'summary', text: `${stats.meetings} toplantı` },
-    { ref: 's4', kind: 'summary', text: `${stats.followups} takip, ${stats.followups_answered} yanıtlandı` },
+    {
+      ref: 's4',
+      kind: 'summary',
+      text: `${stats.followups} takip, ${stats.followups_answered} yanıtlandı`,
+    },
     { ref: 's5', kind: 'summary', text: `${stats.deadlines} son tarih` },
     { ref: 's6', kind: 'summary', text: `tahmini ${stats.time_saved_min} dakika kazanıldı` },
   ];
@@ -158,7 +170,9 @@ export function weeklyNarrative(
     if (refined.ok && sentences.length > 0) {
       const extra = [
         refined.data.next_week.refs.length > 0 ? refined.data.next_week.text_tr : '',
-        refined.data.suggestion.kind === 'focus_block' ? (refined.data.suggestion.text_tr ?? '') : '',
+        refined.data.suggestion.kind === 'focus_block'
+          ? (refined.data.suggestion.text_tr ?? '')
+          : '',
       ].filter((t) => t !== '');
       return { text: clip([...sentences, ...extra].join(' '), 3000), mode: 'ai' };
     }
@@ -212,7 +226,11 @@ export function weeklyComposition(
       followups: s.followups,
       deadlines: s.deadlines,
     },
-    provenance: { narrative_mode: narrative.mode, period_start: period.start, period_end: period.end },
+    provenance: {
+      narrative_mode: narrative.mode,
+      period_start: period.start,
+      period_end: period.end,
+    },
     weekly_stats: s as unknown as Record<string, unknown>,
     prompt_version_id: promptVersionId,
   };
@@ -245,7 +263,11 @@ export async function composeWeekly(
     cacheContent: `weekly_review\n${input.briefing.id}\n${prompt.docs.map((d) => `${d.ref}\n${d.text}`).join('\n')}`,
     units: 1,
   });
-  const narrative = weeklyNarrative(result.kind === 'ai' ? result.data : null, prompt, pipeline.user.locale);
+  const narrative = weeklyNarrative(
+    result.kind === 'ai' ? result.data : null,
+    prompt,
+    pipeline.user.locale,
+  );
   return weeklyComposition(
     pipeline,
     input,

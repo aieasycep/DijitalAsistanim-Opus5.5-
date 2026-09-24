@@ -44,7 +44,10 @@ export async function polishDrafts(
   const originals = Object.fromEntries(
     drafts.map((d, i) => [`i${i + 1}`, { title_tr: d.title, sub_tr: d.meta }]),
   );
-  const refined = refineBriefingPolishV1(result.data, { aliases: docs.map((d) => d.ref), originals });
+  const refined = refineBriefingPolishV1(result.data, {
+    aliases: docs.map((d) => d.ref),
+    originals,
+  });
   if (!refined.ok) return { drafts: [...drafts], polished: false, promptVersionId: null };
   const byRef = new Map(refined.data.items.map((item) => [item.ref, item]));
   return {

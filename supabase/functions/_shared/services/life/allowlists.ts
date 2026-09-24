@@ -47,7 +47,12 @@ export const SECURITY_SENDERS: readonly SecuritySender[] = [
 
 export function domainOf(email: string): string {
   const at = email.lastIndexOf('@');
-  return at === -1 ? '' : email.slice(at + 1).toLowerCase().trim();
+  return at === -1
+    ? ''
+    : email
+        .slice(at + 1)
+        .toLowerCase()
+        .trim();
 }
 
 export function domainMatches(host: string, domain: string): boolean {

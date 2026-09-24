@@ -75,11 +75,17 @@ export interface MailStore {
   updateMessage(id: string, patch: MessagePatch): Promise<void>;
   updateThread(id: string, patch: ThreadPatch): Promise<void>;
   upsertContacts(userId: string, people: readonly PersonRef[]): Promise<Record<string, string>>;
-  linkContacts(userId: string, threadIds: readonly string[], eventIds: readonly string[]): Promise<void>;
+  linkContacts(
+    userId: string,
+    threadIds: readonly string[],
+    eventIds: readonly string[],
+  ): Promise<void>;
   refreshContactStats(userId: string, contactIds: readonly string[] | null): Promise<void>;
   contactsByEmail(userId: string, emails: readonly string[]): Promise<ContactRef[]>;
   upsertLifeEvents(rows: readonly LifeEventInsert[]): Promise<{ id: string; dedupe_key: string }[]>;
-  upsertCommitments(rows: readonly CommitmentInsert[]): Promise<{ id: string; dedupe_key: string }[]>;
+  upsertCommitments(
+    rows: readonly CommitmentInsert[],
+  ): Promise<{ id: string; dedupe_key: string }[]>;
   /** Pending proposals; duplicates of an `idempotency_key` are ignored. Returns the inserted count. */
   insertApprovals(rows: readonly ApprovalInsert[]): Promise<number>;
   /** Non-cancelled events overlapping [from, to) (busy blocks, conflicts). */
@@ -147,19 +153,34 @@ export interface WeeklyCounts {
   /** Meetings per local weekday (1 = Monday). */
   readonly meetingsByWeekday: Readonly<Record<number, number>>;
   /** The day with most meetings and its longest free gap between them (working hours). */
-  readonly busiest: { readonly weekday: number; readonly meetings: number; readonly maxGapMin: number } | null;
+  readonly busiest: {
+    readonly weekday: number;
+    readonly meetings: number;
+    readonly maxGapMin: number;
+  } | null;
 }
 
 export interface StatsStore {
   /** Inbound messages received in [from, to) and how many were attention-flagged. */
-  mailCounts(userId: string, from: Date, to: Date): Promise<{ total: number; attention: number; calendars: number }>;
+  mailCounts(
+    userId: string,
+    from: Date,
+    to: Date,
+  ): Promise<{ total: number; attention: number; calendars: number }>;
   weekly(userId: string, from: Date, to: Date, timeZone: string): Promise<WeeklyCounts>;
   /** Account freshness at generation (`briefings.source_freshness`). */
   freshness(userId: string): Promise<Record<string, unknown>>;
 }
 
 export interface MemoryItem {
-  readonly kind: 'email_summary' | 'life_event' | 'commitment' | 'capture' | 'meeting_note' | 'assistant_fact' | 'person_profile';
+  readonly kind:
+    | 'email_summary'
+    | 'life_event'
+    | 'commitment'
+    | 'capture'
+    | 'meeting_note'
+    | 'assistant_fact'
+    | 'person_profile';
   readonly id: string;
 }
 
@@ -168,8 +189,14 @@ export interface MemoryStore {
   sources(userId: string, items: readonly MemoryItem[]): Promise<MemorySource[]>;
   upsertChunks(rows: readonly MemoryChunkInsert[]): Promise<MemoryChunkRow[]>;
   /** Chunks of the user still without an embedding for the model (bounded). */
-  pendingChunks(userId: string, ids: readonly string[] | null, limit: number): Promise<MemoryChunkRow[]>;
-  writeEmbeddings(rows: readonly { id: string; embedding: readonly number[]; model: string }[]): Promise<void>;
+  pendingChunks(
+    userId: string,
+    ids: readonly string[] | null,
+    limit: number,
+  ): Promise<MemoryChunkRow[]>;
+  writeEmbeddings(
+    rows: readonly { id: string; embedding: readonly number[]; model: string }[],
+  ): Promise<void>;
 }
 
 /** Derived inputs for one memory chunk (§10.1). */

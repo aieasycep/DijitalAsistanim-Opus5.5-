@@ -6,7 +6,8 @@
  */
 import type { StoredEvidence } from '@da/domain';
 
-export type LifeKind = 'shipment' | 'flight' | 'reservation' | 'payment' | 'subscription' | 'security';
+export type LifeKind =
+  'shipment' | 'flight' | 'reservation' | 'payment' | 'subscription' | 'security';
 export type LifeOrigin = 'jsonld' | 'template' | 'llm' | 'security';
 
 export interface LifeAmount {

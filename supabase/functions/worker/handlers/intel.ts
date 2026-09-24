@@ -41,7 +41,11 @@ export interface IntelDeps {
   readonly reconciliation: ReconciliationPorts;
 }
 
-export function pipelineFor(deps: IntelDeps, user: AiUser, ctx: JobContext<unknown>): PipelineContext {
+export function pipelineFor(
+  deps: IntelDeps,
+  user: AiUser,
+  ctx: JobContext<unknown>,
+): PipelineContext {
   return {
     runtime: deps.ai.runtime,
     user,
@@ -80,11 +84,19 @@ export async function enqueueEmbedding(
 ): Promise<string | null> {
   const unique = [...new Map(items.map((i) => [`${i.kind}:${i.id}`, i])).values()].slice(0, 100);
   if (unique.length === 0) return null;
-  const key = await sha1Hex(unique.map((i) => `${i.kind}:${i.id}`).sort().join(','));
+  const key = await sha1Hex(
+    unique
+      .map((i) => `${i.kind}:${i.id}`)
+      .sort()
+      .join(','),
+  );
   return await ctx.enqueue({
     type: 'embedding',
     idempotencyKey: `embedding:${userId}:${key}`,
-    payload: { user_id: userId, items: unique.map((i) => ({ kind: i.kind, id: i.id })) } as unknown as Json,
+    payload: {
+      user_id: userId,
+      items: unique.map((i) => ({ kind: i.kind, id: i.id })),
+    } as unknown as Json,
     userId,
   });
 }

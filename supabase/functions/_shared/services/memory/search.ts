@@ -173,7 +173,9 @@ export function groundedAnswer(
   const scored = results
     .map((r) => {
       const hay = new Set(tokens(`${r.title} ${r.snippet}`));
-      const hits = terms.filter((t) => [...hay].some((h) => h.startsWith(t.slice(0, Math.max(3, t.length - 2)))));
+      const hits = terms.filter((t) =>
+        [...hay].some((h) => h.startsWith(t.slice(0, Math.max(3, t.length - 2)))),
+      );
       return { r, hits };
     })
     .filter((x) => x.hits.length > 0 && (x.r.title !== '' || x.r.snippet !== ''))
@@ -217,7 +219,12 @@ export function groundedAnswer(
 export async function runSearch(
   ports: SearchPorts,
   request: SearchRequest,
-  context: { readonly isPro: boolean; readonly now: Date; readonly timeZone: string; readonly locale: CopyLocale },
+  context: {
+    readonly isPro: boolean;
+    readonly now: Date;
+    readonly timeZone: string;
+    readonly locale: CopyLocale;
+  },
 ): Promise<SearchOutcome> {
   const parsed = parseSearchQuery(request.q, context.now, context.timeZone);
   const requested = request.types ?? (parsed.types.length > 0 ? parsed.types : ALL_TYPES);

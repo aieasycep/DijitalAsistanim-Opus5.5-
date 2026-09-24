@@ -10,7 +10,6 @@ import {
   type AmountMatch,
   type InjectionScan,
   localDate,
-  prescanInjection,
   type StoredEvidence,
   stripQuotedHistory,
 } from '@da/domain';
@@ -33,7 +32,7 @@ import {
   guardSummary,
   storedEvidence,
 } from './grounding.ts';
-import { DEEP_EXTRACT_BODY_TOKENS, modelText } from './hygiene.ts';
+import { DEEP_EXTRACT_BODY_TOKENS, injectionScan, modelText } from './hygiene.ts';
 import { callModel, type PipelineContext, trustedHeader } from './pipeline.ts';
 
 export interface DeepDeadline {
@@ -80,7 +79,12 @@ export interface DeepExtractInput {
   readonly senderKnown: boolean;
 }
 
-function empty(reason: string, source: string, tally: GroundingTally, scan: InjectionScan): DeepExtractResult {
+function empty(
+  reason: string,
+  source: string,
+  tally: GroundingTally,
+  scan: InjectionScan,
+): DeepExtractResult {
   return {
     kind: 't0',
     reason,
@@ -113,7 +117,7 @@ export async function deepExtract(
     DEEP_EXTRACT_BODY_TOKENS,
   );
   const source = redacted.text;
-  const scan = prescanInjection(source);
+  const scan = injectionScan(source);
   const docs: UntrustedDoc[] = [{ ref: 'm1', kind: 'email', text: source }];
   const prior = input.thread?.rolling_summary;
   if (prior !== null && prior !== undefined && prior.trim() !== '') {
@@ -157,12 +161,16 @@ export async function deepExtract(
   };
   const keyPoints = data.key_points.flatMap((k) => {
     const ev = groundQuote(k.evidence, scope, tally, 'key_points');
-    return keep(ev, 'key_points') ? [{ text: clip(k.text_tr, 200), evidence: storedEvidence('key_points', ev) }] : [];
+    return keep(ev, 'key_points')
+      ? [{ text: clip(k.text_tr, 200), evidence: storedEvidence('key_points', ev) }]
+      : [];
   });
   const deadlines = data.deadlines.flatMap((d) => {
     const ev = groundQuote(d.evidence, scope, tally, 'deadline_evidence');
     const date =
-      ev === null ? null : groundDate({ ref: 'm1', quote: d.when_quote }, scope, tally, 'due_at', d.certainty);
+      ev === null
+        ? null
+        : groundDate({ ref: 'm1', quote: d.when_quote }, scope, tally, 'due_at', d.certainty);
     if (!keep(ev, 'due_at') || !keep(date, 'due_at')) return [];
     return [
       {
@@ -176,21 +184,40 @@ export async function deepExtract(
   });
   const scheduleRequests = data.schedule_requests.flatMap((s) => {
     const ev = groundQuote(s.evidence, scope, tally, 'schedule_request');
-    return keep(ev, 'schedule_request') ? [{ kind: s.kind, evidence: storedEvidence('schedule_request', ev) }] : [];
+    return keep(ev, 'schedule_request')
+      ? [{ kind: s.kind, evidence: storedEvidence('schedule_request', ev) }]
+      : [];
   });
   const tasks = data.tasks_for_user.flatMap((t) => {
     const ev = groundQuote(t.evidence, scope, tally, 'task');
     if (!keep(ev, 'task')) return [];
     const due =
-      t.due_quote === null ? null : groundDate({ ref: 'm1', quote: t.due_quote }, scope, tally, 'task_due');
+      t.due_quote === null
+        ? null
+        : groundDate({ ref: 'm1', quote: t.due_quote }, scope, tally, 'task_due');
     if (t.due_quote !== null && due === null) dropped.add('task_due');
-    return [{ what: clip(t.what_tr, 80), dueAt: due?.dueAt ?? null, evidence: storedEvidence('task', ev) }];
+    return [
+      {
+        what: clip(t.what_tr, 80),
+        dueAt: due?.dueAt ?? null,
+        evidence: storedEvidence('task', ev),
+      },
+    ];
   });
   const amounts = data.amounts.flatMap((a) => {
     const ev = groundQuote(a.evidence, scope, tally, 'amount_evidence');
-    const amount = ev === null ? null : groundAmount({ ref: 'm1', quote: a.amount_quote }, scope, tally, 'amount');
+    const amount =
+      ev === null
+        ? null
+        : groundAmount({ ref: 'm1', quote: a.amount_quote }, scope, tally, 'amount');
     if (!keep(ev, 'amount') || !keep(amount, 'amount')) return [];
-    return [{ label: clip(a.label_tr, 80), amount: amount.value, evidence: storedEvidence('amount', amount.evidence) }];
+    return [
+      {
+        label: clip(a.label_tr, 80),
+        amount: amount.value,
+        evidence: storedEvidence('amount', amount.evidence),
+      },
+    ];
   });
   const people = data.people.flatMap((p) =>
     groundQuote({ ref: p.evidence.ref, quote: p.name_quote }, scope, tally, 'people') === null

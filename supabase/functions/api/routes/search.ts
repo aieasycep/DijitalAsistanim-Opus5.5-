@@ -23,7 +23,8 @@ export const registerSearchRoutes: RouteRegistrar = (app, kit) => {
     validateRequest(route),
     async (c) => {
       const api = kit.deps.intel;
-      if (api === undefined) throw new AppError('SERVICE_UNAVAILABLE', { details: { reason: 'intel_not_configured' } });
+      if (api === undefined)
+        throw new AppError('SERVICE_UNAVAILABLE', { details: { reason: 'intel_not_configured' } });
       const auth = currentUser(c);
       const query = validQuery(c, SearchQuery);
       const user = await api.ai.users.load(auth.userId);
@@ -69,16 +70,11 @@ export const registerSearchRoutes: RouteRegistrar = (app, kit) => {
         last !== undefined && outcome.data.results.length >= query.limit
           ? btoa(`${last.score}|${last.type}|${last.id}`)
           : null;
-      return sendData(
-        c,
-        { ...outcome.data, ...(retention === null ? {} : { retention }) },
-        200,
-        {
-          next_cursor: nextCursor,
-          ...(outcome.lockedTypes.length > 0 ? { locked_types: [...outcome.lockedTypes] } : {}),
-          ...(outcome.degraded ? { degraded: true } : {}),
-        },
-      );
+      return sendData(c, { ...outcome.data, ...(retention === null ? {} : { retention }) }, 200, {
+        next_cursor: nextCursor,
+        ...(outcome.lockedTypes.length > 0 ? { locked_types: [...outcome.lockedTypes] } : {}),
+        ...(outcome.degraded ? { degraded: true } : {}),
+      });
     },
   );
 };

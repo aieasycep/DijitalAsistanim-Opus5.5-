@@ -36,7 +36,7 @@ export type EmbedOutcome =
   | { readonly kind: 'ok'; readonly vectors: number[][]; readonly model: string }
   | { readonly kind: 'unavailable'; readonly reason: string; readonly retryable: boolean };
 
-/** `memory_chunks.embedding_model` label, e.g. `voyage-4@1024`. */
+/** `memory_chunks.embedding_model` label: `{model}@{dimensions}`. */
 export function embeddingModelLabel(model: string, dimensions: number): string {
   return `${model}@${dimensions}`;
 }
@@ -52,7 +52,8 @@ export async function embedTexts(runtime: AiRuntime, input: EmbedInput): Promise
     flags: input.flags,
     role: 'embedding',
   });
-  if (decision.kind !== 'route') return { kind: 'unavailable', reason: decision.reason, retryable: false };
+  if (decision.kind !== 'route')
+    return { kind: 'unavailable', reason: decision.reason, retryable: false };
   const target = decision.route.chain[0];
   const provider = target === undefined ? null : runtime.provider(target.provider);
   if (target === undefined || provider === null || provider.embed === undefined) {
@@ -84,7 +85,8 @@ export async function embedTexts(runtime: AiRuntime, input: EmbedInput): Promise
         },
         target,
       );
-      if (result.dimensions !== EMBEDDING_DIMENSIONS) throw new AiError('SCHEMA_VALIDATION', target.provider);
+      if (result.dimensions !== EMBEDDING_DIMENSIONS)
+        throw new AiError('SCHEMA_VALIDATION', target.provider);
       dimensions = result.dimensions;
       tokens += result.usage.tokens;
       vectors.push(...result.vectors);

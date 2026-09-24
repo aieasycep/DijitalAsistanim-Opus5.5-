@@ -137,7 +137,9 @@ export function createFixtureProvider(options: { now?: () => number } = {}): LLM
       if (file === undefined) throw new AiError('NOT_CONFIGURED', 'fixture');
       const key = await fixtureInputKey(params as GenerateStructuredParams<unknown>);
       const candidate =
-        file.by_input[key] ?? generateFixture(params as GenerateStructuredParams<unknown>) ?? file.default;
+        file.by_input[key] ??
+        generateFixture(params as GenerateStructuredParams<unknown>) ??
+        file.default;
       const parsed = params.schema.safeParse(candidate);
       if (!parsed.success) throw new AiError('SCHEMA_VALIDATION', 'fixture');
       return {

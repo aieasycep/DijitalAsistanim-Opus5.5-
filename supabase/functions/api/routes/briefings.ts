@@ -6,12 +6,7 @@
  * - API-BRF-04 `POST /briefings/:id/retry` [IK] — a failed briefing of today back to `scheduled`
  *   with a new job (1 per 10 min per briefing); any other state is `STATE_CONFLICT`.
  */
-import {
-  BriefingIdParams,
-  BriefingRetryBody,
-  EveningReadyBody,
-  routes,
-} from '@da/validation';
+import { BriefingIdParams, BriefingRetryBody, EveningReadyBody, routes } from '@da/validation';
 import { currentUser } from '../../_shared/auth/user.ts';
 import { AppError } from '../../_shared/errors.ts';
 import { sendData } from '../../_shared/http/respond.ts';
@@ -31,7 +26,8 @@ import type { IntelApi } from './intel-api.ts';
 
 function intel(kit: RouteKit): IntelApi {
   const deps = kit.deps.intel;
-  if (deps === undefined) throw new AppError('SERVICE_UNAVAILABLE', { details: { reason: 'intel_not_configured' } });
+  if (deps === undefined)
+    throw new AppError('SERVICE_UNAVAILABLE', { details: { reason: 'intel_not_configured' } });
   return deps;
 }
 
@@ -58,7 +54,8 @@ export const registerBriefingRoutes: RouteRegistrar = (app, kit) => {
       const body = validBody(c, EveningReadyBody);
       const api = intel(kit);
       const user = await api.ai.users.load(auth.userId);
-      if (!user.isPro) throw new AppError('ENTITLEMENT_REQUIRED', { details: { feature: 'evening_briefing' } });
+      if (!user.isPro)
+        throw new AppError('ENTITLEMENT_REQUIRED', { details: { feature: 'evening_briefing' } });
       const repo = api.briefings(auth);
       const run = async () => {
         const result = await repo.eveningReady(params.id, body.carry_over_item_ids ?? null);
@@ -102,7 +99,8 @@ export const registerBriefingRoutes: RouteRegistrar = (app, kit) => {
       const briefing = await api.briefings(auth).byId(params.id);
       if (briefing === null || briefing.kind !== 'weekly') throw new AppError('NOT_FOUND');
       const card = shareCard(briefing.weekly_stats, user.locale);
-      if (card === null) throw new AppError('NOT_FOUND', { details: { reason: 'weekly_stats_missing' } });
+      if (card === null)
+        throw new AppError('NOT_FOUND', { details: { reason: 'weekly_stats_missing' } });
       c.get('log').info('weekly_share_card_served');
       return sendData(c, card);
     },
@@ -127,7 +125,9 @@ export const registerBriefingRoutes: RouteRegistrar = (app, kit) => {
         const user = await api.ai.users.load(auth.userId);
         if (!user.isPro) {
           throw new AppError('ENTITLEMENT_REQUIRED', {
-            details: { feature: briefing.kind === 'midday' ? 'midday_briefing' : 'evening_briefing' },
+            details: {
+              feature: briefing.kind === 'midday' ? 'midday_briefing' : 'evening_briefing',
+            },
           });
         }
       }

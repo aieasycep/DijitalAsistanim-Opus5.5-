@@ -53,7 +53,11 @@ const ORIGIN: Readonly<Record<string, 'scheduled' | 'onboarding' | 'retry'>> = {
 /** Weekly narratives go through Message Batches until this local time (then synchronously). */
 export const WEEKLY_SYNC_FALLBACK = '17:30';
 
-async function resolveBriefing(deps: IntelDeps, payload: BriefingPayload, now: Date): Promise<BriefingRow | null> {
+async function resolveBriefing(
+  deps: IntelDeps,
+  payload: BriefingPayload,
+  now: Date,
+): Promise<BriefingRow | null> {
   if ('briefing_id' in payload) return await deps.briefings.byId(payload.briefing_id);
   const user = await deps.ai.users.load(payload.user_id);
   return await deps.briefings.ensure({
@@ -115,7 +119,13 @@ async function compose(
     case 'midday': {
       const morning = await deps.briefings.forDate(user.userId, 'morning', briefing.local_date);
       const events = await deps.mail.events(user.userId, dayStart, dayEnd);
-      return await composeMidday(pipeline, { briefing, morning, now, insights: snapshot.insights, events });
+      return await composeMidday(pipeline, {
+        briefing,
+        morning,
+        now,
+        insights: snapshot.insights,
+        events,
+      });
     }
     case 'evening': {
       const tomorrow = addDaysToLocalDate(briefing.local_date, 1);
@@ -133,7 +143,9 @@ async function compose(
         commitments: snapshot.commitments,
         tomorrowEvents,
         awaitingSince: Object.fromEntries(
-          snapshot.threads.flatMap((t) => (t.awaiting_since === null ? [] : [[t.id, t.awaiting_since]])),
+          snapshot.threads.flatMap((t) =>
+            t.awaiting_since === null ? [] : [[t.id, t.awaiting_since]],
+          ),
         ),
       });
     }
@@ -141,14 +153,29 @@ async function compose(
       const period = weekPeriod(briefing.local_date);
       const nextStart = addDaysToLocalDate(period.end, 1);
       const [counts, nextWeek] = await Promise.all([
-        deps.stats.weekly(user.userId, startOfLocalDay(period.start, tz), endOfLocalDay(period.end, tz), tz),
-        deps.mail.events(user.userId, startOfLocalDay(nextStart, tz), endOfLocalDay(addDaysToLocalDate(nextStart, 6), tz)),
+        deps.stats.weekly(
+          user.userId,
+          startOfLocalDay(period.start, tz),
+          endOfLocalDay(period.end, tz),
+          tz,
+        ),
+        deps.mail.events(
+          user.userId,
+          startOfLocalDay(nextStart, tz),
+          endOfLocalDay(addDaysToLocalDate(nextStart, 6), tz),
+        ),
       ]);
       const input = { briefing, now, counts, insights: snapshot.insights, nextWeek };
-      const beforeFallback = now.getTime() < atLocalTime(briefing.local_date, WEEKLY_SYNC_FALLBACK, tz).getTime();
-      const route = beforeFallback && briefing.origin === 'scheduled'
-        ? await batchRoute(deps.ai.runtime, { feature: 'weekly_review', profile: user.profile, flags: user.flags })
-        : null;
+      const beforeFallback =
+        now.getTime() < atLocalTime(briefing.local_date, WEEKLY_SYNC_FALLBACK, tz).getTime();
+      const route =
+        beforeFallback && briefing.origin === 'scheduled'
+          ? await batchRoute(deps.ai.runtime, {
+              feature: 'weekly_review',
+              profile: user.profile,
+              flags: user.flags,
+            })
+          : null;
       if (route !== null) {
         await deps.briefings.update(briefing.id, {
           weekly_stats: weeklyStats(counts, period) as unknown as Record<string, unknown>,
@@ -158,7 +185,12 @@ async function compose(
         await ctx.enqueue({
           type: 'ai_batch',
           idempotencyKey: `ai_batch:weekly_review:submit:${ctx.job.id}`,
-          payload: { phase: 'submit', feature: 'weekly_review', batch_ref: null, item_job_ids: [ctx.job.id] },
+          payload: {
+            phase: 'submit',
+            feature: 'weekly_review',
+            batch_ref: null,
+            item_job_ids: [ctx.job.id],
+          },
         });
         return 'batched';
       }
@@ -207,10 +239,15 @@ export async function runBriefing(
     });
     return { briefing_id: briefing.id, status: 'skipped', reason: refused };
   }
-  await deps.briefings.update(briefing.id, { status: 'generating', failed_at: null, error_code: null });
+  await deps.briefings.update(briefing.id, {
+    status: 'generating',
+    failed_at: null,
+    error_code: null,
+  });
   try {
     const composed = await compose(deps, ctx, briefing, user);
-    if (composed === 'batched') return { briefing_id: briefing.id, status: 'generating', narrative: 'batch' };
+    if (composed === 'batched')
+      return { briefing_id: briefing.id, status: 'generating', narrative: 'batch' };
     await applyComposed(deps, ctx, briefing, composed, started);
     return {
       briefing_id: briefing.id,
@@ -223,9 +260,12 @@ export async function runBriefing(
   } catch (error) {
     const final = ctx.job.attempts >= ctx.job.max_attempts;
     const code = error instanceof JobError ? error.code : 'BRIEFING_FAILED';
-    await deps.briefings.update(briefing.id, final
-      ? { status: 'failed', failed_at: new Date().toISOString(), error_code: code }
-      : { status: 'scheduled', error_code: code });
+    await deps.briefings.update(
+      briefing.id,
+      final
+        ? { status: 'failed', failed_at: new Date().toISOString(), error_code: code }
+        : { status: 'scheduled', error_code: code },
+    );
     if (error instanceof JobError) throw error;
     throw new JobError(code, !final, null, error instanceof Error ? error.message : undefined);
   }

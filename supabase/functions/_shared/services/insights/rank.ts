@@ -58,7 +58,10 @@ export function proximityBonus(at: string | null, ctx: RankContext): number {
   if (Number.isNaN(t)) return 0;
   const diff = t - ctx.now.getTime();
   if (diff >= -3_600_000 && diff <= 3 * 3_600_000) return 80;
-  const days = localDateDiffDays(localDate(ctx.now, ctx.timeZone), localDate(new Date(t), ctx.timeZone));
+  const days = localDateDiffDays(
+    localDate(ctx.now, ctx.timeZone),
+    localDate(new Date(t), ctx.timeZone),
+  );
   if (days === 0) return 50;
   if (days === 1) return 20;
   return 0;
@@ -72,9 +75,10 @@ export function ageDecay(createdAt: string | null, now: Date): number {
 
 /** `insights.rank_score` (numeric(8,4)). */
 export function rankScore(input: RankInput, ctx: RankContext): number {
-  const at = [input.dueAt, input.eventAt]
-    .filter((v): v is string => v !== null)
-    .sort((a, b) => Date.parse(a) - Date.parse(b))[0] ?? null;
+  const at =
+    [input.dueAt, input.eventAt]
+      .filter((v): v is string => v !== null)
+      .sort((a, b) => Date.parse(a) - Date.parse(b))[0] ?? null;
   const learned = Math.max(-60, Math.min(60, input.learnedDelta ?? 0));
   const score =
     URGENCY_BASE[input.urgency] +

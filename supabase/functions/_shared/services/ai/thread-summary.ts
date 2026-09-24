@@ -60,7 +60,9 @@ export function newMessages(
   thread: MailThreadRow,
   messages: readonly MailMessageRow[],
 ): MailMessageRow[] {
-  const sorted = [...messages].sort((a, b) => Date.parse(a.received_at) - Date.parse(b.received_at));
+  const sorted = [...messages].sort(
+    (a, b) => Date.parse(a.received_at) - Date.parse(b.received_at),
+  );
   const at = sorted.findIndex((m) => m.id === thread.last_processed_message_id);
   const fresh = at === -1 || thread.rolling_summary === null ? sorted : sorted.slice(at + 1);
   // Nothing new since the last run: the newest message anchors the call (and its cache key).
@@ -75,12 +77,20 @@ function messageText(m: MailMessageRow, body: string | undefined): string {
 }
 
 /** T0 rendering from stored derived data (model unavailable or budget exhausted). */
-function t0Summary(input: ThreadSummaryInput, reason: string, tally: GroundingTally): ThreadSummaryOutcome {
+function t0Summary(
+  input: ThreadSummaryInput,
+  reason: string,
+  tally: GroundingTally,
+): ThreadSummaryOutcome {
   const latest = [...input.messages].sort(
     (a, b) => Date.parse(b.received_at) - Date.parse(a.received_at),
   )[0];
   const summary = clip(
-    input.thread.rolling_summary ?? input.thread.ai_summary ?? latest?.ai_summary ?? latest?.snippet ?? '',
+    input.thread.rolling_summary ??
+      input.thread.ai_summary ??
+      latest?.ai_summary ??
+      latest?.snippet ??
+      '',
     600,
   );
   return {
@@ -148,14 +158,23 @@ export async function summarizeThread(
     ...input.thread.participants.map((p) => p.name ?? ''),
   ].filter((n) => n !== '');
   const summary =
-    guardSummary(data.summary_tr, docs.map((d) => d.text), trusted, tally, 'summary') ??
-    clip(prior ?? '', 600);
+    guardSummary(
+      data.summary_tr,
+      docs.map((d) => d.text),
+      trusted,
+      tally,
+      'summary',
+    ) ?? clip(prior ?? '', 600);
   const keyPoints: SummaryPoint[] = [];
   for (const k of data.key_points) {
     const ev = groundQuote(k.evidence, scope, tally, 'key_points');
     const message = byRef.get(k.evidence.ref);
     if (ev === null || message === undefined) continue;
-    keyPoints.push({ text: clip(k.text_tr, 200), message, evidence: storedEvidence('key_points', ev) });
+    keyPoints.push({
+      text: clip(k.text_tr, 200),
+      message,
+      evidence: storedEvidence('key_points', ev),
+    });
   }
   const openQuestions = data.open_questions.flatMap((q) =>
     groundQuote(q.evidence, scope, tally, 'open_questions') === null

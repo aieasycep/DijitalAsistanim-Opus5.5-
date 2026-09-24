@@ -37,7 +37,15 @@ import {
   waitBadge,
 } from '@da/domain';
 import { ageFollowUp } from '../followups.ts';
-import { clip, copy, type CopyLocale, formatDay, formatDue, formatTime, withCases } from '../copy.ts';
+import {
+  clip,
+  copy,
+  type CopyLocale,
+  formatDay,
+  formatDue,
+  formatTime,
+  withCases,
+} from '../copy.ts';
 import type { InsightSnapshot } from '../intel/store.ts';
 import type {
   CalendarEventRow,
@@ -85,7 +93,12 @@ export interface BuildResult {
 
 const SCOPE_KINDS: Readonly<Record<Exclude<InsightScope, 'all'>, readonly string[]>> = {
   mail: ['reply_needed:email_thread', 'deadline:email_thread'],
-  calendar: ['conflict:calendar_event', 'meeting:calendar_event', 'schedule_suggestion:commitment', 'schedule_suggestion:task'],
+  calendar: [
+    'conflict:calendar_event',
+    'meeting:calendar_event',
+    'schedule_suggestion:commitment',
+    'schedule_suggestion:task',
+  ],
   tasks: ['deadline:task', 'schedule_suggestion:task'],
   life: ['life_event:life_event', 'security:life_event'],
   followups: ['follow_up:email_thread', 'commitment:commitment'],
@@ -111,7 +124,9 @@ const action = (type: string, target: string | null, approval = false): InsightA
 interface Candidate extends Omit<InsightUpsert, 'rank_score'> {
   readonly importanceHigh: boolean;
   readonly vip: boolean;
-  readonly notify?: Omit<NotificationBuild, 'dedupe_key' | 'deeplink'> & { readonly localDate: string };
+  readonly notify?: Omit<NotificationBuild, 'dedupe_key' | 'deeplink'> & {
+    readonly localDate: string;
+  };
 }
 
 function epochKey(iso: string | null): string {
@@ -130,12 +145,19 @@ function urgencyFor(ctx: BuildContext, at: string | null, fallback: Urgency = 'n
   return dayDiff(ctx, at) <= 0 ? 'today' : fallback;
 }
 
-function isVip(snap: InsightSnapshot, ctx: BuildContext, email: string | null | undefined): boolean {
+function isVip(
+  snap: InsightSnapshot,
+  ctx: BuildContext,
+  email: string | null | undefined,
+): boolean {
   if (!ctx.isPro || email === null || email === undefined) return false;
   return snap.vip.emails.some((e) => e.toLowerCase() === email.toLowerCase());
 }
 
-function counterpartOf(thread: MailThreadRow, own: readonly string[]): { email: string; name: string } | null {
+function counterpartOf(
+  thread: MailThreadRow,
+  own: readonly string[],
+): { email: string; name: string } | null {
   const mine = new Set(own.map((o) => o.toLowerCase()));
   const p = thread.participants.find((x) => !mine.has(x.email.toLowerCase()));
   return p === undefined ? null : { email: p.email, name: p.name ?? p.email };
@@ -161,11 +183,24 @@ function mailCandidates(snap: InsightSnapshot, ctx: BuildContext): Candidate[] {
         user_id: ctx.userId,
         kind: 'reply_needed',
         urgency,
-        title: clip(copy(l, 'flow.generated.insight.replyNeeded.title', { sender: clip(sender, 60) }), 200),
+        title: clip(
+          copy(l, 'flow.generated.insight.replyNeeded.title', { sender: clip(sender, 60) }),
+          200,
+        ),
         body: clip(m.ai_summary ?? subject, 600) || null,
-        why_important: clip(m.classification_reason ?? t.category_reason ?? copy(l, 'flow.generated.why.signal.awaiting_my_reply'), 300),
+        why_important: clip(
+          m.classification_reason ??
+            t.category_reason ??
+            copy(l, 'flow.generated.why.signal.awaiting_my_reply'),
+          300,
+        ),
         decision_tier: tier,
-        reason_code: tier === 'explicit_rule' ? 'rule_reply_needed' : tier === 'ai_classification' ? 'ai_reply_needed' : 'awaiting_my_reply',
+        reason_code:
+          tier === 'explicit_rule'
+            ? 'rule_reply_needed'
+            : tier === 'ai_classification'
+              ? 'ai_reply_needed'
+              : 'awaiting_my_reply',
         rule_id: t.category_rule_id ?? m.classification_rule_id,
         learned_preference_id: null,
         entity_type: 'email_thread',
@@ -175,12 +210,18 @@ function mailCandidates(snap: InsightSnapshot, ctx: BuildContext): Candidate[] {
         due_at: null,
         event_at: null,
         suppression_key: null,
-        dedupe_key: insightDedupeKey({ kind: 'reply_needed', entityType: 'email_thread', entityId: t.id, discriminator: m.id }),
+        dedupe_key: insightDedupeKey({
+          kind: 'reply_needed',
+          entityType: 'email_thread',
+          entityId: t.id,
+          discriminator: m.id,
+        }),
         source_type: 'email_message',
         source_id: m.id,
         source_provider: m.provider,
         source_timestamp: m.received_at,
-        confidence: Math.round((m.classification_confidence ?? t.category_confidence ?? 0.8) * 1000) / 1000,
+        confidence:
+          Math.round((m.classification_confidence ?? t.category_confidence ?? 0.8) * 1000) / 1000,
         evidence: kp.slice(0, 5),
         importanceHigh: t.category === 'important' || urgency === 'urgent' || urgency === 'today',
         vip,
@@ -235,7 +276,12 @@ function mailCandidates(snap: InsightSnapshot, ctx: BuildContext): Candidate[] {
         due_at: t.deadline_at,
         event_at: null,
         suppression_key: null,
-        dedupe_key: insightDedupeKey({ kind: 'deadline', entityType: 'email_thread', entityId: t.id, discriminator: epochKey(t.deadline_at) }),
+        dedupe_key: insightDedupeKey({
+          kind: 'deadline',
+          entityType: 'email_thread',
+          entityId: t.id,
+          discriminator: epochKey(t.deadline_at),
+        }),
         source_type: 'email_thread',
         source_id: t.id,
         source_provider: t.provider,
@@ -281,7 +327,8 @@ function followUpCandidates(
     const vip = isVip(snap, ctx, person?.email);
     const isMuted = t.is_muted || (person !== null && muted.has(person.email.toLowerCase()));
     const aged = ageFollowUp(t, ctx.now, ctx.timeZone, ctx.followUpAfterDays, vip, isMuted);
-    if (aged.state !== t.follow_up_state) patches.push({ id: t.id, patch: { follow_up_state: aged.state } });
+    if (aged.state !== t.follow_up_state)
+      patches.push({ id: t.id, patch: { follow_up_state: aged.state } });
     if (aged.state !== 'nudge_due') continue;
     const badge = waitBadge(aged.days);
     const name = clip(person?.name ?? '', 60) || 'none';
@@ -291,10 +338,18 @@ function followUpCandidates(
       kind: 'follow_up',
       urgency: badge === 'coral' ? 'today' : 'normal',
       title: clip(copy(l, 'flow.generated.insight.followUp.title', { person: name }), 200),
-      body: clip(copy(l, 'flow.generated.insight.followUp.body', { days: aged.days, subject }), 600),
+      body: clip(
+        copy(l, 'flow.generated.insight.followUp.body', { days: aged.days, subject }),
+        600,
+      ),
       why_important: kindWhy(l, 'follow_up', { days: aged.days }),
       decision_tier: 'deterministic_signal',
-      reason_code: badge === 'coral' ? 'follow_up_overdue' : badge === 'amber' ? 'follow_up_waiting' : 'follow_up_due',
+      reason_code:
+        badge === 'coral'
+          ? 'follow_up_overdue'
+          : badge === 'amber'
+            ? 'follow_up_waiting'
+            : 'follow_up_due',
       rule_id: null,
       learned_preference_id: null,
       entity_type: 'email_thread',
@@ -304,7 +359,12 @@ function followUpCandidates(
       due_at: null,
       event_at: null,
       suppression_key: null,
-      dedupe_key: insightDedupeKey({ kind: 'follow_up', entityType: 'email_thread', entityId: t.id, discriminator: epochKey(t.awaiting_since) }),
+      dedupe_key: insightDedupeKey({
+        kind: 'follow_up',
+        entityType: 'email_thread',
+        entityId: t.id,
+        discriminator: epochKey(t.awaiting_since),
+      }),
       source_type: 'email_thread',
       source_id: t.id,
       source_provider: t.provider,
@@ -342,7 +402,10 @@ function followUpCandidates(
       title: clip(
         mine
           ? copy(l, 'flow.generated.insight.commitment.userTitle', { text: clip(c.text, 120) })
-          : copy(l, 'flow.generated.insight.commitment.theyTitle', { name, text: clip(c.text, 120) }),
+          : copy(l, 'flow.generated.insight.commitment.theyTitle', {
+              name,
+              text: clip(c.text, 120),
+            }),
         200,
       ),
       body: clip(copy(l, 'flow.generated.insight.commitment.body', { due }), 600),
@@ -360,7 +423,12 @@ function followUpCandidates(
       due_at: c.due_at,
       event_at: null,
       suppression_key: null,
-      dedupe_key: insightDedupeKey({ kind: 'commitment', entityType: 'commitment', entityId: c.id, discriminator: epochKey(c.due_at) }),
+      dedupe_key: insightDedupeKey({
+        kind: 'commitment',
+        entityType: 'commitment',
+        entityId: c.id,
+        discriminator: epochKey(c.due_at),
+      }),
       source_type: c.source_type,
       source_id: c.source_id,
       source_provider: c.source_provider,
@@ -406,7 +474,8 @@ function toIntel(e: CalendarEventRow): IntelEvent {
               email: a.email,
               self: a.self === true,
               contactId: a.contact_id ?? null,
-              response: (a.response ?? null) as 'accepted' | 'declined' | 'tentative' | 'needs_action' | null,
+              response: (a.response ?? null) as
+                'accepted' | 'declined' | 'tentative' | 'needs_action' | null,
             },
           ],
     ),
@@ -422,7 +491,10 @@ function calendarCandidates(snap: InsightSnapshot, ctx: BuildContext): Candidate
   const out: Candidate[] = [];
   const horizon = ctx.now.getTime() + 7 * 86_400_000;
   const upcoming = snap.events.filter(
-    (e) => e.status !== 'cancelled' && Date.parse(e.end_at) > ctx.now.getTime() && Date.parse(e.start_at) < horizon,
+    (e) =>
+      e.status !== 'cancelled' &&
+      Date.parse(e.end_at) > ctx.now.getTime() &&
+      Date.parse(e.start_at) < horizon,
   );
   const byId = new Map(upcoming.map((e) => [e.id, e]));
   const intel = upcoming.map(toIntel);
@@ -472,13 +544,19 @@ function calendarCandidates(snap: InsightSnapshot, ctx: BuildContext): Candidate
       entity_type: 'calendar_event',
       entity_id: first.id,
       flow_card_type: 'meeting',
-      actions: movable === null
-        ? [action('open_event', first.id), action('open_event', second.id)]
-        : [action('calendar_update', movable, true), action('keep_both', first.id)],
+      actions:
+        movable === null
+          ? [action('open_event', first.id), action('open_event', second.id)]
+          : [action('calendar_update', movable, true), action('keep_both', first.id)],
       due_at: null,
       event_at: first.start_at,
       suppression_key: c.suppressionKey,
-      dedupe_key: insightDedupeKey({ kind: 'conflict', entityType: 'calendar_event', entityId: first.id, discriminator: pair }),
+      dedupe_key: insightDedupeKey({
+        kind: 'conflict',
+        entityType: 'calendar_event',
+        entityId: first.id,
+        discriminator: pair,
+      }),
       ...eventProvenance(first),
       confidence: 0.95,
       evidence: [],
@@ -516,7 +594,10 @@ function calendarCandidates(snap: InsightSnapshot, ctx: BuildContext): Candidate
       user_id: ctx.userId,
       kind: 'meeting',
       urgency: dayDiff(ctx, first.start_at) <= 0 ? 'today' : 'normal',
-      title: clip(copy(l, 'flow.generated.insight.backToBack.title', { count: run.eventIds.length }), 200),
+      title: clip(
+        copy(l, 'flow.generated.insight.backToBack.title', { count: run.eventIds.length }),
+        200,
+      ),
       body: clip(
         copy(l, 'flow.generated.insight.backToBack.body', {
           day: formatDay(l, first.start_at, ctx.timeZone),
@@ -536,7 +617,12 @@ function calendarCandidates(snap: InsightSnapshot, ctx: BuildContext): Candidate
       due_at: null,
       event_at: first.start_at,
       suppression_key: `back_to_back:${run.localDate}`,
-      dedupe_key: insightDedupeKey({ kind: 'meeting', entityType: 'calendar_event', entityId: first.id, discriminator: `b2b:${run.localDate}:${run.eventIds.length}` }),
+      dedupe_key: insightDedupeKey({
+        kind: 'meeting',
+        entityType: 'calendar_event',
+        entityId: first.id,
+        discriminator: `b2b:${run.localDate}:${run.eventIds.length}`,
+      }),
       ...eventProvenance(first),
       confidence: 0.95,
       evidence: [],
@@ -554,7 +640,10 @@ function calendarCandidates(snap: InsightSnapshot, ctx: BuildContext): Candidate
       user_id: ctx.userId,
       kind: 'meeting',
       urgency: urgencyFor(ctx, row.start_at, 'normal'),
-      title: clip(copy(l, 'flow.generated.insight.prep.title', { event: clip(row.title ?? '', 80) }), 200),
+      title: clip(
+        copy(l, 'flow.generated.insight.prep.title', { event: clip(row.title ?? '', 80) }),
+        200,
+      ),
       body: clip(
         copy(l, 'flow.generated.insight.prep.body', {
           time: formatDue(l, row.start_at, ctx.timeZone, false),
@@ -574,7 +663,12 @@ function calendarCandidates(snap: InsightSnapshot, ctx: BuildContext): Candidate
       due_at: null,
       event_at: row.start_at,
       suppression_key: null,
-      dedupe_key: insightDedupeKey({ kind: 'meeting', entityType: 'calendar_event', entityId: row.id, discriminator: `prep:${epochKey(row.start_at)}` }),
+      dedupe_key: insightDedupeKey({
+        kind: 'meeting',
+        entityType: 'calendar_event',
+        entityId: row.id,
+        discriminator: `prep:${epochKey(row.start_at)}`,
+      }),
       ...eventProvenance(row),
       confidence: 0.9,
       evidence: [],
@@ -592,9 +686,15 @@ function taskCandidates(snap: InsightSnapshot, ctx: BuildContext): Candidate[] {
     if (t.status !== 'open') continue;
     const dueIso = t.due_at ?? (t.due_date === null ? null : `${t.due_date}T15:00:00.000Z`);
     if (dueIso === null) continue;
-    const days = t.due_at !== null ? dayDiff(ctx, t.due_at) : localDateDiffDays(localDate(ctx.now, ctx.timeZone), t.due_date!);
+    const days =
+      t.due_at !== null
+        ? dayDiff(ctx, t.due_at)
+        : localDateDiffDays(localDate(ctx.now, ctx.timeZone), t.due_date!);
     if (days > 1) continue;
-    const due = t.due_at !== null ? formatDue(l, t.due_at, ctx.timeZone, false) : formatDay(l, dueIso, ctx.timeZone);
+    const due =
+      t.due_at !== null
+        ? formatDue(l, t.due_at, ctx.timeZone, false)
+        : formatDay(l, dueIso, ctx.timeZone);
     out.push({
       user_id: ctx.userId,
       kind: 'deadline',
@@ -613,7 +713,12 @@ function taskCandidates(snap: InsightSnapshot, ctx: BuildContext): Candidate[] {
       due_at: t.due_at ?? dueIso,
       event_at: null,
       suppression_key: null,
-      dedupe_key: insightDedupeKey({ kind: 'deadline', entityType: 'task', entityId: t.id, discriminator: t.due_at === null ? (t.due_date ?? 'none') : epochKey(t.due_at) }),
+      dedupe_key: insightDedupeKey({
+        kind: 'deadline',
+        entityType: 'task',
+        entityId: t.id,
+        discriminator: t.due_at === null ? (t.due_date ?? 'none') : epochKey(t.due_at),
+      }),
       source_type: 'task',
       source_id: t.id,
       source_provider: t.provider,
@@ -640,10 +745,22 @@ function scheduleCandidates(snap: InsightSnapshot, ctx: BuildContext): Candidate
   const targets = [
     ...snap.commitments
       .filter((c) => c.status === 'open' && c.direction === 'user_owes' && c.due_at !== null)
-      .map((c) => ({ type: 'commitment' as const, id: c.id, title: c.text, due: c.due_at!, prov: c })),
+      .map((c) => ({
+        type: 'commitment' as const,
+        id: c.id,
+        title: c.text,
+        due: c.due_at!,
+        prov: c,
+      })),
     ...snap.tasks
       .filter((t) => t.status === 'open' && t.due_at !== null)
-      .map((t) => ({ type: 'task' as const, id: t.id, title: t.title, due: t.due_at!, prov: null })),
+      .map((t) => ({
+        type: 'task' as const,
+        id: t.id,
+        title: t.title,
+        due: t.due_at!,
+        prov: null,
+      })),
   ]
     .filter((x) => {
       const d = Date.parse(x.due) - ctx.now.getTime();
@@ -657,7 +774,11 @@ function scheduleCandidates(snap: InsightSnapshot, ctx: BuildContext): Candidate
       now: ctx.now,
       timeZone: ctx.timeZone,
       busy,
-      workingHours: { start: ctx.workingHours.start, end: ctx.workingHours.end, days: ctx.workingHours.days },
+      workingHours: {
+        start: ctx.workingHours.start,
+        end: ctx.workingHours.end,
+        days: ctx.workingHours.days,
+      },
       minMinutes: 30,
       before: t.due,
       horizonDays: 3,
@@ -669,7 +790,10 @@ function scheduleCandidates(snap: InsightSnapshot, ctx: BuildContext): Candidate
       user_id: ctx.userId,
       kind: 'schedule_suggestion',
       urgency: 'normal',
-      title: clip(copy(l, 'flow.generated.insight.schedule.title', { title: clip(t.title, 100) }), 200),
+      title: clip(
+        copy(l, 'flow.generated.insight.schedule.title', { title: clip(t.title, 100) }),
+        200,
+      ),
       body: clip(
         copy(l, 'flow.generated.insight.schedule.body', {
           day: formatDay(l, slot.start, ctx.timeZone),
@@ -690,7 +814,12 @@ function scheduleCandidates(snap: InsightSnapshot, ctx: BuildContext): Candidate
       due_at: t.due,
       event_at: slot.start.toISOString(),
       suppression_key: `schedule:${t.type}:${t.id}`,
-      dedupe_key: insightDedupeKey({ kind: 'schedule_suggestion', entityType: t.type, entityId: t.id, discriminator: epochKey(t.due) }),
+      dedupe_key: insightDedupeKey({
+        kind: 'schedule_suggestion',
+        entityType: t.type,
+        entityId: t.id,
+        discriminator: epochKey(t.due),
+      }),
       source_type: t.prov === null ? 'task' : t.prov.source_type,
       source_id: t.prov === null ? t.id : t.prov.source_id,
       source_provider: t.prov === null ? null : t.prov.source_provider,
@@ -708,7 +837,9 @@ function scheduleCandidates(snap: InsightSnapshot, ctx: BuildContext): Candidate
 
 const LIFE_ACTIONS: Readonly<Record<string, (id: string, tracking: boolean) => InsightAction[]>> = {
   shipment: (id, tracking) =>
-    tracking ? [action('track_package', id), action('open_source', id)] : [action('open_source', id)],
+    tracking
+      ? [action('track_package', id), action('open_source', id)]
+      : [action('open_source', id)],
   flight: (id) => [action('add_to_calendar', id, true), action('open_source', id)],
   reservation: (id) => [action('add_to_calendar', id, true), action('open_source', id)],
   payment: (id) => [action('remind', id, true), action('open_source', id)],
@@ -733,7 +864,11 @@ function lifeCandidates(snap: InsightSnapshot, ctx: BuildContext): Candidate[] {
           : Date.parse(when) > now - 12 * 3_600_000 && Date.parse(when) < now + 3 * 86_400_000;
     if (!relevant) continue;
     const security = e.type === 'security';
-    const urgency: Urgency = security ? 'urgent' : when === null ? 'normal' : urgencyFor(ctx, when, 'normal');
+    const urgency: Urgency = security
+      ? 'urgent'
+      : when === null
+        ? 'normal'
+        : urgencyFor(ctx, when, 'normal');
     const body = security
       ? copy(l, 'life.securityNote')
       : e.due_at !== null
@@ -759,11 +894,19 @@ function lifeCandidates(snap: InsightSnapshot, ctx: BuildContext): Candidate[] {
       entity_type: 'life_event',
       entity_id: e.id,
       flow_card_type: e.type as FlowCardType,
-      actions: (LIFE_ACTIONS[e.type] ?? ((id: string) => [action('open_source', id)]))(e.id, tracking),
+      actions: (LIFE_ACTIONS[e.type] ?? ((id: string) => [action('open_source', id)]))(
+        e.id,
+        tracking,
+      ),
       due_at: e.due_at,
       event_at: e.event_at,
       suppression_key: null,
-      dedupe_key: insightDedupeKey({ kind: security ? 'security' : 'life_event', entityType: 'life_event', entityId: e.id, discriminator: status }),
+      dedupe_key: insightDedupeKey({
+        kind: security ? 'security' : 'life_event',
+        entityType: 'life_event',
+        entityId: e.id,
+        discriminator: status,
+      }),
       source_type: e.source_type,
       source_id: e.source_id,
       source_provider: e.source_provider,
@@ -811,7 +954,10 @@ function lifeNotification(
         ...base,
         template_key: 'life_intel.payment',
         params_public: { date: formatDay(l, e.due_at, tz) },
-        params_sensitive: { issuer: str('payee'), amount: e.amount === null ? '' : `${e.amount} ${e.currency ?? ''}`.trim() },
+        params_sensitive: {
+          issuer: str('payee'),
+          amount: e.amount === null ? '' : `${e.amount} ${e.currency ?? ''}`.trim(),
+        },
       };
     case 'subscription':
       if (when === null || dayDiff(ctx, when) > 1) return null;
@@ -819,10 +965,14 @@ function lifeNotification(
         ...base,
         template_key: 'life_intel.subscription',
         params_public: { date: formatDay(l, when, tz) },
-        params_sensitive: { service: str('service'), amount: e.amount === null ? '' : `${e.amount} ${e.currency ?? ''}`.trim() },
+        params_sensitive: {
+          service: str('service'),
+          amount: e.amount === null ? '' : `${e.amount} ${e.currency ?? ''}`.trim(),
+        },
       };
     case 'shipment':
-      if (!(status === 'delivered' || status === 'delayed' || status === 'out_for_delivery')) return null;
+      if (!(status === 'delivered' || status === 'delayed' || status === 'out_for_delivery'))
+        return null;
       return {
         ...base,
         template_key: 'life_intel.shipment',
@@ -831,7 +981,10 @@ function lifeNotification(
           time: e.event_at === null ? '' : formatTime(e.event_at, tz),
           date: e.event_at === null ? '' : formatDay(l, e.event_at, tz),
           from: e.event_at === null ? '' : formatTime(e.event_at, tz),
-          to: e.event_at === null ? '' : formatTime(new Date(Date.parse(e.event_at) + 2 * 3_600_000), tz),
+          to:
+            e.event_at === null
+              ? ''
+              : formatTime(new Date(Date.parse(e.event_at) + 2 * 3_600_000), tz),
         },
         params_sensitive: { seller: str('merchant') || str('carrier') },
       };
@@ -841,7 +994,8 @@ function lifeNotification(
         ...base,
         template_key: 'life_intel.flight',
         params_public: {
-          state: status === 'delayed' ? 'delayed' : status === 'checkin_open' ? 'checkin_open' : 'other',
+          state:
+            status === 'delayed' ? 'delayed' : status === 'checkin_open' ? 'checkin_open' : 'other',
           time: formatTime(e.event_at, tz),
           gate: str('gate'),
         },
@@ -888,7 +1042,11 @@ function approvalCandidates(snap: InsightSnapshot, ctx: BuildContext): Candidate
       due_at: newest.approval_expires_at,
       event_at: null,
       suppression_key: null,
-      dedupe_key: insightDedupeKey({ kind: 'approval_pending', entityType: 'approval_action', entityId: newest.id }),
+      dedupe_key: insightDedupeKey({
+        kind: 'approval_pending',
+        entityType: 'approval_action',
+        entityId: newest.id,
+      }),
       source_type: 'user_input',
       source_id: newest.id,
       source_provider: null,
@@ -915,7 +1073,11 @@ function approvalCandidates(snap: InsightSnapshot, ctx: BuildContext): Candidate
 // ── Assembly ─────────────────────────────────────────────────────────────────
 
 /** Push tap target (the insight row id is not known before the upsert). */
-function notificationRoute(category: NotificationCategory, entityType: string, entityId: string): string {
+function notificationRoute(
+  category: NotificationCategory,
+  entityType: string,
+  entityId: string,
+): string {
   if (entityType === 'commitment') return routes.commitment(entityId);
   if (entityType === 'approval_action') return routes.approval(entityId);
   if (entityType === 'calendar_event' && category === 'meeting') return routes.event(entityId);
@@ -930,7 +1092,9 @@ export function buildInsights(snap: InsightSnapshot, ctx: BuildContext): BuildRe
     ...(inScope(ctx.scope, 'followups') ? followUpCandidates(snap, ctx, patches) : []),
     ...(inScope(ctx.scope, 'calendar') ? calendarCandidates(snap, ctx) : []),
     ...(inScope(ctx.scope, 'tasks') ? taskCandidates(snap, ctx) : []),
-    ...(inScope(ctx.scope, 'calendar') || inScope(ctx.scope, 'tasks') ? scheduleCandidates(snap, ctx) : []),
+    ...(inScope(ctx.scope, 'calendar') || inScope(ctx.scope, 'tasks')
+      ? scheduleCandidates(snap, ctx)
+      : []),
     ...(inScope(ctx.scope, 'life') ? lifeCandidates(snap, ctx) : []),
     ...approvalCandidates(snap, ctx),
   ];
@@ -974,7 +1138,10 @@ export function buildInsights(snap: InsightSnapshot, ctx: BuildContext): BuildRe
           entityId: c.entity_id,
           localDate: day,
         }).slice(0, 200),
-        deeplink: toDeepLink(notificationRoute(build.category, c.entity_type, c.entity_id)).slice(0, 200),
+        deeplink: toDeepLink(notificationRoute(build.category, c.entity_type, c.entity_id)).slice(
+          0,
+          200,
+        ),
       });
     }
   }

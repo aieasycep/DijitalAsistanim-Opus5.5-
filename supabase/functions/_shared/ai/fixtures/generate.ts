@@ -53,7 +53,10 @@ const FYI = /(bilginize|bilgi icin|bilgilendirme|fyi|duyuru)/u;
 const IMPORTANT_TOPIC = /(sozlesme|teklif|fatura|odeme|toplanti|sunum|rapor|butce|proje|imza)/u;
 const SCHEDULE =
   /(toplanti|gorusme|randevu).{0,60}(ertele|iptal|kaydir|baska bir (gun|saat)|uygun musun|musait misiniz|saat degis)/u;
-const LIFE: readonly [RegExp, 'shipment' | 'flight' | 'reservation' | 'payment' | 'subscription'][] = [
+const LIFE: readonly [
+  RegExp,
+  'shipment' | 'flight' | 'reservation' | 'payment' | 'subscription',
+][] = [
   [/(kargo|siparisiniz|teslim edildi|dagitima cikti|gonderi takip)/u, 'shipment'],
   [/(ucus|boarding|check-?in|pnr|bilet no|biniş|binis karti)/u, 'flight'],
   [/(rezervasyon)/u, 'reservation'],
@@ -69,7 +72,9 @@ function deadlineClaims(doc: Doc) {
   const found = parseDatesTR(doc.text, { anchor: ANCHOR, timeZone: TZ }).filter((d) => d.by);
   return found.slice(0, 3).flatMap((d) => {
     const when = doc.text.slice(d.span[0], d.span[1]);
-    const sentence = sentences(doc.text).find((s) => s.start <= d.span[0] && s.start + s.text.length >= d.span[1]);
+    const sentence = sentences(doc.text).find(
+      (s) => s.start <= d.span[0] && s.start + s.text.length >= d.span[1],
+    );
     if (sentence === undefined || when.trim().length < 3) return [];
     return [
       {
@@ -92,13 +97,20 @@ function triageItem(doc: Doc, context: string) {
   const life = LIFE.find(([re]) => re.test(f));
   const lifeSentence = life === undefined ? undefined : all.find((s) => life[0].test(fold(s.text)));
   const scheduleSentence = all.find((s) => SCHEDULE.test(fold(s.text)));
-  const promise = detectCommitments(doc.text, { sourceKind: 'received_mail', anchor: ANCHOR, timeZone: TZ }).find(
-    (c) => c.certainty === 'firm',
-  );
+  const promise = detectCommitments(doc.text, {
+    sourceKind: 'received_mail',
+    anchor: ANCHOR,
+    timeZone: TZ,
+  }).find((c) => c.certainty === 'firm');
   const meta = context.split('\n').find((l) => l.startsWith(`${doc.ref}:`)) ?? '';
   const vip = /vip evet/.test(meta);
   const needsReply = !bulk && ask !== undefined;
-  const important = !bulk && (needsReply || deadlines.length > 0 || vip || (IMPORTANT_TOPIC.test(f) && !FYI.test(f) && life === undefined));
+  const important =
+    !bulk &&
+    (needsReply ||
+      deadlines.length > 0 ||
+      vip ||
+      (IMPORTANT_TOPIC.test(f) && !FYI.test(f) && life === undefined));
   const category = bulk
     ? 'low_priority'
     : needsReply
@@ -109,7 +121,15 @@ function triageItem(doc: Doc, context: string) {
           ? 'important'
           : 'informational';
   const today = deadlines.some((d) => /bugun|bu aksam|bu ogleden/u.test(fold(d.when_quote)));
-  const urgency = bulk ? 'low' : URGENT.test(f) ? 'urgent' : today ? 'today' : needsReply ? 'today' : 'normal';
+  const urgency = bulk
+    ? 'low'
+    : URGENT.test(f)
+      ? 'urgent'
+      : today
+        ? 'today'
+        : needsReply
+          ? 'today'
+          : 'normal';
   const reason = bulk
     ? 'promotion'
     : needsReply
@@ -149,14 +169,16 @@ function triageItem(doc: Doc, context: string) {
     urgency,
     needs_reply: needsReply,
     reply_ask_tr: ask === undefined || !needsReply ? null : cap(ask.text, 140),
-    reply_evidence: ask === undefined || !needsReply ? null : { ref: doc.ref, quote: quoteOf(ask.text) },
+    reply_evidence:
+      ask === undefined || !needsReply ? null : { ref: doc.ref, quote: quoteOf(ask.text) },
     reason_code: reason,
     reason_tr: REASON_TR[reason] ?? 'Bilgilendirme amaçlı.',
     summary_tr: first === undefined ? null : cap(first.text, 180),
     key_points_tr: important ? body.slice(0, 2).map((s) => cap(s.text, 80)) : [],
     deadlines,
     life_signal: life?.[1] ?? 'none',
-    life_evidence: lifeSentence === undefined ? null : { ref: doc.ref, quote: quoteOf(lifeSentence.text) },
+    life_evidence:
+      lifeSentence === undefined ? null : { ref: doc.ref, quote: quoteOf(lifeSentence.text) },
     schedule_request:
       scheduleSentence === undefined
         ? null
@@ -165,7 +187,8 @@ function triageItem(doc: Doc, context: string) {
             requested_time_quote: null,
             evidence: { ref: doc.ref, quote: quoteOf(scheduleSentence.text) },
           },
-    counterparty_commitment: promise === undefined ? null : { ref: doc.ref, quote: promise.quote.slice(0, 200) },
+    counterparty_commitment:
+      promise === undefined ? null : { ref: doc.ref, quote: promise.quote.slice(0, 200) },
     needs_deep_extract: important && doc.text.length > 600,
     thread_note_tr: null,
     injection_suspected: prescanInjection(doc.text).suspected,
@@ -204,194 +227,247 @@ function commitmentClaims(doc: Doc, own: boolean) {
     });
 }
 
-const GENERATORS: Readonly<Record<string, (params: GenerateStructuredParams<unknown>) => unknown>> = {
-  EmailTriageV1(params) {
-    const context = params.prompt.userContext ?? '';
-    return { items: docsOf(params).filter((d) => d.ref.startsWith('m')).map((d) => triageItem(d, context)) };
-  },
-  ThreadSummaryV1(params) {
-    const docs = docsOf(params).filter((d) => d.ref.startsWith('m'));
-    const own = ownRefs(params.prompt.userContext ?? '');
-    const newest = docs[docs.length - 1];
-    const firstOf = (d: Doc) => sentences(d.text)[0];
-    const keyPoints = docs.flatMap((d) => {
-      const s = firstOf(d);
-      return s === undefined ? [] : [{ text_tr: cap(s.text, 200), evidence: { ref: d.ref, quote: quoteOf(s.text) } }];
-    });
-    const questions = docs.flatMap((d) =>
-      sentences(d.text)
-        .filter((s) => s.text.includes('?'))
-        .map((s) => ({
-          text_tr: cap(s.text, 200),
-          owner: own.has(d.ref) ? ('counterparty' as const) : ('user' as const),
-          evidence: { ref: d.ref, quote: quoteOf(s.text) },
-        })),
-    );
-    const decisions = docs.flatMap((d) =>
-      sentences(d.text)
-        .filter((s) => /(karar|onaylandi|anlastik|kesinlesti)/u.test(fold(s.text)))
-        .map((s) => ({ text_tr: cap(s.text, 200), evidence: { ref: d.ref, quote: quoteOf(s.text) } })),
-    );
-    const lead = newest === undefined ? undefined : firstOf(newest);
-    const last = questions[questions.length - 1];
-    return {
-      summary_tr: lead === undefined ? 'Yazışma özeti.' : cap(lead.text, 300),
-      key_points: keyPoints.slice(0, 5),
-      decisions: decisions.slice(0, 3),
-      open_questions: questions.slice(0, 3),
-      latest_ask: last === undefined ? null : { text_tr: last.text_tr, evidence: last.evidence },
-      injection_suspected: docs.some((d) => prescanInjection(d.text).suspected),
-      confidence: 'high',
-    };
-  },
-  EmailDeepExtractV1(params) {
-    const doc = docsOf(params).find((d) => d.ref === 'm1') ?? { ref: 'm1', kind: 'email', text: '' };
-    const own = ownRefs(params.prompt.userContext ?? '').has('m1');
-    const all = sentences(doc.text);
-    const asks = all.filter((s) => REQUEST.test(fold(s.text)));
-    const amounts = parseAmountsTR(doc.text)
-      .filter((a) => doc.text.includes(a.text))
-      .slice(0, 5)
-      .flatMap((a) => {
-        const s = all.find((x) => x.text.includes(a.text));
-        return s === undefined ? [] : [{ label_tr: 'Tutar', amount_quote: a.text, evidence: { ref: 'm1', quote: quoteOf(s.text) } }];
+const GENERATORS: Readonly<Record<string, (params: GenerateStructuredParams<unknown>) => unknown>> =
+  {
+    EmailTriageV1(params) {
+      const context = params.prompt.userContext ?? '';
+      return {
+        items: docsOf(params)
+          .filter((d) => d.ref.startsWith('m'))
+          .map((d) => triageItem(d, context)),
+      };
+    },
+    ThreadSummaryV1(params) {
+      const docs = docsOf(params).filter((d) => d.ref.startsWith('m'));
+      const own = ownRefs(params.prompt.userContext ?? '');
+      const newest = docs[docs.length - 1];
+      const firstOf = (d: Doc) => sentences(d.text)[0];
+      const keyPoints = docs.flatMap((d) => {
+        const s = firstOf(d);
+        return s === undefined
+          ? []
+          : [{ text_tr: cap(s.text, 200), evidence: { ref: d.ref, quote: quoteOf(s.text) } }];
       });
-    const schedule = all.filter((s) => SCHEDULE.test(fold(s.text))).slice(0, 3);
-    return {
-      ref: 'm1',
-      summary_tr: cap(all[1]?.text ?? all[0]?.text ?? '', 200),
-      key_points: all.slice(1, 4).map((s) => ({ text_tr: cap(s.text, 200), evidence: { ref: 'm1', quote: quoteOf(s.text) } })),
-      deadlines: deadlineClaims(doc),
-      schedule_requests: schedule.map((s) => ({
-        kind: /iptal/u.test(fold(s.text)) ? ('cancel' as const) : ('reschedule' as const),
-        requested_time_quote: null,
-        evidence: { ref: 'm1', quote: quoteOf(s.text) },
-      })),
-      tasks_for_user: own
-        ? []
-        : asks.slice(0, 5).map((s) => {
-            const date = parseDatesTR(s.text, { anchor: ANCHOR, timeZone: TZ })[0];
+      const questions = docs.flatMap((d) =>
+        sentences(d.text)
+          .filter((s) => s.text.includes('?'))
+          .map((s) => ({
+            text_tr: cap(s.text, 200),
+            owner: own.has(d.ref) ? ('counterparty' as const) : ('user' as const),
+            evidence: { ref: d.ref, quote: quoteOf(s.text) },
+          })),
+      );
+      const decisions = docs.flatMap((d) =>
+        sentences(d.text)
+          .filter((s) => /(karar|onaylandi|anlastik|kesinlesti)/u.test(fold(s.text)))
+          .map((s) => ({
+            text_tr: cap(s.text, 200),
+            evidence: { ref: d.ref, quote: quoteOf(s.text) },
+          })),
+      );
+      const lead = newest === undefined ? undefined : firstOf(newest);
+      const last = questions[questions.length - 1];
+      return {
+        summary_tr: lead === undefined ? 'Yazışma özeti.' : cap(lead.text, 300),
+        key_points: keyPoints.slice(0, 5),
+        decisions: decisions.slice(0, 3),
+        open_questions: questions.slice(0, 3),
+        latest_ask: last === undefined ? null : { text_tr: last.text_tr, evidence: last.evidence },
+        injection_suspected: docs.some((d) => prescanInjection(d.text).suspected),
+        confidence: 'high',
+      };
+    },
+    EmailDeepExtractV1(params) {
+      const doc = docsOf(params).find((d) => d.ref === 'm1') ?? {
+        ref: 'm1',
+        kind: 'email',
+        text: '',
+      };
+      const own = ownRefs(params.prompt.userContext ?? '').has('m1');
+      const all = sentences(doc.text);
+      const asks = all.filter((s) => REQUEST.test(fold(s.text)));
+      const amounts = parseAmountsTR(doc.text)
+        .filter((a) => doc.text.includes(a.text))
+        .slice(0, 5)
+        .flatMap((a) => {
+          const s = all.find((x) => x.text.includes(a.text));
+          return s === undefined
+            ? []
+            : [
+                {
+                  label_tr: 'Tutar',
+                  amount_quote: a.text,
+                  evidence: { ref: 'm1', quote: quoteOf(s.text) },
+                },
+              ];
+        });
+      const schedule = all.filter((s) => SCHEDULE.test(fold(s.text))).slice(0, 3);
+      return {
+        ref: 'm1',
+        summary_tr: cap(all[1]?.text ?? all[0]?.text ?? '', 200),
+        key_points: all.slice(1, 4).map((s) => ({
+          text_tr: cap(s.text, 200),
+          evidence: { ref: 'm1', quote: quoteOf(s.text) },
+        })),
+        deadlines: deadlineClaims(doc),
+        schedule_requests: schedule.map((s) => ({
+          kind: /iptal/u.test(fold(s.text)) ? ('cancel' as const) : ('reschedule' as const),
+          requested_time_quote: null,
+          evidence: { ref: 'm1', quote: quoteOf(s.text) },
+        })),
+        tasks_for_user: own
+          ? []
+          : asks.slice(0, 5).map((s) => {
+              const date = parseDatesTR(s.text, { anchor: ANCHOR, timeZone: TZ })[0];
+              return {
+                what_tr: cap(s.text, 80),
+                due_quote: date === undefined ? null : s.text.slice(date.span[0], date.span[1]),
+                evidence: { ref: 'm1', quote: quoteOf(s.text) },
+              };
+            }),
+        amounts,
+        commitments: commitmentClaims(doc, own),
+        people: [],
+        injection_suspected: prescanInjection(doc.text).suspected,
+        confidence: 'high',
+      };
+    },
+    CommitmentExtractV1(params) {
+      const own = ownRefs(params.prompt.userContext ?? '');
+      return {
+        items: docsOf(params)
+          .filter((d) => d.ref.startsWith('m'))
+          .map((d) => {
+            const mine = own.has(d.ref);
+            const expects = mine && detectExpectsReply(d.text) === 'yes';
+            const q = sentences(d.text).find((s) => s.text.includes('?'));
             return {
-              what_tr: cap(s.text, 80),
-              due_quote: date === undefined ? null : s.text.slice(date.span[0], date.span[1]),
-              evidence: { ref: 'm1', quote: quoteOf(s.text) },
+              ref: d.ref,
+              commitments: commitmentClaims(d, mine),
+              expects_reply: expects,
+              expects_reply_evidence:
+                expects && q !== undefined ? { ref: d.ref, quote: quoteOf(q.text) } : null,
+              injection_suspected: prescanInjection(d.text).suspected,
             };
           }),
-      amounts,
-      commitments: commitmentClaims(doc, own),
-      people: [],
-      injection_suspected: prescanInjection(doc.text).suspected,
-      confidence: 'high',
-    };
-  },
-  CommitmentExtractV1(params) {
-    const own = ownRefs(params.prompt.userContext ?? '');
-    return {
-      items: docsOf(params)
-        .filter((d) => d.ref.startsWith('m'))
+      };
+    },
+    LifeIntelV1(params) {
+      return {
+        items: docsOf(params)
+          .filter((d) => d.ref.startsWith('m'))
+          .map((d) => {
+            const tracking = findTrackingNumbers(d.text)[0];
+            const s =
+              tracking === undefined
+                ? undefined
+                : sentences(d.text).find((x) => x.text.includes(tracking.value));
+            const events =
+              tracking === undefined || s === undefined
+                ? []
+                : [
+                    {
+                      kind: 'shipment' as const,
+                      merchant_quote: null,
+                      carrier_quote: null,
+                      tracking_quote: tracking.value,
+                      status: /teslim edildi/u.test(fold(d.text))
+                        ? ('delivered' as const)
+                        : ('in_transit' as const),
+                      eta_quote: null,
+                      item_count_quote: null,
+                      evidence: { ref: d.ref, quote: quoteOf(s.text) },
+                    },
+                  ];
+            return { ref: d.ref, events, injection_suspected: prescanInjection(d.text).suspected };
+          }),
+      };
+    },
+    BriefingMorningV1(params) {
+      const docs = docsOf(params);
+      const items = docs
+        .filter((d) => d.ref.startsWith('i'))
         .map((d) => {
-          const mine = own.has(d.ref);
-          const expects = mine && detectExpectsReply(d.text) === 'yes';
-          const q = sentences(d.text).find((s) => s.text.includes('?'));
-          return {
-            ref: d.ref,
-            commitments: commitmentClaims(d, mine),
-            expects_reply: expects,
-            expects_reply_evidence: expects && q !== undefined ? { ref: d.ref, quote: quoteOf(q.text) } : null,
-            injection_suspected: prescanInjection(d.text).suspected,
-          };
+          try {
+            return { ref: d.ref, ...(JSON.parse(d.text) as { section: string; title: string }) };
+          } catch {
+            return { ref: d.ref, section: 'priorities', title: '' };
+          }
+        });
+      const priorities = items.filter((i) => i.section === 'priorities');
+      const narrative = priorities.slice(0, 3).map((i, n) => ({
+        text_tr: `${n === 0 ? 'Günün ilk önceliği' : 'Sonra'}: ${i.title}.`,
+        refs: [i.ref],
+      }));
+      const sections = [...new Set(items.map((i) => i.section))];
+      return {
+        narrative:
+          narrative.length > 0
+            ? narrative
+            : [
+                {
+                  text_tr: 'Bugün sakin bir gün görünüyor.',
+                  refs: items.slice(0, 1).map((i) => i.ref),
+                },
+              ],
+        overview_spoken_tr: 'Günaydın. Günün öne çıkanları hazır.',
+        overview_refs: [],
+        section_spoken: sections.map((section) => {
+          const first = items.find((i) => i.section === section)!;
+          return { section, text_tr: first.title, refs: [first.ref] };
         }),
-    };
-  },
-  LifeIntelV1(params) {
-    return {
-      items: docsOf(params)
-        .filter((d) => d.ref.startsWith('m'))
-        .map((d) => {
-          const tracking = findTrackingNumbers(d.text)[0];
-          const s = tracking === undefined ? undefined : sentences(d.text).find((x) => x.text.includes(tracking.value));
-          const events =
-            tracking === undefined || s === undefined
-              ? []
-              : [
-                  {
-                    kind: 'shipment' as const,
-                    merchant_quote: null,
-                    carrier_quote: null,
-                    tracking_quote: tracking.value,
-                    status: /teslim edildi/u.test(fold(d.text)) ? ('delivered' as const) : ('in_transit' as const),
-                    eta_quote: null,
-                    item_count_quote: null,
-                    evidence: { ref: d.ref, quote: quoteOf(s.text) },
-                  },
-                ];
-          return { ref: d.ref, events, injection_suspected: prescanInjection(d.text).suspected };
+        priority_reasons: priorities
+          .slice(0, 3)
+          .map((i) => ({ ref: i.ref, why_tr: 'Bugün ilgilenmen gereken bir konu.' })),
+      };
+    },
+    BriefingPolishV1(params) {
+      return {
+        items: docsOf(params).map((d) => {
+          try {
+            const v = JSON.parse(d.text) as { title?: string; sub?: string | null };
+            return { ref: d.ref, title_tr: v.title ?? '', sub_tr: v.sub ?? null };
+          } catch {
+            return { ref: d.ref, title_tr: '', sub_tr: null };
+          }
         }),
-    };
-  },
-  BriefingMorningV1(params) {
-    const docs = docsOf(params);
-    const items = docs
-      .filter((d) => d.ref.startsWith('i'))
-      .map((d) => {
-        try {
-          return { ref: d.ref, ...(JSON.parse(d.text) as { section: string; title: string }) };
-        } catch {
-          return { ref: d.ref, section: 'priorities', title: '' };
-        }
-      });
-    const priorities = items.filter((i) => i.section === 'priorities');
-    const narrative = priorities.slice(0, 3).map((i, n) => ({
-      text_tr: `${n === 0 ? 'Günün ilk önceliği' : 'Sonra'}: ${i.title}.`,
-      refs: [i.ref],
-    }));
-    const sections = [...new Set(items.map((i) => i.section))];
-    return {
-      narrative: narrative.length > 0 ? narrative : [{ text_tr: 'Bugün sakin bir gün görünüyor.', refs: items.slice(0, 1).map((i) => i.ref) }],
-      overview_spoken_tr: 'Günaydın. Günün öne çıkanları hazır.',
-      overview_refs: [],
-      section_spoken: sections.map((section) => {
-        const first = items.find((i) => i.section === section)!;
-        return { section, text_tr: first.title, refs: [first.ref] };
-      }),
-      priority_reasons: priorities.slice(0, 3).map((i) => ({ ref: i.ref, why_tr: 'Bugün ilgilenmen gereken bir konu.' })),
-    };
-  },
-  BriefingPolishV1(params) {
-    return {
-      items: docsOf(params).map((d) => {
-        try {
-          const v = JSON.parse(d.text) as { title?: string; sub?: string | null };
-          return { ref: d.ref, title_tr: v.title ?? '', sub_tr: v.sub ?? null };
-        } catch {
-          return { ref: d.ref, title_tr: '', sub_tr: null };
-        }
-      }),
-    };
-  },
-  WeeklyReviewV1(params) {
-    const docs = docsOf(params);
-    const by = (ref: string) => docs.find((d) => d.ref === ref);
-    const s1 = by('s1');
-    const s2 = by('s2');
-    const s3 = by('s3');
-    const e1 = by('e1');
-    const f1 = by('f1');
-    const s7 = by('s7');
-    return {
-      narrative: [
-        ...(s1 === undefined ? [] : [{ text_tr: `Bu hafta ${s1.text}.`, refs: ['s1'] }]),
-        ...(s2 === undefined || s3 === undefined ? [] : [{ text_tr: `${s2.text} ve ${s3.text} vardı.`, refs: ['s2', 's3'] }]),
-      ],
-      busiest_day: s7 === undefined ? null : { text_tr: `Haftanın en yoğun günü: ${s7.text}.`, refs: ['s7'] },
-      next_week: e1 === undefined ? { text_tr: 'Önümüzdeki hafta takvimin sakin görünüyor.', refs: [] } : { text_tr: `Önümüzdeki hafta ilk etkinliğin: ${e1.text}.`, refs: ['e1'] },
-      suggestion:
-        f1 === undefined
-          ? { kind: 'none', slot_ref: null, text_tr: null }
-          : { kind: 'focus_block', slot_ref: 'f1', text_tr: `${f1.text}; odaklanmak için iyi bir zaman.` },
-    };
-  },
-};
+      };
+    },
+    WeeklyReviewV1(params) {
+      const docs = docsOf(params);
+      const by = (ref: string) => docs.find((d) => d.ref === ref);
+      const s1 = by('s1');
+      const s2 = by('s2');
+      const s3 = by('s3');
+      const e1 = by('e1');
+      const f1 = by('f1');
+      const s7 = by('s7');
+      return {
+        narrative: [
+          ...(s1 === undefined ? [] : [{ text_tr: `Bu hafta ${s1.text}.`, refs: ['s1'] }]),
+          ...(s2 === undefined || s3 === undefined
+            ? []
+            : [{ text_tr: `${s2.text} ve ${s3.text} vardı.`, refs: ['s2', 's3'] }]),
+        ],
+        busiest_day:
+          s7 === undefined
+            ? null
+            : { text_tr: `Haftanın en yoğun günü: ${s7.text}.`, refs: ['s7'] },
+        next_week:
+          e1 === undefined
+            ? { text_tr: 'Önümüzdeki hafta takvimin sakin görünüyor.', refs: [] }
+            : { text_tr: `Önümüzdeki hafta ilk etkinliğin: ${e1.text}.`, refs: ['e1'] },
+        suggestion:
+          f1 === undefined
+            ? { kind: 'none', slot_ref: null, text_tr: null }
+            : {
+                kind: 'focus_block',
+                slot_ref: 'f1',
+                text_tr: `${f1.text}; odaklanmak için iyi bir zaman.`,
+              },
+      };
+    },
+  };
 
 /** A generated output for the schema, or undefined when no generator exists. */
 export function generateFixture(params: GenerateStructuredParams<unknown>): unknown {

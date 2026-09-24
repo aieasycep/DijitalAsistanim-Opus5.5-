@@ -116,8 +116,13 @@ export async function composeMorning(
   const sections = morningSections(input, tz, l);
   const priorities = sections[0]![1];
   const count = priorities.length;
-  const hero = count === 0 ? copy(l, 'today.hero.morningReady.zero') : copy(l, 'today.hero.morningReady.title', { count });
-  const nonEmpty = MORNING_SECTIONS.filter((s) => (sections.find(([k]) => k === s)?.[1].length ?? 0) > 0);
+  const hero =
+    count === 0
+      ? copy(l, 'today.hero.morningReady.zero')
+      : copy(l, 'today.hero.morningReady.title', { count });
+  const nonEmpty = MORNING_SECTIONS.filter(
+    (s) => (sections.find(([k]) => k === s)?.[1].length ?? 0) > 0,
+  );
 
   // Ranked item JSON → refs i1..iN (items) and s1..s3 (statistics).
   const docs: UntrustedDoc[] = [];
@@ -133,7 +138,13 @@ export async function composeMorning(
       docs.push({
         ref,
         kind: 'summary',
-        text: JSON.stringify({ section, title: d.title, meta: d.meta, badge: d.badge, urgency: d.urgency }),
+        text: JSON.stringify({
+          section,
+          title: d.title,
+          meta: d.meta,
+          badge: d.badge,
+          urgency: d.urgency,
+        }),
       });
     }
   }
@@ -179,7 +190,8 @@ export async function composeMorning(
         if (refined.data.overview_spoken_tr !== '') {
           chapters.push({ key: 'overview', text: refined.data.overview_spoken_tr });
         }
-        for (const s of refined.data.section_spoken) chapters.push({ key: s.section, text: s.text_tr });
+        for (const s of refined.data.section_spoken)
+          chapters.push({ key: s.section, text: s.text_tr });
         for (const r of refined.data.priority_reasons) {
           const draft = [...refOf.entries()].find(([, ref]) => ref === r.ref)?.[0];
           if (draft !== undefined) reasons[draft.entityId] = r.why_tr;
@@ -198,7 +210,13 @@ export async function composeMorning(
     hero_line: clip(hero, 200),
     narrative: clip(narrative, 3000),
     sections: [...MORNING_SECTIONS],
-    counts: { ...counts, items: count, carried: input.carried.length, emails: input.mail.total, attention: input.mail.attention },
+    counts: {
+      ...counts,
+      items: count,
+      carried: input.carried.length,
+      emails: input.mail.total,
+      attention: input.mail.attention,
+    },
     provenance: {
       emails: input.mail.total,
       events: sections[1]![1].length,
@@ -215,9 +233,13 @@ export async function composeMorning(
     .slice(0, 2)
     .map((d) => d.title)
     .join(' · ');
-  const notification = briefingNotification(input.briefing, count === 0 ? 'morning.calm' : 'morning.ready', {
-    public: count === 0 ? {} : { count },
-    sensitive: count === 0 ? {} : { highlights: clip(highlights, 160) },
-  });
+  const notification = briefingNotification(
+    input.briefing,
+    count === 0 ? 'morning.calm' : 'morning.ready',
+    {
+      public: count === 0 ? {} : { count },
+      sensitive: count === 0 ? {} : { highlights: clip(highlights, 160) },
+    },
+  );
   return { patch, items: itemRows(input.briefing, sections), notification, narrativeMode: mode };
 }

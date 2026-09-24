@@ -12,7 +12,12 @@ import { assemblePrompt } from '../../_shared/ai/prompts/assemble.ts';
 import type { AnthropicBatches } from '../../_shared/ai/providers/anthropic.ts';
 import { defineJob } from '../../_shared/jobs/registry.ts';
 import { type JobContext, JobError } from '../../_shared/jobs/types.ts';
-import { batchRoute, collectBatch, settleBatchItem, submitBatch } from '../../_shared/services/ai/batch.ts';
+import {
+  batchRoute,
+  collectBatch,
+  settleBatchItem,
+  submitBatch,
+} from '../../_shared/services/ai/batch.ts';
 import type { PipelineContext } from '../../_shared/services/ai/pipeline.ts';
 import type { AiUser } from '../../_shared/services/ai/runtime.ts';
 import {
@@ -56,8 +61,17 @@ async function weeklyContext(
   const period = weekPeriod(briefing.local_date);
   const nextStart = addDaysToLocalDate(period.end, 1);
   const [counts, nextWeek, snapshot] = await Promise.all([
-    deps.stats.weekly(user.userId, startOfLocalDay(period.start, tz), endOfLocalDay(period.end, tz), tz),
-    deps.mail.events(user.userId, startOfLocalDay(nextStart, tz), endOfLocalDay(addDaysToLocalDate(nextStart, 6), tz)),
+    deps.stats.weekly(
+      user.userId,
+      startOfLocalDay(period.start, tz),
+      endOfLocalDay(period.end, tz),
+      tz,
+    ),
+    deps.mail.events(
+      user.userId,
+      startOfLocalDay(nextStart, tz),
+      endOfLocalDay(addDaysToLocalDate(nextStart, 6), tz),
+    ),
     deps.insights.snapshot(user.userId, ctx.now()),
   ]);
   return {
@@ -68,16 +82,30 @@ async function weeklyContext(
   };
 }
 
-async function syncFallback(deps: IntelDeps, ctx: JobContext<AiBatchPayload>, w: WeeklyContext): Promise<void> {
+async function syncFallback(
+  deps: IntelDeps,
+  ctx: JobContext<AiBatchPayload>,
+  w: WeeklyContext,
+): Promise<void> {
   const composed = await composeWeekly(w.pipeline, w.input);
   await applyComposed(deps, ctx, w.briefing, composed, Date.now());
 }
 
-async function pendingBriefings(deps: IntelDeps, jobIds: readonly string[]): Promise<BriefingRow[]> {
-  return (await deps.briefings.byJobIds(jobIds)).filter((b) => b.kind === 'weekly' && b.status === 'generating');
+async function pendingBriefings(
+  deps: IntelDeps,
+  jobIds: readonly string[],
+): Promise<BriefingRow[]> {
+  return (await deps.briefings.byJobIds(jobIds)).filter(
+    (b) => b.kind === 'weekly' && b.status === 'generating',
+  );
 }
 
-function batchInfo(b: BriefingRow): { ref?: string; reservation_id?: string | null; prompt_version_id?: string | null; submitted_at?: string } {
+function batchInfo(b: BriefingRow): {
+  ref?: string;
+  reservation_id?: string | null;
+  prompt_version_id?: string | null;
+  submitted_at?: string;
+} {
   const batch = (b.provenance?.batch ?? {}) as Record<string, unknown>;
   return {
     ...(typeof batch.ref === 'string' ? { ref: batch.ref } : {}),
@@ -87,7 +115,10 @@ function batchInfo(b: BriefingRow): { ref?: string; reservation_id?: string | nu
   };
 }
 
-async function submit(deps: IntelDeps, ctx: JobContext<AiBatchPayload>): Promise<Record<string, string | number>> {
+async function submit(
+  deps: IntelDeps,
+  ctx: JobContext<AiBatchPayload>,
+): Promise<Record<string, string | number>> {
   const briefings = await pendingBriefings(deps, ctx.payload.item_job_ids);
   let submitted = 0;
   let fallback = 0;
@@ -150,7 +181,12 @@ async function submit(deps: IntelDeps, ctx: JobContext<AiBatchPayload>): Promise
     await ctx.enqueue({
       type: 'ai_batch',
       idempotencyKey: `ai_batch:weekly_review:collect:${outcome.batchId}:${ctx.now().toISOString().slice(0, 16)}`,
-      payload: { phase: 'collect', feature: 'weekly_review', batch_ref: outcome.batchId, item_job_ids: ctx.payload.item_job_ids },
+      payload: {
+        phase: 'collect',
+        feature: 'weekly_review',
+        batch_ref: outcome.batchId,
+        item_job_ids: ctx.payload.item_job_ids,
+      },
       runAfter: new Date(ctx.now().getTime() + POLL_MS),
     });
     submitted++;
@@ -158,10 +194,15 @@ async function submit(deps: IntelDeps, ctx: JobContext<AiBatchPayload>): Promise
   return { submitted, fallback };
 }
 
-async function collect(deps: IntelDeps, ctx: JobContext<AiBatchPayload>): Promise<Record<string, string | number>> {
+async function collect(
+  deps: IntelDeps,
+  ctx: JobContext<AiBatchPayload>,
+): Promise<Record<string, string | number>> {
   const ref = ctx.payload.batch_ref;
   if (ref === null) throw new JobError('BATCH_REF_REQUIRED', false);
-  const briefings = (await pendingBriefings(deps, ctx.payload.item_job_ids)).filter((b) => batchInfo(b).ref === ref);
+  const briefings = (await pendingBriefings(deps, ctx.payload.item_job_ids)).filter(
+    (b) => batchInfo(b).ref === ref,
+  );
   if (briefings.length === 0) return { applied: 0, state: 'nothing_pending' };
   const contexts = new Map<string, WeeklyContext>();
   for (const b of briefings) contexts.set(b.id, await weeklyContext(deps, ctx, b));
@@ -174,8 +215,12 @@ async function collect(deps: IntelDeps, ctx: JobContext<AiBatchPayload>): Promis
   const now = ctx.now();
   const expired = briefings.every((b) => {
     const info = batchInfo(b);
-    const tooOld = info.submitted_at !== undefined && now.getTime() - Date.parse(info.submitted_at) > MAX_AGE_MS;
-    return tooOld || now.getTime() >= atLocalTime(b.local_date, WEEKLY_SYNC_FALLBACK, b.time_zone).getTime();
+    const tooOld =
+      info.submitted_at !== undefined && now.getTime() - Date.parse(info.submitted_at) > MAX_AGE_MS;
+    return (
+      tooOld ||
+      now.getTime() >= atLocalTime(b.local_date, WEEKLY_SYNC_FALLBACK, b.time_zone).getTime()
+    );
   });
   const prompts = new Map([...contexts].map(([id, w]) => [id, weeklyPrompt(w.pipeline, w.input)]));
   const polled =
@@ -240,7 +285,11 @@ async function collect(deps: IntelDeps, ctx: JobContext<AiBatchPayload>): Promis
     applied++;
   }
   for (const w of contexts.values()) await syncFallback(deps, ctx, w);
-  await deps.briefings.updateBatch(ref, { status: 'collected', ended_at: now.toISOString(), collected_at: now.toISOString() });
+  await deps.briefings.updateBatch(ref, {
+    status: 'collected',
+    ended_at: now.toISOString(),
+    collected_at: now.toISOString(),
+  });
   await enqueuePurge(ctx, ref);
   return { applied, state: 'ended' };
 }
@@ -253,7 +302,10 @@ function enqueuePurge(ctx: JobContext<AiBatchPayload>, ref: string): Promise<str
   });
 }
 
-async function purge(deps: IntelDeps, ctx: JobContext<AiBatchPayload>): Promise<Record<string, string>> {
+async function purge(
+  deps: IntelDeps,
+  ctx: JobContext<AiBatchPayload>,
+): Promise<Record<string, string>> {
   const ref = ctx.payload.batch_ref;
   if (ref === null) throw new JobError('BATCH_REF_REQUIRED', false);
   const provider = deps.ai.runtime.provider('anthropic') as { batches?: AnthropicBatches } | null;

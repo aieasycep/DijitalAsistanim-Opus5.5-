@@ -11,11 +11,7 @@ import { atLocalTime, localDate, localDateDiffDays } from '@da/domain';
 import { MiddayPulseV1, refineMiddayPulseV1 } from '@da/validation';
 import type { PipelineContext } from '../ai/pipeline.ts';
 import { clip, copy, formatTime } from '../copy.ts';
-import type {
-  BriefingRow,
-  CalendarEventRow,
-  InsightRow,
-} from '../intel/types.ts';
+import type { BriefingRow, CalendarEventRow, InsightRow } from '../intel/types.ts';
 import { briefingNotification, fromEvent, fromInsight, type ItemDraft, itemRows } from './items.ts';
 import type { ComposedBriefing } from './morning.ts';
 import { polishDrafts } from './polish.ts';
@@ -48,21 +44,39 @@ export function middaySince(input: MiddayInput, timeZone: string): Date {
 export function middayDeltas(input: MiddayInput, timeZone: string, locale: 'tr' | 'en'): Delta[] {
   const since = middaySince(input, timeZone).getTime();
   const today = localDate(input.now, timeZone);
-  const isToday = (iso: string | null) => iso !== null && localDateDiffDays(today, localDate(iso, timeZone)) === 0;
+  const isToday = (iso: string | null) =>
+    iso !== null && localDateDiffDays(today, localDate(iso, timeZone)) === 0;
   const out: Delta[] = [];
   for (const i of input.insights) {
     if (i.status !== 'open' || Date.parse(i.created_at) <= since) continue;
     const draft = fromInsight(i, timeZone);
     if (i.kind === 'reply_needed' && (i.urgency === 'urgent' || i.urgency === 'today')) {
-      out.push({ type: 'new_urgent_reply', badge: 'ACİL', draft, insightId: i.id, at: i.created_at });
+      out.push({
+        type: 'new_urgent_reply',
+        badge: 'ACİL',
+        draft,
+        insightId: i.id,
+        at: i.created_at,
+      });
     } else if (i.kind === 'conflict' && isToday(i.event_at)) {
       out.push({ type: 'new_conflict', badge: 'TAKVİM', draft, insightId: i.id, at: i.created_at });
     } else if (i.kind === 'deadline' && isToday(i.due_at)) {
-      out.push({ type: 'deadline_today', badge: 'SON TARİH', draft, insightId: i.id, at: i.created_at });
+      out.push({
+        type: 'deadline_today',
+        badge: 'SON TARİH',
+        draft,
+        insightId: i.id,
+        at: i.created_at,
+      });
     }
   }
   for (const e of input.events) {
-    if (Date.parse(e.updated_at) <= since || !isToday(e.start_at) || Date.parse(e.end_at) < input.now.getTime()) continue;
+    if (
+      Date.parse(e.updated_at) <= since ||
+      !isToday(e.start_at) ||
+      Date.parse(e.end_at) < input.now.getTime()
+    )
+      continue;
     out.push({
       type: e.status === 'cancelled' ? 'event_cancelled' : 'event_changed',
       badge: 'TAKVİM',
@@ -128,7 +142,12 @@ export async function composeMidday(
       narrativeMode: 'none',
     };
   }
-  const polished = await polishDrafts(pipeline, 'briefing_midday', deltas.map((d) => d.draft), input.now);
+  const polished = await polishDrafts(
+    pipeline,
+    'briefing_midday',
+    deltas.map((d) => d.draft),
+    input.now,
+  );
   const calendar = deltas.filter((d) => d.badge === 'TAKVİM').length;
   const hero = copy(l, 'today.hero.middayReady.title', { count: deltas.length });
   const sections = [
@@ -146,14 +165,30 @@ export async function composeMidday(
       hero_line: clip(hero, 200),
       narrative: null,
       sections: ['midday_delta', 'schedule'],
-      counts: { delta_count: deltas.length, calendar, mail: deltas.length - calendar, remaining: remaining.length },
-      provenance: { narrative_mode: polished.polished ? 'polished' : 'template', since: middaySince(input, tz).toISOString() },
+      counts: {
+        delta_count: deltas.length,
+        calendar,
+        mail: deltas.length - calendar,
+        remaining: remaining.length,
+      },
+      provenance: {
+        narrative_mode: polished.polished ? 'polished' : 'template',
+        since: middaySince(input, tz).toISOString(),
+      },
       prompt_version_id: polished.promptVersionId,
     },
     items: itemRows(input.briefing, sections),
     notification: briefingNotification(input.briefing, 'midday.ready', {
       public: { count: deltas.length },
-      sensitive: { highlights: clip(polished.drafts.slice(0, 2).map((d) => d.title).join(' · '), 160) },
+      sensitive: {
+        highlights: clip(
+          polished.drafts
+            .slice(0, 2)
+            .map((d) => d.title)
+            .join(' · '),
+          160,
+        ),
+      },
     }),
     narrativeMode: polished.polished ? 'ai' : 'template',
   };

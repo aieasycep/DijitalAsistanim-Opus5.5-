@@ -123,7 +123,10 @@ function priceOf(node: Node): { value: string; currency: string } | null {
   return { value, currency: currency.toUpperCase() };
 }
 
-function base(type: LifeCandidate['type'], status: string): Omit<LifeCandidate, 'fields' | 'identity' | 'evidence'> {
+function base(
+  type: LifeCandidate['type'],
+  status: string,
+): Omit<LifeCandidate, 'fields' | 'identity' | 'evidence'> {
   return {
     type,
     origin: 'jsonld',
@@ -141,7 +144,9 @@ function base(type: LifeCandidate['type'], status: string): Omit<LifeCandidate, 
 /** Maps one schema.org node to a candidate (null when no verifiable identity exists). */
 export function candidateFromNode(node: Node, html: string): LifeCandidate | null {
   const typeRaw = node['@type'];
-  const type = (Array.isArray(typeRaw) ? typeRaw.find((t) => typeof t === 'string' && TYPES.has(t)) : typeRaw) as string;
+  const type = (
+    Array.isArray(typeRaw) ? typeRaw.find((t) => typeof t === 'string' && TYPES.has(t)) : typeRaw
+  ) as string;
   switch (type) {
     case 'ParcelDelivery': {
       const tracking = str(node.trackingNumber);
@@ -159,7 +164,9 @@ export function candidateFromNode(node: Node, html: string): LifeCandidate | nul
         ...base('shipment', statusOf(node.deliveryStatus ?? order?.orderStatus)),
         fields: {
           merchant,
-          carrier: carrier ?? (tracking.endsWith('TR') && isValidS10(tracking) ? carrierDisplay('ptt') : null),
+          carrier:
+            carrier ??
+            (tracking.endsWith('TR') && isValidS10(tracking) ? carrierDisplay('ptt') : null),
           tracking_no: tracking,
           order_ref: str(order?.orderNumber),
         },
@@ -207,7 +214,10 @@ export function candidateFromNode(node: Node, html: string): LifeCandidate | nul
       const target = obj(node.reservationFor);
       const venue = nameOf(target);
       const atRaw =
-        str(node.checkinTime) ?? str(node.checkinDate) ?? str(node.startTime) ?? str(target?.startDate);
+        str(node.checkinTime) ??
+        str(node.checkinDate) ??
+        str(node.startTime) ??
+        str(target?.startDate);
       const at = instant(atRaw);
       if (venue === null || at === null) return null;
       const ev = [evidenceFor(html, venue, 'venue'), evidenceFor(html, atRaw, 'at')].filter(
@@ -219,7 +229,11 @@ export function candidateFromNode(node: Node, html: string): LifeCandidate | nul
         fields: {
           venue,
           reservation_type:
-            type === 'LodgingReservation' ? 'hotel' : type === 'FoodEstablishmentReservation' ? 'restaurant' : 'event',
+            type === 'LodgingReservation'
+              ? 'hotel'
+              : type === 'FoodEstablishmentReservation'
+                ? 'restaurant'
+                : 'event',
           party_size: str(node.partySize) === null ? null : Number(str(node.partySize)),
         },
         eventAt: at,
@@ -249,7 +263,9 @@ export function candidateFromNode(node: Node, html: string): LifeCandidate | nul
       const amountEv = price === null ? null : evidenceFor(html, price.value, 'amount');
       const ev = [amountEv, evidenceFor(html, dueRaw, 'due_at')].filter((e) => e !== null);
       if (ev.length === 0) return null;
-      const paid = /PaymentComplete|PaymentAutomaticallyApplied/.test(str(node.paymentStatus) ?? '');
+      const paid = /PaymentComplete|PaymentAutomaticallyApplied/.test(
+        str(node.paymentStatus) ?? '',
+      );
       return {
         ...base('payment', paid ? 'paid' : 'due'),
         fields: { payee },
@@ -257,9 +273,17 @@ export function candidateFromNode(node: Node, html: string): LifeCandidate | nul
         amount:
           price === null || amountEv === null
             ? null
-            : { minor: decimalStringToMinor(price.value), currency: price.currency, evidence: amountEv },
+            : {
+                minor: decimalStringToMinor(price.value),
+                currency: price.currency,
+                evidence: amountEv,
+              },
         evidence: ev,
-        identity: [payee, dueRaw === null ? null : dueRaw.slice(0, 10), price === null ? 'na' : decimalStringToMinor(price.value)],
+        identity: [
+          payee,
+          dueRaw === null ? null : dueRaw.slice(0, 10),
+          price === null ? 'na' : decimalStringToMinor(price.value),
+        ],
         droppedFields: [...(price === null ? ['amount'] : []), ...(due === null ? ['due_at'] : [])],
       };
     }

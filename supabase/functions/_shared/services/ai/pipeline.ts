@@ -48,7 +48,11 @@ export function callModel<T>(
   ctx: PipelineContext,
   input: ModelCallInput<T>,
 ): Promise<StructuredCallResult<T>> {
-  const sources = [...input.docs.map((d) => d.text), ...input.context, ...(input.extraSources ?? [])];
+  const sources = [
+    ...input.docs.map((d) => d.text),
+    ...input.context,
+    ...(input.extraSources ?? []),
+  ];
   return generateStructured(ctx.runtime, {
     feature: input.feature,
     userId: ctx.user.userId,

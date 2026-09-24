@@ -12,9 +12,19 @@ import { routes as appRoutes } from '@da/domain';
 import { routes, ThreadIdParams, ThreadSummaryBody } from '@da/validation';
 import { currentUser } from '../../_shared/auth/user.ts';
 import { AppError } from '../../_shared/errors.ts';
-import { mountRoute, parseJsonBody, validateRequest, validBody, validParams } from '../../_shared/http/validate.ts';
+import {
+  mountRoute,
+  parseJsonBody,
+  validateRequest,
+  validBody,
+  validParams,
+} from '../../_shared/http/validate.ts';
 import { withIdempotency } from '../../_shared/idempotency.ts';
-import { summarizeThread, newMessages, type ThreadSummaryOutcome } from '../../_shared/services/ai/thread-summary.ts';
+import {
+  summarizeThread,
+  newMessages,
+  type ThreadSummaryOutcome,
+} from '../../_shared/services/ai/thread-summary.ts';
 import { visibleText } from '../../_shared/services/ai/hygiene.ts';
 import { chunkRow, threadChunkText } from '../../_shared/services/memory/chunk.ts';
 import { isOn } from '../../_shared/services/flags.ts';
@@ -42,7 +52,8 @@ export interface ThreadSummaryView {
 
 function intel(kit: RouteKit): IntelApi {
   const deps = kit.deps.intel;
-  if (deps === undefined) throw new AppError('SERVICE_UNAVAILABLE', { details: { reason: 'intel_not_configured' } });
+  if (deps === undefined)
+    throw new AppError('SERVICE_UNAVAILABLE', { details: { reason: 'intel_not_configured' } });
   return deps;
 }
 
@@ -58,7 +69,11 @@ export async function threadSummary(
     throw new AppError('FEATURE_DISABLED', { details: { feature: 'thread_summary' } });
   }
   const account = await api.mail.account(thread.connected_account_id);
-  if (account === null || account.data_source_toggles.mail_read === false || !user.dataAccess.mailBody) {
+  if (
+    account === null ||
+    account.data_source_toggles.mail_read === false ||
+    !user.dataAccess.mailBody
+  ) {
     throw new AppError('DATA_SOURCE_DISABLED', { details: { toggle: 'mail_read' } });
   }
   const messages = await api.mail.threadMessages(thread.id, 20);
@@ -75,7 +90,8 @@ export async function threadSummary(
           maxBytes: 200_000,
           correlationId: input.correlationId,
         });
-        if (body !== null) bodies.set(m.id, visibleText({ text: body.text, html: body.html }, 1_500));
+        if (body !== null)
+          bodies.set(m.id, visibleText({ text: body.text, html: body.html }, 1_500));
       } catch {
         // Transient fetch failure: the stored snippet stands in for this message.
       }
@@ -96,8 +112,14 @@ export async function threadSummary(
   } else if (!outcome.cached) {
     await api.mail.updateThread(thread.id, {
       rolling_summary: outcome.summary.slice(0, 1200),
-      ...(outcome.lastMessageId === null ? {} : { last_processed_message_id: outcome.lastMessageId }),
-      key_points: outcome.keyPoints.map((k) => ({ text: k.text, evidence: [k.evidence], message_id: k.message.id })),
+      ...(outcome.lastMessageId === null
+        ? {}
+        : { last_processed_message_id: outcome.lastMessageId }),
+      key_points: outcome.keyPoints.map((k) => ({
+        text: k.text,
+        evidence: [k.evidence],
+        message_id: k.message.id,
+      })),
       analyzed_at: now.toISOString(),
       prompt_version_id: outcome.promptVersionId,
     });
@@ -139,7 +161,10 @@ export async function threadSummary(
         open_route: appRoutes.mailDetail(k.message.id),
       },
     })),
-    open_questions: outcome.openQuestions.map((q) => ({ text: q.text.slice(0, 200), owner: q.owner })),
+    open_questions: outcome.openQuestions.map((q) => ({
+      text: q.text.slice(0, 200),
+      owner: q.owner,
+    })),
     generated_at: now.toISOString(),
     cached: outcome.cached,
   };
@@ -173,7 +198,12 @@ export const registerThreadSummaryRoutes: RouteRegistrar = (app, kit) => {
             return { data, ref: { type: 'email_thread', id: params.threadId } };
           },
           replay: () =>
-            threadSummary(kit, { userId: auth.userId, threadId: params.threadId, refresh: false, correlationId }),
+            threadSummary(kit, {
+              userId: auth.userId,
+              threadId: params.threadId,
+              refresh: false,
+              correlationId,
+            }),
         },
       );
     },

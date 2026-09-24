@@ -43,8 +43,7 @@ export function computeThreadState(input: ThreadStateInput): ThreadPatch {
         computed ?? (input.thread.expects_reply_message_id === m.id ? 'yes' : 'no');
       return { direction: 'outbound', at: m.received_at, expectsReply: expects };
     }
-    const needs =
-      input.needsReply?.get(m.id) ?? m.classification === 'awaiting_my_reply';
+    const needs = input.needsReply?.get(m.id) ?? m.classification === 'awaiting_my_reply';
     return { direction: 'inbound', at: m.received_at, needsReply: needs, automated: automated(m) };
   });
   const reply = threadReplyState(meta);
@@ -91,6 +90,7 @@ export function ageFollowUp(
     muted,
     previous: thread.follow_up_state as FollowUpState,
   });
-  const days = thread.awaiting_since === null ? 0 : waitingDays(thread.awaiting_since, now, timeZone);
+  const days =
+    thread.awaiting_since === null ? 0 : waitingDays(thread.awaiting_since, now, timeZone);
   return { state, days };
 }

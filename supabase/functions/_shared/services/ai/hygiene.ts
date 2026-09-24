@@ -8,7 +8,13 @@
  *   codes and passwords with fixed markers ("HİÇBİR ZAMAN OKUMAZ").
  * - `isHealthSender` marks senders whose bodies never reach a model.
  */
-import { stripQuotedHistory } from '@da/domain';
+import {
+  foldTR,
+  type InjectionScan,
+  normalizeTR,
+  prescanInjection,
+  stripQuotedHistory,
+} from '@da/domain';
 import { sanitizeHtml } from '../../security/html-sanitize.ts';
 
 export const CHARS_PER_TOKEN = 3.2;
@@ -150,10 +156,13 @@ export function redactPii(input: string): RedactionResult {
       return `${prefix}[KOD]`;
     },
   );
-  text = text.replace(/((?:şifre(?:niz)?|parola(?:nız)?|password)\s*[:：]\s*)\S+/giu, (_m, p: string) => {
-    count++;
-    return `${p}[ŞİFRE]`;
-  });
+  text = text.replace(
+    /((?:şifre(?:niz)?|parola(?:nız)?|password)\s*[:：]\s*)\S+/giu,
+    (_m, p: string) => {
+      count++;
+      return `${p}[ŞİFRE]`;
+    },
+  );
   return { text, count };
 }
 
@@ -164,12 +173,38 @@ const HEALTH_HINT = /(hastane|hospital|klinik|clinic|saglik|medical|tip merkezi)
 export function isHealthSender(fromEmail: string): boolean {
   const domain = fromEmail.slice(fromEmail.lastIndexOf('@') + 1).toLowerCase();
   return (
-    HEALTH_DOMAINS.some((d) => domain === d || domain.endsWith(`.${d}`)) ||
-    HEALTH_HINT.test(domain)
+    HEALTH_DOMAINS.some((d) => domain === d || domain.endsWith(`.${d}`)) || HEALTH_HINT.test(domain)
   );
 }
 
 /** Normalised, redacted, capped text for a model. */
 export function modelText(body: BodyInput, tokens: number): RedactionResult {
   return redactPii(visibleText(body, tokens));
+}
+
+/**
+ * Pipeline pre-scan (AI_PIPELINE_PLAN §9): the domain scan plus Turkish/English patterns seen in
+ * mail that addresses an assistant directly ("Dikkat asistan: …", "önceki tüm kuralları yok say",
+ * hidden HTML comments). A suspected message never yields commitments or proposals.
+ */
+const EXTRA_INJECTION: readonly RegExp[] = [
+  /(?<!\p{L})(?:dikkat |sayin |sevgili )?(?:asistan|assistant)(?:i|a)?\s*[,:]/u,
+  /onceki (?:tum |butun )?(?:kurallari|talimatlari|komutlari|yonergeleri) (?:yok say|unut|gormezden gel)/u,
+  /(?:sistem|gizli) (?:komut|talimat|istem)\p{L}*/u,
+  /reveal .{0,30}(?:prompt|instructions|secret)/u,
+  /(?:tum|butun) (?:mailleri|e-?postalar\p{L}*|mesajlar\p{L}*) .{0,40}(?:ilet|gonder|yonlendir)/u,
+  /yapay zek[aâ] asistan/u,
+  /<!--[\s\S]{0,400}?(?:asistan|assistant|ai)[\s\S]{0,400}?-->/u,
+];
+
+export function injectionScan(raw: string): InjectionScan {
+  const base = prescanInjection(raw);
+  const folded = foldTR(normalizeTR(raw));
+  if (!EXTRA_INJECTION.some((re) => re.test(folded))) return base;
+  return {
+    suspected: true,
+    signals: base.signals.includes('instruction_like')
+      ? base.signals
+      : [...base.signals, 'instruction_like'],
+  };
 }

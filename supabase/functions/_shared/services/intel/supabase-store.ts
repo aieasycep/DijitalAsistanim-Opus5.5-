@@ -42,7 +42,10 @@ import { commitmentChunkText, lifeChunkText, threadChunkText } from '../memory/c
 
 type Row = Record<string, unknown>;
 
-function check<T>(result: { data: T | null; error: { code?: string; message?: string } | null }): T {
+function check<T>(result: {
+  data: T | null;
+  error: { code?: string; message?: string } | null;
+}): T {
   if (result.error !== null) throw mapDbError(result.error);
   return result.data as T;
 }
@@ -64,7 +67,8 @@ const num = (v: unknown): number => (typeof v === 'number' ? v : Number(v ?? 0))
 function normalizeMessage(r: Row): MailMessageRow {
   return {
     ...(r as unknown as MailMessageRow),
-    classification_confidence: r.classification_confidence === null ? null : num(r.classification_confidence),
+    classification_confidence:
+      r.classification_confidence === null ? null : num(r.classification_confidence),
   };
 }
 
@@ -95,12 +99,22 @@ export function supabaseMailStore(db: DbClient): MailStore {
     },
     async messages(ids) {
       if (ids.length === 0) return [];
-      const data = check(await db.from('email_messages').select(MESSAGE_COLUMNS).in('id', [...ids]));
+      const data = check(
+        await db
+          .from('email_messages')
+          .select(MESSAGE_COLUMNS)
+          .in('id', [...ids]),
+      );
       return ((data ?? []) as Row[]).map(normalizeMessage);
     },
     async threads(ids) {
       if (ids.length === 0) return [];
-      const data = check(await db.from('email_threads').select(THREAD_COLUMNS).in('id', [...ids]));
+      const data = check(
+        await db
+          .from('email_threads')
+          .select(THREAD_COLUMNS)
+          .in('id', [...ids]),
+      );
       return ((data ?? []) as Row[]).map(normalizeThread);
     },
     async threadMessages(threadId, limit) {
@@ -117,7 +131,11 @@ export function supabaseMailStore(db: DbClient): MailStore {
     },
     async ownAddresses(userId) {
       const data = check(
-        await db.from('connected_accounts').select('account_email').eq('user_id', userId).is('disconnected_at', null),
+        await db
+          .from('connected_accounts')
+          .select('account_email')
+          .eq('user_id', userId)
+          .is('disconnected_at', null),
       );
       return ((data ?? []) as { account_email: string | null }[])
         .map((r) => r.account_email?.toLowerCase() ?? '')
@@ -158,7 +176,8 @@ export function supabaseMailStore(db: DbClient): MailStore {
           .filter((e): e is string => typeof e === 'string')
           .map((e) => e.toLowerCase());
         const outbound = typeof c.last_outbound_at === 'string';
-        const inboundRecent = typeof c.last_inbound_at === 'string' && Date.parse(c.last_inbound_at) >= since.getTime();
+        const inboundRecent =
+          typeof c.last_inbound_at === 'string' && Date.parse(c.last_inbound_at) >= since.getTime();
         for (const a of addresses) {
           if (outbound) replied.add(a);
           if (outbound && inboundRecent) known.add(a);
@@ -200,7 +219,10 @@ export function supabaseMailStore(db: DbClient): MailStore {
           .select('id,display_name,emails')
           .eq('user_id', userId)
           .is('merged_into_id', null)
-          .overlaps('emails', emails.map((e) => e.toLowerCase())),
+          .overlaps(
+            'emails',
+            emails.map((e) => e.toLowerCase()),
+          ),
       );
       return (data ?? []) as ContactRef[];
     },
@@ -307,61 +329,73 @@ export function supabaseInsightStore(db: DbClient): InsightStore {
   return {
     async snapshot(userId, now): Promise<InsightSnapshot> {
       const since = new Date(now.getTime() - 30 * 86_400_000).toISOString();
-      const [threads, commitments, life, events, tasks, approvals, insights, own, vip, prefs] = await Promise.all([
-        db
-          .from('email_threads')
-          .select(THREAD_COLUMNS)
-          .eq('user_id', userId)
-          .gte('last_message_at', since)
-          .or('reply_state.neq.none,deadline_at.not.is.null')
-          .order('last_message_at', { ascending: false })
-          .limit(300),
-        db
-          .from('commitments')
-          .select(`id,contact_id,counterparty_name,direction,text,due_at,due_is_date_only,status,completed_at,${PROVENANCE}`)
-          .eq('user_id', userId)
-          .or(`status.eq.open,completed_at.gte.${since}`)
-          .limit(300),
-        db
-          .from('life_events')
-          .select(`id,type,title,status,event_at,due_at,payload,amount,currency,tracking_url,suppressed,resolved_at,updated_at,${PROVENANCE}`)
-          .eq('user_id', userId)
-          .eq('status', 'open')
-          .eq('suppressed', false)
-          .limit(300),
-        db
-          .from('calendar_events')
-          .select(EVENT_COLUMNS)
-          .eq('user_id', userId)
-          .is('provider_deleted_at', null)
-          .gt('end_at', new Date(now.getTime() - 86_400_000).toISOString())
-          .lt('start_at', new Date(now.getTime() + 8 * 86_400_000).toISOString())
-          .order('start_at')
-          .limit(500),
-        db
-          .from('tasks')
-          .select('id,title,due_date,due_at,status,completed_at,connected_account_id,provider,source_type,source_id,created_at')
-          .eq('user_id', userId)
-          .or(`status.eq.open,completed_at.gte.${since}`)
-          .limit(300),
-        db
-          .from('approval_actions')
-          .select('id,action_type,status,what,approval_expires_at,executed_at,created_at')
-          .eq('user_id', userId)
-          .eq('status', 'pending')
-          .limit(100),
-        db
-          .from('insights')
-          .select(INSIGHT_COLUMNS)
-          .eq('user_id', userId)
-          .gte('updated_at', since)
-          .limit(1000),
-        supabaseMailStore(db).ownAddresses(userId),
-        loadVip(db, userId),
-        db.from('learned_preferences').select('target_type,target_ref,effect,enabled,deleted_at').eq('user_id', userId),
-      ]);
+      const [threads, commitments, life, events, tasks, approvals, insights, own, vip, prefs] =
+        await Promise.all([
+          db
+            .from('email_threads')
+            .select(THREAD_COLUMNS)
+            .eq('user_id', userId)
+            .gte('last_message_at', since)
+            .or('reply_state.neq.none,deadline_at.not.is.null')
+            .order('last_message_at', { ascending: false })
+            .limit(300),
+          db
+            .from('commitments')
+            .select(
+              `id,contact_id,counterparty_name,direction,text,due_at,due_is_date_only,status,completed_at,${PROVENANCE}`,
+            )
+            .eq('user_id', userId)
+            .or(`status.eq.open,completed_at.gte.${since}`)
+            .limit(300),
+          db
+            .from('life_events')
+            .select(
+              `id,type,title,status,event_at,due_at,payload,amount,currency,tracking_url,suppressed,resolved_at,updated_at,${PROVENANCE}`,
+            )
+            .eq('user_id', userId)
+            .eq('status', 'open')
+            .eq('suppressed', false)
+            .limit(300),
+          db
+            .from('calendar_events')
+            .select(EVENT_COLUMNS)
+            .eq('user_id', userId)
+            .is('provider_deleted_at', null)
+            .gt('end_at', new Date(now.getTime() - 86_400_000).toISOString())
+            .lt('start_at', new Date(now.getTime() + 8 * 86_400_000).toISOString())
+            .order('start_at')
+            .limit(500),
+          db
+            .from('tasks')
+            .select(
+              'id,title,due_date,due_at,status,completed_at,connected_account_id,provider,source_type,source_id,created_at',
+            )
+            .eq('user_id', userId)
+            .or(`status.eq.open,completed_at.gte.${since}`)
+            .limit(300),
+          db
+            .from('approval_actions')
+            .select('id,action_type,status,what,approval_expires_at,executed_at,created_at')
+            .eq('user_id', userId)
+            .eq('status', 'pending')
+            .limit(100),
+          db
+            .from('insights')
+            .select(INSIGHT_COLUMNS)
+            .eq('user_id', userId)
+            .gte('updated_at', since)
+            .limit(1000),
+          supabaseMailStore(db).ownAddresses(userId),
+          loadVip(db, userId),
+          db
+            .from('learned_preferences')
+            .select('target_type,target_ref,effect,enabled,deleted_at')
+            .eq('user_id', userId),
+        ]);
       const threadRows = (check(threads) as Row[]).map(normalizeThread);
-      const replyThreads = threadRows.filter((t) => t.reply_state === 'awaiting_my_reply').map((t) => t.id);
+      const replyThreads = threadRows
+        .filter((t) => t.reply_state === 'awaiting_my_reply')
+        .map((t) => t.id);
       const latest: MailMessageRow[] = [];
       if (replyThreads.length > 0) {
         const msgs = check(
@@ -389,8 +423,11 @@ export function supabaseInsightStore(db: DbClient): InsightStore {
         if (p.target_type === 'contact') mutedContactIds.push(String(p.target_ref));
       }
       if (mutedContactIds.length > 0) {
-        const contacts = check(await db.from('contacts').select('emails').in('id', mutedContactIds));
-        for (const c of (contacts ?? []) as Row[]) muted.push(...((c.emails as string[]) ?? []).map((e) => e.toLowerCase()));
+        const contacts = check(
+          await db.from('contacts').select('emails').in('id', mutedContactIds),
+        );
+        for (const c of (contacts ?? []) as Row[])
+          muted.push(...((c.emails as string[]) ?? []).map((e) => e.toLowerCase()));
       }
       const domains = [...new Set(own.map((a) => a.split('@')[1] ?? '').filter((d) => d !== ''))];
       return {
@@ -401,7 +438,10 @@ export function supabaseInsightStore(db: DbClient): InsightStore {
         events: check(events) as CalendarEventRow[],
         tasks: check(tasks) as TaskRow[],
         approvals: check(approvals) as ApprovalRow[],
-        insights: (check(insights) as Row[]).map((r) => ({ ...withConfidence<InsightRow>(r), rank_score: num(r.rank_score) })),
+        insights: (check(insights) as Row[]).map((r) => ({
+          ...withConfidence<InsightRow>(r),
+          rank_score: num(r.rank_score),
+        })),
         vip,
         ownAddresses: own,
         ownDomains: domains,
@@ -431,13 +471,19 @@ export function supabaseInsightStore(db: DbClient): InsightStore {
 export interface BriefingJobStore extends BriefingStore {
   /** Weekly briefings awaiting a batch narrative, by their generating job ids. */
   byJobIds(jobIds: readonly string[]): Promise<BriefingRow[]>;
-  recordBatch(row: { batch_id: string; feature: string; request_count: number; correlation_id: string | null }): Promise<void>;
+  recordBatch(row: {
+    batch_id: string;
+    feature: string;
+    request_count: number;
+    correlation_id: string | null;
+  }): Promise<void>;
   updateBatch(batchId: string, patch: Record<string, unknown>): Promise<void>;
 }
 
 export function supabaseBriefingStore(db: DbClient): BriefingJobStore {
-  const one = async (q: PromiseLike<{ data: unknown; error: { code?: string; message?: string } | null }>) =>
-    (check(await q) as BriefingRow | null) ?? null;
+  const one = async (
+    q: PromiseLike<{ data: unknown; error: { code?: string; message?: string } | null }>,
+  ) => (check(await q) as BriefingRow | null) ?? null;
   return {
     byId: (id) => one(db.from('briefings').select(BRIEFING_COLUMNS).eq('id', id).maybeSingle()),
     forDate: (userId, kind: BriefingKind, day) =>
@@ -452,7 +498,9 @@ export function supabaseBriefingStore(db: DbClient): BriefingJobStore {
       ),
     async ensure(row) {
       check(
-        await db.from('briefings').upsert([row], { onConflict: 'user_id,kind,local_date', ignoreDuplicates: true }),
+        await db
+          .from('briefings')
+          .upsert([row], { onConflict: 'user_id,kind,local_date', ignoreDuplicates: true }),
       );
       const found = await one(
         db
@@ -470,12 +518,23 @@ export function supabaseBriefingStore(db: DbClient): BriefingJobStore {
       check(await db.from('briefings').update(patch).eq('id', id));
     },
     async replaceItems(briefingId, rows) {
-      check(await db.from('briefing_items').delete().eq('briefing_id', briefingId).is('carried_over_to', null));
+      check(
+        await db
+          .from('briefing_items')
+          .delete()
+          .eq('briefing_id', briefingId)
+          .is('carried_over_to', null),
+      );
       if (rows.length > 0) check(await db.from('briefing_items').insert([...rows]));
     },
     async items(briefingId) {
       const data = check(
-        await db.from('briefing_items').select(ITEM_COLUMNS).eq('briefing_id', briefingId).order('section').order('position'),
+        await db
+          .from('briefing_items')
+          .select(ITEM_COLUMNS)
+          .eq('briefing_id', briefingId)
+          .order('section')
+          .order('position'),
       );
       return ((data ?? []) as Row[]).map((r) => withConfidence<BriefingItemRow>(r));
     },
@@ -493,7 +552,12 @@ export function supabaseBriefingStore(db: DbClient): BriefingJobStore {
     },
     async byJobIds(jobIds) {
       if (jobIds.length === 0) return [];
-      const data = check(await db.from('briefings').select(BRIEFING_COLUMNS).in('job_id', [...jobIds]));
+      const data = check(
+        await db
+          .from('briefings')
+          .select(BRIEFING_COLUMNS)
+          .in('job_id', [...jobIds]),
+      );
       return (data ?? []) as BriefingRow[];
     },
     async recordBatch(row) {
@@ -510,14 +574,22 @@ export function supabaseBriefingStore(db: DbClient): BriefingJobStore {
       );
     },
     async updateBatch(batchId, patch) {
-      check(await db.from('ai_batches').update(patch).eq('provider', 'anthropic').eq('batch_id', batchId));
+      check(
+        await db
+          .from('ai_batches')
+          .update(patch)
+          .eq('provider', 'anthropic')
+          .eq('batch_id', batchId),
+      );
     },
   };
 }
 
 // ── Stats ────────────────────────────────────────────────────────────────────
 
-async function count(q: PromiseLike<{ count: number | null; error: { code?: string; message?: string } | null }>) {
+async function count(
+  q: PromiseLike<{ count: number | null; error: { code?: string; message?: string } | null }>,
+) {
   const r = await q;
   if (r.error !== null) throw mapDbError(r.error);
   return r.count ?? 0;
@@ -529,9 +601,17 @@ export function supabaseStatsStore(db: DbClient): StatsStore {
   return {
     async mailCounts(userId, from, to) {
       const range = (q: ReturnType<ReturnType<DbClient['from']>['select']>) =>
-        q.eq('user_id', userId).gte('received_at', from.toISOString()).lt('received_at', to.toISOString());
+        q
+          .eq('user_id', userId)
+          .gte('received_at', from.toISOString())
+          .lt('received_at', to.toISOString());
       const [total, attention, calendars] = await Promise.all([
-        count(range(db.from('email_messages').select('id', { count: 'exact', head: true })).eq('direction', 'inbound')),
+        count(
+          range(db.from('email_messages').select('id', { count: 'exact', head: true })).eq(
+            'direction',
+            'inbound',
+          ),
+        ),
         count(
           range(db.from('email_messages').select('id', { count: 'exact', head: true }))
             .eq('direction', 'inbound')
@@ -551,80 +631,109 @@ export function supabaseStatsStore(db: DbClient): StatsStore {
     async weekly(userId, from, to, timeZone): Promise<WeeklyCounts> {
       const f = from.toISOString();
       const t = to.toISOString();
-      const [mails, important, prepNotes, opened, followups, answered, deadlines, drafts, eventsRes, deadlineRows] =
-        await Promise.all([
-          count(
-            db
-              .from('email_messages')
-              .select('id', { count: 'exact', head: true })
-              .eq('user_id', userId)
-              .eq('direction', 'inbound')
-              .in('ai_status', ['classified', 't0_final'])
-              .gte('received_at', f)
-              .lt('received_at', t),
-          ),
-          count(
-            db
-              .from('email_messages')
-              .select('id', { count: 'exact', head: true })
-              .eq('user_id', userId)
-              .in('classification', ATTENTION)
-              .gte('received_at', f)
-              .lt('received_at', t),
-          ),
-          count(
-            db.from('meeting_preps').select('id', { count: 'exact', head: true }).eq('user_id', userId).gte('generated_at', f).lt('generated_at', t),
-          ),
-          count(
-            db
-              .from('analytics_events')
-              .select('id', { count: 'exact', head: true })
-              .eq('user_id', userId)
-              .eq('event_name', 'meeting_prep_opened')
-              .gte('occurred_at', f)
-              .lt('occurred_at', t),
-          ),
-          count(
-            db.from('email_threads').select('id', { count: 'exact', head: true }).eq('user_id', userId).gte('awaiting_since', f).lt('awaiting_since', t),
-          ),
-          count(
-            db
-              .from('email_threads')
-              .select('id', { count: 'exact', head: true })
-              .eq('user_id', userId)
-              .gte('awaiting_since', f)
-              .lt('awaiting_since', t)
-              .eq('follow_up_state', 'resolved'),
-          ),
-          count(
-            db
-              .from('insights')
-              .select('id', { count: 'exact', head: true })
-              .eq('user_id', userId)
-              .eq('kind', 'deadline')
-              .gte('due_at', f)
-              .lt('due_at', t),
-          ),
-          count(
-            db.from('reply_drafts').select('id', { count: 'exact', head: true }).eq('user_id', userId).eq('status', 'sent').gte('updated_at', f).lt('updated_at', t),
-          ),
+      const [
+        mails,
+        important,
+        prepNotes,
+        opened,
+        followups,
+        answered,
+        deadlines,
+        drafts,
+        eventsRes,
+        deadlineRows,
+      ] = await Promise.all([
+        count(
           db
-            .from('calendar_events')
-            .select('start_at,end_at,status,all_day,attendee_count,is_online')
+            .from('email_messages')
+            .select('id', { count: 'exact', head: true })
             .eq('user_id', userId)
-            .is('provider_deleted_at', null)
-            .gte('start_at', f)
-            .lt('start_at', t),
+            .eq('direction', 'inbound')
+            .in('ai_status', ['classified', 't0_final'])
+            .gte('received_at', f)
+            .lt('received_at', t),
+        ),
+        count(
+          db
+            .from('email_messages')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', userId)
+            .in('classification', ATTENTION)
+            .gte('received_at', f)
+            .lt('received_at', t),
+        ),
+        count(
+          db
+            .from('meeting_preps')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', userId)
+            .gte('generated_at', f)
+            .lt('generated_at', t),
+        ),
+        count(
+          db
+            .from('analytics_events')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', userId)
+            .eq('event_name', 'meeting_prep_opened')
+            .gte('occurred_at', f)
+            .lt('occurred_at', t),
+        ),
+        count(
+          db
+            .from('email_threads')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', userId)
+            .gte('awaiting_since', f)
+            .lt('awaiting_since', t),
+        ),
+        count(
+          db
+            .from('email_threads')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', userId)
+            .gte('awaiting_since', f)
+            .lt('awaiting_since', t)
+            .eq('follow_up_state', 'resolved'),
+        ),
+        count(
           db
             .from('insights')
-            .select('created_at,due_at')
+            .select('id', { count: 'exact', head: true })
             .eq('user_id', userId)
             .eq('kind', 'deadline')
             .gte('due_at', f)
             .lt('due_at', t),
-        ]);
+        ),
+        count(
+          db
+            .from('reply_drafts')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', userId)
+            .eq('status', 'sent')
+            .gte('updated_at', f)
+            .lt('updated_at', t),
+        ),
+        db
+          .from('calendar_events')
+          .select('start_at,end_at,status,all_day,attendee_count,is_online')
+          .eq('user_id', userId)
+          .is('provider_deleted_at', null)
+          .gte('start_at', f)
+          .lt('start_at', t),
+        db
+          .from('insights')
+          .select('created_at,due_at')
+          .eq('user_id', userId)
+          .eq('kind', 'deadline')
+          .gte('due_at', f)
+          .lt('due_at', t),
+      ]);
       const events = ((check(eventsRes) ?? []) as Row[]).filter(
-        (e) => e.status !== 'cancelled' && e.all_day !== true && (num(e.attendee_count) > 1 || e.is_online === true),
+        (e) =>
+          e.status !== 'cancelled' &&
+          e.all_day !== true &&
+          (num(e.attendee_count) > 1 || e.is_online === true),
       );
       const byWeekday: Record<number, number> = {};
       const byDay = new Map<string, { start: number; end: number }[]>();
@@ -644,7 +753,11 @@ export function supabaseStatsStore(db: DbClient): StatsStore {
         for (let i = 1; i < sorted.length; i++) {
           gap = Math.max(gap, Math.round((sorted[i]!.start - sorted[i - 1]!.end) / 60_000));
         }
-        busiest = { weekday: isoWeekdayOf(day), meetings: list.length, maxGapMin: Math.max(0, gap) };
+        busiest = {
+          weekday: isoWeekdayOf(day),
+          meetings: list.length,
+          maxGapMin: Math.max(0, gap),
+        };
       }
       const inTime = ((check(deadlineRows) ?? []) as Row[]).filter(
         (d) => Date.parse(String(d.created_at)) < Date.parse(String(d.due_at)),
@@ -688,16 +801,25 @@ export function supabaseStatsStore(db: DbClient): StatsStore {
 export function supabaseMemoryStore(db: DbClient): MemoryStore {
   return {
     async sources(userId, items: readonly MemoryItem[]) {
-      const ids = (kind: MemoryItem['kind']) => items.filter((i) => i.kind === kind).map((i) => i.id);
+      const ids = (kind: MemoryItem['kind']) =>
+        items.filter((i) => i.kind === kind).map((i) => i.id);
       const out: MemorySource[] = [];
       const threadIds = ids('email_summary');
       if (threadIds.length > 0) {
-        const threads = ((check(
-          await db.from('email_threads').select(THREAD_COLUMNS).eq('user_id', userId).in('id', threadIds),
-        ) ?? []) as Row[]).map(normalizeThread);
+        const threads = (
+          (check(
+            await db
+              .from('email_threads')
+              .select(THREAD_COLUMNS)
+              .eq('user_id', userId)
+              .in('id', threadIds),
+          ) ?? []) as Row[]
+        ).map(normalizeThread);
         for (const t of threads) {
           const summary = t.rolling_summary ?? t.ai_summary;
-          const points = (t.key_points as { text?: string }[]).map((k) => k.text ?? '').filter((k) => k !== '');
+          const points = (t.key_points as { text?: string }[])
+            .map((k) => k.text ?? '')
+            .filter((k) => k !== '');
           if (summary === null && points.length === 0) continue;
           out.push({
             userId,
@@ -727,7 +849,9 @@ export function supabaseMemoryStore(db: DbClient): MemoryStore {
         const rows = (check(
           await db
             .from('life_events')
-            .select(`id,type,title,event_at,due_at,payload,amount,currency,expires_at,${PROVENANCE}`)
+            .select(
+              `id,type,title,event_at,due_at,payload,amount,currency,expires_at,${PROVENANCE}`,
+            )
             .eq('user_id', userId)
             .in('id', lifeIds),
         ) ?? []) as Row[];
@@ -747,7 +871,8 @@ export function supabaseMemoryStore(db: DbClient): MemoryStore {
               title: String(r.title),
               type: String(r.type),
               when: (r.event_at ?? r.due_at ?? null) as string | null,
-              amount: r.amount === null ? null : `${String(r.amount)} ${String(r.currency ?? '')}`.trim(),
+              amount:
+                r.amount === null ? null : `${String(r.amount)} ${String(r.currency ?? '')}`.trim(),
               fields: (r.payload ?? {}) as Row,
             }),
             expiresAt: (r.expires_at as string | null) ?? null,
@@ -759,7 +884,9 @@ export function supabaseMemoryStore(db: DbClient): MemoryStore {
         const rows = (check(
           await db
             .from('commitments')
-            .select(`id,contact_id,counterparty_name,direction,text,due_at,created_at,expires_at,${PROVENANCE}`)
+            .select(
+              `id,contact_id,counterparty_name,direction,text,due_at,created_at,expires_at,${PROVENANCE}`,
+            )
             .eq('user_id', userId)
             .in('id', commitmentIds),
         ) ?? []) as Row[];
@@ -908,7 +1035,9 @@ export function supabaseMemoryStore(db: DbClient): MemoryStore {
               String(r.display_name),
               r.organization === null ? '' : `Kurum: ${String(r.organization)}`,
               r.title === null ? '' : `Unvan: ${String(r.title)}`,
-              topics.length === 0 ? '' : `Konular: ${topics.map((x) => String(x.topic_label)).join(', ')}`,
+              topics.length === 0
+                ? ''
+                : `Konular: ${topics.map((x) => String(x.topic_label)).join(', ')}`,
             ]
               .filter((s) => s !== '')
               .join('\n'),
@@ -953,7 +1082,7 @@ export function supabaseMemoryStore(db: DbClient): MemoryStore {
         .is('embedding_model', null)
         .limit(limit);
       if (ids !== null) q = q.in('id', [...ids]);
-      return ((check(await q) ?? []) as MemoryChunkRow[]);
+      return (check(await q) ?? []) as MemoryChunkRow[];
     },
     async writeEmbeddings(rows) {
       const at = new Date().toISOString();
@@ -961,7 +1090,11 @@ export function supabaseMemoryStore(db: DbClient): MemoryStore {
         check(
           await db
             .from('memory_chunks')
-            .update({ embedding: `[${r.embedding.join(',')}]`, embedding_model: r.model, embedded_at: at })
+            .update({
+              embedding: `[${r.embedding.join(',')}]`,
+              embedding_model: r.model,
+              embedded_at: at,
+            })
             .eq('id', r.id),
         );
       }

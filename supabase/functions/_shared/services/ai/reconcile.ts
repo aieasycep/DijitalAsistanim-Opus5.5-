@@ -103,7 +103,9 @@ export async function anthropicBill(
     );
     let micros = 0;
     for (const page of pages) {
-      for (const bucket of (page.data as { results?: { amount?: string | number; currency?: string }[] }[]) ?? []) {
+      for (const bucket of (page.data as {
+        results?: { amount?: string | number; currency?: string }[];
+      }[]) ?? []) {
         for (const r of bucket.results ?? []) {
           if (r.amount !== undefined && (r.currency ?? 'USD').toUpperCase() === 'USD') {
             micros += toMicros(r.amount, 'cents');
@@ -113,7 +115,12 @@ export async function anthropicBill(
     }
     return { provider: 'anthropic', status: 'ok', usdMicros: micros };
   } catch (error) {
-    return { provider: 'anthropic', status: 'error', usdMicros: null, error: error instanceof Error ? error.message : 'error' };
+    return {
+      provider: 'anthropic',
+      status: 'error',
+      usdMicros: null,
+      error: error instanceof Error ? error.message : 'error',
+    };
   }
 }
 
@@ -146,7 +153,9 @@ export async function openaiBill(
     );
     let micros = 0;
     for (const page of pages) {
-      for (const bucket of (page.data as { results?: { amount?: { value?: number; currency?: string } }[] }[]) ?? []) {
+      for (const bucket of (page.data as {
+        results?: { amount?: { value?: number; currency?: string } }[];
+      }[]) ?? []) {
         for (const r of bucket.results ?? []) {
           const value = r.amount?.value;
           if (typeof value === 'number' && (r.amount?.currency ?? 'usd').toLowerCase() === 'usd') {
@@ -157,7 +166,12 @@ export async function openaiBill(
     }
     return { provider: 'openai', status: 'ok', usdMicros: micros };
   } catch (error) {
-    return { provider: 'openai', status: 'error', usdMicros: null, error: error instanceof Error ? error.message : 'error' };
+    return {
+      provider: 'openai',
+      status: 'error',
+      usdMicros: null,
+      error: error instanceof Error ? error.message : 'error',
+    };
   }
 }
 
@@ -185,7 +199,8 @@ export function reconciliationRows(
         status: 'external_credential_required',
         detail: {
           ...base,
-          credential_key: bill.provider === 'anthropic' ? 'ANTHROPIC_ADMIN_API_KEY' : 'OPENAI_ADMIN_API_KEY',
+          credential_key:
+            bill.provider === 'anthropic' ? 'ANTHROPIC_ADMIN_API_KEY' : 'OPENAI_ADMIN_API_KEY',
         },
       };
     }

@@ -10,7 +10,11 @@ import { Uuid } from '@da/validation';
 import { z } from 'zod';
 import { defineJob } from '../../_shared/jobs/registry.ts';
 import type { JobContext } from '../../_shared/jobs/types.ts';
-import { approvalRow, commitmentRow, extractCommitments } from '../../_shared/services/ai/commitments.ts';
+import {
+  approvalRow,
+  commitmentRow,
+  extractCommitments,
+} from '../../_shared/services/ai/commitments.ts';
 import { deepExtract } from '../../_shared/services/ai/deep-extract.ts';
 import { visibleText } from '../../_shared/services/ai/hygiene.ts';
 import { trustedHeader } from '../../_shared/services/ai/pipeline.ts';
@@ -32,7 +36,17 @@ export const EmailAnalysisPayload = z.object({
   email_message_id: Uuid,
   connected_account_id: Uuid,
   reasons: z
-    .array(z.enum(['summary', 'key_points', 'deadline', 'follow_up', 'commitment', 'life_event', 'security']))
+    .array(
+      z.enum([
+        'summary',
+        'key_points',
+        'deadline',
+        'follow_up',
+        'commitment',
+        'life_event',
+        'security',
+      ]),
+    )
     .min(1),
 });
 export type EmailAnalysisPayload = z.infer<typeof EmailAnalysisPayload>;
@@ -45,7 +59,8 @@ export async function runEmailAnalysis(
   const account = await deps.mail.account(p.connected_account_id);
   if (account === null) return { skipped: 'account_missing' };
   const [message] = await deps.mail.messages([p.email_message_id]);
-  if (message === undefined || message.user_id !== account.user_id) return { skipped: 'message_missing' };
+  if (message === undefined || message.user_id !== account.user_id)
+    return { skipped: 'message_missing' };
   if (account.data_source_toggles.mail_read === false) return { skipped: 'source_control' };
   const userId = account.user_id;
   const user = await deps.ai.users.load(userId);
@@ -65,11 +80,21 @@ export async function runEmailAnalysis(
       ? [message.subject ?? '', message.snippet ?? ''].filter((s) => s !== '').join('\n')
       : visibleText({ text: body.text, html: body.html }, 6_000);
   const analysisHash = `\\x${sha256Hex(`${message.content_hash}|${[...reasons].sort().join(',')}|${visible.length}`)}`;
-  if (thread !== undefined && thread.analysis_hash === analysisHash && message.analyzed_at !== null) {
+  if (
+    thread !== undefined &&
+    thread.analysis_hash === analysisHash &&
+    message.analyzed_at !== null
+  ) {
     return { skipped: 'unchanged' };
   }
   const pipeline = pipelineFor(deps, user, ctx);
-  const known = (await deps.mail.senderHistory(userId, [message.from_email.toLowerCase()], new Date(now.getTime() - 90 * 86_400_000))).known;
+  const known = (
+    await deps.mail.senderHistory(
+      userId,
+      [message.from_email.toLowerCase()],
+      new Date(now.getTime() - 90 * 86_400_000),
+    )
+  ).known;
   const result: Record<string, string | number | boolean> = {};
 
   if (reasons.has('summary') || reasons.has('key_points') || reasons.has('deadline')) {
@@ -96,10 +121,15 @@ export async function runEmailAnalysis(
       if (thread !== undefined) {
         await deps.mail.updateThread(thread.id, {
           ...(deep.summary === null ? {} : { ai_summary: clip(deep.summary, 800) }),
-          key_points: deep.keyPoints.slice(0, 5).map((k) => ({ text: k.text, evidence: [k.evidence] })),
+          key_points: deep.keyPoints
+            .slice(0, 5)
+            .map((k) => ({ text: k.text, evidence: [k.evidence] })),
           ...(nextDeadline === undefined
             ? {}
-            : { deadline_at: nextDeadline.dueAt.toISOString(), deadline_evidence: [nextDeadline.evidence] }),
+            : {
+                deadline_at: nextDeadline.dueAt.toISOString(),
+                deadline_evidence: [nextDeadline.evidence],
+              }),
           analysis_hash: analysisHash,
           analyzed_at: now.toISOString(),
           prompt_version_id: deep.promptVersionId,
@@ -109,8 +139,13 @@ export async function runEmailAnalysis(
   }
 
   const own = await deps.mail.ownAddresses(userId);
-  const byEmail = await resolveContacts(deps.mail, { userId, ownAddresses: own, messages: [message] });
-  const memory: MemoryItem[] = thread === undefined ? [] : [{ kind: 'email_summary', id: thread.id }];
+  const byEmail = await resolveContacts(deps.mail, {
+    userId,
+    ownAddresses: own,
+    messages: [message],
+  });
+  const memory: MemoryItem[] =
+    thread === undefined ? [] : [{ kind: 'email_summary', id: thread.id }];
 
   if (user.isPro && (reasons.has('commitment') || reasons.has('follow_up'))) {
     const contacts = await deps.mail.contactsByEmail(userId, Object.keys(byEmail));
@@ -119,7 +154,9 @@ export async function runEmailAnalysis(
       [{ message, text: visible, people: personCandidates(thread?.participants ?? [], contacts) }],
       now,
     );
-    const creates = run.decisions.filter((d) => d.outcome === 'create').map((d) => commitmentRow(userId, d));
+    const creates = run.decisions
+      .filter((d) => d.outcome === 'create')
+      .map((d) => commitmentRow(userId, d));
     const proposals = run.decisions
       .filter((d) => d.outcome === 'propose')
       .flatMap((d) => {

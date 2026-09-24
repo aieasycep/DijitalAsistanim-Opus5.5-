@@ -21,7 +21,6 @@ import {
   localDate,
   ownerAllowed,
   type PersonCandidate,
-  prescanInjection,
   sha256Hex,
   type StoredEvidence,
 } from '@da/domain';
@@ -43,7 +42,7 @@ import {
   groundQuote,
   storedEvidence,
 } from './grounding.ts';
-import { modelText, TRIAGE_BODY_TOKENS } from './hygiene.ts';
+import { injectionScan, modelText, TRIAGE_BODY_TOKENS } from './hygiene.ts';
 import { callModel, type PipelineContext, trustedHeader } from './pipeline.ts';
 
 export const COMMITMENT_BATCH_SIZE = 5;
@@ -99,7 +98,10 @@ export function commitmentSignals(
 }
 
 /** Default counterparty: the first recipient of the user's mail, or the sender of an inbound one. */
-function defaultCounterparty(source: CommitmentSource): { email: string | null; name: string | null } {
+function defaultCounterparty(source: CommitmentSource): {
+  email: string | null;
+  name: string | null;
+} {
   if (own(source.message)) {
     const email = source.message.to_emails[0] ?? null;
     const person = source.people.find((p) => p.email?.toLowerCase() === email?.toLowerCase());
@@ -143,9 +145,12 @@ function evaluateClaim(
       : (source.people.find((p) => p.email?.toLowerCase() === fallback.email?.toLowerCase())?.id ??
         null);
   const counterpartyName =
-    link?.linked === false ? clip(link.text, 120) : clip(fallback.name ?? fallback.email ?? '', 120);
+    link?.linked === false
+      ? clip(link.text, 120)
+      : clip(fallback.name ?? fallback.email ?? '', 120);
   const dueOk = claim.due_quote === null || due !== null;
-  const allFieldsVerified = quote !== null && dueOk && (contactId !== null || counterpartyName !== '');
+  const allFieldsVerified =
+    quote !== null && dueOk && (contactId !== null || counterpartyName !== '');
   const confidence = Math.min(
     quote?.match === 'exact' ? 0.9 : 0.8,
     due?.confidence ?? 0.9,
@@ -184,7 +189,10 @@ function evaluateClaim(
 }
 
 /** Deterministic fallback (model unavailable): every pattern hit becomes a proposal. */
-function patternDecisions(sources: readonly CommitmentSource[], timeZone: string): CommitmentDecision[] {
+function patternDecisions(
+  sources: readonly CommitmentSource[],
+  timeZone: string,
+): CommitmentDecision[] {
   return sources.flatMap((s) => {
     const fallback = defaultCounterparty(s);
     const contactId =
@@ -204,7 +212,9 @@ function patternDecisions(sources: readonly CommitmentSource[], timeZone: string
         dueAt: c.due?.dueAt ?? null,
         dateOnly: c.due?.dateOnly ?? false,
         dueQuote: null,
-        evidence: [{ quote: c.quote, field: 'commitment', locator: `m1:${c.span[0]}-${c.span[1]}` }],
+        evidence: [
+          { quote: c.quote, field: 'commitment', locator: `m1:${c.span[0]}-${c.span[1]}` },
+        ],
         confidence: Math.min(c.confidence, 0.65),
         contactId,
         counterpartyName: clip(fallback.name ?? fallback.email ?? '', 120) || null,
@@ -256,15 +266,33 @@ export async function extractCommitments(
   const tz = pipeline.user.timeZone;
   const batch = commitmentSignals(sources, tz).slice(0, COMMITMENT_BATCH_SIZE);
   const texts = batch.map((s) => modelText({ text: s.text, html: null }, TRIAGE_BODY_TOKENS).text);
-  const injection = prescanInjection(texts.join('\n'));
+  const injection = injectionScan(texts.join('\n'));
   const noSignal: InjectionScan = { suspected: false, signals: [] };
   if (batch.length === 0) {
-    return { decisions: [], escalated: false, kind: 'skipped', reason: 'no_signal', injection: noSignal, tally };
+    return {
+      decisions: [],
+      escalated: false,
+      kind: 'skipped',
+      reason: 'no_signal',
+      injection: noSignal,
+      tally,
+    };
   }
   if (injection.suspected) {
-    return { decisions: [], escalated: false, kind: 'skipped', reason: 'injection_suspected', injection, tally };
+    return {
+      decisions: [],
+      escalated: false,
+      kind: 'skipped',
+      reason: 'injection_suspected',
+      injection,
+      tally,
+    };
   }
-  const docs: UntrustedDoc[] = batch.map((_, i) => ({ ref: `m${i + 1}`, kind: 'email', text: texts[i]! }));
+  const docs: UntrustedDoc[] = batch.map((_, i) => ({
+    ref: `m${i + 1}`,
+    kind: 'email',
+    text: texts[i]!,
+  }));
   const scope: GroundingScope = {
     aliases: aliasMap(docs.map((d) => [d.ref, d.text] as const)),
     anchor: batch[0]!.message.sent_at ?? batch[0]!.message.received_at,
@@ -281,7 +309,10 @@ export async function extractCommitments(
       const source = batch[index];
       if (source === undefined) continue;
       if (item.injection_suspected) flagged = true;
-      const anchorScope = { ...scope, anchor: source.message.sent_at ?? source.message.received_at };
+      const anchorScope = {
+        ...scope,
+        anchor: source.message.sent_at ?? source.message.received_at,
+      };
       out.set(
         item.ref,
         item.commitments.map((c) => evaluateClaim(c, source, anchorScope, tally, via)),
@@ -302,10 +333,24 @@ export async function extractCommitments(
   }
   const result = evaluate(first.data, 'model');
   if (result === null) {
-    return { decisions: patternDecisions(batch, tz), escalated: false, kind: 't0', reason: 'refine_failed', injection, tally };
+    return {
+      decisions: patternDecisions(batch, tz),
+      escalated: false,
+      kind: 't0',
+      reason: 'refine_failed',
+      injection,
+      tally,
+    };
   }
   if (result.flagged) {
-    return { decisions: [], escalated: false, kind: 'ai', reason: 'injection_suspected', injection, tally };
+    return {
+      decisions: [],
+      escalated: false,
+      kind: 'ai',
+      reason: 'injection_suspected',
+      injection,
+      tally,
+    };
   }
   const unsure = [...result.out.values()].some((list) => list.some((e) => e.unsure));
   let escalated = false;
@@ -320,7 +365,14 @@ export async function extractCommitments(
           if (list.some((e) => e.unsure) && better !== undefined) result.out.set(ref, better);
         }
       } else if (again?.flagged === true) {
-        return { decisions: [], escalated: true, kind: 'ai', reason: 'injection_suspected', injection, tally };
+        return {
+          decisions: [],
+          escalated: true,
+          kind: 'ai',
+          reason: 'injection_suspected',
+          injection,
+          tally,
+        };
       }
     }
   }
@@ -385,7 +437,8 @@ export function approvalRow(
     counterparty,
     due_at: d.dueAt?.toISOString() ?? null,
     ...(d.dueQuote === null ? {} : { due_text: clip(d.dueQuote, 100) }),
-    due_precision: d.dueAt === null ? ('none' as const) : d.dateOnly ? ('date' as const) : ('datetime' as const),
+    due_precision:
+      d.dueAt === null ? ('none' as const) : d.dateOnly ? ('date' as const) : ('datetime' as const),
     source: {
       source_type: 'email_message' as const,
       source_id: d.message.id,
@@ -415,7 +468,9 @@ export function approvalRow(
     payload_hash: `\\x${sha256Hex(canonicalJson(payload))}`,
     what: clip(copy(locale, 'commitments.generated.approval.what', { text: d.text }), 200),
     why: clip(
-      copy(locale, `commitments.generated.approval.why.${directionKey}`, { name: name === '' ? 'none' : name }),
+      copy(locale, `commitments.generated.approval.why.${directionKey}`, {
+        name: name === '' ? 'none' : name,
+      }),
       300,
     ),
     change_summary: clip(

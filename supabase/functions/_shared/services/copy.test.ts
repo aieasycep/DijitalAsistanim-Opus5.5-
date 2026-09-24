@@ -6,8 +6,14 @@ Deno.test('copy: select branches, nested args and the none sentinel', () => {
     copy('tr', 'life.generated.shipment', { merchant: 'Trendyol', status: 'delivered' }),
     'Trendyol · Teslim edildi',
   );
-  assertEquals(copy('tr', 'life.generated.flight', { flight: 'none', route: 'IST–ESB' }), 'Uçuş · IST–ESB');
-  assertEquals(copy('tr', 'life.generated.flight', { flight: 'TK2124', route: 'none' }), 'TK2124 uçuşu');
+  assertEquals(
+    copy('tr', 'life.generated.flight', { flight: 'none', route: 'IST–ESB' }),
+    'Uçuş · IST–ESB',
+  );
+  assertEquals(
+    copy('tr', 'life.generated.flight', { flight: 'TK2124', route: 'none' }),
+    'TK2124 uçuşu',
+  );
   assertEquals(
     copy('tr', 'flow.generated.why.rule', { rule: '@acme.com', outcome: 'always_important' }),
     'Kuralın: “@acme.com” → Her zaman önemli say.',
@@ -16,14 +22,27 @@ Deno.test('copy: select branches, nested args and the none sentinel', () => {
 
 Deno.test('copy: plural with =0 and # in both locales', () => {
   assertEquals(
-    copy('tr', 'briefing.generated.morning.template', { meetings: 2, replies: 0, deadlines: 1, waiting: 3 }),
+    copy('tr', 'briefing.generated.morning.template', {
+      meetings: 2,
+      replies: 0,
+      deadlines: 1,
+      waiting: 3,
+    }),
     'Bugün 2 etkinliğin var, yanıt bekleyen mail yok. 1 son tarih yaklaşıyor; 3 konuda yanıt bekliyorsun.',
   );
   assertEquals(
-    copy('en', 'briefing.generated.morning.template', { meetings: 1, replies: 2, deadlines: 0, waiting: 0 }),
+    copy('en', 'briefing.generated.morning.template', {
+      meetings: 1,
+      replies: 2,
+      deadlines: 0,
+      waiting: 0,
+    }),
     'Today you have 1 event, 2 emails are waiting for your reply. No deadline is coming up.',
   );
-  assertEquals(copy('tr', 'today.hero.morningReady.title', { count: 4 }), 'Bugün bilmen gereken 4 şey var.');
+  assertEquals(
+    copy('tr', 'today.hero.morningReady.title', { count: 4 }),
+    'Bugün bilmen gereken 4 şey var.',
+  );
 });
 
 Deno.test('copy: pre-inflected Turkish cases and helpers', () => {

@@ -40,7 +40,9 @@ export function shareCard(rawStats: unknown, locale: CopyLocale): ShareCard | nu
       estimated_time_saved_minutes: minutes,
     },
     formula_version: clip(s.time_saved_basis.formula_version, 40),
-    labels: { time_saved_prefix: clip(copy(locale, 'briefing.generated.weekly.timeSavedPrefix'), 80) },
+    labels: {
+      time_saved_prefix: clip(copy(locale, 'briefing.generated.weekly.timeSavedPrefix'), 80),
+    },
     share_text: clip(
       copy(locale, 'briefing.generated.weekly.shareText', {
         mails: int(s.mails_analyzed),

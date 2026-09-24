@@ -131,10 +131,14 @@ function authenticated(input: TemplateInput): boolean {
   return input.dkimPass === true || input.spfPass === true;
 }
 
-export function templateFor(input: Pick<TemplateInput, 'fromEmail' | 'subject' | 'text'>): SenderTemplate | null {
+export function templateFor(
+  input: Pick<TemplateInput, 'fromEmail' | 'subject' | 'text'>,
+): SenderTemplate | null {
   const domain = domainOf(input.fromEmail);
   const folded = foldTR(normalizeTR(`${input.subject}\n${input.text.slice(0, 2000)}`));
-  const candidates = SENDER_TEMPLATES.filter((t) => t.domains.some((d) => domainMatches(domain, d)));
+  const candidates = SENDER_TEMPLATES.filter((t) =>
+    t.domains.some((d) => domainMatches(domain, d)),
+  );
   // a template with a `requires` pattern wins when it matches (e.g. Prime vs Amazon orders)
   return (
     candidates.find((t) => t.requires !== undefined && t.requires.test(folded)) ??
@@ -227,7 +231,8 @@ function shipment(t: SenderTemplate, input: TemplateInput): LifeCandidate | null
   }
   if (evidence.length === 0) return null;
   const merchant = merchantTemplate ? t.name : null;
-  const carrierName = carrier === null ? (merchantTemplate ? null : t.name) : carrierDisplay(carrier.id);
+  const carrierName =
+    carrier === null ? (merchantTemplate ? null : t.name) : carrierDisplay(carrier.id);
   return {
     type: 'shipment',
     origin: 'template',
@@ -282,16 +287,18 @@ function flight(t: SenderTemplate, input: TemplateInput): LifeCandidate | null {
   const depart =
     dateNear(input, /(kalkis|ucus tarihi|departure|gidis)/u, 200) ??
     ((): { r: DateResolution; start: number; end: number } | null => {
-      const all = parseDatesTR(input.text, { anchor: input.anchor, timeZone: input.timeZone }).filter(
-        (d) => !d.past,
-      );
+      const all = parseDatesTR(input.text, {
+        anchor: input.anchor,
+        timeZone: input.timeZone,
+      }).filter((d) => !d.past);
       const d = all.find((x) => x.precision === 'datetime') ?? all[0];
       return d === undefined ? null : { r: d, start: d.span[0], end: d.span[1] };
     })();
   if (depart !== null) evidence.push(quoteAt(input.text, depart.start, depart.end, 'depart_at'));
   const airports = findAirports(input.text);
   const gate = /kap[ıi]\s*[:#]?\s*([A-Z]?\d{1,3}[A-Z]?)(?![\p{L}\d])/iu.exec(input.text);
-  if (gate !== null) evidence.push(quoteAt(input.text, gate.index, gate.index + gate[0].length, 'gate'));
+  if (gate !== null)
+    evidence.push(quoteAt(input.text, gate.index, gate.index + gate[0].length, 'gate'));
   const folded = foldTR(normalizeTR(`${input.subject}\n${input.text}`));
   const checkin = /(check-?in (islemi )?(acildi|acik|basladi)|online check-?in)/u.test(folded)
     ? 'open'
@@ -339,7 +346,8 @@ function reservation(t: SenderTemplate, input: TemplateInput): LifeCandidate | n
   if (party !== null)
     evidence.push(quoteAt(input.text, party.index, party.index + party[0].length, 'party_size'));
   const deadline = dateNear(input, /(onay(lamak)? icin son|son onay|iptal icin son)/u);
-  if (deadline !== null) evidence.push(quoteAt(input.text, deadline.start, deadline.end, 'confirm_by'));
+  if (deadline !== null)
+    evidence.push(quoteAt(input.text, deadline.start, deadline.end, 'confirm_by'));
   const venue = t.name;
   return {
     type: 'reservation',
@@ -347,7 +355,12 @@ function reservation(t: SenderTemplate, input: TemplateInput): LifeCandidate | n
     status: 'confirmed',
     fields: {
       venue,
-      reservation_type: t.id === 'booking' || t.id === 'airbnb' ? 'hotel' : t.id === 'obilet' ? 'transport' : 'event',
+      reservation_type:
+        t.id === 'booking' || t.id === 'airbnb'
+          ? 'hotel'
+          : t.id === 'obilet'
+            ? 'transport'
+            : 'event',
       party_size: party === null ? null : Number(party[1]),
     },
     eventAt: at.r.start,
@@ -372,7 +385,10 @@ function payment(t: SenderTemplate, input: TemplateInput): LifeCandidate | null 
       : /(iade)/u.test(folded)
         ? 'refund'
         : 'due';
-  const amount = amountNear(input, /(fatura tutari|odenecek tutar|toplam tutar|tutar|asgari|borc)/u);
+  const amount = amountNear(
+    input,
+    /(fatura tutari|odenecek tutar|toplam tutar|tutar|asgari|borc)/u,
+  );
   const due = dateNear(input, /(son odeme|odeme tarihi|vade)/u, 160);
   const evidence = [];
   const dropped: string[] = [];
@@ -462,7 +478,10 @@ const SECURITY_SUBJECT =
 
 const SECURITY_EVENTS: readonly [RegExp, string][] = [
   [/(sifreniz (degistirildi|guncellendi)|password (was )?changed)/u, 'password_changed'],
-  [/(kurtarma (e-?postasi|telefonu|bilgi)|recovery (email|phone|information))/u, 'recovery_changed'],
+  [
+    /(kurtarma (e-?postasi|telefonu|bilgi)|recovery (email|phone|information))/u,
+    'recovery_changed',
+  ],
   [/(supheli|suspicious|olagan disi|engellendi|blocked)/u, 'suspicious_activity'],
   [/(yeni (bir )?oturum|yeni giris|oturum acildi|sign-?in|new device|yeni cihaz)/u, 'new_sign_in'],
 ];
@@ -484,7 +503,8 @@ export function detectSecurity(input: TemplateInput): SecurityOutcome {
   if (!authenticated(input)) return { kind: 'rejected', sender };
   const event = SECURITY_EVENTS.find(([re]) => re.test(folded))?.[1] ?? 'suspicious_activity';
   const source = `${input.subject}\n${input.text}`;
-  const line = source.split('\n').find((l) => SECURITY_SUBJECT.test(foldTR(normalizeTR(l)))) ?? input.subject;
+  const line =
+    source.split('\n').find((l) => SECURITY_SUBJECT.test(foldTR(normalizeTR(l)))) ?? input.subject;
   const at = Math.max(0, source.indexOf(line));
   const whenMatch = parseDatesTR(input.text, { anchor: input.anchor, timeZone: input.timeZone })[0];
   const occurred = whenMatch?.precision === 'datetime' ? whenMatch.start : new Date(input.anchor);

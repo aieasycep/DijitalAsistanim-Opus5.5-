@@ -37,7 +37,8 @@ export async function batchRoute(
   if (decision.kind !== 'route') return null;
   const target = decision.route.chain[0];
   if (target === undefined || target.provider !== 'anthropic') return null;
-  const provider = runtime.provider('anthropic') as (ReturnType<AiRuntime['provider']> & { batches?: AnthropicBatches }) | null;
+  const provider = runtime.provider('anthropic') as
+    (ReturnType<AiRuntime['provider']> & { batches?: AnthropicBatches }) | null;
   if (provider === null || provider.batches === undefined) return null;
   return { target, batches: provider.batches, tier: decision.route.tier as BatchRoute['tier'] };
 }
@@ -55,7 +56,11 @@ export interface BatchSubmitItem<T> {
 }
 
 export type BatchSubmitOutcome =
-  | { readonly kind: 'submitted'; readonly batchId: string; readonly reservations: Record<string, string | null> }
+  | {
+      readonly kind: 'submitted';
+      readonly batchId: string;
+      readonly reservations: Record<string, string | null>;
+    }
   | { readonly kind: 'refused'; readonly reason: string };
 
 export async function submitBatch<T>(
@@ -69,7 +74,12 @@ export async function submitBatch<T>(
   for (const item of items) {
     const est = estimateMicros(
       price,
-      Math.ceil((item.prompt.system.length + (item.prompt.untrusted ?? "").length + (item.prompt.userContext ?? "").length) / 3.2),
+      Math.ceil(
+        (item.prompt.system.length +
+          (item.prompt.untrusted ?? '').length +
+          (item.prompt.userContext ?? '').length) /
+          3.2,
+      ),
       maxOutputTokens(route.target),
     );
     const reservation = await runtime.budget.reserve({
@@ -135,7 +145,9 @@ export function parseBatchMessage<T>(
   const parsed = schema.safeParse(json);
   if (!parsed.success) return { data: null, usage, error: 'schema_validation' };
   const validated = validateOutput(schema, parsed.data, validation);
-  return validated.ok ? { data: validated.data, usage, error: null } : { data: null, usage, error: validated.reason };
+  return validated.ok
+    ? { data: validated.data, usage, error: null }
+    : { data: null, usage, error: validated.reason };
 }
 
 /** `ended` → every result; otherwise the provider state. */
@@ -143,18 +155,32 @@ export async function collectBatch<T>(
   route: Pick<BatchRoute, 'batches'>,
   batchId: string,
   schema: z.ZodType<T>,
-  validation: (customId: string) => { sources: readonly string[]; aliases: ReadonlySet<string>; canary?: string },
+  validation: (customId: string) => {
+    sources: readonly string[];
+    aliases: ReadonlySet<string>;
+    canary?: string;
+  },
 ): Promise<{ state: 'in_progress' | 'canceling' | 'ended'; results: BatchResult<T>[] }> {
   const state = await route.batches.poll(batchId);
   if (state !== 'ended') return { state, results: [] };
   const results: BatchResult<T>[] = [];
   for await (const r of route.batches.results(batchId)) {
     if (!r.ok || r.message === undefined) {
-      results.push({ customId: r.customId, data: null, usage: null, error: r.error?.code.toLowerCase() ?? 'errored' });
+      results.push({
+        customId: r.customId,
+        data: null,
+        usage: null,
+        error: r.error?.code.toLowerCase() ?? 'errored',
+      });
       continue;
     }
     const parsed = parseBatchMessage(r.message as Json, schema, validation(r.customId));
-    results.push({ customId: r.customId, data: parsed.data, usage: parsed.usage, error: parsed.error });
+    results.push({
+      customId: r.customId,
+      data: parsed.data,
+      usage: parsed.usage,
+      error: parsed.error,
+    });
   }
   return { state, results };
 }

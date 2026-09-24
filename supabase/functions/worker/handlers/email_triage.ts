@@ -78,16 +78,19 @@ export async function runEmailTriage(
   );
   if (account.data_source_toggles.mail_read === false) {
     for (const m of all) {
-      if (!TERMINAL.has(m.ai_status)) await deps.mail.updateMessage(m.id, { ai_status: 'skipped_source_control' });
+      if (!TERMINAL.has(m.ai_status))
+        await deps.mail.updateMessage(m.id, { ai_status: 'skipped_source_control' });
     }
     return { ...empty, messages: all.length, skipped: all.length };
   }
-  const todo = all.filter((m) => p.origin === 'resync' || !TERMINAL.has(m.ai_status));
-  if (todo.length === 0) return { ...empty, messages: all.length };
+  const pending = all.filter((m) => p.origin === 'resync' || !TERMINAL.has(m.ai_status));
+  if (pending.length === 0) return { ...empty, messages: all.length };
 
   const user = await deps.ai.users.load(userId);
   const threads = new Map(
-    (await deps.mail.threads([...new Set(todo.map((m) => m.thread_id))])).map((t) => [t.id, t] as const),
+    (await deps.mail.threads([...new Set(pending.map((m) => m.thread_id))])).map(
+      (t) => [t.id, t] as const,
+    ),
   );
   const [rules, learned, vip, own] = await Promise.all([
     deps.mail.rules(userId),
@@ -95,8 +98,12 @@ export async function runEmailTriage(
     deps.mail.vip(userId),
     deps.mail.ownAddresses(userId),
   ]);
-  const senders = [...new Set(todo.map((m) => m.from_email.toLowerCase()))];
-  const history = await deps.mail.senderHistory(userId, senders, new Date(now.getTime() - 90 * 86_400_000));
+  const senders = [...new Set(pending.map((m) => m.from_email.toLowerCase()))];
+  const history = await deps.mail.senderHistory(
+    userId,
+    senders,
+    new Date(now.getTime() - 90 * 86_400_000),
+  );
   const tctx: TriageContext = {
     rules,
     learned,
@@ -114,12 +121,12 @@ export async function runEmailTriage(
   // Content-hash dedupe: identical content in one run is classified once.
   const byHash = new Map<string, MailMessageRow>();
   const duplicates = new Map<string, string>();
-  for (const m of todo) {
+  for (const m of pending) {
     const first = byHash.get(m.content_hash);
     if (first !== undefined && m.direction === first.direction) duplicates.set(m.id, first.id);
     else byHash.set(m.content_hash, m);
   }
-  const unique = todo.filter((m) => !duplicates.has(m.id));
+  const unique = pending.filter((m) => !duplicates.has(m.id));
 
   const prepared: PreparedMessage[] = [];
   for (const m of unique) {
@@ -179,20 +186,32 @@ export async function runEmailTriage(
       classification_rule_id: final.priority.rule_id,
       classification_confidence: Math.round(final.priority.confidence * 1000) / 1000,
       ...(result?.summary ? { ai_summary: result.summary } : {}),
-      key_points: final.important && result !== null ? keyPointRows(result.keyPoints, evidence) : [],
+      key_points:
+        final.important && result !== null ? keyPointRows(result.keyPoints, evidence) : [],
       analyzed_at: now.toISOString(),
       prompt_version_id: promptVersion.get(m.row.id) ?? null,
       injection_suspected: m.injection.suspected,
       dropped_fields: [...(result?.droppedFields ?? [])],
-      life_signal: m.life.candidates[0]?.type === 'security' ? 'none' : (m.life.candidates[0]?.type ?? result?.item.life_signal ?? 'none'),
+      life_signal:
+        m.life.candidates[0]?.type === 'security'
+          ? 'none'
+          : (m.life.candidates[0]?.type ?? result?.item.life_signal ?? 'none'),
     });
     if (m.row.direction === 'inbound') needsReply.set(m.row.id, final.needsReply);
     if (m.expectsReply !== null) expects.set(m.row.id, m.expectsReply);
     if (final.important) important.push(m.row.thread_id);
 
     const thread = m.thread;
-    if (thread !== null && m.row.direction === 'inbound' && Date.parse(m.row.received_at) >= Date.parse(thread.last_message_at) - 1000) {
-      const deadline = result?.deadlines[0] ?? (m.t0Deadline === null ? null : { dueAt: m.t0Deadline.dueAt, evidence: m.t0Deadline.evidence });
+    if (
+      thread !== null &&
+      m.row.direction === 'inbound' &&
+      Date.parse(m.row.received_at) >= Date.parse(thread.last_message_at) - 1000
+    ) {
+      const deadline =
+        result?.deadlines[0] ??
+        (m.t0Deadline === null
+          ? null
+          : { dueAt: m.t0Deadline.dueAt, evidence: m.t0Deadline.evidence });
       threadPatch.set(thread.id, {
         ...threadPatch.get(thread.id),
         category: final.category,
@@ -202,9 +221,13 @@ export async function runEmailTriage(
         category_learned_preference_id: final.priority.learned_preference_id,
         category_confidence: Math.round(final.priority.confidence * 1000) / 1000,
         urgency: final.urgency,
-        ...(thread.topic_label === null ? { topic_label: topicLabel(m.row.subject ?? thread.subject) } : {}),
+        ...(thread.topic_label === null
+          ? { topic_label: topicLabel(m.row.subject ?? thread.subject) }
+          : {}),
         ...(result?.threadNote ? { rolling_summary: result.threadNote } : {}),
-        ...(deadline === null ? {} : { deadline_at: deadline.dueAt.toISOString(), deadline_evidence: [deadline.evidence] }),
+        ...(deadline === null
+          ? {}
+          : { deadline_at: deadline.dueAt.toISOString(), deadline_evidence: [deadline.evidence] }),
       });
     }
     for (const c of m.life.candidates) {
@@ -265,7 +288,11 @@ export async function runEmailTriage(
   }
 
   const life = await deps.mail.upsertLifeEvents(lifeRows);
-  const contacts = await resolveContacts(deps.mail, { userId, ownAddresses: own, messages: todo });
+  const contacts = await resolveContacts(deps.mail, {
+    userId,
+    ownAddresses: own,
+    messages: pending,
+  });
   await refreshPersonStats(deps.mail, userId, contacts);
 
   for (const a of analysis) {
@@ -279,14 +306,18 @@ export async function runEmailTriage(
   }
   await enqueueInsightRefresh(ctx, userId, 'mail', 'email_triage');
   if (user.isPro && important.length > 0) {
-    await enqueueEmbedding(ctx, userId, [...new Set(important)].map((id) => ({ kind: 'email_summary' as const, id })));
+    await enqueueEmbedding(
+      ctx,
+      userId,
+      [...new Set(important)].map((id) => ({ kind: 'email_summary' as const, id })),
+    );
   }
   const t1 = ai.size;
   ctx.log.info('email_triage_done', {
     messages: all.length,
     t0: prepared.length - t1,
     t1,
-    sender_domains: new Set(todo.map((m) => emailDomain(m.from_email))).size,
+    sender_domains: new Set(pending.map((m) => emailDomain(m.from_email))).size,
   });
   return {
     messages: all.length,

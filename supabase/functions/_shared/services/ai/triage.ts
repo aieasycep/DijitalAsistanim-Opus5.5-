@@ -24,7 +24,6 @@ import {
   type MailCategory,
   normalizeTR,
   parseDatesTR,
-  prescanInjection,
   type PriorityContext,
   type PriorityItem,
   type PriorityResult,
@@ -51,7 +50,13 @@ import {
   guardSummary,
   storedEvidence,
 } from './grounding.ts';
-import { isHealthSender, modelText, TRIAGE_BODY_TOKENS, visibleText } from './hygiene.ts';
+import {
+  injectionScan,
+  isHealthSender,
+  modelText,
+  TRIAGE_BODY_TOKENS,
+  visibleText,
+} from './hygiene.ts';
 import { callModel, type PipelineContext, trustedHeader } from './pipeline.ts';
 
 export const TRIAGE_BATCH_SIZE = 5;
@@ -123,10 +128,12 @@ function t0Deadline(
   const quote = source.slice(s, Math.min(source.length, found.span[1] + 40)).trim();
   return {
     dueAt:
-      found.precision === 'datetime'
-        ? found.start
-        : new Date(found.end.getTime() - 6 * 3_600_000),
-    evidence: { quote: quote.slice(0, 200), field: 'deadline', locator: `m1:${s}-${found.span[1]}` },
+      found.precision === 'datetime' ? found.start : new Date(found.end.getTime() - 6 * 3_600_000),
+    evidence: {
+      quote: quote.slice(0, 200),
+      field: 'deadline',
+      locator: `m1:${s}-${found.span[1]}`,
+    },
     days,
   };
 }
@@ -174,7 +181,8 @@ export function prepareMessage(
     transactional: life.transactional,
     knownContact: known,
     repliedBefore: ctx.history.repliedBefore.has(from),
-    awaitingUserReply: thread?.reply_state === 'awaiting_their_reply' && row.direction === 'inbound',
+    awaitingUserReply:
+      thread?.reply_state === 'awaiting_their_reply' && row.direction === 'inbound',
     verifiedDeadlineInDays: deadline?.days ?? null,
     subject,
     snippet: (visible ?? row.snippet ?? '').slice(0, 400),
@@ -182,7 +190,7 @@ export function prepareMessage(
     listKey: row.list_unsubscribe ? emailDomain(from) : null,
   };
   const t0 = evaluatePriority(item, pctx(ctx));
-  const injection = prescanInjection(`${subject}\n${visible ?? row.snippet ?? ''}`);
+  const injection = injectionScan(`${subject}\n${visible ?? row.snippet ?? ''}`);
   const redacted = modelText(
     { text: `${subject}\n\n${visible ?? row.snippet ?? ''}`, html: null },
     TRIAGE_BODY_TOKENS,
@@ -214,12 +222,11 @@ export function prepareMessage(
   let commitmentSignal = false;
   if (row.direction === 'outbound' && visible !== null) {
     expects = detectExpectsReply(visible);
-    commitmentSignal =
-      detectCommitments(visible, {
-        sourceKind: 'sent_mail',
-        anchor: row.sent_at ?? row.received_at,
-        timeZone: ctx.timeZone,
-      }).some((c) => c.certainty !== 'negated');
+    commitmentSignal = detectCommitments(visible, {
+      sourceKind: 'sent_mail',
+      anchor: row.sent_at ?? row.received_at,
+      timeZone: ctx.timeZone,
+    }).some((c) => c.certainty !== 'negated');
   }
   return {
     row,
@@ -299,12 +306,17 @@ export function groundTriageItem(
   if (item.needs_reply && reply === null) dropped.add('needs_reply');
   const deadlines = item.deadlines.flatMap((d) => {
     const ev = groundQuote(d.evidence, scope, tally, 'deadline_evidence');
-    const date = ev === null ? null : groundDate({ ref: item.ref, quote: d.when_quote }, scope, tally, 'due_at', d.certainty);
+    const date =
+      ev === null
+        ? null
+        : groundDate({ ref: item.ref, quote: d.when_quote }, scope, tally, 'due_at', d.certainty);
     if (ev === null || date === null) {
       dropped.add('due_at');
       return [];
     }
-    return [{ what: clip(d.what_tr, 80), dueAt: date.dueAt, evidence: storedEvidence('due_at', ev) }];
+    return [
+      { what: clip(d.what_tr, 80), dueAt: date.dueAt, evidence: storedEvidence('due_at', ev) },
+    ];
   });
   const sources = [source];
   const summary = guardSummary(item.summary_tr, sources, trustedNames, tally, 'ai_summary');
@@ -315,7 +327,12 @@ export function groundTriageItem(
     .map((k) => clip(k, 80));
   const note = guardSummary(item.thread_note_tr, sources, trustedNames, tally, 'rolling_summary');
   const life = groundQuote(item.life_evidence, scope, tally, 'life_evidence');
-  const promise = groundQuote(item.counterparty_commitment, scope, tally, 'counterparty_commitment');
+  const promise = groundQuote(
+    item.counterparty_commitment,
+    scope,
+    tally,
+    'counterparty_commitment',
+  );
   const schedule =
     item.schedule_request !== null &&
     groundQuote(item.schedule_request.evidence, scope, tally, 'schedule_request') !== null;
@@ -378,7 +395,13 @@ export async function classifyBatch(
     inputCount: batch.length,
   });
   if (!refined.ok) {
-    return { kind: 't0', reason: 'refine_failed', results: new Map(), promptVersionId: null, tally };
+    return {
+      kind: 't0',
+      reason: 'refine_failed',
+      results: new Map(),
+      promptVersionId: null,
+      tally,
+    };
   }
   const names = [pipeline.user.displayName ?? ''].filter((n) => n !== '');
   const results = new Map<string, AiTriage>();
@@ -446,10 +469,12 @@ export function finalClassification(
     reasonCode: ai.item.reason_code,
   };
   const withAi = evaluatePriority(m.item, pctx(ctx), classification);
-  const decisive = withAi.decision_tier === 'explicit_rule' || withAi.decision_tier === 'learned_preference';
+  const decisive =
+    withAi.decision_tier === 'explicit_rule' || withAi.decision_tier === 'learned_preference';
   const hasDeadline = ai.deadlines.length > 0 || m.t0Deadline !== null;
   const important =
-    withAi.importance === 'high' || (!decisive && ai.item.important && classification.confidence >= 0.5);
+    withAi.importance === 'high' ||
+    (!decisive && ai.item.important && classification.confidence >= 0.5);
   let category: MailCategory = withAi.category;
   if (!decisive && withAi.importance !== 'muted') {
     if (ai.needsReply) category = 'awaiting_my_reply';

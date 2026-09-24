@@ -78,7 +78,10 @@ export function lifeChunkText(input: {
   readonly fields: Readonly<Record<string, unknown>>;
 }): string {
   const fields = Object.entries(input.fields)
-    .filter(([k, v]) => typeof v === 'string' && v !== '' && !['origin', 'cta_url', 'tracking_url'].includes(k))
+    .filter(
+      ([k, v]) =>
+        typeof v === 'string' && v !== '' && !['origin', 'cta_url', 'tracking_url'].includes(k),
+    )
     .map(([k, v]) => `${k}: ${String(v)}`)
     .slice(0, 8);
   return [
@@ -105,6 +108,8 @@ export function commitmentChunkText(input: {
 }
 
 /** Verified evidence travels with the chunk (quote ≤300). */
-export function chunkEvidence(list: readonly StoredEvidence[] | null | undefined): StoredEvidence[] {
+export function chunkEvidence(
+  list: readonly StoredEvidence[] | null | undefined,
+): StoredEvidence[] {
   return [...(list ?? [])].slice(0, 5);
 }

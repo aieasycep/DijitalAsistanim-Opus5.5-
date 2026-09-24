@@ -110,7 +110,14 @@ export function eveningLists(input: EveningInput, tz: string, locale: 'tr' | 'en
     .map((i) => {
       const since = input.awaitingSince[i.entity_id] ?? i.source_timestamp;
       const days = waitingDays(since, input.now, tz);
-      return { insight: i, days, draft: { ...fromInsight(i, tz), meta: copy(locale, 'briefing.generated.evening.waitingDays', { days }) } };
+      return {
+        insight: i,
+        days,
+        draft: {
+          ...fromInsight(i, tz),
+          meta: copy(locale, 'briefing.generated.evening.waitingDays', { days }),
+        },
+      };
     });
   const tomorrow = addDaysToLocalDate(today, 1);
   const first = input.tomorrowEvents
@@ -163,7 +170,10 @@ export async function composeEvening(
   if (!checked.ok) throw new Error(`evening_payload_invalid:${checked.errors.join(',')}`);
   const polished = await polishDrafts(pipeline, 'briefing_evening', lists.carry, input.now);
   const n = lists.carry.length;
-  const hero = n === 0 ? copy(l, 'today.hero.eveningReady.zero') : copy(l, 'today.hero.eveningReady.title', { count: n });
+  const hero =
+    n === 0
+      ? copy(l, 'today.hero.eveningReady.zero')
+      : copy(l, 'today.hero.eveningReady.title', { count: n });
   const sections = [
     ['completed', lists.completed] as const,
     ['carry_over', polished.drafts] as const,
@@ -191,10 +201,25 @@ export async function composeEvening(
       prompt_version_id: polished.promptVersionId,
     },
     items: itemRows(input.briefing, sections),
-    notification: briefingNotification(input.briefing, n === 0 ? 'evening.clear' : 'evening.ready', {
-      public: n === 0 ? {} : { count: n },
-      sensitive: n === 0 ? {} : { highlights: clip(polished.drafts.slice(0, 2).map((d) => d.title).join(' · '), 160) },
-    }),
+    notification: briefingNotification(
+      input.briefing,
+      n === 0 ? 'evening.clear' : 'evening.ready',
+      {
+        public: n === 0 ? {} : { count: n },
+        sensitive:
+          n === 0
+            ? {}
+            : {
+                highlights: clip(
+                  polished.drafts
+                    .slice(0, 2)
+                    .map((d) => d.title)
+                    .join(' · '),
+                  160,
+                ),
+              },
+      },
+    ),
     narrativeMode: polished.polished ? 'ai' : 'template',
   };
 }

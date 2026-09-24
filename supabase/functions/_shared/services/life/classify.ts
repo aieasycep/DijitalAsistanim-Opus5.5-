@@ -71,7 +71,12 @@ export function detectLife(input: LifeInput): LifeDetection {
   };
   const security = detectSecurity(templateInput);
   if (security.kind === 'event') {
-    return { candidates: [security.candidate], matched: true, transactional: true, security: 'verified' };
+    return {
+      candidates: [security.candidate],
+      matched: true,
+      transactional: true,
+      security: 'verified',
+    };
   }
   if (security.kind === 'rejected') {
     return { candidates: [], matched: true, transactional: false, security: 'rejected' };
@@ -135,7 +140,13 @@ export function candidateFromModel(
       const tracking =
         event.tracking_quote === null
           ? null
-          : groundField<TrackingMatch>('tracking', { ref, quote: event.tracking_quote }, scope, tally, 'tracking_no');
+          : groundField<TrackingMatch>(
+              'tracking',
+              { ref, quote: event.tracking_quote },
+              scope,
+              tally,
+              'tracking_no',
+            );
       if (event.tracking_quote !== null && tracking === null) dropped.push('tracking_no');
       if (tracking !== null) evidence.push(storedEvidence('tracking_no', tracking.evidence));
       const merchant = quoted(scope, ref, event.merchant_quote, 'merchant', tally);
@@ -169,7 +180,13 @@ export function candidateFromModel(
       };
     }
     case 'flight': {
-      const flight = groundField<FlightMatch>('flight', { ref, quote: event.flight_no_quote }, scope, tally, 'flight_no');
+      const flight = groundField<FlightMatch>(
+        'flight',
+        { ref, quote: event.flight_no_quote },
+        scope,
+        tally,
+        'flight_no',
+      );
       if (flight === null) return null;
       evidence.push(storedEvidence('flight_no', flight.evidence));
       const pnr =
@@ -223,7 +240,10 @@ export function candidateFromModel(
         dueAt: confirmBy?.dueAt ?? null,
         amount: null,
         evidence: evidence.slice(0, 5),
-        identity: [venue.text, at === null ? null : Math.trunc(at.resolution.start.getTime() / 1000)],
+        identity: [
+          venue.text,
+          at === null ? null : Math.trunc(at.resolution.start.getTime() / 1000),
+        ],
         confidence: 0.8,
         droppedFields: dropped,
       };
@@ -232,7 +252,9 @@ export function candidateFromModel(
       const payee = quoted(scope, ref, event.payee_quote, 'payee', tally);
       if (payee === null) return null;
       const amount =
-        event.amount_quote === null ? null : groundAmount({ ref, quote: event.amount_quote }, scope, tally);
+        event.amount_quote === null
+          ? null
+          : groundAmount({ ref, quote: event.amount_quote }, scope, tally);
       if (event.amount_quote !== null && amount === null) dropped.push('amount');
       const due = date(event.due_quote, 'due_at');
       const amountEv = amount === null ? null : storedEvidence('amount', amount.evidence);
@@ -247,9 +269,17 @@ export function candidateFromModel(
         amount:
           amount === null || amountEv === null
             ? null
-            : { minor: Math.abs(amount.value.minor), currency: amount.value.currency, evidence: amountEv },
+            : {
+                minor: Math.abs(amount.value.minor),
+                currency: amount.value.currency,
+                evidence: amountEv,
+              },
         evidence: evidence.slice(0, 5),
-        identity: [payee.text, due?.resolution.localDate ?? null, amount === null ? 'na' : Math.abs(amount.value.minor)],
+        identity: [
+          payee.text,
+          due?.resolution.localDate ?? null,
+          amount === null ? 'na' : Math.abs(amount.value.minor),
+        ],
         confidence: 0.8,
         droppedFields: dropped,
       };
@@ -258,7 +288,9 @@ export function candidateFromModel(
       const service = quoted(scope, ref, event.service_quote, 'service', tally);
       if (service === null) return null;
       const amount =
-        event.amount_quote === null ? null : groundAmount({ ref, quote: event.amount_quote }, scope, tally);
+        event.amount_quote === null
+          ? null
+          : groundAmount({ ref, quote: event.amount_quote }, scope, tally);
       if (event.amount_quote !== null && amount === null) dropped.push('amount');
       const renews = date(event.renews_quote, 'renews_at');
       const amountEv = amount === null ? null : storedEvidence('amount', amount.evidence);
@@ -273,7 +305,11 @@ export function candidateFromModel(
         amount:
           amount === null || amountEv === null
             ? null
-            : { minor: Math.abs(amount.value.minor), currency: amount.value.currency, evidence: amountEv },
+            : {
+                minor: Math.abs(amount.value.minor),
+                currency: amount.value.currency,
+                evidence: amountEv,
+              },
         evidence: evidence.slice(0, 5),
         identity: [service.text, renews?.resolution.localDate ?? null],
         confidence: 0.8,
@@ -368,14 +404,18 @@ function titleOf(c: LifeCandidate, locale: CopyLocale): string {
     case 'flight':
       return copy(locale, 'life.generated.flight', {
         flight: name(f.flight_no),
-        route: typeof f.from === 'string' && typeof f.to === 'string' ? `${f.from}–${f.to}` : 'none',
+        route:
+          typeof f.from === 'string' && typeof f.to === 'string' ? `${f.from}–${f.to}` : 'none',
       });
     case 'reservation':
       return copy(locale, 'life.generated.reservation', { venue: name(f.venue) });
     case 'payment':
       return copy(locale, 'life.generated.payment', { status: c.status, payee: name(f.payee) });
     case 'subscription':
-      return copy(locale, 'life.generated.subscription', { event: c.status, service: name(f.service) });
+      return copy(locale, 'life.generated.subscription', {
+        event: c.status,
+        service: name(f.service),
+      });
     case 'security':
       return copy(locale, 'life.generated.security', { event: c.status, service: name(f.service) });
   }
@@ -421,4 +461,3 @@ export function lifeEventRow(
     evidence: c.evidence.length > 0 ? [...c.evidence].slice(0, 5) : [],
   };
 }
-

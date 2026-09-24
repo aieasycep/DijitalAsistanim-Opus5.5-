@@ -64,9 +64,17 @@ export interface ItemDraft extends ProvenanceColumns {
   readonly at: string | null;
 }
 
-const LIFE_BADGES: ReadonlySet<string> = new Set(['shipment', 'flight', 'reservation', 'payment', 'subscription']);
+const LIFE_BADGES: ReadonlySet<string> = new Set([
+  'shipment',
+  'flight',
+  'reservation',
+  'payment',
+  'subscription',
+]);
 
-export function badgeFor(insight: Pick<InsightRow, 'kind' | 'urgency' | 'flow_card_type'>): ItemBadge | null {
+export function badgeFor(
+  insight: Pick<InsightRow, 'kind' | 'urgency' | 'flow_card_type'>,
+): ItemBadge | null {
   if (insight.urgency === 'urgent') return 'urgent';
   switch (insight.kind) {
     case 'deadline':
@@ -120,7 +128,9 @@ export function fromEvent(
   meta?: string,
 ): ItemDraft {
   const place = e.is_online ? copy(locale, 'briefing.generated.online') : (e.location ?? '');
-  const time = e.all_day ? '' : `${formatTime(e.start_at, timeZone)}–${formatTime(e.end_at, timeZone)}`;
+  const time = e.all_day
+    ? ''
+    : `${formatTime(e.start_at, timeZone)}–${formatTime(e.end_at, timeZone)}`;
   return {
     insightId: null,
     entityType: 'calendar_event',
@@ -131,7 +141,10 @@ export function fromEvent(
     kind: 'event',
     urgency: 'normal',
     at: e.start_at,
-    source_type: e.provider === 'apple_device' || e.provider === 'android_device' ? 'device_calendar_event' : 'calendar_event',
+    source_type:
+      e.provider === 'apple_device' || e.provider === 'android_device'
+        ? 'device_calendar_event'
+        : 'calendar_event',
     source_id: e.id,
     source_provider: e.provider,
     source_timestamp: e.updated_at,
@@ -188,7 +201,11 @@ export function itemRows(
 }
 
 /** Removes drafts whose entity already appears in an earlier section list. */
-export function withoutSeen(drafts: readonly ItemDraft[], seen: Set<string>, max: number): ItemDraft[] {
+export function withoutSeen(
+  drafts: readonly ItemDraft[],
+  seen: Set<string>,
+  max: number,
+): ItemDraft[] {
   const out: ItemDraft[] = [];
   for (const d of drafts) {
     const key = `${d.entityType}:${d.entityId}`;
@@ -204,14 +221,19 @@ export function withoutSeen(drafts: readonly ItemDraft[], seen: Set<string>, max
 export function briefingNotification(
   briefing: Pick<BriefingRow, 'id' | 'kind'>,
   templateKey: string,
-  params: { readonly public: Record<string, string | number>; readonly sensitive: Record<string, string> },
+  params: {
+    readonly public: Record<string, string | number>;
+    readonly sensitive: Record<string, string>;
+  },
 ): NotificationBuild {
   const category = briefing.kind === 'weekly' ? 'evening' : briefing.kind;
   return {
     category,
     dedupe_key: briefingNotificationDedupeKey(briefing.id),
     entity: { type: 'briefing', id: briefing.id },
-    deeplink: toDeepLink(briefing.kind === 'weekly' ? routes.weekly(briefing.id) : routes.briefing(briefing.id)),
+    deeplink: toDeepLink(
+      briefing.kind === 'weekly' ? routes.weekly(briefing.id) : routes.briefing(briefing.id),
+    ),
     template_key: templateKey,
     params_public: params.public,
     params_sensitive: params.sensitive,

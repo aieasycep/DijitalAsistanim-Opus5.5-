@@ -16,14 +16,7 @@ import {
 } from '@da/domain';
 
 export type SearchType =
-  | 'email'
-  | 'person'
-  | 'event'
-  | 'task'
-  | 'commitment'
-  | 'life_event'
-  | 'memory'
-  | 'capture';
+  'email' | 'person' | 'event' | 'task' | 'commitment' | 'life_event' | 'memory' | 'capture';
 
 export interface ParsedQuery {
   /** Text for FTS and the query embedding (date / type words removed). */
@@ -55,7 +48,10 @@ const TYPE_WORDS: readonly (readonly [RegExp, readonly SearchType[]])[] = [
   [/^(toplanti\p{L}*|etkinli\p{L}*|randevu\p{L}*|takvim\p{L}*)$/u, ['event']],
   [/^(gorev\p{L}*|yapilacak\p{L}*)$/u, ['task']],
   [/^(soz|sozu|sozler\p{L}*|sozum\p{L}*|taahhut\p{L}*)$/u, ['commitment']],
-  [/^(kargo\p{L}*|ucus\p{L}*|bilet\p{L}*|fatura\p{L}*|odeme\p{L}*|rezervasyon\p{L}*|abonelik\p{L}*|siparis\p{L}*)$/u, ['life_event']],
+  [
+    /^(kargo\p{L}*|ucus\p{L}*|bilet\p{L}*|fatura\p{L}*|odeme\p{L}*|rezervasyon\p{L}*|abonelik\p{L}*|siparis\p{L}*)$/u,
+    ['life_event'],
+  ],
   [/^(kisi|kisiler|kisiyi)$/u, ['person']],
   [/^(not|notlar\p{L}*|hafiza\p{L}*)$/u, ['memory']],
 ];
@@ -69,7 +65,10 @@ interface Range {
 }
 
 function dayRange(start: string, endInclusive: string, tz: string): Range {
-  return { from: startOfLocalDay(start, tz), to: startOfLocalDay(addDaysToLocalDate(endInclusive, 1), tz) };
+  return {
+    from: startOfLocalDay(start, tz),
+    to: startOfLocalDay(addDaysToLocalDate(endInclusive, 1), tz),
+  };
 }
 
 function monthStart(year: number, month: number): string {
@@ -82,29 +81,53 @@ function dateRange(folded: string, now: Date, tz: string): { range: Range; match
   const [y, m] = today.split('-').map(Number) as [number, number];
   const rules: readonly [RegExp, (hit: RegExpExecArray) => Range][] = [
     [/(?<!\p{L})bugun(?:ku)?(?!\p{L})/u, () => dayRange(today, today, tz)],
-    [/(?<!\p{L})dun(?:ku)?(?!\p{L})/u, () => dayRange(addDaysToLocalDate(today, -1), addDaysToLocalDate(today, -1), tz)],
-    [/(?<!\p{L})(?:son|gecen)\s+(\d{1,3})\s+gun(?:de)?(?!\p{L})/u, (hit) => {
-      const n = Number(hit[1] ?? '7');
-      return dayRange(addDaysToLocalDate(today, -Math.min(n, 365)), today, tz);
-    }],
-    [/(?<!\p{L})bu\s+hafta(?:ki)?(?!\p{L})/u, () => dayRange(isoWeekStart(today), addDaysToLocalDate(isoWeekStart(today), 6), tz)],
-    [/(?<!\p{L})gecen\s+hafta(?:ki)?(?!\p{L})/u, () => {
-      const start = addDaysToLocalDate(isoWeekStart(today), -7);
-      return dayRange(start, addDaysToLocalDate(start, 6), tz);
-    }],
-    [/(?<!\p{L})bu\s+ay(?:ki)?(?!\p{L})/u, () => dayRange(monthStart(y, m), endOfMonthLocalDate(today), tz)],
-    [/(?<!\p{L})gecen\s+ay(?:ki)?(?!\p{L})/u, () => {
-      const start = m === 1 ? monthStart(y - 1, 12) : monthStart(y, m - 1);
-      return dayRange(start, endOfMonthLocalDate(start), tz);
-    }],
+    [
+      /(?<!\p{L})dun(?:ku)?(?!\p{L})/u,
+      () => dayRange(addDaysToLocalDate(today, -1), addDaysToLocalDate(today, -1), tz),
+    ],
+    [
+      /(?<!\p{L})(?:son|gecen)\s+(\d{1,3})\s+gun(?:de)?(?!\p{L})/u,
+      (hit) => {
+        const n = Number(hit[1] ?? '7');
+        return dayRange(addDaysToLocalDate(today, -Math.min(n, 365)), today, tz);
+      },
+    ],
+    [
+      /(?<!\p{L})bu\s+hafta(?:ki)?(?!\p{L})/u,
+      () => dayRange(isoWeekStart(today), addDaysToLocalDate(isoWeekStart(today), 6), tz),
+    ],
+    [
+      /(?<!\p{L})gecen\s+hafta(?:ki)?(?!\p{L})/u,
+      () => {
+        const start = addDaysToLocalDate(isoWeekStart(today), -7);
+        return dayRange(start, addDaysToLocalDate(start, 6), tz);
+      },
+    ],
+    [
+      /(?<!\p{L})bu\s+ay(?:ki)?(?!\p{L})/u,
+      () => dayRange(monthStart(y, m), endOfMonthLocalDate(today), tz),
+    ],
+    [
+      /(?<!\p{L})gecen\s+ay(?:ki)?(?!\p{L})/u,
+      () => {
+        const start = m === 1 ? monthStart(y - 1, 12) : monthStart(y, m - 1);
+        return dayRange(start, endOfMonthLocalDate(start), tz);
+      },
+    ],
     [/(?<!\p{L})bu\s+yil(?:ki)?(?!\p{L})/u, () => dayRange(`${y}-01-01`, `${y}-12-31`, tz)],
-    [/(?<!\p{L})gecen\s+yil(?:ki)?(?!\p{L})/u, () => dayRange(`${y - 1}-01-01`, `${y - 1}-12-31`, tz)],
+    [
+      /(?<!\p{L})gecen\s+yil(?:ki)?(?!\p{L})/u,
+      () => dayRange(`${y - 1}-01-01`, `${y - 1}-12-31`, tz),
+    ],
   ];
   for (const [re, make] of rules) {
     const hit = re.exec(folded);
     if (hit !== null) return { range: make(hit), match: hit[0] };
   }
-  const month = new RegExp(`(?<!\\p{L})(${MONTHS.join('|')})(?:\\p{L}*)(?:\\s+(20\\d{2}))?(?!\\p{L})`, 'u').exec(folded);
+  const month = new RegExp(
+    `(?<!\\p{L})(${MONTHS.join('|')})(?:\\p{L}*)(?:\\s+(20\\d{2}))?(?!\\p{L})`,
+    'u',
+  ).exec(folded);
   if (month !== null) {
     const index = MONTHS.indexOf(month[1]!) + 1;
     const year = month[2] !== undefined ? Number(month[2]) : index > m ? y - 1 : y;
@@ -122,10 +145,15 @@ function dateRange(folded: string, now: Date, tz: string): { range: Range; match
 /** Capitalised words with an optional possessive / "ile" ("Mehmet'in", "Ayşe ile"). */
 function personHints(original: string): string[] {
   const out: string[] = [];
-  const re = /(?<!\p{L})(\p{Lu}\p{Ll}{1,30})(?:['’](?:in|ın|un|ün|nin|nın|nun|nün|e|a|ye|ya|den|dan|ten|tan|le|la))?(?!\p{L})/gu;
+  const re =
+    /(?<!\p{L})(\p{Lu}\p{Ll}{1,30})(?:['’](?:in|ın|un|ün|nin|nın|nun|nün|e|a|ye|ya|den|dan|ten|tan|le|la))?(?!\p{L})/gu;
   for (const m of original.matchAll(re)) {
     const name = m[1]!;
-    if (m.index === 0 && !/['’]/.test(m[0]) && !/\s+ile(?!\p{L})/u.test(original.slice(m.index + m[0].length, m.index + m[0].length + 5))) {
+    if (
+      m.index === 0 &&
+      !/['’]/.test(m[0]) &&
+      !/\s+ile(?!\p{L})/u.test(original.slice(m.index + m[0].length, m.index + m[0].length + 5))
+    ) {
       // A capitalised first word is usually sentence case, not a name.
       continue;
     }
@@ -143,7 +171,9 @@ export function parseSearchQuery(q: string, now: Date, timeZone: string): Parsed
   const kept: string[] = [];
   const dateWords = new Set((date?.match ?? '').split(/\s+/).filter((w) => w !== ''));
   for (const word of words) {
-    const f = foldTR(word).replace(/['’].*$/u, '').replace(/[^\p{L}\p{N}-]/gu, '');
+    const f = foldTR(word)
+      .replace(/['’].*$/u, '')
+      .replace(/[^\p{L}\p{N}-]/gu, '');
     if (dateWords.has(foldTR(word)) || dateWords.has(f)) continue;
     const typed = TYPE_WORDS.find(([re]) => re.test(f));
     if (typed !== undefined) {

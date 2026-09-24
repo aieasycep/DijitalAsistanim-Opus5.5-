@@ -51,7 +51,14 @@ import type {
   MemoryChunkRow,
   TaskRow,
 } from '../services/intel/types.ts';
-import { allFlags, configRow, PRICES, memoryCache, recordingBudget, recordingTelemetry } from './ai.ts';
+import {
+  allFlags,
+  configRow,
+  PRICES,
+  memoryCache,
+  recordingBudget,
+  recordingTelemetry,
+} from './ai.ts';
 import { USER_A } from './jwt.ts';
 
 export const NOW = new Date('2026-09-24T06:30:00.000Z'); // Perşembe 09:30 Europe/Istanbul
@@ -118,7 +125,9 @@ function rows(): ModelConfigRow[] {
       tier: 't1',
       provider: feature.startsWith('embedding') ? 'voyage' : 'anthropic',
       model: 'primary-model',
-      params: feature.startsWith('embedding') ? { output_dimension: 1024 } : { max_output_tokens: 1500 },
+      params: feature.startsWith('embedding')
+        ? { output_dimension: 1024 }
+        : { max_output_tokens: 1500 },
       fallback_targets: feature.startsWith('embedding')
         ? []
         : [{ provider: 'openai', model: 'fallback-model', params: {} }],
@@ -149,7 +158,9 @@ export function fixtureServices(
   const calls: string[] = [];
   const counted = {
     ...fixture,
-    generateStructured: <T>(...args: Parameters<NonNullable<typeof fixture.generateStructured>>) => {
+    generateStructured: <T>(
+      ...args: Parameters<NonNullable<typeof fixture.generateStructured>>
+    ) => {
       calls.push(args[0].schemaName);
       return fixture.generateStructured!<T>(args[0] as never, args[1]);
     },
@@ -180,7 +191,8 @@ export function fixtureServices(
     telemetry,
     budget,
     cache,
-    provider: (id) => (id === 'voyage' && options.embedAvailable === false ? null : (counted as never)),
+    provider: (id) =>
+      id === 'voyage' && options.embedAvailable === false ? null : (counted as never),
     aiHashPepper: 'test-pepper',
     log: createLogger({ fn: 'worker', sink: memorySink().sink }),
   };
@@ -385,10 +397,19 @@ export class MemoryIntel {
   approvals: (ApprovalInsert & { id: string; status: string })[] = [];
   events: CalendarEventRow[] = [];
   tasks: TaskRow[] = [];
-  insights: (InsightUpsert & { id: string; status: InsightRow['status']; created_at: string; done_at: string | null })[] = [];
+  insights: (InsightUpsert & {
+    id: string;
+    status: InsightRow['status'];
+    created_at: string;
+    done_at: string | null;
+  })[] = [];
   briefings: BriefingRow[] = [];
   items: BriefingItemRow[] = [];
-  chunks: (MemoryChunkInsert & { id: string; embedding: number[] | null; embedding_model: string | null })[] = [];
+  chunks: (MemoryChunkInsert & {
+    id: string;
+    embedding: number[] | null;
+    embedding_model: string | null;
+  })[] = [];
   batches: Record<string, Record<string, unknown>> = {};
   counts: WeeklyCounts = {
     mailsAnalyzed: 120,
@@ -430,11 +451,15 @@ export class MemoryIntel {
           repliedBefore: new Set(emails.filter((e) => this.contacts.has(e))),
         }),
       updateMessage: (id, patch) => {
-        this.messages = this.messages.map((m) => (m.id === id ? ({ ...m, ...patch } as MailMessageRow) : m));
+        this.messages = this.messages.map((m) =>
+          m.id === id ? ({ ...m, ...patch } as MailMessageRow) : m,
+        );
         return Promise.resolve();
       },
       updateThread: (id, patch) => {
-        this.threads = this.threads.map((t) => (t.id === id ? ({ ...t, ...patch } as MailThreadRow) : t));
+        this.threads = this.threads.map((t) =>
+          t.id === id ? ({ ...t, ...patch } as MailThreadRow) : t,
+        );
         return Promise.resolve();
       },
       upsertContacts: (_u, people) => {
@@ -442,7 +467,11 @@ export class MemoryIntel {
         for (const p of people) {
           const existing = this.contacts.get(p.email);
           const id = existing?.id ?? uuid();
-          this.contacts.set(p.email, { id, name: p.name ?? existing?.name ?? null, organization: p.organization ?? null });
+          this.contacts.set(p.email, {
+            id,
+            name: p.name ?? existing?.name ?? null,
+            organization: p.organization ?? null,
+          });
           out[p.email] = id;
         }
         return Promise.resolve(out);
@@ -461,7 +490,9 @@ export class MemoryIntel {
         ),
       upsertLifeEvents: (rowsIn) => {
         const out = rowsIn.map((r) => {
-          const existing = this.lifeEvents.find((l) => l.user_id === r.user_id && l.dedupe_key === r.dedupe_key);
+          const existing = this.lifeEvents.find(
+            (l) => l.user_id === r.user_id && l.dedupe_key === r.dedupe_key,
+          );
           if (existing !== undefined) {
             Object.assign(existing, r);
             return { id: existing.id, dedupe_key: r.dedupe_key };
@@ -475,7 +506,10 @@ export class MemoryIntel {
       upsertCommitments: (rowsIn) => {
         const out: { id: string; dedupe_key: string }[] = [];
         for (const r of rowsIn) {
-          if (this.commitments.some((c) => c.user_id === r.user_id && c.dedupe_key === r.dedupe_key)) continue;
+          if (
+            this.commitments.some((c) => c.user_id === r.user_id && c.dedupe_key === r.dedupe_key)
+          )
+            continue;
           const row = { ...r, id: uuid(), status: 'open' };
           this.commitments.push(row);
           out.push({ id: row.id, dedupe_key: r.dedupe_key });
@@ -486,9 +520,14 @@ export class MemoryIntel {
         let n = 0;
         for (const r of rowsIn) {
           const pending = this.approvals.some(
-            (a) => a.user_id === r.user_id && a.origin === r.origin && a.origin_ref_id === r.origin_ref_id && a.status === 'pending',
+            (a) =>
+              a.user_id === r.user_id &&
+              a.origin === r.origin &&
+              a.origin_ref_id === r.origin_ref_id &&
+              a.status === 'pending',
           );
-          if (pending || this.approvals.some((a) => a.idempotency_key === r.idempotency_key)) continue;
+          if (pending || this.approvals.some((a) => a.idempotency_key === r.idempotency_key))
+            continue;
           this.approvals.push({ ...r, id: uuid(), status: 'pending' });
           n++;
         }
@@ -496,7 +535,9 @@ export class MemoryIntel {
       },
       events: (_u, from, to) =>
         Promise.resolve(
-          this.events.filter((e) => Date.parse(e.start_at) < to.getTime() && Date.parse(e.end_at) > from.getTime()),
+          this.events.filter(
+            (e) => Date.parse(e.start_at) < to.getTime() && Date.parse(e.end_at) > from.getTime(),
+          ),
         ),
       upsertInsights: (rowsIn) => this.upsertInsights(rowsIn),
     };
@@ -505,12 +546,20 @@ export class MemoryIntel {
   upsertInsights(rowsIn: readonly InsightUpsert[]): Promise<{ id: string; dedupe_key: string }[]> {
     return Promise.resolve(
       rowsIn.map((r) => {
-        const existing = this.insights.find((i) => i.user_id === r.user_id && i.dedupe_key === r.dedupe_key);
+        const existing = this.insights.find(
+          (i) => i.user_id === r.user_id && i.dedupe_key === r.dedupe_key,
+        );
         if (existing !== undefined) {
           Object.assign(existing, r);
           return { id: existing.id, dedupe_key: r.dedupe_key };
         }
-        const row = { ...r, id: uuid(), status: 'open' as const, created_at: NOW.toISOString(), done_at: null };
+        const row = {
+          ...r,
+          id: uuid(),
+          status: 'open' as const,
+          created_at: NOW.toISOString(),
+          done_at: null,
+        };
         this.insights.push(row);
         return { id: row.id, dedupe_key: r.dedupe_key };
       }),
@@ -547,7 +596,9 @@ export class MemoryIntel {
 
   snapshot(): InsightSnapshot {
     const latest = new Map<string, MailMessageRow>();
-    for (const m of [...this.messages].sort((a, b) => Date.parse(b.received_at) - Date.parse(a.received_at))) {
+    for (const m of [...this.messages].sort(
+      (a, b) => Date.parse(b.received_at) - Date.parse(a.received_at),
+    )) {
       if (m.direction === 'inbound' && !latest.has(m.thread_id)) latest.set(m.thread_id, m);
     }
     return {
@@ -570,42 +621,38 @@ export class MemoryIntel {
         confidence: c.confidence,
         evidence: c.evidence,
       })),
-      lifeEvents: this.lifeEvents.map(
-        (l): LifeEventRow => ({
-          id: l.id,
-          type: l.type,
-          title: l.title,
-          status: 'open',
-          event_at: l.event_at,
-          due_at: l.due_at,
-          payload: l.payload,
-          amount: l.amount,
-          currency: l.currency,
-          tracking_url: l.tracking_url,
-          suppressed: false,
-          resolved_at: null,
-          updated_at: NOW.toISOString(),
-          source_type: l.source_type,
-          source_id: l.source_id,
-          source_provider: l.source_provider,
-          source_timestamp: l.source_timestamp,
-          confidence: l.confidence,
-          evidence: l.evidence,
-        }),
-      ),
+      lifeEvents: this.lifeEvents.map((l): LifeEventRow => ({
+        id: l.id,
+        type: l.type,
+        title: l.title,
+        status: 'open',
+        event_at: l.event_at,
+        due_at: l.due_at,
+        payload: l.payload,
+        amount: l.amount,
+        currency: l.currency,
+        tracking_url: l.tracking_url,
+        suppressed: false,
+        resolved_at: null,
+        updated_at: NOW.toISOString(),
+        source_type: l.source_type,
+        source_id: l.source_id,
+        source_provider: l.source_provider,
+        source_timestamp: l.source_timestamp,
+        confidence: l.confidence,
+        evidence: l.evidence,
+      })),
       events: this.events,
       tasks: this.tasks,
-      approvals: this.approvals.map(
-        (a): ApprovalRow => ({
-          id: a.id,
-          action_type: a.action_type,
-          status: a.status,
-          what: a.what,
-          approval_expires_at: new Date(NOW.getTime() + 72 * 3_600_000).toISOString(),
-          executed_at: null,
-          created_at: NOW.toISOString(),
-        }),
-      ),
+      approvals: this.approvals.map((a): ApprovalRow => ({
+        id: a.id,
+        action_type: a.action_type,
+        status: a.status,
+        what: a.what,
+        approval_expires_at: new Date(NOW.getTime() + 72 * 3_600_000).toISOString(),
+        executed_at: null,
+        created_at: NOW.toISOString(),
+      })),
       insights: this.insightRows(),
       vip: this.vipSet,
       ownAddresses: this.own,
@@ -619,11 +666,14 @@ export class MemoryIntel {
       byId: (id) => Promise.resolve(this.briefings.find((b) => b.id === id) ?? null),
       forDate: (userId, kind: BriefingKind, day) =>
         Promise.resolve(
-          this.briefings.find((b) => b.user_id === userId && b.kind === kind && b.local_date === day) ?? null,
+          this.briefings.find(
+            (b) => b.user_id === userId && b.kind === kind && b.local_date === day,
+          ) ?? null,
         ),
       ensure: (row) => {
         const found = this.briefings.find(
-          (b) => b.user_id === row.user_id && b.kind === row.kind && b.local_date === row.local_date,
+          (b) =>
+            b.user_id === row.user_id && b.kind === row.kind && b.local_date === row.local_date,
         );
         if (found !== undefined) return Promise.resolve(found);
         const created = briefingRow({ ...row, kind: row.kind, status: 'scheduled' });
@@ -631,18 +681,30 @@ export class MemoryIntel {
         return Promise.resolve(created);
       },
       update: (id, patch) => {
-        this.briefings = this.briefings.map((b) => (b.id === id ? ({ ...b, ...patch } as BriefingRow) : b));
+        this.briefings = this.briefings.map((b) =>
+          b.id === id ? ({ ...b, ...patch } as BriefingRow) : b,
+        );
         return Promise.resolve();
       },
       replaceItems: (briefingId, rowsIn) => {
-        this.items = this.items.filter((i) => i.briefing_id !== briefingId || i.carried_over_to !== null);
+        this.items = this.items.filter(
+          (i) => i.briefing_id !== briefingId || i.carried_over_to !== null,
+        );
         for (const r of rowsIn) this.items.push({ ...r, id: uuid(), carried_over_to: null });
         return Promise.resolve();
       },
-      items: (briefingId) => Promise.resolve(this.items.filter((i) => i.briefing_id === briefingId)),
+      items: (briefingId) =>
+        Promise.resolve(this.items.filter((i) => i.briefing_id === briefingId)),
       carriedTo: (userId, day) =>
-        Promise.resolve(this.items.filter((i) => i.user_id === userId && i.carried_over_to === day)),
-      byJobIds: (ids) => Promise.resolve(this.briefings.filter((b) => b.job_id !== null && b.job_id !== undefined && ids.includes(b.job_id))),
+        Promise.resolve(
+          this.items.filter((i) => i.user_id === userId && i.carried_over_to === day),
+        ),
+      byJobIds: (ids) =>
+        Promise.resolve(
+          this.briefings.filter(
+            (b) => b.job_id !== null && b.job_id !== undefined && ids.includes(b.job_id),
+          ),
+        ),
       recordBatch: (row) => {
         this.batches[row.batch_id] = { status: 'submitted', ...row };
         return Promise.resolve();
@@ -656,7 +718,12 @@ export class MemoryIntel {
 
   statsStore(): StatsStore {
     return {
-      mailCounts: () => Promise.resolve({ total: this.messages.length, attention: 2, calendars: this.events.length }),
+      mailCounts: () =>
+        Promise.resolve({
+          total: this.messages.length,
+          attention: 2,
+          calendars: this.events.length,
+        }),
       weekly: () => Promise.resolve(this.counts),
       freshness: () => Promise.resolve({ accounts: [{ provider: 'google', status: 'healthy' }] }),
     };
@@ -668,7 +735,12 @@ export class MemoryIntel {
         Promise.resolve(
           itemsIn.flatMap((item): MemorySource[] => {
             const t = this.threads.find((x) => x.id === item.id);
-            if (item.kind !== 'email_summary' || t === undefined || (t.rolling_summary ?? t.ai_summary) === null) return [];
+            if (
+              item.kind !== 'email_summary' ||
+              t === undefined ||
+              (t.rolling_summary ?? t.ai_summary) === null
+            )
+              return [];
             return [
               {
                 userId,
@@ -690,8 +762,18 @@ export class MemoryIntel {
       upsertChunks: (rowsIn) => {
         const out: MemoryChunkRow[] = [];
         for (const r of rowsIn) {
-          if (this.chunks.some((c) => c.source_id === r.source_id && c.chunk_kind === r.chunk_kind && c.content_hash === r.content_hash)) continue;
-          this.chunks = this.chunks.filter((c) => !(c.source_id === r.source_id && c.chunk_kind === r.chunk_kind));
+          if (
+            this.chunks.some(
+              (c) =>
+                c.source_id === r.source_id &&
+                c.chunk_kind === r.chunk_kind &&
+                c.content_hash === r.content_hash,
+            )
+          )
+            continue;
+          this.chunks = this.chunks.filter(
+            (c) => !(c.source_id === r.source_id && c.chunk_kind === r.chunk_kind),
+          );
           const row = { ...r, id: uuid(), embedding: null, embedding_model: null };
           this.chunks.push(row);
           out.push({ id: row.id, user_id: r.user_id, content: r.content, embedding_model: null });
@@ -701,9 +783,19 @@ export class MemoryIntel {
       pendingChunks: (userId, ids, limit) =>
         Promise.resolve(
           this.chunks
-            .filter((c) => c.user_id === userId && c.embedding_model === null && (ids === null || ids.includes(c.id)))
+            .filter(
+              (c) =>
+                c.user_id === userId &&
+                c.embedding_model === null &&
+                (ids === null || ids.includes(c.id)),
+            )
             .slice(0, limit)
-            .map((c) => ({ id: c.id, user_id: c.user_id, content: c.content, embedding_model: null })),
+            .map((c) => ({
+              id: c.id,
+              user_id: c.user_id,
+              content: c.content,
+              embedding_model: null,
+            })),
         ),
       writeEmbeddings: (rowsIn) => {
         for (const r of rowsIn) {
@@ -723,7 +815,9 @@ export class MemoryIntel {
       fetch: ({ providerMessageId }) => {
         const body = this.bodies.get(providerMessageId);
         return Promise.resolve(
-          body === undefined ? null : { text: body.text, html: body.html, truncated: false, attachments: [] },
+          body === undefined
+            ? null
+            : { text: body.text, html: body.html, truncated: false, attachments: [] },
         );
       },
     };
@@ -736,7 +830,13 @@ export interface RecordingJobContext<P> extends JobContext<P> {
 
 export function jobContext<P>(
   payload: P,
-  options: { now?: Date; attempts?: number; maxAttempts?: number; type?: JobRow['type']; id?: string } = {},
+  options: {
+    now?: Date;
+    attempts?: number;
+    maxAttempts?: number;
+    type?: JobRow['type'];
+    id?: string;
+  } = {},
 ): RecordingJobContext<P> {
   const enqueued: EnqueueInput[] = [];
   const job: JobRow = {
