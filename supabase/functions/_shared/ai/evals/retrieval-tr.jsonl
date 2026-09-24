@@ -1,0 +1,161 @@
+{"corpus": [{"id": "d01", "title": "Revize teklif", "content": "Mehmet Yılmaz revize teklifi Cuma istiyor; fiyatlarda yüzde 5 iskonto konuşuldu."}, {"id": "d02", "title": "Uçak bileti", "content": "İstanbul Ankara uçuşu TK2124 için biletin onaylandı, PNR ABC123."}, {"id": "d03", "title": "Elektrik faturası", "content": "Elektrik faturası 1.842 TL, son ödeme 5 Ekim."}, {"id": "d04", "title": "Kargo takibi", "content": "Trendyol siparişin Yurtiçi Kargo ile yola çıktı."}, {"id": "d05", "title": "Sözleşme", "content": "Kaya Hukuk sözleşme taslağını gönderdi, imza için 30 Eylül bekleniyor."}, {"id": "d06", "title": "Otel rezervasyonu", "content": "Bodrum otel rezervasyonun 12 Ekim için onaylandı, iki kişilik."}, {"id": "d07", "title": "Bütçe toplantısı", "content": "Demir İnşaat ile bütçe toplantısı Salı 10:00 olarak ayarlandı."}, {"id": "d08", "title": "Netflix aboneliği", "content": "Netflix aboneliğin 20 Ekim tarihinde yenilenecek."}, {"id": "d09", "title": "Proje planı", "content": "Arslan Mimarlık proje planını revize etti, yeni teslim tarihi Kasım."}, {"id": "d10", "title": "Sevkiyat", "content": "Kuzey Lojistik sevkiyatı 3 Ekim tarihine aldı."}, {"id": "d11", "title": "Maaş bordrosu", "content": "Eylül ayı maaş bordron hazır."}, {"id": "d12", "title": "Doktor randevusu", "content": "Diş hekimi randevun Perşembe 15:30."}, {"id": "d13", "title": "Kira ödemesi", "content": "Ekim ayı kira ödemesi 25.000 TL, son gün 5 Ekim."}, {"id": "d14", "title": "Sunum", "content": "Can Öztürk yatırımcı sunumunun son hâlini paylaştı."}, {"id": "d15", "title": "Enerji teklifi", "content": "Aydın Enerji güneş paneli teklifi gönderdi."}, {"id": "d16", "title": "Gıda siparişi", "content": "Kılıç Gıda toptan sipariş onayı geldi."}, {"id": "d17", "title": "Araç servisi", "content": "Koç Otomotiv aracının servis bakımını hatırlattı."}, {"id": "d18", "title": "Tekstil numuneleri", "content": "Şahin Tekstil yeni sezon numunelerini kargoladı."}, {"id": "d19", "title": "Vergi beyannamesi", "content": "Muhasebeci KDV beyannamesinin 26 Ekim son gün olduğunu hatırlattı."}, {"id": "d20", "title": "Konser bileti", "content": "Harbiye konser biletin 18 Ekim için onaylandı."}]}
+{"id": "q001", "query": "Mehmet teklif maili", "relevant": ["d01"]}
+{"id": "q002", "query": "revize teklif", "relevant": ["d01"]}
+{"id": "q003", "query": "iskonto konuşması", "relevant": ["d01"]}
+{"id": "q004", "query": "Yılmaz teklif", "relevant": ["d01"]}
+{"id": "q005", "query": "teklif Cuma", "relevant": ["d01"]}
+{"id": "q006", "query": "Mehmet Yılmaz fiyat", "relevant": ["d01"]}
+{"id": "q007", "query": "teklifte iskonto", "relevant": ["d01"]}
+{"id": "q008", "query": "revize fiyat teklifi", "relevant": ["d01"]}
+{"id": "q009", "query": "uçak bileti", "relevant": ["d02"]}
+{"id": "q010", "query": "Ankara uçuşu", "relevant": ["d02"]}
+{"id": "q011", "query": "TK2124", "relevant": ["d02"]}
+{"id": "q012", "query": "PNR ABC123", "relevant": ["d02"]}
+{"id": "q013", "query": "uçuş rezervasyonu", "relevant": ["d02"]}
+{"id": "q014", "query": "İstanbul Ankara bilet", "relevant": ["d02"]}
+{"id": "q015", "query": "geçen ay gelen uçak bileti", "relevant": ["d02"]}
+{"id": "q016", "query": "uçuş biletim", "relevant": ["d02"]}
+{"id": "q017", "query": "elektrik faturası", "relevant": ["d03"]}
+{"id": "q018", "query": "fatura son ödeme", "relevant": ["d03"]}
+{"id": "q019", "query": "1.842 TL fatura", "relevant": ["d03"]}
+{"id": "q020", "query": "ödemem gereken fatura", "relevant": ["d03"]}
+{"id": "q021", "query": "elektrik ödemesi", "relevant": ["d03"]}
+{"id": "q022", "query": "faturam ne zaman", "relevant": ["d03"]}
+{"id": "q023", "query": "elektrik son ödeme tarihi", "relevant": ["d03"]}
+{"id": "q024", "query": "bu ayki fatura", "relevant": ["d03"]}
+{"id": "q025", "query": "kargo takibi", "relevant": ["d04"]}
+{"id": "q026", "query": "Trendyol siparişi", "relevant": ["d04"]}
+{"id": "q027", "query": "Yurtiçi Kargo", "relevant": ["d04"]}
+{"id": "q028", "query": "siparişim nerede", "relevant": ["d04"]}
+{"id": "q029", "query": "kargom", "relevant": ["d04"]}
+{"id": "q030", "query": "Trendyol kargo", "relevant": ["d04"]}
+{"id": "q031", "query": "sipariş kargoda mı", "relevant": ["d04"]}
+{"id": "q032", "query": "kargo durumu", "relevant": ["d04"]}
+{"id": "q033", "query": "sözleşme taslağı", "relevant": ["d05"]}
+{"id": "q034", "query": "Kaya Hukuk", "relevant": ["d05"]}
+{"id": "q035", "query": "imza sözleşme", "relevant": ["d05"]}
+{"id": "q036", "query": "Selin sözleşme", "relevant": ["d05"]}
+{"id": "q037", "query": "sözleşme 30 Eylül", "relevant": ["d05"]}
+{"id": "q038", "query": "hukuk taslak", "relevant": ["d05"]}
+{"id": "q039", "query": "sözleşme imzası", "relevant": ["d05"]}
+{"id": "q040", "query": "Kaya sözleşme", "relevant": ["d05"]}
+{"id": "q041", "query": "otel rezervasyonu", "relevant": ["d06"]}
+{"id": "q042", "query": "Bodrum otel", "relevant": ["d06"]}
+{"id": "q043", "query": "rezervasyon Ekim", "relevant": ["d06"]}
+{"id": "q044", "query": "otel iki kişilik", "relevant": ["d06"]}
+{"id": "q045", "query": "tatil rezervasyonu", "relevant": ["d06"]}
+{"id": "q046", "query": "Bodrum rezervasyon", "relevant": ["d06"]}
+{"id": "q047", "query": "otel onayı", "relevant": ["d06"]}
+{"id": "q048", "query": "otelim", "relevant": ["d06"]}
+{"id": "q049", "query": "bütçe toplantısı", "relevant": ["d07"]}
+{"id": "q050", "query": "Demir İnşaat toplantı", "relevant": ["d07"]}
+{"id": "q051", "query": "Salı toplantı", "relevant": ["d07"]}
+{"id": "q052", "query": "bütçe görüşmesi", "relevant": ["d07"]}
+{"id": "q053", "query": "Burak toplantı", "relevant": ["d07"]}
+{"id": "q054", "query": "toplantı saat 10", "relevant": ["d07"]}
+{"id": "q055", "query": "Demir bütçe", "relevant": ["d07"]}
+{"id": "q056", "query": "inşaat bütçe toplantısı", "relevant": ["d07"]}
+{"id": "q057", "query": "Netflix aboneliği", "relevant": ["d08"]}
+{"id": "q058", "query": "abonelik yenileme", "relevant": ["d08"]}
+{"id": "q059", "query": "Netflix yenilenecek", "relevant": ["d08"]}
+{"id": "q060", "query": "dizi aboneliği", "relevant": ["d08"]}
+{"id": "q061", "query": "Netflix Ekim", "relevant": ["d08"]}
+{"id": "q062", "query": "aboneliğim ne zaman yenileniyor", "relevant": ["d08"]}
+{"id": "q063", "query": "Netflix ödemesi", "relevant": ["d08"]}
+{"id": "q064", "query": "abonelik 20 Ekim", "relevant": ["d08"]}
+{"id": "q065", "query": "proje planı", "relevant": ["d09"]}
+{"id": "q066", "query": "Arslan Mimarlık", "relevant": ["d09"]}
+{"id": "q067", "query": "proje teslim tarihi", "relevant": ["d09"]}
+{"id": "q068", "query": "mimarlık planı", "relevant": ["d09"]}
+{"id": "q069", "query": "Zeynep proje", "relevant": ["d09"]}
+{"id": "q070", "query": "revize proje planı", "relevant": ["d09"]}
+{"id": "q071", "query": "Kasım teslim", "relevant": ["d09"]}
+{"id": "q072", "query": "proje revizyonu", "relevant": ["d09"]}
+{"id": "q073", "query": "sevkiyat tarihi", "relevant": ["d10"]}
+{"id": "q074", "query": "Kuzey Lojistik", "relevant": ["d10"]}
+{"id": "q075", "query": "sevkiyat 3 Ekim", "relevant": ["d10"]}
+{"id": "q076", "query": "lojistik sevkiyat", "relevant": ["d10"]}
+{"id": "q077", "query": "Ahmet sevkiyat", "relevant": ["d10"]}
+{"id": "q078", "query": "sevkiyat ertelendi", "relevant": ["d10"]}
+{"id": "q079", "query": "Kuzey sevkiyat planı", "relevant": ["d10"]}
+{"id": "q080", "query": "nakliye tarihi", "relevant": ["d10"]}
+{"id": "q081", "query": "maaş bordrosu", "relevant": ["d11"]}
+{"id": "q082", "query": "bordro Eylül", "relevant": ["d11"]}
+{"id": "q083", "query": "Eylül maaş", "relevant": ["d11"]}
+{"id": "q084", "query": "bordrom", "relevant": ["d11"]}
+{"id": "q085", "query": "maaş belgesi", "relevant": ["d11"]}
+{"id": "q086", "query": "bordro hazır", "relevant": ["d11"]}
+{"id": "q087", "query": "aylık bordro", "relevant": ["d11"]}
+{"id": "q088", "query": "maaş dökümü", "relevant": ["d11"]}
+{"id": "q089", "query": "doktor randevusu", "relevant": ["d12"]}
+{"id": "q090", "query": "diş hekimi", "relevant": ["d12"]}
+{"id": "q091", "query": "randevu Perşembe", "relevant": ["d12"]}
+{"id": "q092", "query": "dişçi randevusu", "relevant": ["d12"]}
+{"id": "q093", "query": "hekim randevu 15:30", "relevant": ["d12"]}
+{"id": "q094", "query": "sağlık randevusu", "relevant": ["d12"]}
+{"id": "q095", "query": "diş randevum", "relevant": ["d12"]}
+{"id": "q096", "query": "doktor Perşembe", "relevant": ["d12"]}
+{"id": "q097", "query": "kira ödemesi", "relevant": ["d13"]}
+{"id": "q098", "query": "Ekim kira", "relevant": ["d13"]}
+{"id": "q099", "query": "kira 25.000 TL", "relevant": ["d13"]}
+{"id": "q100", "query": "ev kirası", "relevant": ["d13"]}
+{"id": "q101", "query": "kira son gün", "relevant": ["d13"]}
+{"id": "q102", "query": "kira ne zaman", "relevant": ["d13"]}
+{"id": "q103", "query": "aylık kira", "relevant": ["d13"]}
+{"id": "q104", "query": "kira ödemem", "relevant": ["d13"]}
+{"id": "q105", "query": "yatırımcı sunumu", "relevant": ["d14"]}
+{"id": "q106", "query": "Can sunum", "relevant": ["d14"]}
+{"id": "q107", "query": "sunumun son hali", "relevant": ["d14"]}
+{"id": "q108", "query": "Öztürk sunum", "relevant": ["d14"]}
+{"id": "q109", "query": "sunum dosyası", "relevant": ["d14"]}
+{"id": "q110", "query": "yatırımcı dosyası", "relevant": ["d14"]}
+{"id": "q111", "query": "sunum paylaşıldı", "relevant": ["d14"]}
+{"id": "q112", "query": "yazılım sunumu", "relevant": ["d14"]}
+{"id": "q113", "query": "güneş paneli teklifi", "relevant": ["d15"]}
+{"id": "q114", "query": "Aydın Enerji", "relevant": ["d15"]}
+{"id": "q115", "query": "enerji teklifi", "relevant": ["d15"]}
+{"id": "q116", "query": "panel teklifi", "relevant": ["d15"]}
+{"id": "q117", "query": "Deniz enerji", "relevant": ["d15"]}
+{"id": "q118", "query": "güneş enerjisi", "relevant": ["d15"]}
+{"id": "q119", "query": "enerji fiyatı", "relevant": ["d15"]}
+{"id": "q120", "query": "panel fiyat teklifi", "relevant": ["d15"]}
+{"id": "q121", "query": "toptan sipariş", "relevant": ["d16"]}
+{"id": "q122", "query": "Kılıç Gıda", "relevant": ["d16"]}
+{"id": "q123", "query": "gıda siparişi", "relevant": ["d16"]}
+{"id": "q124", "query": "sipariş onayı gıda", "relevant": ["d16"]}
+{"id": "q125", "query": "Ece sipariş", "relevant": ["d16"]}
+{"id": "q126", "query": "toptan gıda", "relevant": ["d16"]}
+{"id": "q127", "query": "gıda onayı", "relevant": ["d16"]}
+{"id": "q128", "query": "sipariş Kılıç", "relevant": ["d16"]}
+{"id": "q129", "query": "araç servisi", "relevant": ["d17"]}
+{"id": "q130", "query": "Koç Otomotiv", "relevant": ["d17"]}
+{"id": "q131", "query": "servis bakımı", "relevant": ["d17"]}
+{"id": "q132", "query": "araba bakımı", "relevant": ["d17"]}
+{"id": "q133", "query": "Murat servis", "relevant": ["d17"]}
+{"id": "q134", "query": "otomotiv bakım", "relevant": ["d17"]}
+{"id": "q135", "query": "aracın bakımı", "relevant": ["d17"]}
+{"id": "q136", "query": "servis hatırlatma", "relevant": ["d17"]}
+{"id": "q137", "query": "tekstil numuneleri", "relevant": ["d18"]}
+{"id": "q138", "query": "Şahin Tekstil", "relevant": ["d18"]}
+{"id": "q139", "query": "yeni sezon numune", "relevant": ["d18"]}
+{"id": "q140", "query": "numune kargo", "relevant": ["d18"]}
+{"id": "q141", "query": "Elif numune", "relevant": ["d18"]}
+{"id": "q142", "query": "kumaş numuneleri", "relevant": ["d18"]}
+{"id": "q143", "query": "tekstil kargo", "relevant": ["d18"]}
+{"id": "q144", "query": "sezon numuneleri", "relevant": ["d18"]}
+{"id": "q145", "query": "KDV beyannamesi", "relevant": ["d19"]}
+{"id": "q146", "query": "vergi beyannamesi", "relevant": ["d19"]}
+{"id": "q147", "query": "muhasebeci hatırlatma", "relevant": ["d19"]}
+{"id": "q148", "query": "beyanname son gün", "relevant": ["d19"]}
+{"id": "q149", "query": "26 Ekim vergi", "relevant": ["d19"]}
+{"id": "q150", "query": "vergi son tarih", "relevant": ["d19"]}
+{"id": "q151", "query": "KDV son gün", "relevant": ["d19"]}
+{"id": "q152", "query": "beyanname", "relevant": ["d19"]}
+{"id": "q153", "query": "konser bileti", "relevant": ["d20"]}
+{"id": "q154", "query": "Harbiye konser", "relevant": ["d20"]}
+{"id": "q155", "query": "konser 18 Ekim", "relevant": ["d20"]}
+{"id": "q156", "query": "etkinlik bileti", "relevant": ["d20"]}
+{"id": "q157", "query": "konser onayı", "relevant": ["d20"]}
+{"id": "q158", "query": "Harbiye bileti", "relevant": ["d20"]}
+{"id": "q159", "query": "müzik konseri", "relevant": ["d20"]}
+{"id": "q160", "query": "konser biletim", "relevant": ["d20"]}

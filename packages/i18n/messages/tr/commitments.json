@@ -26,5 +26,17 @@
     "plan": "Planla",
     "done": "Tamamlandı"
   },
-  "newProposal": "Yeni Taahhüt"
+  "newProposal": "Yeni Taahhüt",
+  "generated": {
+    "approval": {
+      "what": "Taahhüt oluştur: {text}",
+      "why": {
+        "userOwes": "Gönderdiğin bir mailde bir söz fark ettim. Bu bir söz mü?",
+        "theyOwe": "{name, select, none {Gelen bir mailde} other {{name} tarafından gönderilen mailde}} sana verilmiş bir söz fark ettim. Bu bir söz mü?"
+      },
+      "change": "Taahhütlerine eklenecek: {text}",
+      "changeDue": "Taahhütlerine eklenecek: {text} · Son tarih: {due}",
+      "sideEffect": "Yalnızca Dijital Asistan içindeki taahhüt listene eklenir; kimseye mesaj gönderilmez."
+    }
+  }
 }

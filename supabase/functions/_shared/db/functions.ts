@@ -354,6 +354,52 @@ export const DB_FN = {
     'demo_state_set_clock',
     '(p_account uuid, p_resource text, p_clock timestamptz) returns void',
   ),
+  // AI pipeline part 1 (T-5.01…T-5.08, T-5.17; migration 20260924002400)
+  searchUserContent: fn(
+    'public',
+    'search_user_content',
+    '(p_query text, p_query_embedding vector(1024), p_types text[], p_from timestamptz, p_to timestamptz, p_contact_id uuid, p_cursor text, p_limit int) returns table(result_type, entity_id, title, snippet, source_type, source_id, source_provider, source_timestamp, score)',
+  ),
+  upsertContactsFromPeople: fn(
+    'public',
+    'upsert_contacts_from_people',
+    '(p_user uuid, p_people jsonb) returns jsonb {email: contact_id}',
+  ),
+  linkContactRefs: fn(
+    'public',
+    'link_contact_refs',
+    '(p_user uuid, p_thread_ids uuid[], p_event_ids uuid[]) returns int',
+  ),
+  refreshContactStats: fn(
+    'public',
+    'refresh_contact_stats',
+    '(p_user uuid, p_contact_ids uuid[], p_now timestamptz) returns int',
+  ),
+  briefingEveningReady: fn(
+    'public',
+    'briefing_evening_ready',
+    '(p_user uuid, p_briefing_id uuid, p_item_ids uuid[], p_now timestamptz) returns jsonb {ok, reason?, carried, next_morning_at, closed_at, replayed}',
+  ),
+  briefingRetry: fn(
+    'public',
+    'briefing_retry',
+    '(p_user uuid, p_briefing_id uuid, p_now timestamptz) returns jsonb {ok, reason?, briefing_id, status, job_id, job_status}',
+  ),
+  nextMorningBriefingAt: fn(
+    'public',
+    'next_morning_briefing_at',
+    '(p_user uuid, p_after_date date) returns timestamptz',
+  ),
+  aiOrgBudgetEvaluate: fn(
+    'public',
+    'ai_org_budget_evaluate',
+    '(p_now timestamptz) returns jsonb {status, spent_micros, ceiling_micros, pct, alerts, tripped}',
+  ),
+  aiCostByModel: fn(
+    'public',
+    'ai_cost_by_model',
+    '(p_day date) returns jsonb [{provider, model, cost_usd_micros, requests}]',
+  ),
 } as const satisfies Record<string, DbFunction>;
 
 export type DbFunctionName = keyof typeof DB_FN;

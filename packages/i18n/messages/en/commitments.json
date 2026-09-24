@@ -26,5 +26,17 @@
     "plan": "Schedule",
     "done": "Done"
   },
-  "newProposal": "New commitment"
+  "newProposal": "New commitment",
+  "generated": {
+    "approval": {
+      "what": "Create commitment: {text}",
+      "why": {
+        "userOwes": "I noticed a promise in an email you sent. Is this a commitment?",
+        "theyOwe": "{name, select, none {I noticed a promise made to you in an incoming email.} other {I noticed a promise made to you in an email from {name}.}} Is this a commitment?"
+      },
+      "change": "Will be added to your commitments: {text}",
+      "changeDue": "Will be added to your commitments: {text} · Due {due}",
+      "sideEffect": "Only added to your commitment list in Dijital Asistan; no message is sent."
+    }
+  }
 }

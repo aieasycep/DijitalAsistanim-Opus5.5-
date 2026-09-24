@@ -27,5 +27,13 @@
   },
   "dueOn": "Son ödeme: {date}",
   "renewsOn": "{date} tarihinde yenileniyor",
-  "securityNote": "Güvenlik uyarılarındaki bağlantılar açılmaz; kaynağı kontrol et."
+  "securityNote": "Güvenlik uyarılarındaki bağlantılar açılmaz; kaynağı kontrol et.",
+  "generated": {
+    "shipment": "{merchant, select, none {Kargo} other {{merchant}}} · {status, select, ordered {Sipariş alındı} shipped {Kargoya verildi} in_transit {Yolda} out_for_delivery {Dağıtımda} delivered {Teslim edildi} delivery_failed {Teslim edilemedi} other {Kargo güncellemesi}}",
+    "flight": "{flight, select, none {Uçuş} other {{flight} uçuşu}}{route, select, none {} other { · {route}}}",
+    "reservation": "{venue, select, none {Rezervasyon} other {{venue} rezervasyonu}}",
+    "payment": "{payee, select, none {Ödeme} other {{payee}}} · {status, select, due {Ödeme bekliyor} paid {Ödendi} failed {Ödeme başarısız} refund {İade} other {Ödeme bildirimi}}",
+    "subscription": "{service, select, none {Abonelik} other {{service}}} · {event, select, renewal_upcoming {Yenileme yaklaşıyor} renewed {Yenilendi} trial_ending {Deneme bitiyor} cancelled {İptal edildi} price_change {Fiyat değişikliği} other {Abonelik bildirimi}}",
+    "security": "{service, select, none {Hesap} other {{service}}} · {event, select, password_changed {Şifre değiştirildi} recovery_changed {Kurtarma bilgisi değişti} suspicious_activity {Şüpheli etkinlik} new_sign_in {Yeni oturum açıldı} other {Güvenlik uyarısı}}"
+  }
 }

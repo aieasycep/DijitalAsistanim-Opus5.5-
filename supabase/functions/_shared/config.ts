@@ -66,6 +66,10 @@ export const RATE_LIMITS = {
   integrations_complete: { limit: 20, windowSeconds: 600, subject: 'user' },
   integrations_sync: { limit: 1, windowSeconds: 60, subject: 'user' },
   mail_original: { limit: 60, windowSeconds: 60, subject: 'user' },
+  search: { limit: 30, windowSeconds: 60, subject: 'user' },
+  thread_summary: { limit: 20, windowSeconds: 60, subject: 'user' },
+  /** API-BRF-04: 1 per 10 min per briefing (enforced with the briefing id as the subject). */
+  briefing_retry: { limit: 1, windowSeconds: 600, subject: 'user' },
 } as const satisfies Record<string, RateLimitClass>;
 export type RateLimitClassName = keyof typeof RATE_LIMITS;
 

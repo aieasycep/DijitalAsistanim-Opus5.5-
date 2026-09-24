@@ -6541,6 +6541,8 @@ export type Database = {
         };
         Returns: undefined;
       };
+      ai_cost_by_model: { Args: { p_day: string }; Returns: Json };
+      ai_org_budget_evaluate: { Args: { p_now?: string }; Returns: Json };
       apply_device_snapshot: {
         Args: { p_account: string; p_snapshot: Json };
         Returns: Json;
@@ -6615,6 +6617,19 @@ export type Database = {
       };
       billing_sync_context: {
         Args: { p_app_user_id: string; p_event_id?: string };
+        Returns: Json;
+      };
+      briefing_evening_ready: {
+        Args: {
+          p_briefing_id: string;
+          p_item_ids?: string[];
+          p_now?: string;
+          p_user: string;
+        };
+        Returns: Json;
+      };
+      briefing_retry: {
+        Args: { p_briefing_id: string; p_now?: string; p_user: string };
         Returns: Json;
       };
       cancel_reminder: {
@@ -6996,6 +7011,10 @@ export type Database = {
         };
         Returns: Json;
       };
+      link_contact_refs: {
+        Args: { p_event_ids: string[]; p_thread_ids: string[]; p_user: string };
+        Returns: number;
+      };
       list_approvals: {
         Args: {
           p_cursor?: string;
@@ -7032,6 +7051,10 @@ export type Database = {
           p_to?: string;
         };
         Returns: string[];
+      };
+      next_morning_briefing_at: {
+        Args: { p_after_date: string; p_user: string };
+        Returns: string;
       };
       oauth_callback_store: {
         Args: {
@@ -7158,6 +7181,10 @@ export type Database = {
         Returns: Json;
       };
       referral_tombstone_match: { Args: { p_signals: Json }; Returns: boolean };
+      refresh_contact_stats: {
+        Args: { p_contact_ids?: string[]; p_now?: string; p_user: string };
+        Returns: number;
+      };
       release_sync_lease: {
         Args: { p_owner: string; p_sync_state: string };
         Returns: undefined;
@@ -7462,6 +7489,10 @@ export type Database = {
       };
       upsert_calendars: {
         Args: { p_account: string; p_calendars: Json };
+        Returns: Json;
+      };
+      upsert_contacts_from_people: {
+        Args: { p_people: Json; p_user: string };
         Returns: Json;
       };
       upsert_device_account: {

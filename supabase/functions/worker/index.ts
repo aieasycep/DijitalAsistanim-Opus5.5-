@@ -23,6 +23,7 @@ import {
   supabaseNotificationsRepo,
   supabaseTriggerRepo,
 } from '../_shared/services/notifications/repo.ts';
+import { createIntelDeps } from './handlers/intel-wiring.ts';
 
 const raw = processEnv();
 assertDemoAllowed(raw);
@@ -67,6 +68,7 @@ const app = createWorkerApp({
       referrals: { repo: supabaseReferralRepo(system), pepper: env },
     },
     integrations: { runtime: integrations.runtime, webhooks: integrations.webhooks },
+    intel: createIntelDeps(system, raw, workerLog),
   }),
   log: workerLog,
   sentry: createSentry({ dsn: env.SENTRY_DSN, environment: env.APP_ENV }),

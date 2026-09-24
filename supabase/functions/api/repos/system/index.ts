@@ -53,6 +53,12 @@ import { supabaseNotificationsRepo } from '../../../_shared/services/notificatio
 import { supabaseRemindersRepo } from '../../../_shared/services/reminders.ts';
 import { supabaseWidgetSources } from '../../../_shared/services/widgets/sources.ts';
 import type { JobQueue } from '../../deps.ts';
+import { supabaseIntelApi } from '../../routes/intel-api.ts';
+import { createAiServices } from '../../../_shared/services/ai/runtime.ts';
+import {
+  supabaseMailStore,
+  supabaseMemoryStore,
+} from '../../../_shared/services/intel/supabase-store.ts';
 
 export function createApiDeps(input: {
   readonly env: FunctionEnv;
@@ -167,5 +173,13 @@ export function createApiDeps(input: {
         eventPrecondition,
       };
     },
+    intel: supabaseIntelApi({
+      system,
+      config,
+      ai: createAiServices(system, raw, input.log),
+      mail: supabaseMailStore(system),
+      memory: supabaseMemoryStore(system),
+      bodies: null,
+    }),
   };
 }

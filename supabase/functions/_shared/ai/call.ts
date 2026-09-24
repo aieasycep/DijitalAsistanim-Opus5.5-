@@ -70,6 +70,8 @@ export interface StructuredCallInput<T> {
   readonly buildPrompt: (version: PromptVersion) => PromptParts;
   /** Normalised content for the per-user cache key; omit to skip the cache. */
   readonly cacheContent?: string;
+  /** Skip the cache lookup and overwrite the entry (a user-requested refresh). */
+  readonly refreshCache?: boolean;
   /** Output-validator context. */
   readonly sources: readonly string[];
   readonly aliases: ReadonlySet<string>;
@@ -81,6 +83,13 @@ export interface StructuredCallInput<T> {
   readonly promptKey?: PromptKey;
   readonly userRef?: string | null;
   readonly signal?: AbortSignal;
+  /** Per-deploy canary (S7); overrides `model_constraints.canary` of the prompt version. */
+  readonly canary?: string;
+  /**
+   * Escalation (e.g. a hedged commitment re-asked on the stronger model): skip the primary target
+   * and start at the first fallback of the chain.
+   */
+  readonly skipPrimary?: boolean;
 }
 
 export type StructuredCallResult<T> =
@@ -143,7 +152,10 @@ export async function generateStructured<T>(
     log.info('ai_t0', { reason: decision.reason });
     return { kind: 't0', reason: decision.reason };
   }
-  const route = decision.route;
+  const route =
+    input.skipPrimary === true && decision.route.chain.length > 1
+      ? { ...decision.route, chain: decision.route.chain.slice(1) }
+      : decision.route;
   const promptKey = input.promptKey ?? FEATURE_PROMPT_KEY[input.feature];
   if (promptKey === undefined) return { kind: 't0', reason: 'not_configured' };
   let version: PromptVersion;
@@ -172,7 +184,7 @@ export async function generateStructured<T>(
       contentHash: hash,
       promptVersionId: version.id,
     };
-    const hit = await runtime.cache.get(cacheKey);
+    const hit = input.refreshCache === true ? null : await runtime.cache.get(cacheKey);
     if (hit !== null) {
       const parsed = input.schema.safeParse(hit.result);
       if (parsed.success) {
@@ -225,7 +237,7 @@ export async function generateStructured<T>(
   }
 
   const prompt = input.buildPrompt(version);
-  const canary = promptCanary(version);
+  const canary = input.canary ?? promptCanary(version);
   let totalCost = 0;
   let totalUsage = emptyUsage();
   let lastRequestId: string | null = null;
@@ -342,7 +354,11 @@ export async function generateStructured<T>(
       await settle(runtime, reservation, lastRequestId, totalCost, input.units, totalUsage, log);
       if (cacheKey !== null) {
         await runtime.cache
-          .put(cacheKey, { result: validated.data as Json, model: target.model })
+          .put(
+            cacheKey,
+            { result: validated.data as Json, model: target.model },
+            { replace: input.refreshCache === true },
+          )
           .catch(() => {
             log.warn('ai_cache_store_failed');
           });
