@@ -49,9 +49,13 @@ export type Database = {
       admin_preferences_set: {
         Args: {
           p_dashboard_range?: string;
+          p_density?: string;
           p_locale?: string;
+          p_recent_items?: Json;
+          p_sidebar_collapsed?: boolean;
           p_table_prefs?: Json;
           p_theme?: string;
+          p_timezone?: string;
         };
         Returns: Json;
       };
@@ -112,6 +116,8 @@ export type Database = {
         Args: {
           p_batch_policy?: string;
           p_cache_ttl?: string;
+          p_clear_cache_ttl?: boolean;
+          p_clear_escalation?: boolean;
           p_enabled: boolean;
           p_escalation_target: Json;
           p_expected_version: number;
@@ -582,6 +588,20 @@ export type Database = {
       };
       ticket_add_note: { Args: { p_body: string; p_id: string }; Returns: Json };
       ticket_detail: { Args: { p_id: string }; Returns: Json };
+      ticket_patch: {
+        Args: {
+          p_assignee?: string;
+          p_category?: Database['public']['Enums']['ticket_category'];
+          p_id: string;
+          p_status?: Database['public']['Enums']['ticket_status'];
+          p_unassign?: boolean;
+        };
+        Returns: Json;
+      };
+      ticket_reply: {
+        Args: { p_body: string; p_id: string; p_locale?: string };
+        Returns: Json;
+      };
       ticket_update: {
         Args: {
           p_assignee?: string;
@@ -629,7 +649,12 @@ export type Database = {
         Returns: Json;
       };
       user_force_sync: {
-        Args: { p_account?: string; p_reason?: string; p_user: string };
+        Args: {
+          p_account?: string;
+          p_reason?: string;
+          p_resources?: string[];
+          p_user: string;
+        };
         Returns: Json;
       };
       user_integrations: { Args: { p_user: string }; Returns: Json };
@@ -709,25 +734,37 @@ export type Database = {
         Row: {
           admin_user_id: string;
           dashboard_range: string;
+          density: string;
           locale: string;
+          recent_items: NonNullable<Json>;
+          sidebar_collapsed: boolean;
           table_prefs: NonNullable<Json>;
           theme: string;
+          timezone: string;
           updated_at: string;
         };
         Insert: {
           admin_user_id: string;
           dashboard_range?: string;
+          density?: string;
           locale?: string;
+          recent_items?: NonNullable<Json>;
+          sidebar_collapsed?: boolean;
           table_prefs?: NonNullable<Json>;
           theme?: string;
+          timezone?: string;
           updated_at?: string;
         };
         Update: {
           admin_user_id?: string;
           dashboard_range?: string;
+          density?: string;
           locale?: string;
+          recent_items?: NonNullable<Json>;
+          sidebar_collapsed?: boolean;
           table_prefs?: NonNullable<Json>;
           theme?: string;
+          timezone?: string;
           updated_at?: string;
         };
         Relationships: [

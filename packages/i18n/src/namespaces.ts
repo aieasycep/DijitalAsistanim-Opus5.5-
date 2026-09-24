@@ -43,6 +43,7 @@ export const NAMESPACES = [
   'legal',
   'faq',
   'backoffice',
+  'backoffice_email',
 ] as const;
 
 export type Namespace = (typeof NAMESPACES)[number];

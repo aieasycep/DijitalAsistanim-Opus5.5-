@@ -36,6 +36,7 @@ const app = createWorkerApp({
       },
       referrals: { repo: supabaseReferralRepo(system), pepper: env },
     },
+    email: { system, raw, keyring: () => (keyring ??= loadKeyring(env)) },
   }),
   log: createLogger({ fn: 'worker' }),
   sentry: createSentry({ dsn: env.SENTRY_DSN, environment: env.APP_ENV }),

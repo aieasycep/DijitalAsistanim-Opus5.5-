@@ -22,8 +22,8 @@ describe('locales', () => {
     expect(resolveLocale('en;q=0.8')).toBe('en');
   });
 
-  it('lists 39 namespaces', () => {
-    expect(NAMESPACES).toHaveLength(39);
+  it('lists 40 namespaces', () => {
+    expect(NAMESPACES).toHaveLength(40);
     expect(isNamespace('push')).toBe(true);
     expect(isNamespace('ani')).toBe(false);
   });

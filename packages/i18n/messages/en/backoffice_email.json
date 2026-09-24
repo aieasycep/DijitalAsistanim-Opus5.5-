@@ -1,0 +1,20 @@
+{
+  "invite": {
+    "subject": "You are invited to the Dijital Asistan admin console",
+    "greeting": "Hello {name},",
+    "body": "You have been invited to the Dijital Asistan admin console as an administrator. You sign in with a 6-digit code sent to your work email and two-step verification; there is no password.",
+    "action": "Open this link to accept the invitation: {url}",
+    "expiry": "The link is valid for 72 hours and can be used once.",
+    "notYou": "If you did not expect this invitation, you can ignore this email."
+  },
+  "supportReply": {
+    "subject": "About your support request: {reference}",
+    "footer": "Reply to this email to add information to your request. Your request number: {reference}"
+  },
+  "securityRecovery": {
+    "subject": "Security event: a recovery code was used",
+    "body": "A two-step verification recovery code was used on an admin account ({time}). The authenticator enrolments of the account were removed; the next sign-in requires a new setup.",
+    "action": "If this was not expected, disable the account right away on the Admins page of the admin console."
+  },
+  "signature": "Dijital Asistan"
+}
