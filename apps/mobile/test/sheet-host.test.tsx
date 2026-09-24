@@ -23,7 +23,7 @@ function PlainSheet({ params }: SheetRenderProps<{ label: string }>) {
 describe('SheetHost', () => {
   const cleanups: (() => void)[] = [];
   afterEach(async () => {
-    await act(async () => {
+    await act(() => {
       sheets.closeAll();
     });
     while (cleanups.length > 0) cleanups.pop()?.();
@@ -34,17 +34,17 @@ describe('SheetHost', () => {
     cleanups.push(registerSheet('test.plain', PlainSheet));
     await render(<SheetHost />);
 
-    await act(async () => {
+    await act(() => {
       sheets.open('test.plain', { label: 'alt' });
     });
-    await act(async () => {
+    await act(() => {
       sheets.open('test.counter', { label: 'üst' });
     });
     expect(screen.getByText('alt')).toBeTruthy();
     expect(screen.getByText('üst 1!')).toBeTruthy();
 
     // Changing the stack shape (a hook-using sheet on top closes) must not reorder hooks.
-    await act(async () => {
+    await act(() => {
       sheets.close();
     });
     expect(screen.getByText('alt')).toBeTruthy();
