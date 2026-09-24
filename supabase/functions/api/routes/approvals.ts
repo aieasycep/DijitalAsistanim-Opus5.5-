@@ -40,7 +40,11 @@ import { rejectApproval } from '../../_shared/services/approvals/reject.ts';
 import { toApprovalView } from '../../_shared/services/approvals/view.ts';
 import type { RequestRepos, RouteKit, RouteRegistrar } from '../deps.ts';
 
-function serviceDeps(c: AppContext, kit: RouteKit, repos: RequestRepos): ApprovalServiceDeps {
+export function serviceDeps(
+  c: AppContext,
+  kit: RouteKit,
+  repos: RequestRepos,
+): ApprovalServiceDeps {
   const log = c.get('log');
   return {
     repo: repos.approvals,

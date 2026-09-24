@@ -75,6 +75,9 @@
       "template": "This week {mails} emails were analysed; there were {important} important topics, {meetings} meetings and {followups} follow-ups.",
       "timeSavedPrefix": "Estimated time saved",
       "shareText": "My Digital Week: {mails} emails analysed, {important} important topics surfaced. Estimated time saved: {hours} h {minutes} min."
+    },
+    "audio": {
+      "overview": "Overview"
     }
   }
 }

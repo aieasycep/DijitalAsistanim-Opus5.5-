@@ -13,6 +13,7 @@ import {
   uuid,
 } from '../_shared/testing/intel.ts';
 import type { SearchRpcArgs } from '../_shared/services/memory/search.ts';
+import { assistConfigs, assistFlags } from '../_shared/testing/assist.ts';
 import { weeklyStats } from '../_shared/services/briefings/weekly.ts';
 import { createApiApp } from './app.ts';
 import { createHarness } from './testing.ts';
@@ -32,13 +33,22 @@ interface Setup {
 }
 
 async function setup(
-  options: { pro?: boolean; briefingResult?: Record<string, unknown> } = {},
+  options: {
+    pro?: boolean;
+    briefingResult?: Record<string, unknown>;
+    omit?: Parameters<typeof assistConfigs>[0];
+    semanticQuota?: boolean;
+  } = {},
 ): Promise<Setup> {
   const h = await createHarness();
   const mem = new MemoryIntel();
   const pro = options.pro ?? true;
   if (pro) h.business.gate.plans.set(USER_A, 'pro');
-  const ai = fixtureServices({ user: { isPro: pro, plan: pro ? 'pro' : 'free' } });
+  // The answer mode of API-SRCH-01 runs on the part-2 `assistant_qa` route (T-5.11).
+  const ai = fixtureServices({
+    user: { isPro: pro, plan: pro ? 'pro' : 'free', flags: assistFlags() },
+    configs: assistConfigs(options.omit),
+  });
   const searches: SearchRpcArgs[] = [];
   const repoCalls: string[] = [];
   const search: SearchRepo = {
@@ -64,7 +74,7 @@ async function setup(
     },
     contactsNamed: () => Promise.resolve([]),
     ownsContact: (id) => Promise.resolve(id !== USER_B),
-    semanticQuota: () => Promise.resolve(true),
+    semanticQuota: () => Promise.resolve(options.semanticQuota ?? true),
     retention: () => Promise.resolve({ policy: 'd365', oldest_available_at: null }),
   };
   const briefings: BriefingApiRepo = {
@@ -196,6 +206,34 @@ Deno.test(
     ).json();
     assertEquals(none.data.answer.text, 'Bunu kayıtlarında bulamadım.');
     assertEquals(none.data.answer.confidence_label, 'unsure');
+    assertEquals(none.data.answer.source_count, 0);
+  },
+);
+
+Deno.test(
+  'API-SRCH-01 (T-5.11): the answer is model-written and cited; no QA route → 503; semantic quota used up → 429',
+  async () => {
+    const pro = await setup();
+    const answer = await (await pro.request('GET', '/search?q=teklif&mode=answer')).json();
+    assert(pro.ai.telemetry.rows.some((r) => r.feature === 'assistant_qa'));
+    assertEquals(answer.data.sources.length, 1);
+    assertEquals(answer.data.sources[0].title, 'Revize teklif');
+    assert(['high', 'partial'].includes(answer.data.answer.confidence_label));
+    const results = await (await pro.request('GET', '/search?q=teklif')).json();
+    assertEquals(results.data.answer, undefined);
+
+    const noRoute = await setup({ omit: ['assistant_qa'] });
+    const unavailable = await noRoute.request('GET', '/search?q=teklif&mode=answer');
+    assertEquals(unavailable.status, 503);
+    assertEquals((await unavailable.json()).error.code, 'EXTERNAL_CREDENTIAL_REQUIRED');
+    assertEquals((await noRoute.request('GET', '/search?q=teklif')).status, 200);
+
+    const spent = await setup({ semanticQuota: false });
+    const limited = await spent.request('GET', '/search?q=teklif&mode=answer');
+    assertEquals(limited.status, 429);
+    assertEquals((await limited.json()).error.code, 'QUOTA_EXCEEDED');
+    const degraded = await (await spent.request('GET', '/search?q=teklif')).json();
+    assertEquals(degraded.meta.degraded, true);
   },
 );
 

@@ -33,6 +33,14 @@ import { registerReferralRoutes } from './routes/referrals.ts';
 import { registerThreadSummaryRoutes } from './routes/mail-summary.ts';
 import { registerSearchRoutes } from './routes/search.ts';
 import { registerBriefingRoutes } from './routes/briefings.ts';
+import { registerMailRoutes } from './routes/mail.ts';
+import { registerFollowupRoutes } from './routes/followups.ts';
+import { registerMeetingRoutes } from './routes/meetings.ts';
+import { registerAssistantRoutes } from './routes/assistant.ts';
+import { registerCaptureRoutes } from './routes/captures.ts';
+import { registerPlanRoutes } from './routes/plan.ts';
+import { registerOnboardingRoutes } from './routes/onboarding.ts';
+import { registerBriefingAudioRoutes } from './routes/briefing-audio.ts';
 
 /** `extra` registrars mount after the built-in routes (tests use it for the Pro-gate matrix). */
 export function createApiApp(deps: ApiDeps, extra: readonly RouteRegistrar[] = []): Hono<AppEnv> {
@@ -79,5 +87,14 @@ export function createApiApp(deps: ApiDeps, extra: readonly RouteRegistrar[] = [
   registerThreadSummaryRoutes(app, kit);
   registerSearchRoutes(app, kit);
   registerBriefingRoutes(app, kit);
+  // AI pipeline part 2 (T-5.09…T-5.15).
+  registerMailRoutes(app, kit);
+  registerFollowupRoutes(app, kit);
+  registerMeetingRoutes(app, kit);
+  registerAssistantRoutes(app, kit);
+  registerCaptureRoutes(app, kit);
+  registerPlanRoutes(app, kit);
+  registerOnboardingRoutes(app, kit);
+  registerBriefingAudioRoutes(app, kit);
   return app;
 }

@@ -2221,6 +2221,7 @@ export type Database = {
       assistant_threads: {
         Row: {
           archived_at: string | null;
+          client_thread_id: string | null;
           created_at: string;
           expires_at: string | null;
           id: string;
@@ -2234,6 +2235,7 @@ export type Database = {
         };
         Insert: {
           archived_at?: string | null;
+          client_thread_id?: string | null;
           created_at?: string;
           expires_at?: string | null;
           id?: string;
@@ -2247,6 +2249,7 @@ export type Database = {
         };
         Update: {
           archived_at?: string | null;
+          client_thread_id?: string | null;
           created_at?: string;
           expires_at?: string | null;
           id?: string;
@@ -2801,6 +2804,7 @@ export type Database = {
           id: string;
           idempotency_key: string;
           kind: Database['public']['Enums']['capture_kind'];
+          link_preview: Json | null;
           mime_type: string | null;
           original_filename: string | null;
           page_count: number | null;
@@ -2830,6 +2834,7 @@ export type Database = {
           id?: string;
           idempotency_key: string;
           kind: Database['public']['Enums']['capture_kind'];
+          link_preview?: Json | null;
           mime_type?: string | null;
           original_filename?: string | null;
           page_count?: number | null;
@@ -2859,6 +2864,7 @@ export type Database = {
           id?: string;
           idempotency_key?: string;
           kind?: Database['public']['Enums']['capture_kind'];
+          link_preview?: Json | null;
           mime_type?: string | null;
           original_filename?: string | null;
           page_count?: number | null;
@@ -3824,6 +3830,7 @@ export type Database = {
           id: string;
           kind: Database['public']['Enums']['insight_kind'];
           learned_preference_id: string | null;
+          payload: Json | null;
           rank_score: number;
           reason_code: string;
           rule_id: string | null;
@@ -3860,6 +3867,7 @@ export type Database = {
           id?: string;
           kind: Database['public']['Enums']['insight_kind'];
           learned_preference_id?: string | null;
+          payload?: Json | null;
           rank_score?: number;
           reason_code: string;
           rule_id?: string | null;
@@ -3896,6 +3904,7 @@ export type Database = {
           id?: string;
           kind?: Database['public']['Enums']['insight_kind'];
           learned_preference_id?: string | null;
+          payload?: Json | null;
           rank_score?: number;
           reason_code?: string;
           rule_id?: string | null;
@@ -4239,6 +4248,7 @@ export type Database = {
         Row: {
           body: string;
           calendar_event_id: string;
+          client_note_id: string | null;
           created_at: string;
           expires_at: string | null;
           id: string;
@@ -4251,6 +4261,7 @@ export type Database = {
         Insert: {
           body: string;
           calendar_event_id: string;
+          client_note_id?: string | null;
           created_at?: string;
           expires_at?: string | null;
           id?: string;
@@ -4263,6 +4274,7 @@ export type Database = {
         Update: {
           body?: string;
           calendar_event_id?: string;
+          client_note_id?: string | null;
           created_at?: string;
           expires_at?: string | null;
           id?: string;
@@ -5549,11 +5561,14 @@ export type Database = {
           cc_emails: string[];
           confidence: number;
           connected_account_id: string;
+          content_key: string | null;
           created_at: string;
           expires_at: string | null;
+          facts_used: Json | null;
           generated_by: string;
           id: string;
           kind: string;
+          language: string | null;
           message_id: string | null;
           prompt_version_id: string | null;
           source_id: string;
@@ -5568,6 +5583,7 @@ export type Database = {
           updated_at: string;
           user_id: string;
           version: number;
+          warnings: string[] | null;
         };
         Insert: {
           ai_request_id?: string | null;
@@ -5577,11 +5593,14 @@ export type Database = {
           cc_emails?: string[];
           confidence: number;
           connected_account_id: string;
+          content_key?: string | null;
           created_at?: string;
           expires_at?: string | null;
+          facts_used?: Json | null;
           generated_by: string;
           id?: string;
           kind?: string;
+          language?: string | null;
           message_id?: string | null;
           prompt_version_id?: string | null;
           source_id: string;
@@ -5596,6 +5615,7 @@ export type Database = {
           updated_at?: string;
           user_id: string;
           version?: number;
+          warnings?: string[] | null;
         };
         Update: {
           ai_request_id?: string | null;
@@ -5605,11 +5625,14 @@ export type Database = {
           cc_emails?: string[];
           confidence?: number;
           connected_account_id?: string;
+          content_key?: string | null;
           created_at?: string;
           expires_at?: string | null;
+          facts_used?: Json | null;
           generated_by?: string;
           id?: string;
           kind?: string;
+          language?: string | null;
           message_id?: string | null;
           prompt_version_id?: string | null;
           source_id?: string;
@@ -5624,6 +5647,7 @@ export type Database = {
           updated_at?: string;
           user_id?: string;
           version?: number;
+          warnings?: string[] | null;
         };
         Relationships: [
           {
@@ -6850,6 +6874,10 @@ export type Database = {
         Args: { p_account: string; p_clock: string; p_resource: string };
         Returns: undefined;
       };
+      discard_capture: {
+        Args: { p_capture_id: string; p_user: string };
+        Returns: Json;
+      };
       disconnect_integration: {
         Args: {
           p_account: string;
@@ -6988,6 +7016,10 @@ export type Database = {
           p_worker_id: string;
         };
         Returns: Database['public']['Enums']['job_status'];
+      };
+      first_analysis_counts: {
+        Args: { p_now: string; p_since: string; p_user: string };
+        Returns: Json;
       };
       flow_feed: {
         Args: { p_cursor?: string; p_filter?: string; p_limit?: number };
@@ -7330,6 +7362,7 @@ export type Database = {
           id: string;
           kind: Database['public']['Enums']['insight_kind'];
           learned_preference_id: string | null;
+          payload: Json | null;
           rank_score: number;
           reason_code: string;
           rule_id: string | null;

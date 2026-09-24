@@ -24,6 +24,9 @@ import {
   supabaseTriggerRepo,
 } from '../_shared/services/notifications/repo.ts';
 import { createIntelDeps } from './handlers/intel-wiring.ts';
+import { integrationMailBodySource } from '../_shared/services/intel/mail-bodies.ts';
+import { supabaseAssistStore } from '../_shared/services/assist/supabase-store.ts';
+import { supabaseStorage } from '../_shared/services/storage.ts';
 
 const raw = processEnv();
 assertDemoAllowed(raw);
@@ -38,6 +41,10 @@ const integrations = createIntegrationWiring({
   system,
   log: workerLog,
   keyring: () => (keyring ??= loadKeyring(env)),
+});
+// Transient provider bodies for triage, analysis and reply drafts (A's registry + token source).
+const intel = createIntelDeps(system, raw, workerLog, {
+  bodies: integrationMailBodySource(integrations.runtime, workerLog),
 });
 const app = createWorkerApp({
   secret: env.CRON_SECRET,
@@ -68,7 +75,8 @@ const app = createWorkerApp({
       referrals: { repo: supabaseReferralRepo(system), pepper: env },
     },
     integrations: { runtime: integrations.runtime, webhooks: integrations.webhooks },
-    intel: createIntelDeps(system, raw, workerLog),
+    intel,
+    assist: { intel, store: supabaseAssistStore(system), storage: supabaseStorage(system) },
     email: { system, raw, keyring: () => (keyring ??= loadKeyring(env)) },
   }),
   log: workerLog,

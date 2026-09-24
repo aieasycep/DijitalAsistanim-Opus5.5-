@@ -75,6 +75,9 @@
       "template": "Bu hafta {mails} mail analiz edildi; {important} önemli konu, {meetings} toplantı ve {followups} takip vardı.",
       "timeSavedPrefix": "Tahmini kazandırılan zaman",
       "shareText": "Dijital Haftam: {mails} mail analiz edildi, {important} önemli konu öne çıktı. Tahmini kazandırılan zaman: {hours} saat {minutes} dakika."
+    },
+    "audio": {
+      "overview": "Genel bakış"
     }
   }
 }
