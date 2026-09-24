@@ -1,0 +1,13 @@
+{
+  "title": "Takip Etmen Gerekenler",
+  "awaitingThemTitle": "Senin Cevap Beklediklerin",
+  "lastMessage": "Son mesaj: {relative}",
+  "statusNoReply": "Durum: Henüz yanıt gelmedi.",
+  "noReply": "Henüz yanıt gelmedi.",
+  "waitingDays": "{count} gündür bekliyor",
+  "actions": {
+    "followUp": "Takip Et",
+    "remindTomorrow": "Yarın hatırlat",
+    "close": "Kapat"
+  }
+}

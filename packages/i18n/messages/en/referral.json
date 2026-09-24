@@ -1,0 +1,23 @@
+{
+  "title": "Invite a friend",
+  "headline": "You both get {days, plural, one {# day} other {# days}} of Pro.",
+  "body": "Your rewards are added once your friend joins with your link, connects an account and receives their first briefing.",
+  "link": "Your invite link",
+  "copyLink": "Copy link",
+  "share": "Share",
+  "shareMessage": "Dijital Asistan tells you what you need to know today, before you ask. Join with this link and we both get {days, plural, one {# day} other {# days}} of Pro: {url}",
+  "cap": "Up to {cap, plural, one {# reward} other {# rewards}} a year",
+  "invitesSection": "Your invites",
+  "statuses": {
+    "pending": "Pending",
+    "qualified": "Qualified",
+    "rewarded": "Rewarded",
+    "rejected": "Not eligible",
+    "flagged": "Under review"
+  },
+  "enterCode": "Have an invite code?",
+  "codeHint": "Invite code",
+  "apply": "Apply",
+  "applied": "Your invite code was added. You'll both get Pro once the conditions are met.",
+  "landing": "A friend invited you"
+}

@@ -1,0 +1,21 @@
+{
+  "title": "Expected from you",
+  "buckets": {
+    "urgent": "Urgent",
+    "today": "Today",
+    "thisWeek": "This week"
+  },
+  "fields": {
+    "person": "Person",
+    "subject": "Subject",
+    "expected": "What's expected?",
+    "deadline": "Deadline"
+  },
+  "waitingHours": "Waiting for {count, plural, one {# hour} other {# hours}}",
+  "waitingDays": "Waiting for {count, plural, one {# day} other {# days}}",
+  "actions": {
+    "openMail": "Open the email",
+    "prepareReply": "Draft a reply",
+    "remind": "Remind me"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "title": "Ne zaman hatırlatayım?",
+  "presets": {
+    "before_30m": "30 dakika önce",
+    "before_1h": "1 saat önce",
+    "this_evening": "Bu akşam",
+    "tomorrow_morning": "Yarın sabah",
+    "smart": "Uygun zamanda",
+    "custom": "Kendin seç"
+  },
+  "presetWithTime": "{preset} · {time}",
+  "smart": {
+    "explainer": "Takvimindeki boşluklara göre uygun zamanı Dijital Asistan seçer.",
+    "resolved": "Takvimine göre: {time}",
+    "reason": "takvim boşluğuna ve mesai saatine göre seçilir",
+    "resolving": "Uygun zaman aranıyor…",
+    "noSlot": "Bugün için uygun bir boşluk bulamadım; başka bir seçenek seç."
+  },
+  "unavailable": {
+    "past": "Bu zaman geçti",
+    "quietHours": "Sessiz saatlere denk geliyor"
+  },
+  "existing": "Mevcut: {time} · Değiştir",
+  "destination": {
+    "label": "Nereye kurulsun?",
+    "inApp": "Dijital Asistan bildirimi"
+  },
+  "confirm": "Hatırlatıcıyı Kur",
+  "set": "Hatırlatıcı kuruldu · {when}",
+  "cancelled": "Hatırlatıcı iptal edildi",
+  "snoozeTitle": "Ne zamana erteleyelim?",
+  "notificationsOff": "Bildirimler kapalı olduğu için hatırlatıcı gelmez."
+}

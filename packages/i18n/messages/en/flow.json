@@ -1,0 +1,38 @@
+{
+  "title": "Flow",
+  "filters": {
+    "all": "All",
+    "important": "Important",
+    "mail": "Mail",
+    "calendar": "Calendar",
+    "followup": "Follow-up",
+    "personal": "Personal"
+  },
+  "cardTypes": {
+    "email": "Email",
+    "meeting": "Meeting",
+    "deadline": "Deadline",
+    "shipment": "Shipment",
+    "flight": "Flight",
+    "reservation": "Reservation",
+    "payment": "Payment",
+    "subscription": "Subscription",
+    "security": "Security",
+    "follow_up": "Follow-up",
+    "commitment": "Commitment"
+  },
+  "digest": {
+    "kicker": "Mail intelligence",
+    "label": "Today {total, plural, one {# email} other {# emails}} · {attention} need attention"
+  },
+  "sort": "Urgency first, then time",
+  "swipe": {
+    "done": "Done",
+    "snooze": "Snooze",
+    "notImportant": "Not important"
+  },
+  "empty": {
+    "title": "Nothing in this filter right now.",
+    "body": "New updates will appear here."
+  }
+}

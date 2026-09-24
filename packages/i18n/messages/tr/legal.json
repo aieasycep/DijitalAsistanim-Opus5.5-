@@ -1,0 +1,45 @@
+{
+  "privacy": {
+    "title": "Gizlilik Politikası ve KVKK Aydınlatma Metni",
+    "lastUpdated": "Son güncelleme: {date}",
+    "sections": {
+      "controller": "Veri sorumlusu",
+      "dataWeProcess": "İşlediğimiz veriler",
+      "purposes": "İşleme amaçları ve hukuki sebepler",
+      "googleLimitedUse": "Google API Hizmetleri Kullanıcı Verileri Politikası",
+      "aiProcessing": "Yapay zekâ ile işleme",
+      "subProcessors": "Alt işleyiciler ve yurt dışına aktarım",
+      "retention": "Saklama süreleri",
+      "security": "Güvenlik",
+      "rights": "Hakların",
+      "deletion": "Hesap ve veri silme",
+      "children": "Çocuklar",
+      "changes": "Değişiklikler",
+      "contact": "İletişim"
+    },
+    "noTraining": "Mail içeriklerin ve diğer verilerin yapay zekâ modellerini eğitmek için kullanılmaz.",
+    "noAds": "Verilerin reklam amacıyla satılmaz ve reklam hedeflemesi için kullanılmaz.",
+    "limitedUse": "Dijital Asistan'ın Google API'lerinden aldığı bilgileri kullanımı ve başka bir uygulamaya aktarımı, Sınırlı Kullanım şartları dahil olmak üzere Google API Hizmetleri Kullanıcı Verileri Politikası'na uygundur.",
+    "aiOutput": "Yapay zekâ çıktıları eksik ya da hatalı olabilir. Kaynağı “Bu nereden çıktı?” ile kontrol edebilirsin; doğrulanamayan ayrıntılar “Kaynakta kesinleşmiyor.” olarak işaretlenir."
+  },
+  "terms": {
+    "title": "Kullanım Koşulları",
+    "lastUpdated": "Son güncelleme: {date}",
+    "sections": {
+      "service": "Hizmet",
+      "account": "Hesabın",
+      "approvals": "Onay ve sorumluluk",
+      "subscriptions": "Abonelikler ve ödemeler",
+      "fairUse": "Adil kullanım",
+      "acceptableUse": "Kabul edilebilir kullanım",
+      "aiOutput": "Yapay zekâ çıktıları",
+      "termination": "Fesih",
+      "liability": "Sorumluluğun sınırlandırılması",
+      "law": "Uygulanacak hukuk",
+      "contact": "İletişim"
+    }
+  },
+  "consent": {
+    "accept": "Devam ederek <terms>Kullanım Koşulları</terms> ve <privacy>Gizlilik Politikası</privacy>'nı kabul edersin."
+  }
+}

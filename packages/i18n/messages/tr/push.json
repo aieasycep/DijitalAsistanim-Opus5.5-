@@ -1,0 +1,623 @@
+{
+  "morning": {
+    "ready": {
+      "full": {
+        "title": "Günaydın. Bugün bilmen gereken {count} şey var.",
+        "body": "{highlights}"
+      },
+      "title_only": {
+        "title": "Günaydın",
+        "body": "Bugün bilmen gereken {count} şey var."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    },
+    "calm": {
+      "full": {
+        "title": "Günaydın",
+        "body": "Her şey kontrol altında. Brifingin hazır."
+      },
+      "title_only": {
+        "title": "Günaydın",
+        "body": "Her şey kontrol altında. Brifingin hazır."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    }
+  },
+  "midday": {
+    "ready": {
+      "full": {
+        "title": "Gün ortası · {count} gelişme",
+        "body": "{highlights}"
+      },
+      "title_only": {
+        "title": "Gün ortası",
+        "body": "Sabahından beri {count} önemli gelişme oldu."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    }
+  },
+  "evening": {
+    "ready": {
+      "full": {
+        "title": "Akşam kapanışı",
+        "body": "Bugünden yarına {count} konu kalıyor: {highlights}"
+      },
+      "title_only": {
+        "title": "Akşam kapanışı",
+        "body": "Bugünden yarına {count} konu kalıyor."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    },
+    "clear": {
+      "full": {
+        "title": "Akşam kapanışı",
+        "body": "Bugünden yarına kalan konu yok. İyi akşamlar."
+      },
+      "title_only": {
+        "title": "Akşam kapanışı",
+        "body": "Bugünden yarına kalan konu yok. İyi akşamlar."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    }
+  },
+  "weekly": {
+    "ready": {
+      "full": {
+        "title": "Haftan hazır",
+        "body": "Bu hafta {important} önemli konu, {meetings} toplantı; {followups} takip açık."
+      },
+      "title_only": {
+        "title": "Haftan hazır",
+        "body": "Haftalık özetin hazır."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    }
+  },
+  "critical_email": {
+    "reply_needed": {
+      "full": {
+        "title": "{sender} · {subject}",
+        "body": "{expectedAction}"
+      },
+      "title_only": {
+        "title": "Önemli e-posta",
+        "body": "Bugün cevaplaman gereken önemli bir mail var."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    },
+    "vip": {
+      "full": {
+        "title": "{vipName} yazdı",
+        "body": "{subject}"
+      },
+      "title_only": {
+        "title": "Önemli kişiden mail",
+        "body": "Önemli kişilerinden birinden yeni bir mail var."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    },
+    "rule": {
+      "full": {
+        "title": "{sender} · {subject}",
+        "body": "Kuralın: {ruleName}"
+      },
+      "title_only": {
+        "title": "Önemli e-posta",
+        "body": "Bildir kuralına uyan yeni bir mail var."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    }
+  },
+  "meeting": {
+    "prep_ready": {
+      "full": {
+        "title": "{time} · {meeting}",
+        "body": "Toplantına {minutes} dakika kaldı. {count} hazırlık notun var."
+      },
+      "title_only": {
+        "title": "Toplantı hazırlığı",
+        "body": "Bir sonraki toplantın {minutes} dakika sonra. Hazırlığın hazır."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    },
+    "upcoming": {
+      "full": {
+        "title": "{time} · {meeting}",
+        "body": "Toplantına {minutes} dakika kaldı."
+      },
+      "title_only": {
+        "title": "Yaklaşan toplantı",
+        "body": "Toplantına {minutes} dakika kaldı."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    },
+    "post": {
+      "full": {
+        "title": "{meeting} bitti",
+        "body": "Takip etmen gereken bir şey var mı?"
+      },
+      "title_only": {
+        "title": "Toplantın bitti.",
+        "body": "Takip etmen gereken bir şey var mı?"
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    },
+    "conflict": {
+      "full": {
+        "title": "Takvim çakışması",
+        "body": "{day} {timeA} {eventA} ile {timeB} {eventB} çakışıyor."
+      },
+      "title_only": {
+        "title": "Takvim çakışması",
+        "body": "Önümüzdeki iki gün içinde iki etkinliğin çakışıyor."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    }
+  },
+  "deadline": {
+    "due_soon": {
+      "full": {
+        "title": "Son tarih: {title}",
+        "body": "Bugün {time_loc} kapanıyor."
+      },
+      "title_only": {
+        "title": "Yaklaşan son tarih",
+        "body": "Bugün kapanan bir son tarihin var."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    },
+    "commitment_due": {
+      "full": {
+        "title": "Sözün: {commitment}",
+        "body": "Bugün {time} için söz vermiştin."
+      },
+      "title_only": {
+        "title": "Taahhüt hatırlatması",
+        "body": "Bugün tamamlaman gereken bir taahhüdün var."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    }
+  },
+  "follow_up": {
+    "no_reply": {
+      "full": {
+        "title": "{person} · {subject}",
+        "body": "{days} gündür yanıt yok. Takip mesajı hazırlayayım mı?"
+      },
+      "title_only": {
+        "title": "Takip zamanı",
+        "body": "Yanıt beklediğin bir konuşma var."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    }
+  },
+  "life_intel": {
+    "shipment": {
+      "full": {
+        "title": "{state, select, delivered {Kargon teslim edildi.} delayed {Kargon gecikti.} other {Kargon bugün geliyor.}}",
+        "body": "{state, select, delivered {{seller} · Teslim edildi · {time}} delayed {{seller} · Yeni tahmini teslimat {date}} other {{seller} · Tahmini teslimat {from}–{to}}}"
+      },
+      "title_only": {
+        "title": "Kargo güncellemesi",
+        "body": "Ayrıntılar uygulamada."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    },
+    "flight": {
+      "full": {
+        "title": "{state, select, delayed {{flight} · Rötar} checkin_open {{flight} · Check-in açık} other {{flight} · Kapı değişti}}",
+        "body": "{state, select, delayed {Yeni kalkış saati {time}.} checkin_open {Kalkış {time}.} other {Yeni kapı {gate}. Kalkış {time}.}}"
+      },
+      "title_only": {
+        "title": "Uçuş güncellemesi",
+        "body": "Ayrıntılar uygulamada."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    },
+    "payment": {
+      "full": {
+        "title": "{issuer} · {amount}",
+        "body": "Son ödeme {date}."
+      },
+      "title_only": {
+        "title": "Ödeme güncellemesi",
+        "body": "Ayrıntılar uygulamada."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    },
+    "subscription": {
+      "full": {
+        "title": "{service} yenileniyor",
+        "body": "{date} tarihinde {amount} çekilecek."
+      },
+      "title_only": {
+        "title": "Abonelik güncellemesi",
+        "body": "Ayrıntılar uygulamada."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    },
+    "reservation": {
+      "full": {
+        "title": "{venue} rezervasyonun",
+        "body": "Bugün {time} · {partySize} kişi"
+      },
+      "title_only": {
+        "title": "Rezervasyon güncellemesi",
+        "body": "Ayrıntılar uygulamada."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    },
+    "security": {
+      "full": {
+        "title": "{service}: güvenlik uyarısı",
+        "body": "{summary}"
+      },
+      "title_only": {
+        "title": "Güvenlik uyarısı",
+        "body": "Hesaplarından biriyle ilgili bir güvenlik bildirimi var."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    },
+    "phone_digest": {
+      "full": {
+        "title": "Telefon bildirimleri özeti",
+        "body": "{count} yeni güncelleme: {types}"
+      },
+      "title_only": {
+        "title": "Telefon bildirimleri özeti",
+        "body": "{count} yeni kişisel güncellemen var."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    }
+  },
+  "approval": {
+    "pending": {
+      "full": {
+        "title": "Onay bekliyor",
+        "body": "{count, plural, one {{summary} onayını bekliyor.} other {# işlem onayını bekliyor.}}"
+      },
+      "title_only": {
+        "title": "Onay bekliyor",
+        "body": "Onayını bekleyen {count} işlem var."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    },
+    "expiring": {
+      "full": {
+        "title": "Onay süresi doluyor",
+        "body": "{summary} için {hours} saat kaldı."
+      },
+      "title_only": {
+        "title": "Onay süresi doluyor",
+        "body": "Onay bekleyen bir işlemin süresi dolmak üzere."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    },
+    "failed": {
+      "full": {
+        "title": "{summary} yapılamadı.",
+        "body": "Ayrıntılar Onay Bekleyenler'de."
+      },
+      "title_only": {
+        "title": "Bir işlem tamamlanamadı.",
+        "body": "Ayrıntılar Onay Bekleyenler'de."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    }
+  },
+  "account": {
+    "reauth_needed": {
+      "full": {
+        "title": "{service} bağlantısı yenilenmeli.",
+        "body": "{kind, select, calendar {Yeniden bağlanana kadar takvimin güncellenmez.} other {Yeniden bağlanana kadar yeni mailler analiz edilmez.}}"
+      },
+      "title_only": {
+        "title": "{service} bağlantısı yenilenmeli.",
+        "body": "{kind, select, calendar {Yeniden bağlanana kadar takvimin güncellenmez.} other {Yeniden bağlanana kadar yeni mailler analiz edilmez.}}"
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    },
+    "admin_consent": {
+      "full": {
+        "title": "Yönetici onayı gerekli",
+        "body": "Kurumunun yöneticisi {service} erişimine onay vermeli."
+      },
+      "title_only": {
+        "title": "Yönetici onayı gerekli",
+        "body": "Kurumunun yöneticisi {service} erişimine onay vermeli."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    },
+    "trial_ending": {
+      "full": {
+        "title": "Pro denemen yarın bitiyor",
+        "body": "Deneme bitince {plan} olarak yenilenir. İstersen mağaza ayarlarından iptal edebilirsin."
+      },
+      "title_only": {
+        "title": "Pro denemen yarın bitiyor",
+        "body": "Deneme bitince {plan} olarak yenilenir. İstersen mağaza ayarlarından iptal edebilirsin."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    },
+    "billing_issue": {
+      "full": {
+        "title": "Ödeme sorunu",
+        "body": "{store} ödemeni alamadı. Pro'nun devam etmesi için ödeme yöntemini güncelle."
+      },
+      "title_only": {
+        "title": "Ödeme sorunu",
+        "body": "{store} ödemeni alamadı. Pro'nun devam etmesi için ödeme yöntemini güncelle."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    },
+    "pro_ended": {
+      "full": {
+        "title": "Pro süren doldu",
+        "body": "Ücretsiz plana geçtin. Verilerin ve ayarların korunuyor."
+      },
+      "title_only": {
+        "title": "Pro süren doldu",
+        "body": "Ücretsiz plana geçtin. Verilerin ve ayarların korunuyor."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    },
+    "grant_started": {
+      "full": {
+        "title": "Pro erişimin tanımlandı",
+        "body": "{days} günlük Pro erişimin başladı."
+      },
+      "title_only": {
+        "title": "Pro erişimin tanımlandı",
+        "body": "{days} günlük Pro erişimin başladı."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    },
+    "referral_reward": {
+      "full": {
+        "title": "{side, select, referee {Hoş geldin ödülün} other {Davet ödülün geldi}}",
+        "body": "{side, select, referee {Davetle katıldığın için {days} gün Pro kazandın.} other {Arkadaşın katıldı; {days} gün Pro kazandın.}}"
+      },
+      "title_only": {
+        "title": "{side, select, referee {Hoş geldin ödülün} other {Davet ödülün geldi}}",
+        "body": "{side, select, referee {Davetle katıldığın için {days} gün Pro kazandın.} other {Arkadaşın katıldı; {days} gün Pro kazandın.}}"
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    },
+    "export_ready": {
+      "full": {
+        "title": "Veri dışa aktarımın hazır",
+        "body": "{date} {time_dat} kadar indirebilirsin."
+      },
+      "title_only": {
+        "title": "Veri dışa aktarımın hazır",
+        "body": "{date} {time_dat} kadar indirebilirsin."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    },
+    "export_failed": {
+      "full": {
+        "title": "Dışa aktarma hazırlanamadı",
+        "body": "Tekrar denemek için dokun."
+      },
+      "title_only": {
+        "title": "Dışa aktarma hazırlanamadı",
+        "body": "Tekrar denemek için dokun."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    },
+    "history_deleted": {
+      "full": {
+        "title": "Analiz geçmişin silindi",
+        "body": "Seçtiğin döneme ait analizler silindi."
+      },
+      "title_only": {
+        "title": "Analiz geçmişin silindi",
+        "body": "Seçtiğin döneme ait analizler silindi."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    },
+    "disconnected_by_support": {
+      "full": {
+        "title": "Bağlantı kaldırıldı",
+        "body": "{service} hesabının bağlantısı destek ekibi tarafından kaldırıldı. Dilediğin zaman yeniden bağlayabilirsin."
+      },
+      "title_only": {
+        "title": "Bağlantı kaldırıldı",
+        "body": "{service} hesabının bağlantısı destek ekibi tarafından kaldırıldı. Dilediğin zaman yeniden bağlayabilirsin."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    },
+    "support_ticket_updated": {
+      "full": {
+        "title": "Destek talebin güncellendi",
+        "body": "{reference} numaralı talebin: {status}."
+      },
+      "title_only": {
+        "title": "Destek talebin güncellendi",
+        "body": "{reference} numaralı talebin: {status}."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    }
+  },
+  "reminder": {
+    "local": {
+      "full": {
+        "title": "Hatırlatıcı",
+        "body": "{text}"
+      },
+      "title_only": {
+        "title": "Hatırlatıcı",
+        "body": "Şimdi hatırlatmamı istediğin bir konu var."
+      },
+      "generic": {
+        "title": "Dijital Asistan",
+        "body": "Yeni bir güncellemen var."
+      }
+    }
+  },
+  "test": {
+    "titlePrefix": "Test · {title}"
+  },
+  "ios": {
+    "hiddenPreview": "Dijital Asistan güncellemesi"
+  },
+  "foreground": {
+    "open": "Aç"
+  },
+  "channels": {
+    "briefings": {
+      "name": "Brifingler",
+      "description": "Sabah, öğle, akşam ve haftalık brifingler"
+    },
+    "critical_email": {
+      "name": "Kritik mailler",
+      "description": "Bugün cevaplaman gereken önemli mailler"
+    },
+    "meetings": {
+      "name": "Toplantılar",
+      "description": "Toplantı hatırlatmaları ve hazırlıklar"
+    },
+    "deadlines": {
+      "name": "Son tarihler",
+      "description": "Yaklaşan teslim tarihleri"
+    },
+    "follow_up": {
+      "name": "Takip hatırlatmaları",
+      "description": "Yanıt bekleyen mailler"
+    },
+    "life_intel": {
+      "name": "Yaşam zekâsı",
+      "description": "Kargo, uçuş, ödeme ve güvenlik"
+    },
+    "approvals": {
+      "name": "Onay bekleyenler",
+      "description": "Onayını bekleyen işlemler"
+    },
+    "reminders": {
+      "name": "Hatırlatıcılar",
+      "description": "Kendi kurduğun hatırlatıcılar"
+    },
+    "account": {
+      "name": "Hesap ve bağlantılar",
+      "description": "Yeniden bağlanma, abonelik ve güvenlik"
+    },
+    "phone_digest": {
+      "name": "Telefon bildirimleri özeti",
+      "description": "Yalnızca Telefon Bildirimleri açıkken kullanılır."
+    }
+  }
+}

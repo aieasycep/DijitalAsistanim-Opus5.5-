@@ -1,0 +1,38 @@
+{
+  "title": "Akış",
+  "filters": {
+    "all": "Tümü",
+    "important": "Önemli",
+    "mail": "Mail",
+    "calendar": "Takvim",
+    "followup": "Takip",
+    "personal": "Kişisel"
+  },
+  "cardTypes": {
+    "email": "Mail",
+    "meeting": "Toplantı",
+    "deadline": "Son tarih",
+    "shipment": "Kargo",
+    "flight": "Uçuş",
+    "reservation": "Rezervasyon",
+    "payment": "Ödeme",
+    "subscription": "Abonelik",
+    "security": "Güvenlik",
+    "follow_up": "Takip",
+    "commitment": "Taahhüt"
+  },
+  "digest": {
+    "kicker": "Mail zekâsı",
+    "label": "Bugün {total} mail · {attention} dikkat gerektiriyor"
+  },
+  "sort": "Önce aciliyet, sonra zaman",
+  "swipe": {
+    "done": "Tamamlandı",
+    "snooze": "Ertele",
+    "notImportant": "Önemli değil"
+  },
+  "empty": {
+    "title": "Bu filtrede şu an bir şey yok.",
+    "body": "Yeni bir gelişme olduğunda burada görünür."
+  }
+}

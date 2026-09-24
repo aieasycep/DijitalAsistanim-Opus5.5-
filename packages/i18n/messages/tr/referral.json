@@ -1,0 +1,23 @@
+{
+  "title": "Arkadaşını Davet Et",
+  "headline": "İkiniz de {days} gün Pro kazanın.",
+  "body": "Arkadaşın bağlantınla katılıp bir hesap bağladığında ve ilk brifingini aldığında ödülünüz tanımlanır.",
+  "link": "Davet bağlantın",
+  "copyLink": "Bağlantıyı kopyala",
+  "share": "Paylaş",
+  "shareMessage": "Dijital Asistan bugün bilmen gerekenleri sen sormadan söylüyor. Bu bağlantıyla katılırsan ikimiz de {days} gün Pro kazanırız: {url}",
+  "cap": "Yılda en fazla {cap} ödül",
+  "invitesSection": "Davetlerin",
+  "statuses": {
+    "pending": "Bekliyor",
+    "qualified": "Koşullar tamamlandı",
+    "rewarded": "Ödül tanımlandı",
+    "rejected": "Uygun değil",
+    "flagged": "İnceleniyor"
+  },
+  "enterCode": "Davet kodun var mı?",
+  "codeHint": "Davet kodu",
+  "apply": "Uygula",
+  "applied": "Davet kodun eklendi. Koşullar tamamlanınca ikiniz de Pro kazanırsınız.",
+  "landing": "Bir arkadaşın seni davet etti"
+}

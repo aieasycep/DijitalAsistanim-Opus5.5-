@@ -1,0 +1,43 @@
+{
+  "intelligence": {
+    "title": "Mail zekâsı",
+    "header": "Bugün {count} mail",
+    "attention": "{count} tanesi dikkat gerektiriyor.",
+    "views": {
+      "followUps": "Takip Etmen Gerekenler",
+      "awaitingMe": "Senden Beklenenler",
+      "awaitingThem": "Senin Cevap Beklediklerin"
+    }
+  },
+  "categories": {
+    "important": "Önemli",
+    "awaiting_my_reply": "Senden Cevap Bekleyen",
+    "awaiting_their_reply": "Senin Cevap Beklediğin",
+    "has_deadline": "Son Tarih İçeren",
+    "informational": "Bilgilendirme",
+    "low_priority": "Düşük Öncelik"
+  },
+  "detail": {
+    "sender": "Gönderen",
+    "subject": "Konu",
+    "date": "Tarih",
+    "summary": "AI Özeti",
+    "keyPoints": "Anahtar Noktalar",
+    "source": "Kaynak",
+    "original": "Orijinal Mail",
+    "openOriginal": "Orijinal Maili Aç",
+    "openIn": "{provider_loc} Aç",
+    "loadingOriginal": "Orijinal mail getiriliyor…",
+    "originalNotStored": "Orijinal mail saklanmaz; açtığında hesabından getirilir.",
+    "createTask": "Görev Oluştur"
+  },
+  "task": {
+    "title": "Görev oluştur",
+    "fieldTitle": "Görev başlığı",
+    "dueDate": "Son tarih",
+    "relatedPerson": "İlgili kişi",
+    "destination": "Nereye eklensin?",
+    "inApp": "Dijital Asistan",
+    "cta": "Görevi Oluştur"
+  }
+}

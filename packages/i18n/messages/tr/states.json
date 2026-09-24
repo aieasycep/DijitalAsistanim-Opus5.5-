@@ -1,0 +1,227 @@
+{
+  "loading": {
+    "label": "Yükleniyor",
+    "briefingKicker": "Brifing hazırlanıyor…",
+    "aiWorking": "Hazırlanıyor…",
+    "longRunningPush": "Brifing hâlâ hazırlanıyor; hazır olunca bildiririz.",
+    "longRunningInApp": "Brifing hâlâ hazırlanıyor; hazır olunca bu ekranda görünür.",
+    "refreshed": "Güncel · {time}"
+  },
+  "empty": {
+    "today": {
+      "title": "Her şey kontrol altında.",
+      "body": "Bugün dikkat gerektiren yeni bir konu yok.",
+      "bodyWithCount": "Bugün dikkat gerektiren yeni bir konu yok. {count} maili senin için okudum.",
+      "nextBriefing": "Sıradaki brifing {time_loc}.",
+      "cta": "Akışa göz at"
+    },
+    "plan": {
+      "title": "Bugün takvimin oldukça sakin.",
+      "body": "Bugünü odak için kullanabilirsin.",
+      "bodyWithNext": "Yarın {time} {event} ile başlıyorsun. Bugünü odak için kullanabilirsin.",
+      "cta": "Odak bloğu öner"
+    },
+    "followups": {
+      "title": "Bekleyen takip yok.",
+      "body": "Gönderdiğin her maile yanıt geldi. Yeni bir gecikme olursa buraya düşer.",
+      "cta": "Tamam"
+    },
+    "approvals": {
+      "title": "Onay bekleyen işlem yok.",
+      "body": "Bir mail göndermek veya takvimi değiştirmek istediğimde önce burada görürsün.",
+      "cta": "Geçmişi gör"
+    },
+    "noAccount": {
+      "title": "Mailini bağla.",
+      "body": "Gmail veya Outlook bağlayarak önemli konuları burada görebilirsin.",
+      "hint": "Mailini bağlayarak önemli konuları burada görebilirsin.",
+      "cta": "Hesap Bağla"
+    },
+    "noCalendar": {
+      "title": "Takvimini bağla.",
+      "body": "Plan, takvimin bağlandığında günlerini ve boşluklarını gösterir.",
+      "cta": "Takvim Bağla"
+    },
+    "noVip": {
+      "title": "Henüz VIP kişi yok.",
+      "body": "Önemli kişileri ekleyerek onlardan gelen mesajlara öncelik ver.",
+      "cta": "Kişi Ekle"
+    },
+    "list": {
+      "title": "Burada gösterilecek bir şey yok."
+    }
+  },
+  "offline": {
+    "banner": "Çevrimdışısın. Son analiz {time_abl} gösteriliyor.",
+    "refresh": "Yenile",
+    "todayKicker": "Brifing · {time} · Çevrimdışı",
+    "notDownloaded": "İndirilmedi",
+    "replyHint": "Yanıt taslağı bağlantı gelince hazırlanır.",
+    "assistant": "Çevrimdışıyken soru sorulamaz.",
+    "noCache": {
+      "title": "İnternet bağlantısı yok.",
+      "body": "Çevrimiçi olduğunda her şey otomatik olarak güncellenir.",
+      "cta": "Tekrar Dene"
+    },
+    "queued": "Bağlantı gelince kaydedilecek.",
+    "queuedSend": "Bağlantı gelince gönderilecek.",
+    "blockedReason": "Bu işlem için internet bağlantısı gerekiyor.",
+    "blockedToast": "Çevrimdışıyken bu işlem yapılamaz.",
+    "serverUnreachable": "Şu an sunucuya ulaşılamıyor. Son analiz {time_abl} gösteriliyor.",
+    "reconnected": "Güncel · {time}",
+    "stillOffline": "Hâlâ çevrimdışı."
+  },
+  "error": {
+    "loadFailed": {
+      "title": "{screen} yüklenemedi.",
+      "body": "Bağlantını kontrol edip tekrar dene."
+    },
+    "refreshFailed": "Güncel bilgiler alınamadı · Tekrar dene",
+    "action": {
+      "title": "Bir sorun oluştu.",
+      "body": "Tekrar denemek ister misin?"
+    },
+    "card": "Bu kart yüklenemedi.",
+    "saveFailed": "Kaydedilemedi. Tekrar dene.",
+    "fullScreen": {
+      "title": "Bir şeyler ters gitti.",
+      "body": "Bu ekranı yükleyemedim. Verilerin güvende; tekrar deneyebilirsin.",
+      "errorCode": "Hata kodu: {code}",
+      "report": "Sorunu bildir"
+    },
+    "rateLimited": "Biraz yavaşlayalım; birkaç saniye sonra tekrar dene.",
+    "updateRequired": {
+      "title": "Yeni bir sürüm gerekli.",
+      "body": "Devam etmek için Dijital Asistan'ı güncelle.",
+      "cta": "Güncelle"
+    },
+    "accountDisabled": {
+      "body": "Hesabın geçici olarak devre dışı. Destek ile iletişime geç.",
+      "cta": "Destek"
+    },
+    "oauthFailed": {
+      "title": "Bağlantı tamamlanamadı.",
+      "body": "Lütfen yeniden bağlan."
+    },
+    "oauthExpired": {
+      "title": "{service} bağlantısı yenilenmeli.",
+      "bodyMail": "{identityProvider} oturumu süresi doldu. Yeniden bağlanana kadar yeni mailler analiz edilmez.",
+      "bodyCalendar": "{identityProvider} oturumu süresi doldu. Yeniden bağlanana kadar takvimin güncellenmez.",
+      "cta": "Yeniden Bağlan",
+      "later": "Sonra",
+      "waiting": "{identityProvider_loc} izin bekleniyor…",
+      "a11yLabel": "{service}, yeniden bağlanman gerekiyor",
+      "adminConsent": {
+        "title": "Yönetici onayı gerekli.",
+        "body": "Kurumunun yöneticisi bu uygulamaya onay vermeli.",
+        "cta": "Nasıl yapılır?"
+      },
+      "declined": {
+        "title": "Erişim izni reddedildi.",
+        "body": "{identityProvider} hesabında izin onaylanmadı. Tekrar denemek için aşağıya dokun."
+      },
+      "accountMismatch": "Farklı bir hesapla giriş yapıldı. {email} hesabıyla yeniden bağlanmalısın."
+    },
+    "syncDelayed": {
+      "title": "Senkronizasyon gecikti.",
+      "body": "Son başarılı analiz {time}. Yeniden deniyoruz; gösterilenler {minutes} dakika eski olabilir.",
+      "cta": "Şimdi Dene",
+      "dismiss": "Tamam",
+      "deviceTitle": "{calendar} en son {time_loc} eşitlendi.",
+      "deviceBody": "Cihaz takvimi uygulama açıkken güncellenir.",
+      "deviceCta": "Şimdi eşitle",
+      "rateLimited": "Az önce denendi; birkaç dakika içinde yeniden denenecek."
+    },
+    "aiUnavailable": {
+      "title": "Asistan şu an yanıt veremiyor.",
+      "body": "Brifingin ve önceliklerin hazır; yalnızca yeni soru ve taslaklar birkaç dakika bekleyebilir.",
+      "cta": "Tekrar Dene",
+      "secondary": "Brifinge Dön",
+      "outputInvalid": {
+        "title": "Bunu şu an güvenilir biçimde hazırlayamadım.",
+        "body": "Tekrar dene."
+      }
+    }
+  },
+  "partial": {
+    "title": "Bazı hesaplarından veri alınamıyor.",
+    "body": "{service} bağlantısı yenilenene kadar {service} mailleri bu listede yok.",
+    "cta": "Ayrıntılar",
+    "onlyWith": "Yalnızca {sources} verileriyle",
+    "sourceOff": "Takvim analizi bu hesap için kapalı.",
+    "sourceOffCta": "Aç",
+    "provenance": "{source} · son eşitleme {time}",
+    "regionLabel": "Eksik veri uyarısı"
+  },
+  "permission": {
+    "calendar": {
+      "title": "Takvim izni verilmedi.",
+      "body": "Toplantı hazırlığı ve çakışma uyarıları takvim erişimi gerektirir. Diğer her şey çalışıyor.",
+      "cta": "İzin Ver",
+      "why": "Neden gerekli?",
+      "sheetBody": "Takvimini okuyarak toplantılarını hazırlar, çakışmaları ve boş zamanlarını gösteririm. Takvimine yalnızca senin onayınla bir şey eklerim."
+    },
+    "notifications": {
+      "title": "Bildirimler kapalı",
+      "body": "Telefon ayarlarında Dijital Asistan bildirimlerine izin vermediğin için hiçbir bildirim gelmiyor.",
+      "cta": "Ayarları Aç"
+    },
+    "exactAlarm": {
+      "body": "Hatırlatıcıların tam zamanında gelmesi için “Alarm ve hatırlatıcılar” iznine ihtiyaç var.",
+      "cta": "İzin Ver"
+    },
+    "deniedAgainCta": "Ayarları Aç",
+    "notNow": "Şimdi değil"
+  },
+  "limit": {
+    "ai": {
+      "title": "Bugünkü AI analiz hakkın doldu.",
+      "freeBody": "Hakkın {time_loc} yenilenir. Pro'da günlük sınır daha yüksek.",
+      "proBody": "Hakkın {time_loc} yenilenir.",
+      "tomorrow": "Hakkın yarın yenilenir.",
+      "writeMyself": "Kendim yazayım"
+    },
+    "rules": "En fazla {count} kural oluşturabilirsin.",
+    "vip": "En fazla {count} önemli kişi ekleyebilirsin.",
+    "proLapsed": "Pro sona erdi · {feature} duraklatıldı",
+    "seePro": "Pro'yu Gör",
+    "notNow": "Şimdi değil"
+  },
+  "entitlement": {
+    "title": "Bu bir Pro özelliği.",
+    "body": "Pro'ya geçtiğinde kullanabilirsin. Sabah brifingin her zaman ücretsiz.",
+    "trialCta": "{days} gün ücretsiz dene",
+    "cta": "Pro'yu Gör"
+  },
+  "unavailable": {
+    "credential": {
+      "generic": "Bu özellik bu ortamda yapılandırılmamış (harici kimlik bilgisi gerekli).",
+      "connect": "Bu bağlantı bu ortamda yapılandırılmamış (harici kimlik bilgisi gerekli).",
+      "purchases": "Satın alma bu ortamda yapılandırılmamış (harici kimlik bilgisi gerekli).",
+      "push": "Bildirim gönderimi bu ortamda yapılandırılmamış (harici kimlik bilgisi gerekli).",
+      "rowMeta": "Harici kimlik bilgisi gerekli"
+    },
+    "semanticSearch": "Anlamsal arama şu an kullanılamıyor; kelime eşleşmesiyle arıyorum.",
+    "featureDisabled": "Bu özellik şu anda kullanılamıyor.",
+    "providerOutage": "{service} şu an yanıt vermiyor. Yeniden deniyoruz."
+  },
+  "notFound": {
+    "route": {
+      "title": "Bu sayfa bulunamadı.",
+      "body": "Bağlantı eski olabilir ya da içerik silinmiş olabilir."
+    },
+    "entity": {
+      "title": "Bu içerik artık yok.",
+      "body": "Silinmiş ya da saklama süresi dolmuş olabilir."
+    },
+    "account": {
+      "title": "Bu bağlantı artık yok.",
+      "cta": "Bağlantılar'a Dön"
+    },
+    "approval": {
+      "title": "Bu işlem artık yok.",
+      "cta": "Onay Merkezi'ne Dön"
+    },
+    "sourceGone": "Bu mail artık kaynağında bulunamıyor."
+  }
+}

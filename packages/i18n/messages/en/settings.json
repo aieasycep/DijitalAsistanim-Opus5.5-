@@ -1,0 +1,349 @@
+{
+  "hub": {
+    "title": "Profile & Settings",
+    "identity": {
+      "trial": "Trial · {days, plural, one {# day} other {# days}} left",
+      "proAnnual": "Pro · Annual",
+      "proMonthly": "Pro · Monthly",
+      "proGrant": "Pro · invite reward · until {date}",
+      "billingIssue": "Payment problem",
+      "free": "Free plan",
+      "upgrade": "Go Pro"
+    },
+    "approvalCard": {
+      "title": "Approval Center",
+      "pending": "{count, plural, one {# action is} other {# actions are}} waiting for your approval",
+      "none": "Nothing pending"
+    },
+    "groups": {
+      "assistant": "Assistant",
+      "account": "Account",
+      "app": "App"
+    },
+    "rows": {
+      "briefings": "Briefings",
+      "notifications": "Notifications",
+      "notificationsImportantOnly": "Important only",
+      "priorityRules": "Priority rules",
+      "vip": "Important people",
+      "personalization": "AI personalization",
+      "personalizationCount": "{count, plural, one {# learning} other {# learnings}}",
+      "learningOff": "Learning off",
+      "phoneNotifications": "Phone notifications",
+      "subscription": "Subscription",
+      "connections": "Connections",
+      "connectionsReconnect": "Reconnect",
+      "connectionsMissingScope": "Missing permission",
+      "privacy": "Privacy & Security",
+      "referral": "Invite a friend",
+      "referralMeta": "+{days, plural, one {# day} other {# days}}",
+      "deleteAccount": "Delete my account",
+      "appearance": "Appearance",
+      "language": "Language",
+      "help": "Help",
+      "feedback": "Feedback",
+      "about": "About"
+    },
+    "signOut": "Sign out",
+    "footer": "Dijital Asistan {version} ({build}) · Release notes"
+  },
+  "signOut": {
+    "title": "Sign out?",
+    "body": "The cache, widget data and scheduled reminders on this device are removed. Your connected accounts and settings stay with your account.",
+    "unsent": "{count, plural, one {# unsent change} other {# unsent changes}} will be lost if you sign out.",
+    "everywhere": "Sign out of all devices",
+    "everywhereMeta": "Every session signed in with this account is closed.",
+    "everywhereConfirmTitle": "Sign out of all devices?",
+    "everywhereConfirmBody": "You'll be signed out everywhere, including this device."
+  },
+  "profile": {
+    "title": "Profile",
+    "accountSection": "Account",
+    "sessionSection": "Session",
+    "name": "Name",
+    "nameHint": "Your name",
+    "email": "Email",
+    "appleRelay": "Hidden email (Apple)",
+    "signInMethod": "Sign-in method",
+    "signInWith": "Signed in with {provider}",
+    "memberSince": "Member since",
+    "timezoneNote": "Your time zone is in briefing settings."
+  },
+  "accounts": {
+    "title": "Connections",
+    "subtitle": "The accounts Dijital Asistan reads. You can remove them at any time.",
+    "groups": {
+      "mail": "Email",
+      "calendar": "Calendar",
+      "tasks": "Tasks"
+    },
+    "addAccount": "Add account",
+    "footer": "Connections use the provider's own secure sign-in screen (OAuth); we never see your password. Apple Calendar and Reminders are read only from this device.",
+    "status": {
+      "healthy": "Connected",
+      "syncing": "Syncing",
+      "connecting": "Connecting…",
+      "partial": "Missing permission",
+      "needs_reauth": "Renew the connection.",
+      "admin_consent_required": "Admin approval required",
+      "error": "Error",
+      "disconnected": "Not connected"
+    },
+    "reconnect": "Reconnect",
+    "lastSync": "Last sync",
+    "lastSyncRow": "{resource} · {time}",
+    "permissionsSection": "Permissions",
+    "dataSourceSection": "Data source controls",
+    "calendarsSection": "Calendars",
+    "toggles": {
+      "mail_read": "Read and analyse emails",
+      "attachments_analyze": "Analyse attachments",
+      "deadline_detect": "Detect deadlines",
+      "draft_replies": "Prepare reply drafts",
+      "calendar_read": "Read events",
+      "schedule_suggest": "Suggest a schedule",
+      "calendar_write_with_approval": "Create and move events with your approval",
+      "tasks_read": "Read tasks"
+    },
+    "toggleNote": "Turning this off doesn't revoke the permission you gave the provider; it only stops Dijital Asistan from doing this.",
+    "explainerNote": "Permission to send email or create events is requested separately at your first approved action.",
+    "waiting": "Waiting for permission in {provider}…",
+    "completing": "Completing the connection…",
+    "disconnect": {
+      "cta": "Disconnect",
+      "title": "Disconnect {service}?",
+      "body": "New emails will no longer be analysed and {provider} access is revoked. Your emails in {service} aren't affected.",
+      "purgeNow": "Also delete the analyses from this account now",
+      "purgeLater": "If you leave this unticked, the analyses are deleted when your retention period ({retention}) ends.",
+      "microsoftNote": "We can't fully remove Microsoft access on our side. To remove it: account.live.com/consent/Manage for a personal account, or myapps.microsoft.com for a work or school account.",
+      "confirm": "Disconnect",
+      "done": "{service} disconnected",
+      "purging": "This account's analyses are being deleted…",
+      "removeAtMicrosoft": "Remove at Microsoft",
+      "revokeFailed": "Disconnected, but Google access couldn't be revoked. You can remove it in Google Account › Security › Third-party connections.",
+      "removeAtGoogle": "Remove at Google"
+    }
+  },
+  "briefings": {
+    "title": "Briefings",
+    "subtitle": "When should I prepare your briefings?",
+    "rows": {
+      "morning": {
+        "title": "Morning briefing",
+        "meta": "Your whole day · audio version"
+      },
+      "midday": {
+        "title": "Midday pulse",
+        "meta": "Only what changed"
+      },
+      "evening": {
+        "title": "Evening wrap-up",
+        "meta": "What carries over to tomorrow"
+      },
+      "weekly": {
+        "title": "Weekly summary",
+        "meta": "Sunday {time}"
+      },
+      "weekend": {
+        "title": "Weekend schedule",
+        "meta": "Mornings only, {time} · Personal first"
+      }
+    },
+    "silentDays": "Quiet days",
+    "silentDaysHelp": "No briefing is prepared on the days you pick.",
+    "timezone": "Time zone",
+    "timezoneAuto": "Automatic · {zone}",
+    "timezoneSheet": {
+      "auto": "Automatic (device time zone)",
+      "current": "Currently: {zone}",
+      "manual": "Choose manually",
+      "searchHint": "Search for a city"
+    }
+  },
+  "personalization": {
+    "title": "AI personalization",
+    "learnToggle": "Learn from my interactions",
+    "learnMeta": "I learn from what you mark as not important and what you bring forward.",
+    "learnedSection": "What I have learned",
+    "priority": {
+      "high": "High",
+      "normal": "Normal",
+      "low": "Low"
+    },
+    "writeRule": "Write your own rule → Priority rules",
+    "noTraining": "Your email content is never used to train AI models."
+  },
+  "priorityRules": {
+    "title": "Priority rules",
+    "alwaysNotify": "Always notify",
+    "vipRow": "From VIPs",
+    "conditions": {
+      "person": "Person",
+      "domain": "Domain",
+      "keyword": "Keyword",
+      "category": "Category",
+      "sender": "Sender",
+      "android_app": "Android app"
+    },
+    "outcomes": {
+      "always_important": "Always important",
+      "high": "High priority",
+      "low": "Low priority",
+      "always_notify": "Always notify",
+      "mute": "Mute"
+    },
+    "matchCount": "{count, plural, one {# email} other {# emails}} · last 30 days",
+    "active": "Rule on",
+    "inactive": "Rule off",
+    "create": "Save rule",
+    "saveChanges": "Save changes",
+    "deleteTitle": "Delete this rule?",
+    "deleted": "Rule deleted",
+    "precedenceTitle": "How are rules applied?",
+    "precedenceBody": "Your rules come first, then preferences I have learned, then clear signals, and only then AI estimates."
+  },
+  "appearance": {
+    "title": "Appearance",
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark",
+    "textSize": "Text size",
+    "textSizeSystem": "Uses your system setting"
+  },
+  "language": {
+    "title": "Language",
+    "note": "The app language also sets the language of your briefings and notifications."
+  },
+  "help": {
+    "title": "Help",
+    "subtitle": "Frequently asked questions and ways to reach our support team.",
+    "supportSection": "Support",
+    "contact": "Contact support",
+    "contactMeta": "We reply by email.",
+    "reportBug": "Report a bug",
+    "webSupport": "Support page on the web",
+    "emailUs": "Send an email",
+    "myTickets": "My requests",
+    "ticketMeta": "{category} · {date}",
+    "ticketsFailed": "Your requests couldn't be loaded · Try again",
+    "ticketStatus": {
+      "open": "Open",
+      "in_progress": "In review",
+      "waiting_user": "Waiting for you",
+      "resolved": "Resolved",
+      "closed": "Closed"
+    },
+    "ticketNote": "We're sending our replies to {email}. You can reply to that email with more details."
+  },
+  "contact": {
+    "title": "Contact support",
+    "topic": "Topic",
+    "categories": {
+      "account": "Account",
+      "integration": "Integration",
+      "sync": "Sync",
+      "billing": "Billing",
+      "ai_quality": "AI quality",
+      "notification": "Notifications",
+      "privacy": "Privacy",
+      "other": "Other"
+    },
+    "subject": "Subject",
+    "subjectDefault": "About {category}",
+    "message": "Your message",
+    "messageHint": "What happened? Which screen were you on?",
+    "counter": "{count}/{max}",
+    "noSecrets": "Don't share passwords, verification codes or card details.",
+    "replyTo": "Reply-to address",
+    "appleRelay": "This is your hidden Apple email. We'll reply to it, or you can enter another address.",
+    "diagnostics": "Include diagnostics",
+    "diagnosticsWhat": "What's included?",
+    "diagnosticsBody": "App version, device and operating system, the status of your connected accounts (for example Gmail · connected), recent error codes and notification permission. No email, calendar or conversation content is included.",
+    "privacyHint": "To delete your account or data, use Privacy › Delete my account; it is the fastest way.",
+    "billingHint": "Refunds are handled by Apple or Google.",
+    "billingHow": "How?",
+    "send": "Send",
+    "sending": "Sending…",
+    "successTitle": "We've received your request.",
+    "successBody": "Your reference: {reference}. We'll reply to {email}.",
+    "validation": {
+      "topic": "Choose a topic.",
+      "messageMin": "Your message must be at least {min, plural, one {# character} other {# characters}}.",
+      "email": "Enter a valid email address."
+    },
+    "rateLimited": "Too many requests. Please try again in an hour.",
+    "failed": "Couldn't send. Check your internet connection and try again."
+  },
+  "feedback": {
+    "title": "Feedback",
+    "subtitle": "Your feedback helps us improve Dijital Asistan.",
+    "types": {
+      "bug": "Bug report",
+      "feature": "Feature request",
+      "general": "General feedback",
+      "ai_quality": "AI quality"
+    },
+    "area": "Which part is it about?",
+    "areas": {
+      "briefing": "Briefing",
+      "mailSummary": "Email summary",
+      "replyDraft": "Reply draft",
+      "assistant": "Assistant",
+      "meetingPrep": "Meeting prep",
+      "capture": "Capture",
+      "other": "Other"
+    },
+    "rating": "Overall satisfaction",
+    "ratings": {
+      "r1": "Poor",
+      "r2": "Could be better",
+      "r3": "Good",
+      "r4": "Very good",
+      "r5": "Excellent"
+    },
+    "ratingA11y": "Satisfaction, {value} of 5, {label}",
+    "hints": {
+      "bug": "What happened, and what did you expect?",
+      "feature": "What do you need?",
+      "general": "Tell us what's on your mind.",
+      "ai_quality": "Which result was wrong or incomplete?"
+    },
+    "aiNote": "No email content is included; only what you write is sent.",
+    "diagnostics": "Include diagnostics",
+    "diagnosticsMeta": "App version, device and recent error codes.",
+    "successTitle": "Thank you.",
+    "successBody": "Your feedback reached us.",
+    "newFeedback": "New feedback",
+    "queued": "Will be sent when you're back online.",
+    "sentLater": "Your feedback was sent.",
+    "empty": "The message can't be empty.",
+    "rateLimited": "Too much feedback was sent in a short time. Try again a little later.",
+    "storeReview": "Rate Dijital Asistan in the store",
+    "storeReviewCta": "Rate"
+  },
+  "about": {
+    "title": "About",
+    "privacySummary": "Privacy summary",
+    "privacyCenter": "Privacy Center",
+    "legal": "Legal",
+    "terms": "Terms of Use",
+    "privacyPolicy": "Privacy Policy",
+    "dataDeletion": "Data deletion",
+    "dataDeletionMeta": "If you can't access the app, you can also make a request on the web.",
+    "licenses": "Open-source licenses",
+    "releaseNotes": "Release notes",
+    "rate": "Rate in the store",
+    "support": "Support",
+    "securityReport": "Report a security issue",
+    "versionA11y": "Version {version}, build {build}"
+  },
+  "licenses": {
+    "title": "Open-source licenses",
+    "subtitle": "Dijital Asistan uses the following open-source software and fonts.",
+    "searchHint": "Search packages",
+    "fontsSection": "Fonts and icons",
+    "packagesSection": "Software packages",
+    "openSource": "Open source",
+    "empty": "No package found."
+  }
+}

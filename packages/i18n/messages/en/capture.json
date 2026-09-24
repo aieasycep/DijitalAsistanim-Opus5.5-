@@ -1,0 +1,62 @@
+{
+  "title": "Add to Dijital Asistan",
+  "kinds": {
+    "photo": "Photo",
+    "screenshot": "Screenshot",
+    "pdf": "PDF",
+    "file": "File",
+    "link": "Link",
+    "text": "Text",
+    "share": "Shared content"
+  },
+  "sources": {
+    "camera": "Camera",
+    "library": "Photos",
+    "files": "Files"
+  },
+  "link": {
+    "hint": "Paste a link"
+  },
+  "text": {
+    "hint": "Type or paste text here"
+  },
+  "statuses": {
+    "pending_upload": "Uploading…",
+    "uploaded": "Uploaded",
+    "analyzing": "Analysing…",
+    "extracted": "Ready",
+    "actioned": "Done",
+    "discarded": "Discarded",
+    "failed": "Couldn't be analysed"
+  },
+  "result": {
+    "detectedType": "Detected type",
+    "extracted": "Extracted details",
+    "suggestedAction": "Suggested action",
+    "eventDetected": "Event detected.",
+    "addToCalendarQuestion": "Shall I add it to your calendar?",
+    "nothingFound": "I didn't find anything to act on in this content."
+  },
+  "entityTypes": {
+    "event": "Event",
+    "task": "Task",
+    "deadline": "Deadline",
+    "person": "Person",
+    "payment": "Payment",
+    "reservation": "Reservation",
+    "flight": "Flight",
+    "shipment": "Shipment",
+    "product": "Product",
+    "note": "Note"
+  },
+  "actions": {
+    "addToCalendar": "Add to calendar",
+    "createTask": "Create task",
+    "setReminder": "Set reminder",
+    "discard": "Discard"
+  },
+  "permission": {
+    "camera": "I only use the camera when you choose “Camera”."
+  },
+  "privacyNote": "Files you upload are stored only in your account and deleted when your retention period ends."
+}

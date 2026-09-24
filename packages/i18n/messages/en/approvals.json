@@ -1,0 +1,64 @@
+{
+  "title": "Approval Center",
+  "pendingTitle": "Pending approvals",
+  "pendingCount": "{count, plural, one {# action is} other {# actions are}} waiting for your approval",
+  "noPending": "Nothing pending",
+  "tabs": {
+    "pending": "Pending",
+    "history": "History"
+  },
+  "statuses": {
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "executing": "In progress",
+    "executed": "Done",
+    "failed": "Failed",
+    "expired": "Expired"
+  },
+  "types": {
+    "email_send": "Send email",
+    "calendar_create": "Add event",
+    "calendar_update": "Update event",
+    "calendar_move": "Move event",
+    "task_create": "Create task",
+    "reminder_create": "Create reminder",
+    "commitment_create": "Save commitment"
+  },
+  "card": {
+    "why": "Why",
+    "change": "Change",
+    "where": "Where",
+    "whichSource": "Which source is this from?",
+    "sideEffectAttendees": "Attendees will be sent an update"
+  },
+  "progress": {
+    "approved": "Approved",
+    "sending": "Sending…",
+    "processing": "Processing…",
+    "rejected": "Rejected",
+    "expired": "Expired · {time} ago"
+  },
+  "results": {
+    "email_send": "Email sent.",
+    "calendar_create": "Added to your calendar.",
+    "calendar_update": "Event updated.",
+    "task_create": "Task created.",
+    "reminder_create": "Reminder set.",
+    "commitment_create": "Commitment saved."
+  },
+  "actions": {
+    "approve": "Approve",
+    "edit": "Edit",
+    "reject": "Reject",
+    "retry": "Try again",
+    "viewResult": "View result",
+    "repropose": "Suggest again"
+  },
+  "undo": "Approved · {count, plural, one {# action} other {# actions}}",
+  "scopeUpgrade": {
+    "title": "One more permission is needed",
+    "body": "To do this, I need an extra permission from your {service} account. It is only used for actions you approve.",
+    "cta": "Allow"
+  }
+}

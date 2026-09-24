@@ -1,0 +1,218 @@
+{
+  "promises": {
+    "encrypted": "Data is encrypted in transit and at rest.",
+    "approval": "Nothing important happens without your approval.",
+    "ads": "Your data is never sold for advertising.",
+    "training": "Email content is never used to train models.",
+    "trainingLong": "Your email content is never used to train AI models.",
+    "deletable": "You can delete your data at any time."
+  },
+  "storage": {
+    "canonical": "The full content of your emails isn't stored; only summaries, short quotes and analysis results are kept for your retention period.",
+    "firstAnalysisFooter": "The last 72 hours were analysed. The full content of your emails isn't stored.",
+    "androidNi": "Notification content is processed on your device; only the extracted details (for example shipment status, amount, date) are saved to your account. Verification codes and security apps are always excluded.",
+    "short": "Full email content isn't stored",
+    "region": "Data is stored in {region}.",
+    "crossBorder": "AI analysis runs at our sub-processors in the United States."
+  },
+  "center": {
+    "title": "Privacy & Security",
+    "subtitle": "See what I read, how long I keep it and how to delete it.",
+    "connectedAccounts": "Connected accounts · {count}",
+    "accountScopes": "Read · Send (with approval)",
+    "noAccount": "Connect an account",
+    "dataSection": "Data",
+    "permissions": "Permissions",
+    "aiData": "Data the AI can access",
+    "aiDataMeta": "{count, plural, one {# field} other {# fields}}",
+    "retention": "Data retention",
+    "personalization": "AI personalization",
+    "on": "On",
+    "off": "Off",
+    "export": "Export my data",
+    "exportReady": "Ready",
+    "exportPreparing": "Preparing",
+    "deleteHistory": "Delete analysis history",
+    "deleteAccount": "Delete my account",
+    "policyLink": "Privacy Policy"
+  },
+  "permissions": {
+    "title": "Permissions",
+    "accountSection": "Connected account permissions",
+    "phoneSection": "Phone permissions",
+    "status": {
+      "granted": "Allowed",
+      "denied": "Denied",
+      "undetermined": "Not asked",
+      "limited": "Limited"
+    },
+    "os": {
+      "notifications": {
+        "title": "Notifications",
+        "meta": "For briefings and important alerts"
+      },
+      "calendar": {
+        "title": "Calendar",
+        "meta": "To read your device calendar"
+      },
+      "reminders": {
+        "title": "Reminders",
+        "meta": "For Apple Reminders"
+      },
+      "microphone": {
+        "title": "Microphone",
+        "meta": "For voice commands and meeting notes"
+      },
+      "speech": {
+        "title": "Speech recognition",
+        "meta": "To turn your voice into text"
+      },
+      "camera": {
+        "title": "Camera",
+        "meta": "To capture documents and photos"
+      },
+      "notificationAccess": {
+        "title": "Notification access",
+        "meta": "For phone notification intelligence"
+      }
+    },
+    "scopes": {
+      "mail_read": "Read emails",
+      "mail_send": "Send emails (with your approval each time)",
+      "calendar_read": "Read calendar events",
+      "calendar_write": "Create and move events (with your approval each time)",
+      "tasks_read": "Read tasks",
+      "tasks_write": "Create tasks (with your approval each time)",
+      "notRequested": "Not requested yet · asked at your first approved action"
+    },
+    "whyTitle": "Why is {permission} access needed?"
+  },
+  "aiData": {
+    "title": "What can the AI access?",
+    "subtitle": "As of today. You can turn off any row; what you turn off isn't analysed.",
+    "reads": "Reads",
+    "mailBody": {
+      "title": "Email subjects and bodies",
+      "meta": "For summaries · Full email content isn't stored"
+    },
+    "attachments": {
+      "title": "Attachments (PDF, images)",
+      "meta": "Spotting bills and proposals"
+    },
+    "calendar": {
+      "title": "Calendar details",
+      "meta": "Attendees, locations and descriptions"
+    },
+    "contacts": {
+      "title": "Contacts",
+      "meta": "Only name matching and people summaries"
+    },
+    "never": "Never uses",
+    "neverPasswords": "Passwords and verification codes",
+    "neverBank": "Bank account and card numbers",
+    "neverMessaging": "Messaging app content",
+    "neverLocation": "Your location",
+    "footnote": "Even if these appear in an email, they're removed before anything is sent to the AI, and they're never stored.",
+    "perAccount": "Per account"
+  },
+  "sourceOff": {
+    "mail_body": {
+      "title": "Turn off email bodies?",
+      "body": "If you turn this off, the AI uses only the sender and subject line. Email summaries, key points and reply drafts won't work, and priorities will be less accurate."
+    },
+    "attachments": {
+      "title": "Turn off attachments?",
+      "body": "Bill, proposal and ticket attachments won't be read, so dates and amounts in them won't be picked up."
+    },
+    "calendar": {
+      "title": "Turn off calendar details?",
+      "body": "Meeting prep will use only the title and time; attendees and locations won't be shown."
+    },
+    "contacts": {
+      "title": "Turn off contacts?",
+      "body": "People pages and relationship summaries won't be prepared. Your VIPs and priority rules keep working by email address."
+    },
+    "cta": "Turn off"
+  },
+  "retention": {
+    "title": "Data retention",
+    "subtitle": "How long should analysis results and summaries be kept?",
+    "options": {
+      "d30": "30 days",
+      "d90": "90 days",
+      "d365": "1 year",
+      "until_deleted": "Until you delete"
+    },
+    "explanation": "Memory search is limited to this period. Your original emails stay in your own account.",
+    "exportMeta": "JSON · {size}",
+    "shorten": {
+      "title": "Shorten retention to {days, plural, one {# day} other {# days}}?",
+      "body": "{count, plural, one {# summary, priority decision or memory entry} other {# summaries, priority decisions and memory entries}} older than {days, plural, one {# day} other {# days}} will be permanently deleted at the next clean-up (within 24 hours).",
+      "cta": "Shorten retention"
+    }
+  },
+  "history": {
+    "title": "Analysis history",
+    "body": "Summaries, priority decisions, AI memory and learned preferences are deleted. Your emails and calendar aren't affected.",
+    "willDelete": "To be deleted: {summaries, plural, one {# summary} other {# summaries}} · {decisions, plural, one {# priority decision} other {# priority decisions}} · {memory, plural, one {# memory entry} other {# memory entries}} · {preferences, plural, one {# learned preference} other {# learned preferences}}",
+    "willKeep": "Kept: connections, settings, your priority rules, your VIP list, open commitments and scheduled reminders",
+    "pendingCancelled": "Pending approvals are cancelled.",
+    "processing": "Deleting… This can take a few minutes.",
+    "completed": "Your analysis history was deleted · {when}",
+    "completedCount": "{count, plural, one {# summary deleted} other {# summaries deleted}}",
+    "failed": "Deletion couldn't be completed. You can try again.",
+    "cta": "Delete analysis history",
+    "confirm": {
+      "title": "Delete your analysis history?",
+      "body": "Summaries, priority decisions and the memory index from the last {days, plural, one {# day} other {# days}} are deleted. Your emails and calendar aren't affected. This can't be undone.",
+      "bodyAll": "All summaries, priority decisions and the memory index are deleted. Your emails and calendar aren't affected. This can't be undone.",
+      "cta": "Delete history"
+    }
+  },
+  "export": {
+    "title": "Export my data",
+    "body": "We'll prepare a copy of your account data as JSON files in a ZIP. Access keys and passwords aren't included.",
+    "contentsTitle": "Contents",
+    "contents": "Profile and settings · Connected account details (without keys) · Summaries and briefings · Commitments, reminders and approvals · Assistant conversations · Files you uploaded",
+    "processing": "Preparing…",
+    "processingNotify": "Preparing… We'll send a notification when it's ready.",
+    "ready": "Ready · {size} · available to download until {expires}",
+    "download": "Download",
+    "expired": "This export has expired.",
+    "newRequest": "Create a new request",
+    "failed": "The export couldn't be prepared.",
+    "cta": "Request an export"
+  },
+  "deleteAccount": {
+    "title": "Are you sure you want to delete your account?",
+    "deletedSection": "Deleted",
+    "deleted": {
+      "profile": "Your profile, settings and preferences",
+      "analysis": "Briefings, analyses and AI memory",
+      "connections": "Your connected accounts (Google access is revoked)",
+      "files": "Files you uploaded and your exports",
+      "referral": "Your invite code and Pro rewards"
+    },
+    "unaffectedSection": "Not affected",
+    "unaffected": {
+      "original": "The original content in Gmail, Outlook and your calendars",
+      "sent": "Emails sent and events created with your approval (they stay with the provider)"
+    },
+    "subscriptionWarning": "Deleting your account doesn't cancel your {store} subscription. Cancel it first so you aren't charged.",
+    "manageSubscription": "Manage subscription",
+    "ackSubscription": "I understand my subscription must be cancelled separately.",
+    "microsoftWarning": "You also need to remove Microsoft access yourself: account.live.com/consent/Manage or myapps.microsoft.com.",
+    "appleNote": "If you verify with Apple, the Sign in with Apple link is also removed at Apple during deletion. If you verify with an email code, remove it in Settings › Apple ID › Sign in with Apple.",
+    "exportFirst": "Export my data first",
+    "reauthTitle": "Verify it's you",
+    "reauthBody": "For your security, sign in again with {method}.",
+    "confirmPrompt": "Type DELETE to confirm",
+    "confirmWord": "DELETE",
+    "confirmCta": "Permanently delete my account",
+    "queuedTitle": "Your account is queued for deletion",
+    "queuedBody": "Your connections are being revoked and your data deleted. This usually takes a few minutes.",
+    "completedTitle": "Your account was deleted.",
+    "completedBody": "The data on this device was cleared too.",
+    "timeout": "Deletion is in progress and will complete within 24 hours. The data on this device was cleared and you've been signed out. You can check the status on our website's Data Deletion page with email verification."
+  }
+}

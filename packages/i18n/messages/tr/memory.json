@@ -1,0 +1,10 @@
+{
+  "title": "Hafıza",
+  "searchHint": "Hafızada ara…",
+  "askAssistant": "Asistana sor",
+  "empty": {
+    "title": "Hafızada henüz bir şey yok.",
+    "body": "Maillerin ve toplantıların analiz edildikçe özetler burada birikir."
+  },
+  "retentionNote": "Hafıza, saklama sürenle sınırlıdır."
+}

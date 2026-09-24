@@ -1,0 +1,30 @@
+{
+  "prep": {
+    "title": "Toplantıya Hazırlan",
+    "ready": "Hazırlık hazır · {count} konu",
+    "countdown": "{minutes} dakika kaldı",
+    "lastMeeting": "Son görüşmeniz {relative}.",
+    "takeNote": "Not Al",
+    "startMeeting": "Toplantıyı Başlat",
+    "generate": "Hazırlan",
+    "sections": {
+      "context": "Bağlam",
+      "openItems": "Açık konular",
+      "people": "Katılımcılar",
+      "lastDecisions": "Son kararlar"
+    }
+  },
+  "summary": {
+    "title": "2 dakikalık özet"
+  },
+  "post": {
+    "title": "Takip etmen gereken bir şey var mı?",
+    "hint": "Toplantıda neler konuşuldu? Yaz ya da söyle.",
+    "newCommitment": "Yeni Taahhüt",
+    "save": "Kaydet"
+  },
+  "notes": {
+    "title": "Toplantı notu",
+    "hint": "Notunu yaz…"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "title": "Voice command",
+  "listening": "I'm listening…",
+  "processing": "Working it out…",
+  "tapToApprove": "Tap the card to approve.",
+  "continueWithText": "Continue with text",
+  "examples": {
+    "moveMeeting": "Move tomorrow's meeting 30 minutes later.",
+    "readBriefing": "Read today's briefing.",
+    "shouldReply": "Do I need to reply to Mehmet?"
+  },
+  "permission": {
+    "title": "Microphone access needed",
+    "body": "Voice commands need access to your microphone and speech recognition."
+  },
+  "notUnderstood": "I didn't catch that. Could you say it again?"
+}

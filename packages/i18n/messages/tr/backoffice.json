@@ -1,0 +1,97 @@
+{
+  "app": {
+    "name": "Dijital Asistan Yönetim"
+  },
+  "nav": {
+    "groups": {
+      "overview": "Genel Bakış",
+      "users": "Kullanıcılar",
+      "operations": "Operasyon",
+      "ai": "Yapay Zekâ",
+      "business": "İş",
+      "product": "Ürün",
+      "privacy": "Gizlilik",
+      "system": "Sistem"
+    },
+    "items": {
+      "dashboard": "Pano",
+      "users": "Kullanıcılar",
+      "support": "Destek",
+      "integrations": "Entegrasyonlar",
+      "jobs": "Senkron ve İşler",
+      "briefings": "Brifingler",
+      "notifications": "Bildirimler",
+      "aiOperations": "AI Operasyonları",
+      "prompts": "Prompt Yönetimi",
+      "subscriptions": "Abonelikler",
+      "referrals": "Davetler",
+      "feedback": "Geri Bildirim",
+      "flags": "Özellik Bayrakları",
+      "announcements": "Duyurular",
+      "dataRequests": "Veri Talepleri",
+      "audit": "Denetim Kayıtları",
+      "health": "Sistem Sağlığı",
+      "admins": "Yöneticiler",
+      "settings": "Ayarlar"
+    }
+  },
+  "auth": {
+    "title": "Yönetim paneline giriş",
+    "email": "E-posta",
+    "sendCode": "Kod gönder",
+    "code": "E-posta kodu",
+    "codeHelp": "{email} adresine gönderdiğimiz 6 haneli kodu yaz.",
+    "verify": "Doğrula",
+    "mfaTitle": "İki adımlı doğrulama",
+    "mfaHelp": "Doğrulayıcı uygulamandaki 6 haneli kodu yaz.",
+    "mfaEnrollTitle": "Doğrulayıcı uygulamanı bağla",
+    "sessionExpired": "Oturumun sona erdi. Yeniden giriş yap.",
+    "signOut": "Çıkış yap",
+    "signOutAll": "Tüm oturumlardan çıkış yap"
+  },
+  "roles": {
+    "super_admin": "Süper yönetici",
+    "operations": "Operasyon",
+    "support": "Destek",
+    "finance": "Finans",
+    "ai_ops": "AI operasyon",
+    "analyst": "Analist",
+    "readonly": "Salt okunur"
+  },
+  "table": {
+    "emptyFiltered": "Filtrelerle eşleşen kayıt yok.",
+    "clearFilters": "Filtreleri temizle",
+    "loadFailed": "Veriler yüklenemedi.",
+    "errorId": "Hata kimliği: {correlationId}",
+    "forbidden": "Bu bölümü görüntüleme yetkin yok.",
+    "columns": "Sütunlar",
+    "previous": "Önceki",
+    "next": "Sonraki",
+    "selected": "{count} seçildi",
+    "rowsPerPage": "Sayfa başına",
+    "density": {
+      "comfortable": "Rahat",
+      "compact": "Kompakt"
+    }
+  },
+  "confirm": {
+    "reason": "Gerekçe",
+    "reasonHelp": "Bu işlem denetim kaydına gerekçesiyle yazılır (10–500 karakter).",
+    "confirm": "Onayla",
+    "cancel": "Vazgeç"
+  },
+  "pii": {
+    "reveal": "Göster",
+    "revealReason": "Bu bilgiyi neden görmen gerekiyor?",
+    "masked": "Maskeli"
+  },
+  "health": {
+    "notConfigured": "Harici kimlik bilgisi gerekli",
+    "healthy": "Sağlıklı",
+    "degraded": "Kısmi sorun",
+    "down": "Çalışmıyor"
+  },
+  "palette": {
+    "hint": "Ara ya da komut yaz…"
+  }
+}

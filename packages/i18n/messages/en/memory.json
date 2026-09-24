@@ -1,0 +1,10 @@
+{
+  "title": "Memory",
+  "searchHint": "Search memory…",
+  "askAssistant": "Ask the assistant",
+  "empty": {
+    "title": "Nothing in memory yet.",
+    "body": "As your emails and meetings are analysed, summaries collect here."
+  },
+  "retentionNote": "Memory is limited to your retention period."
+}

@@ -1,0 +1,22 @@
+{
+  "title": "Search",
+  "hint": "Search emails, people, meetings or payments…",
+  "examples": {
+    "flightTicket": "The plane ticket from last month",
+    "proposalMail": "Mehmet's proposal email",
+    "bills": "Bills I need to pay",
+    "meetings": "October meetings"
+  },
+  "resultTypes": {
+    "person": "Person",
+    "mail": "Email",
+    "meeting": "Meeting",
+    "life": "Personal",
+    "commitment": "Commitment",
+    "capture": "Capture"
+  },
+  "empty": {
+    "title": "I couldn't find that.",
+    "body": "Try a different word."
+  }
+}

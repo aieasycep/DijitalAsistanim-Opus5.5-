@@ -1,0 +1,30 @@
+{
+  "title": "Taahhütler",
+  "directions": {
+    "user_owes": "Senin sözlerin",
+    "they_owe": "Sana verilen sözler"
+  },
+  "statuses": {
+    "open": "Açık",
+    "done": "Tamamlandı",
+    "snoozed": "Ertelendi",
+    "cancelled": "İptal edildi"
+  },
+  "fields": {
+    "commitment": "Taahhüt",
+    "to": "Kime",
+    "from": "Kimden",
+    "due": "Son tarih",
+    "source": "Kaynak",
+    "confidence": "Güven",
+    "reminders": "Hatırlatıcılar"
+  },
+  "actions": {
+    "snooze": "Ertele",
+    "viewSource": "Kaynağı Gör",
+    "notACommitment": "Bu bir söz değil",
+    "plan": "Planla",
+    "done": "Tamamlandı"
+  },
+  "newProposal": "Yeni Taahhüt"
+}

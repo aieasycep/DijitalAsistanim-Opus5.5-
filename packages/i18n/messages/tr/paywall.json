@@ -1,0 +1,62 @@
+{
+  "title": "Dijital Asistan'ın tamamını aç.",
+  "close": "Kapat",
+  "periods": {
+    "monthly": "Aylık",
+    "annual": "Yıllık"
+  },
+  "bestValue": "En avantajlı",
+  "pricePerMonth": "{price} / ay",
+  "pricePerYear": "{price} / yıl",
+  "annualBreakdown": "ayda yaklaşık {price} · %{percent} tasarruf",
+  "storePrice": "Mağaza fiyatı · KDV dahil",
+  "trialCta": "{days} gün ücretsiz dene",
+  "trialTerms": "{days} günlük deneme bitince {price} olarak yenilenir. Deneme bitmeden mağaza ayarlarından iptal edebilirsin.",
+  "cta": "Pro'ya Geç",
+  "continueFree": "Ücretsiz devam et",
+  "restore": "Satın Alımları Geri Yükle",
+  "terms": "Kullanım Koşulları",
+  "privacy": "Gizlilik Politikası",
+  "autoRenew": "Abonelik dönem sonunda otomatik yenilenir; istediğin zaman mağaza ayarlarından iptal edebilirsin.",
+  "purchasing": "Satın alma sürüyor…",
+  "purchased": "Pro'ya hoş geldin.",
+  "cancelled": "Satın alma tamamlanmadı.",
+  "restricted": "Bu cihazda satın alma kısıtlı.",
+  "offeringsUnavailable": "Planlar şu an yüklenemedi. Biraz sonra tekrar dene.",
+  "priceInApp": "Güncel fiyatı uygulamada, satın almadan önce görürsün.",
+  "features": {
+    "mailAccounts": "Bağlı mail hesabı",
+    "calendars": "Bağlı takvim",
+    "morningBriefing": "Sabah brifingi",
+    "todayFlow": "Bugün ekranı ve Akış",
+    "mailIntel": "Mail zekâsı ve önemli mailler",
+    "replyDrafts": "AI yanıt taslakları (4 ton, onaylı gönderim)",
+    "approvals": "Onay Merkezi ve akıllı hatırlatıcılar",
+    "assistant": "Asistan'a sor (kaynaklı yanıtlar)",
+    "middayEvening": "Öğle ve akşam brifingi",
+    "meetingPrep": "Toplantı hazırlığı",
+    "followUps": "Akıllı takip ve taahhütler",
+    "audioBriefing": "Sesli brifing",
+    "memoryVip": "AI hafıza ve VIP kişiler",
+    "planning": "Gelişmiş planlama",
+    "capture": "Evrensel yakalama (fotoğraf, PDF, bağlantı, paylaş menüsü)",
+    "androidNi": "Telefon bildirimleri zekâsı (yalnızca Android)",
+    "multipleAccounts": "Çoklu hesap",
+    "aiLimit": "AI analiz limiti"
+  },
+  "values": {
+    "moreThanOne": "Birden fazla",
+    "perDay": "{count}/gün",
+    "fairUse": "Adil kullanım",
+    "fairUseHigh": "Yüksek (adil kullanım)",
+    "included": "Dahil",
+    "notIncluded": "Dahil değil",
+    "limited": "Sınırlı"
+  },
+  "fairUseNote": "Pro'da AI kullanımı adil kullanım ilkesine tabidir; kişisel kullanım için yüksek günlük limitler sunar.",
+  "gate": {
+    "title": "Bu özellik Pro'da.",
+    "morningFree": "Sabah brifingin her zaman ücretsiz.",
+    "dismiss": "Şimdi değil"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "types": {
+    "shipment": "Kargo",
+    "flight": "Uçuş",
+    "reservation": "Rezervasyon",
+    "payment": "Ödeme",
+    "subscription": "Abonelik",
+    "security": "Güvenlik"
+  },
+  "actions": {
+    "trackPackage": "Takibi Gör",
+    "viewDetails": "Detayı Gör",
+    "addToCalendar": "Takvime Ekle",
+    "remind": "Hatırlat",
+    "renewalDetails": "Yenileme Detayı",
+    "openSource": "Kaynağı Aç",
+    "checkIn": "Check-in"
+  },
+  "fields": {
+    "amount": "Tutar",
+    "dueDate": "Son ödeme",
+    "renewal": "Yenileme",
+    "departure": "Kalkış",
+    "gate": "Kapı",
+    "eta": "Tahmini teslimat",
+    "partySize": "Kişi sayısı"
+  },
+  "dueOn": "Son ödeme: {date}",
+  "renewsOn": "{date} tarihinde yenileniyor",
+  "securityNote": "Güvenlik uyarılarındaki bağlantılar açılmaz; kaynağı kontrol et."
+}

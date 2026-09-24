@@ -1,0 +1,134 @@
+{
+  "meta": {
+    "siteName": "Dijital Asistan",
+    "homeTitle": "Dijital Asistan — Bugün bilmen gerekenleri, sen sormadan söyler.",
+    "pricingTitle": "Fiyatlar — Dijital Asistan",
+    "supportTitle": "Destek ve Sık Sorulan Sorular — Dijital Asistan",
+    "privacyTitle": "Gizlilik Politikası — Dijital Asistan",
+    "termsTitle": "Kullanım Koşulları — Dijital Asistan",
+    "deletionTitle": "Veri Silme — Dijital Asistan"
+  },
+  "nav": {
+    "features": "Özellikler",
+    "security": "Güvenlik",
+    "pricing": "Fiyatlar",
+    "faq": "SSS",
+    "getStarted": "Ücretsiz Başla",
+    "language": "English",
+    "skipToContent": "İçeriğe geç"
+  },
+  "home": {
+    "hero": {
+      "title": "Bugün bilmen gerekenleri, sen sormadan söyler.",
+      "lead": "Mailini, takvimini ve açık işlerini anlar; her sabah kısa bir brifing hazırlar. Sen onaylamadan hiçbir şey göndermez.",
+      "trust": "Veriler aktarım sırasında ve saklanırken şifrelenir. Verilerin reklam amacıyla satılmaz."
+    },
+    "sections": {
+      "integrations": "Entegrasyonlar",
+      "howItWorks": "Nasıl çalışır",
+      "morningBriefing": "Sabah Brifingi",
+      "mailIntel": "Mail Zekâsı",
+      "meetingPrep": "Toplantı Hazırlığı",
+      "planning": "Akıllı Planlama",
+      "memory": "AI Hafıza",
+      "security": "Güvenlik",
+      "pricing": "Fiyatlar",
+      "faq": "Sık sorulan sorular"
+    },
+    "briefingLead": "Brifingin altı bölümden oluşur: Bugünün Öncelikleri, Programın, Senden Beklenenler, Senin Beklediklerin, Son Tarihler ve Kişisel Gelişmeler. Her maddenin altında nereden çıktığı yazar.",
+    "finalCta": "Gününe hazırlıklı başla.",
+    "brandNote": "Gmail, Google Takvim, Outlook ve Apple Takvim ilgili şirketlerin markalarıdır; Dijital Asistan bu şirketlerle bağlantılı değildir."
+  },
+  "download": {
+    "title": "Dijital Asistan'ı indir",
+    "qr": "Telefonunun kamerasıyla okut",
+    "appStore": "App Store'dan indir",
+    "googlePlay": "Google Play'den edinin"
+  },
+  "pricing": {
+    "kicker": "Fiyatlar",
+    "title": "Ücretsiz başla. İhtiyacın olduğunda Pro'ya geç.",
+    "lead": "Sabah brifingin her zaman ücretsiz. Öğle ve akşam brifingleri, toplantı hazırlığı, akıllı takip ve AI hafıza Pro'da.",
+    "freeTitle": "Ücretsiz",
+    "freeSub": "Süre sınırı yok",
+    "freeCta": "Ücretsiz Başla",
+    "proCta": "Uygulamada Pro'ya geç",
+    "storeNote": "Mağaza fiyatı · KDV dahil · {asOf} itibarıyla",
+    "trialLine": "Mağazada yeni aboneler için {days} günlük ücretsiz deneme tanımlı. Uygun olup olmadığını ve deneme bitince ne kadar ücretlendirileceğini satın almadan önce uygulamada görürsün. Deneme için mağaza hesabında geçerli bir ödeme yöntemi gerekebilir.",
+    "periodLegend": "Ödeme dönemi",
+    "tableCaption": "Ücretsiz ve Pro karşılaştırması"
+  },
+  "support": {
+    "kicker": "Destek",
+    "title": "Nasıl yardımcı olabiliriz?",
+    "lead": "Sık sorulan soruların cevaplarını aşağıda bulabilir, bulamadığın her şey için bize yazabilirsin.",
+    "contactTitle": "Bize yaz",
+    "contactLead": "Formu doldur ya da destek@dijitalasistan.app adresine e-posta gönder.",
+    "deletionCallout": "Hesabını ya da verilerini silmek mi istiyorsun? En hızlı yol Veri Silme sayfası.",
+    "form": {
+      "email": "E-posta adresin",
+      "emailHelp": "Yanıtımızı bu adrese göndereceğiz.",
+      "name": "Adın (isteğe bağlı)",
+      "topic": "Konu",
+      "message": "Mesajın",
+      "messageHelp": "Sorun uygulamayla ilgiliyse cihazını (iPhone ya da Android) ve Profil › Hakkında'daki sürüm numarasını da yaz. Şifre, doğrulama kodu ya da kart bilgisi paylaşma.",
+      "notice": "Gönderdiğin bilgileri yalnızca talebini yanıtlamak için kullanırız. Ayrıntılar: <privacy>Gizlilik Politikası</privacy>.",
+      "privacyHint": "Hesabını ya da verilerini silmek için <deletion>Veri Silme</deletion> sayfasını kullan; en hızlı yol budur.",
+      "submit": "Gönder",
+      "submitting": "Gönderiliyor…",
+      "successTitle": "Talebini aldık.",
+      "successBody": "Referans numaran: {reference}. Yanıtımızı {maskedEmail} adresine göndereceğiz.",
+      "another": "Yeni talep oluştur",
+      "captchaFailed": "Güvenlik doğrulaması tamamlanamadı. Tekrar dene.",
+      "serverError": "Şu an talebini alamıyoruz. Biraz sonra tekrar dene ya da destek@dijitalasistan.app adresine yaz.",
+      "noScript": "Formu kullanmak için JavaScript gerekiyor; bize destek@dijitalasistan.app adresinden yazabilirsin."
+    }
+  },
+  "deletion": {
+    "title": "Hesabını ve verilerini sil",
+    "lead": "Uygulamaya erişemiyorsan silme talebini buradan, e-posta doğrulamasıyla oluşturabilirsin.",
+    "emailStep": "Hesabının e-posta adresi",
+    "sendCode": "Doğrulama kodu gönder",
+    "codeStep": "{email} adresine gönderdiğimiz 6 haneli kodu yaz.",
+    "kinds": {
+      "history": "Yalnızca analiz geçmişimi sil",
+      "account": "Hesabımı ve tüm verilerimi sil"
+    },
+    "submit": "Silme talebi oluştur",
+    "status": "Talep durumu: {status}",
+    "statuses": {
+      "requested": "Alındı",
+      "verified": "Doğrulandı",
+      "queued": "Sırada",
+      "processing": "Siliniyor",
+      "completed": "Tamamlandı",
+      "failed": "Tamamlanamadı",
+      "cancelled": "İptal edildi"
+    },
+    "subscriptionNote": "App Store veya Google Play aboneliğin otomatik olarak iptal olmaz."
+  },
+  "referralLanding": {
+    "title": "Bir arkadaşın seni davet etti",
+    "body": "Uygulamayı indir ve bu davetle katıl; ikiniz de {days} gün Pro kazanın.",
+    "invalid": "Bu davet kodu geçerli değil."
+  },
+  "oauthDone": {
+    "title": "Bağlantı neredeyse tamam",
+    "body": "Tamamlamak için Dijital Asistan uygulamasına dön.",
+    "openApp": "Uygulamayı Aç",
+    "adminInfo": "Yöneticin için bilgi"
+  },
+  "footer": {
+    "privacy": "Gizlilik Politikası",
+    "terms": "Kullanım Koşulları",
+    "support": "Destek",
+    "deletion": "Veri Silme",
+    "copyright": "© {year} Dijital Asistan"
+  },
+  "errors": {
+    "notFoundTitle": "Bu sayfa bulunamadı.",
+    "notFoundBody": "Bağlantı eski olabilir ya da sayfa taşınmış olabilir.",
+    "serverTitle": "Bir şeyler ters gitti.",
+    "backHome": "Ana sayfaya dön"
+  }
+}

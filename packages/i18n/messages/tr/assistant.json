@@ -1,0 +1,34 @@
+{
+  "title": "Asistan",
+  "memoryPill": "Hafıza",
+  "summary": "Bugün {emails} mail, {events} etkinlik ve {followUps} takip analiz edildi. Ne öğrenmek istersin?",
+  "summaryFallback": "Ne öğrenmek istersin?",
+  "summaryNoAccounts": "Mailini ve takvimini bağladığında sorularını onların üzerinden yanıtlarım.",
+  "summaryFirstAnalysis": "İlk analiz sürüyor… Sonuçlar hazır oldukça burada göreceksin.",
+  "suggestedKicker": "Önerilen",
+  "recentKicker": "Son sohbetler",
+  "prompts": {
+    "focus": "Bugün neye odaklanmalıyım?",
+    "replies": "Kimlere cevap vermem gerekiyor?",
+    "tomorrowBusy": "Yarın yoğun muyum?",
+    "lastTalked": "{name} ile en son ne konuştuk?",
+    "deadlinesThisWeek": "Bu hafta hangi son tarihlerim var?",
+    "paymentsDue": "Ödenmesi gereken bir şey var mı?"
+  },
+  "composer": {
+    "hint": "Dijital hayatına sor…",
+    "send": "Gönder",
+    "microphone": "Mikrofon",
+    "attach": "Ekle"
+  },
+  "thread": {
+    "personScope": "{name} hakkında",
+    "deleteTitle": "Sohbet silinsin mi?",
+    "deleteBody": "Mesajlar kalıcı olarak silinir.",
+    "deleted": "Sohbet silindi",
+    "loadFailed": "Sohbetler yüklenemedi.",
+    "sources": "Kaynaklar",
+    "noAnswer": "Bunu kaynaklarında bulamadım.",
+    "thinking": "Kaynaklarına bakıyorum…"
+  }
+}

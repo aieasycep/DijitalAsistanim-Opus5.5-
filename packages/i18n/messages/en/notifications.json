@@ -1,0 +1,133 @@
+{
+  "promise": "We only notify you when it matters.",
+  "dailyCap": "Apart from critical email alerts, you get at most {dailyCap, plural, one {# notification} other {# notifications}} a day.",
+  "settings": {
+    "title": "Notifications",
+    "permission": {
+      "deniedTitle": "Notifications are off",
+      "deniedBody": "Dijital Asistan notifications aren't allowed in your phone settings, so none are arriving.",
+      "undeterminedTitle": "Notification permission not granted",
+      "allowCta": "Allow notifications",
+      "provisionalTitle": "Notifications are delivered quietly",
+      "provisionalCta": "Allow fully"
+    },
+    "smartFilter": {
+      "title": "Smart filter",
+      "meta": "Only notify me when it really matters"
+    },
+    "sections": {
+      "briefings": "Briefings",
+      "instant": "Instant notifications",
+      "lifeIntel": "Life intelligence",
+      "account": "Account",
+      "detail": "Notification content",
+      "lockScreen": "Lock screen",
+      "quietHours": "Quiet hours"
+    },
+    "categories": {
+      "morning": {
+        "title": "Morning briefing",
+        "meta": "Your daily summary every morning"
+      },
+      "midday": {
+        "title": "Midday pulse",
+        "meta": "Only when something meaningful changes"
+      },
+      "evening": {
+        "title": "Evening wrap-up",
+        "meta": "Your day's summary and tomorrow's prep"
+      },
+      "weekly": {
+        "title": "Weekly summary",
+        "meta": "Sunday {time}"
+      },
+      "critical_email": {
+        "title": "Critical emails",
+        "meta": "High-priority messages"
+      },
+      "meeting": {
+        "title": "Meetings",
+        "meta": "Meeting reminders"
+      },
+      "deadline": {
+        "title": "Deadlines",
+        "meta": "Upcoming due dates"
+      },
+      "follow_up": {
+        "title": "Follow-up reminders",
+        "meta": "Emails waiting for a reply"
+      },
+      "approval": {
+        "title": "Pending approvals",
+        "meta": "Actions waiting for your approval"
+      },
+      "life_intel": {
+        "title": "Life intelligence",
+        "meta": "Shipments, flights, payments and security"
+      },
+      "account": {
+        "title": "Account and connections",
+        "meta": "Reconnection, subscription and security"
+      }
+    },
+    "briefingOff": "Briefing off · Turn it on in briefing settings",
+    "channelBlocked": "Turned off in Android settings",
+    "detail": {
+      "full": {
+        "title": "Full content",
+        "meta": "Shows people, subjects and times"
+      },
+      "title_only": {
+        "title": "Title only",
+        "meta": "Shows the type of notification, not people or content"
+      },
+      "generic": {
+        "title": "Generic",
+        "meta": "Only says “You have a new update.”"
+      }
+    },
+    "test": {
+      "cta": "Send a test notification",
+      "sent": "Test notification sent. It should arrive in a few seconds.",
+      "suppressedQuiet": "No test notification was sent because you're in quiet hours.",
+      "quietHoursEnd": "You're in quiet hours, so no test notification was sent. Quiet hours end at {time}.",
+      "noPermission": "Notifications aren't allowed on this device.",
+      "categoryDisabled": "This category is turned off."
+    },
+    "lockScreen": {
+      "toggle": "Lock screen privacy",
+      "meta": "When on, notifications don't show names or subjects; details appear when you open the app.",
+      "iosPreviews": "Lock screen previews",
+      "previewAlways": "Always",
+      "previewUnlocked": "When unlocked",
+      "previewNever": "Never",
+      "changeInSettings": "Change in Settings",
+      "iosCaption": "On iPhone, system settings also affect lock screen previews.",
+      "fullNeedsOff": "To show full content, turn off lock screen privacy.",
+      "applyCta": "Turn off and apply",
+      "fullVisibleNote": "Full content may also appear on your lock screen."
+    },
+    "quietHours": {
+      "title": "Quiet hours",
+      "toggle": "Use quiet hours",
+      "start": "Start",
+      "end": "End",
+      "off": "Off",
+      "range": "{start}–{end}",
+      "bypassSection": "Notify me even during quiet hours",
+      "vip": {
+        "title": "From VIPs",
+        "meta": "Even during quiet hours · urgent emails only, at most 3 notifications"
+      },
+      "ownReminders": {
+        "title": "Reminders you set",
+        "meta": "Always arrive at the time you chose"
+      },
+      "note": "Other notifications aren't sent during quiet hours; anything important waits for you in the app and in your next briefing."
+    }
+  },
+  "prePrompt": {
+    "title": "Allow notifications?",
+    "body": "We'll let you know when your briefing is ready and when something important happens."
+  }
+}

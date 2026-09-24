@@ -1,0 +1,97 @@
+{
+  "app": {
+    "name": "Dijital Asistan Admin"
+  },
+  "nav": {
+    "groups": {
+      "overview": "Overview",
+      "users": "Users",
+      "operations": "Operations",
+      "ai": "AI",
+      "business": "Business",
+      "product": "Product",
+      "privacy": "Privacy",
+      "system": "System"
+    },
+    "items": {
+      "dashboard": "Dashboard",
+      "users": "Users",
+      "support": "Support",
+      "integrations": "Integrations",
+      "jobs": "Sync & Jobs",
+      "briefings": "Briefings",
+      "notifications": "Notifications",
+      "aiOperations": "AI Operations",
+      "prompts": "Prompt Management",
+      "subscriptions": "Subscriptions",
+      "referrals": "Referrals",
+      "feedback": "Feedback",
+      "flags": "Feature Flags",
+      "announcements": "Announcements",
+      "dataRequests": "Data Requests",
+      "audit": "Audit Logs",
+      "health": "System Health",
+      "admins": "Admin Users",
+      "settings": "Settings"
+    }
+  },
+  "auth": {
+    "title": "Sign in to the admin panel",
+    "email": "Email",
+    "sendCode": "Send code",
+    "code": "Email code",
+    "codeHelp": "Type the 6-digit code we sent to {email}.",
+    "verify": "Verify",
+    "mfaTitle": "Two-step verification",
+    "mfaHelp": "Type the 6-digit code from your authenticator app.",
+    "mfaEnrollTitle": "Set up your authenticator app",
+    "sessionExpired": "Your session has ended. Sign in again.",
+    "signOut": "Sign out",
+    "signOutAll": "Sign out of all sessions"
+  },
+  "roles": {
+    "super_admin": "Super admin",
+    "operations": "Operations",
+    "support": "Support",
+    "finance": "Finance",
+    "ai_ops": "AI ops",
+    "analyst": "Analyst",
+    "readonly": "Read-only"
+  },
+  "table": {
+    "emptyFiltered": "No records match the filters.",
+    "clearFilters": "Clear filters",
+    "loadFailed": "The data couldn't be loaded.",
+    "errorId": "Error ID: {correlationId}",
+    "forbidden": "You don't have permission to view this section.",
+    "columns": "Columns",
+    "previous": "Previous",
+    "next": "Next",
+    "selected": "{count} selected",
+    "rowsPerPage": "Per page",
+    "density": {
+      "comfortable": "Comfortable",
+      "compact": "Compact"
+    }
+  },
+  "confirm": {
+    "reason": "Reason",
+    "reasonHelp": "This action is written to the audit log with its reason (10–500 characters).",
+    "confirm": "Confirm",
+    "cancel": "Cancel"
+  },
+  "pii": {
+    "reveal": "Reveal",
+    "revealReason": "Why do you need to see this?",
+    "masked": "Masked"
+  },
+  "health": {
+    "notConfigured": "External credential required",
+    "healthy": "Healthy",
+    "degraded": "Degraded",
+    "down": "Down"
+  },
+  "palette": {
+    "hint": "Search or type a command…"
+  }
+}

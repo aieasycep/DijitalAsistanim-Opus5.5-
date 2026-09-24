@@ -1,0 +1,66 @@
+{
+  "kinds": {
+    "morning": "Sabah brifingi",
+    "midday": "Öğle nabzı",
+    "evening": "Akşam kapanışı",
+    "weekly": "Haftalık özet"
+  },
+  "kicker": "{kind} · {date}",
+  "sections": {
+    "priorities": "Bugünün Öncelikleri",
+    "schedule": "Programın",
+    "awaiting_me": "Senden Beklenenler",
+    "awaiting_them": "Senin Beklediklerin",
+    "deadlines": "Son Tarihler",
+    "life": "Kişisel Gelişmeler",
+    "completed": "Tamamlananlar",
+    "carry_over": "Yarına Kalanlar",
+    "follow_up": "Takip",
+    "tomorrow_first": "Yarının ilk etkinliği",
+    "midday_delta": "Sabahtan beri",
+    "weekly_highlight": "Haftanın öne çıkanları",
+    "weekly_outlook": "Önümüzdeki haftanın görünümü"
+  },
+  "row": {
+    "done": "Tamamlandı",
+    "notSure": "Emin değilim · {meta}"
+  },
+  "provenance": "{emails} mail ve {events} etkinlikten, son {hours} saat · {time}",
+  "feedback": {
+    "question": "Bu brifing işine yaradı mı?",
+    "helpful": "Evet",
+    "inaccurate": "Hatalı bir şey var",
+    "thanks": "Teşekkürler, not aldım."
+  },
+  "audio": {
+    "listen": "Dinle · {minutes} dk",
+    "title": "Sesli brifing",
+    "play": "Oynat",
+    "pause": "Duraklat",
+    "back15": "15 sn geri",
+    "forward15": "15 sn ileri",
+    "speed": "Hız {speed}x",
+    "seekA11y": "Konum, {position} / {duration}",
+    "preparing": "Ses hazırlanıyor…",
+    "failed": "Ses hazırlanamadı. Metni okuyabilirsin.",
+    "chapter": "Bölüm {current} / {total}"
+  },
+  "midday": {
+    "noChange": "Sabahından beri önemli bir değişiklik yok."
+  },
+  "evening": {
+    "ready": "Yarına Hazırım",
+    "readyDone": "Yarına hazırsın. Sabah brifingin {time_loc} hazır olacak.",
+    "quietUntilMorning": "Bildirimleri sabaha kadar sessize al"
+  },
+  "weekly": {
+    "title": "Haftan nasıl geçti?",
+    "busiestDay": "En yoğun günün",
+    "topContacts": "En çok iletişimde olduğun kişiler",
+    "carryOver": "Gelecek haftaya kalanlar",
+    "outlook": "Önümüzdeki haftanın görünümü",
+    "timeSaved": "Tahmini kazandırılan zaman: {duration}",
+    "share": "Paylaş",
+    "shareCardTitle": "Dijital Haftam"
+  }
+}

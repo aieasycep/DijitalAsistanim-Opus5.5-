@@ -1,0 +1,116 @@
+{
+  "greeting": {
+    "morning": "Good morning, {name}",
+    "afternoon": "Good afternoon, {name}",
+    "evening": "Good evening, {name}",
+    "morningNoName": "Good morning",
+    "afternoonNoName": "Good afternoon",
+    "eveningNoName": "Good evening"
+  },
+  "header": {
+    "approvals": "{count, plural, one {# approval} other {# approvals}}",
+    "approvalsA11y": "Pending approvals, {count}",
+    "profileA11y": "Profile and settings"
+  },
+  "hero": {
+    "firstAnalysis": {
+      "kicker": "First analysis in progress…",
+      "title": "I'm reading your last 72 hours.",
+      "context": "{emails, plural, one {# email} other {# emails}} · {items, plural, one {# item} other {# items}}"
+    },
+    "silentDay": {
+      "kicker": "Quiet day",
+      "title": "No briefing today.",
+      "context": "Your priorities are below."
+    },
+    "morningReady": {
+      "kicker": "Briefing ready · {time}",
+      "firstDayKicker": "Your first briefing is ready",
+      "title": "There {count, plural, one {is # thing} other {are # things}} you need to know today.",
+      "zero": "Nothing new you need to know today.",
+      "middayNoChange": "No important changes since this morning."
+    },
+    "generating": {
+      "kicker": "Preparing your briefing…"
+    },
+    "morningFailed": {
+      "kicker": "Briefing delayed",
+      "retrying": "I'm preparing your briefing again.",
+      "failed": "The briefing couldn't be prepared."
+    },
+    "preMorning": {
+      "kicker": "Morning briefing · {time}",
+      "title": "Your briefing will be ready at {time}.",
+      "context": "{count, plural, one {# item} other {# items}} so far.",
+      "notify": "I'll let you know when it's ready."
+    },
+    "middayReady": {
+      "kicker": "Midday pulse · {time}",
+      "title": "{count, plural, one {# important update} other {# important updates}} since this morning.",
+      "context": "{calendar, plural, one {# calendar update} other {# calendar updates}} · {mail, plural, one {# email} other {# emails}}",
+      "cta": "See pulse",
+      "secondary": "Morning briefing"
+    },
+    "middayGate": {
+      "kicker": "Midday pulse · Pro",
+      "title": "{count, plural, one {# update} other {# updates}} since this morning.",
+      "body": "The midday pulse is part of Pro. Your morning briefing is always free."
+    },
+    "eveningReady": {
+      "kicker": "Evening wrap-up ready",
+      "title": "{count, plural, one {# item carries} other {# items carry}} over to tomorrow.",
+      "zero": "You closed everything today.",
+      "context": "{completed} done · {followUps, plural, one {# follow-up} other {# follow-ups}} · Tomorrow {time} {event}",
+      "cta": "See wrap-up"
+    },
+    "eveningGate": {
+      "kicker": "Evening wrap-up · Pro",
+      "title": "{count, plural, one {# item carries} other {# items carry}} over to tomorrow."
+    },
+    "eveningConfirmed": {
+      "kicker": "Ready for tomorrow",
+      "title": "Your morning briefing will be ready at {time}.",
+      "context": "{count, plural, one {# item} other {# items}} moved to tomorrow",
+      "quiet": "Notifications are quiet until morning"
+    }
+  },
+  "sections": {
+    "priorities": "Your priorities",
+    "schedule": "Your schedule",
+    "calendarIntel": "Calendar intelligence",
+    "digitalLife": "Your digital life",
+    "carryOver": "Carrying over to tomorrow",
+    "itemCount": "{count, plural, one {# item} other {# items}}",
+    "eventCount": "{count, plural, one {# event} other {# events}}"
+  },
+  "footer": {
+    "seeAllInFlow": "See all in Flow",
+    "add": "Add"
+  },
+  "weekly": {
+    "kicker": "Weekly summary ready",
+    "title": "{count, plural, one {# email} other {# emails}} analysed this week.",
+    "meta": "You saved about {duration}"
+  },
+  "night": {
+    "title": "That's it for today.",
+    "body": "{count, plural, one {The item you carried over is} other {The # items you carried over are}} waiting in your morning briefing."
+  },
+  "cards": {
+    "eveningRemind": "Remind me in the morning",
+    "followUpDraft": "Draft a follow-up",
+    "checkIn": "Check in",
+    "setAlarm": "Set alarm",
+    "review": "Review",
+    "renewalDetails": "Renewal details",
+    "trackPackage": "Track package",
+    "lastContact": "Last contact {relative}"
+  },
+  "announcement": {
+    "more": "Show more",
+    "dismissA11y": "Dismiss announcement"
+  },
+  "refresh": {
+    "updated": "Up to date · {time}"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "types": {
+    "shipment": "Shipment",
+    "flight": "Flight",
+    "reservation": "Reservation",
+    "payment": "Payment",
+    "subscription": "Subscription",
+    "security": "Security"
+  },
+  "actions": {
+    "trackPackage": "Track package",
+    "viewDetails": "View details",
+    "addToCalendar": "Add to calendar",
+    "remind": "Remind me",
+    "renewalDetails": "Renewal details",
+    "openSource": "Open source",
+    "checkIn": "Check in"
+  },
+  "fields": {
+    "amount": "Amount",
+    "dueDate": "Due date",
+    "renewal": "Renewal",
+    "departure": "Departure",
+    "gate": "Gate",
+    "eta": "Estimated delivery",
+    "partySize": "Party size"
+  },
+  "dueOn": "Due: {date}",
+  "renewsOn": "Renews on {date}",
+  "securityNote": "Links in security alerts aren't opened; check the source instead."
+}

@@ -1,0 +1,43 @@
+{
+  "intelligence": {
+    "title": "Mail intelligence",
+    "header": "Today {count, plural, one {# email} other {# emails}}",
+    "attention": "{count, plural, one {# needs} other {# need}} your attention.",
+    "views": {
+      "followUps": "To follow up",
+      "awaitingMe": "Expected from you",
+      "awaitingThem": "Waiting for their reply"
+    }
+  },
+  "categories": {
+    "important": "Important",
+    "awaiting_my_reply": "Awaiting your reply",
+    "awaiting_their_reply": "Awaiting their reply",
+    "has_deadline": "Has a deadline",
+    "informational": "Informational",
+    "low_priority": "Low priority"
+  },
+  "detail": {
+    "sender": "From",
+    "subject": "Subject",
+    "date": "Date",
+    "summary": "AI summary",
+    "keyPoints": "Key points",
+    "source": "Source",
+    "original": "Original email",
+    "openOriginal": "Open original email",
+    "openIn": "Open in {provider}",
+    "loadingOriginal": "Fetching the original email…",
+    "originalNotStored": "The original email isn't stored; it's fetched from your account when you open it.",
+    "createTask": "Create task"
+  },
+  "task": {
+    "title": "Create a task",
+    "fieldTitle": "Task title",
+    "dueDate": "Due date",
+    "relatedPerson": "Related person",
+    "destination": "Where should it go?",
+    "inApp": "Dijital Asistan",
+    "cta": "Create task"
+  }
+}

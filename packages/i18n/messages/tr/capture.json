@@ -1,0 +1,62 @@
+{
+  "title": "Dijital Asistan'a Ekle",
+  "kinds": {
+    "photo": "Fotoğraf",
+    "screenshot": "Ekran görüntüsü",
+    "pdf": "PDF",
+    "file": "Dosya",
+    "link": "Bağlantı",
+    "text": "Metin",
+    "share": "Paylaşılan içerik"
+  },
+  "sources": {
+    "camera": "Kamera",
+    "library": "Fotoğraflar",
+    "files": "Dosyalar"
+  },
+  "link": {
+    "hint": "Bağlantıyı yapıştır"
+  },
+  "text": {
+    "hint": "Metni buraya yaz ya da yapıştır"
+  },
+  "statuses": {
+    "pending_upload": "Yükleniyor…",
+    "uploaded": "Yüklendi",
+    "analyzing": "Analiz ediliyor…",
+    "extracted": "Hazır",
+    "actioned": "İşlendi",
+    "discarded": "Vazgeçildi",
+    "failed": "Analiz edilemedi"
+  },
+  "result": {
+    "detectedType": "Tespit edilen tür",
+    "extracted": "Çıkarılan bilgiler",
+    "suggestedAction": "Önerilen işlem",
+    "eventDetected": "Etkinlik tespit edildi.",
+    "addToCalendarQuestion": "Takvime ekleyeyim mi?",
+    "nothingFound": "Bu içerikte işlem gerektiren bir şey bulamadım."
+  },
+  "entityTypes": {
+    "event": "Etkinlik",
+    "task": "Görev",
+    "deadline": "Son tarih",
+    "person": "Kişi",
+    "payment": "Ödeme",
+    "reservation": "Rezervasyon",
+    "flight": "Uçuş",
+    "shipment": "Kargo",
+    "product": "Ürün",
+    "note": "Not"
+  },
+  "actions": {
+    "addToCalendar": "Takvime Ekle",
+    "createTask": "Görev Oluştur",
+    "setReminder": "Hatırlatıcı Kur",
+    "discard": "Vazgeç"
+  },
+  "permission": {
+    "camera": "Kamerayı yalnızca sen “Kamera”yı seçtiğinde kullanırım."
+  },
+  "privacyNote": "Yüklediğin dosyalar yalnızca senin hesabında saklanır ve saklama süren dolunca silinir."
+}

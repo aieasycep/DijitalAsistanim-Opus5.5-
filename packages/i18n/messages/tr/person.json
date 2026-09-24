@@ -1,0 +1,26 @@
+{
+  "askHint": "{name} hakkında sor…",
+  "sections": {
+    "summary": "Özet",
+    "openItems": "Açık konular",
+    "recentMail": "Son mailler",
+    "meetings": "Toplantılar",
+    "commitments": "Taahhütler"
+  },
+  "lastContact": "Son görüşme {relative}",
+  "vipSuggestion": "{name} ile son 30 günde {count} kez yazıştın. VIP yapayım mı?",
+  "makeVip": "VIP yap",
+  "removeVip": "VIP'lerden çıkar",
+  "relationships": {
+    "spouse": "Eş",
+    "family": "Aile",
+    "manager": "Yönetici",
+    "key_client": "Önemli müşteri",
+    "friend": "Arkadaş",
+    "other": "Diğer"
+  },
+  "vipList": {
+    "title": "Önemli Kişiler",
+    "add": "Kişi Ekle"
+  }
+}

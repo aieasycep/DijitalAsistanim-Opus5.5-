@@ -1,0 +1,22 @@
+{
+  "title": "Ara",
+  "hint": "Mail, kişi, toplantı ya da ödeme ara…",
+  "examples": {
+    "flightTicket": "Geçen ay gelen uçak bileti",
+    "proposalMail": "Mehmet'in teklif maili",
+    "bills": "Ödemem gereken faturalar",
+    "meetings": "Ekim toplantıları"
+  },
+  "resultTypes": {
+    "person": "Kişi",
+    "mail": "Mail",
+    "meeting": "Toplantı",
+    "life": "Kişisel",
+    "commitment": "Taahhüt",
+    "capture": "Yakalama"
+  },
+  "empty": {
+    "title": "Aradığını bulamadım.",
+    "body": "Farklı bir kelime dene."
+  }
+}
