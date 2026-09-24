@@ -133,6 +133,23 @@ alter table storage.objects enable row level security;
 grant select, insert, update, delete on storage.objects to anon, authenticated, service_role;
 grant select on storage.buckets to anon, authenticated, service_role;
 
+-- Hosted Supabase forbids direct DELETEs on storage.objects (objects are removed through the Storage
+-- API); mirror that so tier C catches SQL that would fail on the real stack.
+create or replace function storage.protect_delete() returns trigger
+  language plpgsql
+  as $$
+begin
+  if coalesce(current_setting('storage.allow_delete_query', true), 'false') <> 'true' then
+    raise exception 'Direct deletion from storage tables is not allowed. Use the Storage API instead.'
+      using hint = 'This prevents accidental data loss from orphaned objects.';
+  end if;
+  return null;
+end;
+$$;
+drop trigger if exists protect_objects_delete on storage.objects;
+create trigger protect_objects_delete before delete on storage.objects
+  for each statement execute function storage.protect_delete();
+
 create or replace function storage.foldername(name text) returns text[]
   language sql immutable
   as $$ select (string_to_array(name, '/'))[1:array_length(string_to_array(name, '/'), 1) - 1] $$;
