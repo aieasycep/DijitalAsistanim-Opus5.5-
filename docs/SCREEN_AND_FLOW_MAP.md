@@ -8664,7 +8664,7 @@ Pushes are server-rendered by the `worker` job `notification` (API JOB-18):
 - the templates are `packages/domain/notifications/templates.ts`;
 - i18n keys follow `push.{category}.{template}.{level}.{title|body}`.
 
-The payload is exactly `{v:1, type:<notification_category>, entity_id, deeplink, nid}`. `nid` is `notifications.id`; `entity_id` is null for digests and tests. It never contains content. M-GL-08 (Part 1) routes taps.
+The payload is exactly `{type, entity_id, deeplink}` (MASTER_PLAN §12); `type` is the push template's category. `entity_id` is null for digests and tests. It never contains content. M-GL-08 (Part 1) routes taps.
 
 ### 12.1 Android channels (ruling R-12)
 
@@ -8876,7 +8876,7 @@ The payload is exactly `{v:1, type:<notification_category>, entity_id, deeplink,
 
 ### 12.6 Tests
 - **Unit `render.test.ts`:** snapshots of every `template_key` × `full` / `title_only` / `generic` × tr/en (the M-SET-20 tests reference this catalogue).
-- **Property test (UT-NTF-13, fast-check):** `title_only` and `generic` never contain a name, subject, amount or email; the data keys are exactly `{v, type, entity_id, deeplink, nid}`; the payload is under 1 KB.
+- **Property test (UT-NTF-13, fast-check):** `title_only` and `generic` never contain a name, subject, amount or email; the data keys are exactly `{type, entity_id, deeplink}`; the payload is under 1 KB.
 - **Decision tests:**
   - a quiet-hours window across midnight and a DST day;
   - VIP bypass limited to 3 per window, with the per-VIP override;
