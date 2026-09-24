@@ -13,10 +13,9 @@ import {
   revenueCatConfig,
 } from '../_shared/services/billing/revenuecat.ts';
 import { supabaseReferralRepo } from '../_shared/services/referrals/repo.ts';
+import { createIntegrationWiring } from '../_shared/system/integrations.ts';
 import { createWorkerApp } from './app.ts';
 import { createHandlerRegistry } from './handlers/index.ts';
-import { createProviderRegistry } from '../_shared/providers/registry.ts';
-import { SERVER_ADAPTER_FACTORIES } from '../_shared/providers/factories.ts';
 import { supabaseExecuteRepo } from '../_shared/services/approvals/execute/repo.ts';
 import { registryProviderSessions } from '../_shared/services/approvals/execute/session.ts';
 import { expoPushClientFromEnv } from '../_shared/services/notifications/expo-push.ts';
@@ -31,6 +30,14 @@ const env = loadEnv(raw);
 const system = serviceClient(clientConfigFromEnv(raw));
 let keyring: Promise<TokenKeyring> | null = null;
 const revenueCat = revenueCatConfig(env);
+const workerLog = createLogger({ fn: 'worker' });
+const integrations = createIntegrationWiring({
+  env,
+  raw,
+  system,
+  log: workerLog,
+  keyring: () => (keyring ??= loadKeyring(env)),
+});
 const app = createWorkerApp({
   secret: env.CRON_SECRET,
   repo: supabaseJobsRepo(system),
@@ -46,7 +53,7 @@ const app = createWorkerApp({
       repo: supabaseExecuteRepo(system),
       sessions: registryProviderSessions({
         system,
-        registry: createProviderRegistry(SERVER_ADAPTER_FACTORIES, raw),
+        registry: integrations.runtime.providers,
         keyring: () => (keyring ??= loadKeyring(env)),
       }),
       markers: { mailDomain: env.MAIL_MESSAGE_ID_DOMAIN, webUrl: env.PUBLIC_WEB_URL },
@@ -59,8 +66,9 @@ const app = createWorkerApp({
       },
       referrals: { repo: supabaseReferralRepo(system), pepper: env },
     },
+    integrations: { runtime: integrations.runtime, webhooks: integrations.webhooks },
   }),
-  log: createLogger({ fn: 'worker' }),
+  log: workerLog,
   sentry: createSentry({ dsn: env.SENTRY_DSN, environment: env.APP_ENV }),
 });
 

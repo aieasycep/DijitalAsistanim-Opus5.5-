@@ -40,12 +40,11 @@ import {
 } from '../../../_shared/services/billing/revenuecat.ts';
 import { supabaseReferralRepo } from '../../../_shared/services/referrals/repo.ts';
 import { supabaseFlagSource } from '../../../_shared/services/flags.ts';
+import { createIntegrationWiring } from '../../../_shared/system/integrations.ts';
 import type { ApiDeps } from '../../deps.ts';
 import { supabaseAnalyticsRepo } from '../../routes/analytics.ts';
 import { supabaseSupportRepo } from '../../routes/support.ts';
 import { enqueueJob } from '../../../_shared/jobs/client.ts';
-import { createProviderRegistry } from '../../../_shared/providers/registry.ts';
-import { SERVER_ADAPTER_FACTORIES } from '../../../_shared/providers/factories.ts';
 import { supabaseApprovalsRepo } from '../../../_shared/services/approvals/repo.ts';
 import { supabaseExecuteRepo } from '../../../_shared/services/approvals/execute/repo.ts';
 import { registryProviderSessions } from '../../../_shared/services/approvals/execute/session.ts';
@@ -93,10 +92,18 @@ export function createApiDeps(input: {
       return (data ?? null) as { id: string; status: string } | null;
     },
   };
+  const integrations = createIntegrationWiring({
+    env,
+    raw,
+    system,
+    log: input.log,
+    keyring: () => (keyring ??= loadKeyring(env)),
+  });
+  // Approval writes and precondition reads use the same adapters as sync (Google, Microsoft, demo).
   const eventPrecondition = providerEventPrecondition({
     sessions: registryProviderSessions({
       system,
-      registry: createProviderRegistry(SERVER_ADAPTER_FACTORIES, raw),
+      registry: integrations.runtime.providers,
       keyring: () => (keyring ??= loadKeyring(env)),
     }),
     accounts: supabaseExecuteRepo(system),
@@ -119,6 +126,7 @@ export function createApiDeps(input: {
     audit: supabaseAuditWriter(system),
     appleSub: (userId) => rpc<string | null>(system, DB_FN.userAppleSub, { p_user: userId }),
     keyring: () => (keyring ??= loadKeyring(env)),
+    integrations: integrations.runtime,
     capabilities: {
       aiGenerate: ai.available('anthropic') || ai.available('openai'),
       embeddings: ai.available('voyage'),

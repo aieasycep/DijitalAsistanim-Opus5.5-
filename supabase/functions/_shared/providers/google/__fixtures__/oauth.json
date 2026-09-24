@@ -1,0 +1,24 @@
+{
+  "token_response": {
+    "access_token": "ya29.test-access-token",
+    "expires_in": 3599,
+    "refresh_token": "1//test-refresh-token",
+    "scope": "openid https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/calendar.events.readonly https://www.googleapis.com/auth/calendar.calendarlist.readonly https://www.googleapis.com/auth/calendar.settings.readonly",
+    "token_type": "Bearer"
+  },
+  "token_response_partial": {
+    "access_token": "ya29.test-access-token-2",
+    "expires_in": 3599,
+    "refresh_token": "1//test-refresh-token-2",
+    "scope": "openid https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/gmail.readonly",
+    "token_type": "Bearer"
+  },
+  "invalid_grant": {
+    "error": "invalid_grant",
+    "error_description": "Token has been expired or revoked."
+  },
+  "revoke_invalid_token": {
+    "error": "invalid_token",
+    "error_description": "Token expired or revoked"
+  }
+}

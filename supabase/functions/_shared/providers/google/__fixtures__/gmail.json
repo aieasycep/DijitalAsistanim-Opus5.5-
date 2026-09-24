@@ -1,0 +1,305 @@
+{
+  "profile": {
+    "emailAddress": "yunus@gmail.com",
+    "messagesTotal": 1234,
+    "threadsTotal": 800,
+    "historyId": "987650"
+  },
+  "list_inbox": {
+    "messages": [
+      {
+        "id": "18f0a1",
+        "threadId": "18f0a1"
+      },
+      {
+        "id": "18f0a2",
+        "threadId": "18f0a2"
+      }
+    ],
+    "resultSizeEstimate": 2
+  },
+  "list_sent": {
+    "messages": [
+      {
+        "id": "18f0b1",
+        "threadId": "18f0a1"
+      }
+    ],
+    "resultSizeEstimate": 1
+  },
+  "messages": {
+    "18f0a1": {
+      "id": "18f0a1",
+      "threadId": "18f0a1",
+      "labelIds": ["INBOX", "CATEGORY_PERSONAL", "UNREAD", "IMPORTANT"],
+      "snippet": "Merhaba Yunus Bey, revize teklifimizi ekte bulabilirsiniz. Bugün 17:00&#39;a kadar dönüş rica ederiz.",
+      "internalDate": "1790228520000",
+      "sizeEstimate": 20480,
+      "historyId": "987640",
+      "payload": {
+        "mimeType": "multipart/mixed",
+        "headers": [
+          {
+            "name": "From",
+            "value": "Ahmet Yılmaz <ahmet@kuzeylojistik.com>"
+          },
+          {
+            "name": "To",
+            "value": "Yunus <yunus@gmail.com>"
+          },
+          {
+            "name": "Subject",
+            "value": "=?UTF-8?B?UmV2aXplIHRla2xpZg==?="
+          },
+          {
+            "name": "Date",
+            "value": "Thu, 24 Sep 2026 08:42:00 +0300"
+          },
+          {
+            "name": "Message-ID",
+            "value": "<CAK1234@mail.kuzeylojistik.com>"
+          },
+          {
+            "name": "Authentication-Results",
+            "value": "mx.google.com; dkim=pass header.i=@kuzeylojistik.com header.d=kuzeylojistik.com; spf=pass smtp.mailfrom=kuzeylojistik.com; dmarc=pass"
+          }
+        ]
+      }
+    },
+    "18f0a2": {
+      "id": "18f0a2",
+      "threadId": "18f0a2",
+      "labelIds": ["INBOX", "CATEGORY_PROMOTIONS"],
+      "snippet": "Bu hafta tüm ürünlerde %30 indirim!",
+      "internalDate": "1790175600000",
+      "sizeEstimate": 50210,
+      "historyId": "987600",
+      "payload": {
+        "mimeType": "text/html",
+        "headers": [
+          {
+            "name": "From",
+            "value": "Mağaza <kampanya@magaza.example.com>"
+          },
+          {
+            "name": "To",
+            "value": "yunus@gmail.com"
+          },
+          {
+            "name": "Subject",
+            "value": "Haftanın fırsatları"
+          },
+          {
+            "name": "Date",
+            "value": "Wed, 23 Sep 2026 18:00:00 +0300"
+          },
+          {
+            "name": "Message-ID",
+            "value": "<promo-77@magaza.example.com>"
+          },
+          {
+            "name": "List-Unsubscribe",
+            "value": "<https://magaza.example.com/unsub>"
+          },
+          {
+            "name": "List-Id",
+            "value": "<bulten.magaza.example.com>"
+          },
+          {
+            "name": "Precedence",
+            "value": "bulk"
+          }
+        ]
+      }
+    },
+    "18f0b1": {
+      "id": "18f0b1",
+      "threadId": "18f0a1",
+      "labelIds": ["SENT"],
+      "snippet": "Teşekkürler Ahmet Bey, inceleyip dönüyorum.",
+      "internalDate": "1790230200000",
+      "sizeEstimate": 4096,
+      "historyId": "987645",
+      "payload": {
+        "mimeType": "text/plain",
+        "headers": [
+          {
+            "name": "From",
+            "value": "Yunus <yunus@gmail.com>"
+          },
+          {
+            "name": "To",
+            "value": "Ahmet Yılmaz <ahmet@kuzeylojistik.com>"
+          },
+          {
+            "name": "Subject",
+            "value": "Re: Revize teklif"
+          },
+          {
+            "name": "Date",
+            "value": "Thu, 24 Sep 2026 09:10:00 +0300"
+          },
+          {
+            "name": "Message-ID",
+            "value": "<CAY5678@mail.gmail.com>"
+          },
+          {
+            "name": "In-Reply-To",
+            "value": "<CAK1234@mail.kuzeylojistik.com>"
+          },
+          {
+            "name": "References",
+            "value": "<CAK1234@mail.kuzeylojistik.com>"
+          }
+        ]
+      }
+    },
+    "18f0c9": {
+      "id": "18f0c9",
+      "threadId": "18f0c9",
+      "labelIds": ["INBOX", "CATEGORY_PERSONAL", "UNREAD"],
+      "snippet": "Sözleşme taslağında 4. madde hakkında bir sorum var.",
+      "internalDate": "1790234400000",
+      "sizeEstimate": 8120,
+      "historyId": "987690",
+      "payload": {
+        "mimeType": "multipart/alternative",
+        "headers": [
+          {
+            "name": "From",
+            "value": "Selin Kaya <selin.kaya@gmail.com>"
+          },
+          {
+            "name": "To",
+            "value": "yunus@gmail.com"
+          },
+          {
+            "name": "Subject",
+            "value": "Sözleşme sorusu"
+          },
+          {
+            "name": "Date",
+            "value": "Thu, 24 Sep 2026 10:20:00 +0300"
+          },
+          {
+            "name": "Message-ID",
+            "value": "<SK-0924@gmail.com>"
+          }
+        ]
+      }
+    }
+  },
+  "history": {
+    "history": [
+      {
+        "id": "987660",
+        "messagesAdded": [
+          {
+            "message": {
+              "id": "18f0c9",
+              "threadId": "18f0c9",
+              "labelIds": ["INBOX", "UNREAD"]
+            }
+          }
+        ]
+      },
+      {
+        "id": "987670",
+        "messagesDeleted": [
+          {
+            "message": {
+              "id": "18f0a2",
+              "threadId": "18f0a2",
+              "labelIds": ["INBOX"]
+            }
+          }
+        ]
+      },
+      {
+        "id": "987680",
+        "labelsRemoved": [
+          {
+            "message": {
+              "id": "18f0a1",
+              "threadId": "18f0a1",
+              "labelIds": ["INBOX", "CATEGORY_PERSONAL"]
+            },
+            "labelIds": ["UNREAD"]
+          }
+        ]
+      }
+    ],
+    "historyId": "987700"
+  },
+  "history_expired": {
+    "error": {
+      "code": 404,
+      "message": "Requested entity was not found.",
+      "errors": [
+        {
+          "message": "Requested entity was not found.",
+          "domain": "global",
+          "reason": "notFound"
+        }
+      ],
+      "status": "NOT_FOUND"
+    }
+  },
+  "full_message": {
+    "id": "18f0a1",
+    "threadId": "18f0a1",
+    "labelIds": ["INBOX"],
+    "payload": {
+      "mimeType": "multipart/mixed",
+      "headers": [
+        {
+          "name": "Subject",
+          "value": "Revize teklif"
+        }
+      ],
+      "parts": [
+        {
+          "partId": "0",
+          "mimeType": "multipart/alternative",
+          "parts": [
+            {
+              "partId": "0.0",
+              "mimeType": "text/plain",
+              "body": {
+                "size": 57,
+                "data": "TWVyaGFiYSBZdW51cyBCZXksClJldml6ZSB0ZWtsaWZpbWl6aSBpbmNlbGV5ZWJpbGlyc2luaXou"
+              }
+            },
+            {
+              "partId": "0.1",
+              "mimeType": "text/html",
+              "body": {
+                "size": 203,
+                "data": "PGRpdj5NZXJoYWJhIFl1bnVzIEJleSw8YnI-UmV2aXplIHRla2xpZmltaXppIDxhIGhyZWY9Imh0dHBzOi8va3V6ZXlsb2ppc3Rpay5jb20vdGVrbGlmIj5idXJhZGFuPC9hPiBpbmNlbGV5ZWJpbGlyc2luaXouPGltZyBzcmM9Imh0dHBzOi8vdHJhY2tlci5leGFtcGxlLmNvbS9wLmdpZiIgYWx0PSIiPjxzY3JpcHQ-YWxlcnQoMSk8L3NjcmlwdD48L2Rpdj4"
+              }
+            }
+          ]
+        },
+        {
+          "partId": "1",
+          "mimeType": "application/pdf",
+          "filename": "Teklif_v2.pdf",
+          "headers": [
+            {
+              "name": "Content-Disposition",
+              "value": "attachment; filename=\"Teklif_v2.pdf\""
+            }
+          ],
+          "body": {
+            "attachmentId": "ANGjdJ8-att-1",
+            "size": 182044
+          }
+        }
+      ]
+    }
+  },
+  "watch": {
+    "historyId": "987650",
+    "expiration": "1790839200000"
+  }
+}

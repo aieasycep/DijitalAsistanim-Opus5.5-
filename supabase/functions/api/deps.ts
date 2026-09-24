@@ -21,6 +21,7 @@ import type { EntitlementGate } from '../_shared/services/entitlements/gate.ts';
 import type { BillingRepo } from '../_shared/services/billing/sync.ts';
 import type { RevenueCatClient } from '../_shared/services/billing/revenuecat.ts';
 import type { ReferralRepo } from '../_shared/services/referrals/repo.ts';
+import type { IntegrationRuntime } from '../_shared/services/integrations/runtime.ts';
 import type { Sentry } from '../_shared/observability/sentry.ts';
 import type { AnalyticsRepo } from './routes/analytics.ts';
 import type { SupportRepo } from './routes/support.ts';
@@ -82,6 +83,8 @@ export interface ApiDeps {
   readonly capabilities: ServiceCapabilities;
   readonly repos: (auth: UserAuth) => RequestRepos;
   readonly business: ApiBusiness;
+  /** Integration engine (API-INT-01…07, API-MAIL-01); the routes are mounted when present. */
+  readonly integrations?: IntegrationRuntime;
   readonly fetch?: typeof fetch;
   readonly now?: () => Date;
 }

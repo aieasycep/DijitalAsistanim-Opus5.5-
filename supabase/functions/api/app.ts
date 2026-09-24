@@ -20,6 +20,8 @@ import type { ApiDeps, RouteKit, RouteRegistrar } from './deps.ts';
 import { registerAnalyticsRoutes } from './routes/analytics.ts';
 import { registerAppleRoutes } from './routes/auth-apple.ts';
 import { registerDeviceRoutes } from './routes/devices.ts';
+import { integrationRoutes } from './routes/integrations.ts';
+import { mailOriginalRoutes } from './routes/mail-original.ts';
 import { registerMeRoutes } from './routes/me.ts';
 import { registerSupportRoutes } from './routes/support.ts';
 import { registerApprovalRoutes } from './routes/approvals.ts';
@@ -67,5 +69,9 @@ export function createApiApp(deps: ApiDeps, extra: readonly RouteRegistrar[] = [
   registerBusinessRoutes(app, kit);
   registerReferralRoutes(app, kit);
   for (const register of extra) register(app, kit);
+  if (deps.integrations !== undefined) {
+    integrationRoutes(deps.integrations)(app, kit);
+    mailOriginalRoutes(deps.integrations)(app, kit);
+  }
   return app;
 }

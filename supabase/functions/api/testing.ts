@@ -38,6 +38,7 @@ import { randomBase64, testEnv } from '../_shared/testing/env.ts';
 import { stubFetch, type StubHandler } from '../_shared/testing/fetch.ts';
 import { createTestIssuer, type TestIssuer, userClaims } from '../_shared/testing/jwt.ts';
 import { createApiApp } from './app.ts';
+import type { IntegrationRuntime } from '../_shared/services/integrations/runtime.ts';
 import type { ApiDeps } from './deps.ts';
 import type { AnalyticsRow } from './routes/analytics.ts';
 import type { FeedbackInsert, TicketInsert, TicketView } from './routes/support.ts';
@@ -221,6 +222,8 @@ export async function createHarness(
     fetch?: StubHandler;
     capabilities?: Partial<ServiceCapabilities>;
     revenueCat?: RevenueCatClient | null;
+    /** Integration engine (API-INT-01…07, API-MAIL-01) — `_shared/testing/integrations.ts`. */
+    integrations?: IntegrationRuntime;
   } = {},
 ): Promise<Harness> {
   const raw: RawEnv = testEnv(options.env ?? {});
@@ -389,6 +392,7 @@ export async function createHarness(
       revenueCat: options.revenueCat ?? null,
     },
     fetch: stub.fetch,
+    ...(options.integrations === undefined ? {} : { integrations: options.integrations }),
     now: () => NOW,
   };
 
