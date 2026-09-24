@@ -138,6 +138,17 @@ export interface DbErrorLike {
 }
 
 /**
+ * `ENTITLEMENT_REQUIRED.details.feature` for the count limits the DB triggers raise as
+ * `PLAN_LIMIT:<key>` (API_CONTRACTS §4.1 feature keys; `priority_rules_max` has no Pro feature).
+ */
+export const PLAN_LIMIT_FEATURES: Readonly<Record<string, string>> = {
+  max_mail_accounts: 'mail_accounts',
+  max_calendar_accounts: 'calendars',
+  max_calendars: 'calendars',
+  vip_max: 'vip',
+};
+
+/**
  * Maps a database error to an `AppError` (API_CONTRACTS §15): `P0002` → `NOT_FOUND`,
  * `P0001 ENTITLEMENT_REQUIRED:<feature>` / `PLAN_LIMIT:<key>` → `ENTITLEMENT_REQUIRED`,
  * `23505` → `STATE_CONFLICT`, auth failures → `AUTH_REQUIRED`, connectivity → `SERVICE_UNAVAILABLE`.
@@ -155,8 +166,10 @@ export function mapDbError(error: DbErrorLike): AppError {
   }
   const planLimit = /PLAN_LIMIT:([a-z0-9_]+)/.exec(message);
   if (planLimit?.[1] !== undefined) {
+    const feature = PLAN_LIMIT_FEATURES[planLimit[1]];
     return new AppError('ENTITLEMENT_REQUIRED', {
-      details: { limit_key: planLimit[1] },
+      details:
+        feature === undefined ? { limit_key: planLimit[1] } : { feature, limit_key: planLimit[1] },
       cause: error,
     });
   }

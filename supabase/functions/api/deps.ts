@@ -17,6 +17,10 @@ import type { BootstrapSources, ServiceCapabilities } from '../_shared/services/
 import type { CredentialsRepo } from '../_shared/services/credentials.ts';
 import type { DevicesRepo } from '../_shared/services/devices.ts';
 import type { EntitlementReader } from '../_shared/services/entitlements.ts';
+import type { EntitlementGate } from '../_shared/services/entitlements/gate.ts';
+import type { BillingRepo } from '../_shared/services/billing/sync.ts';
+import type { RevenueCatClient } from '../_shared/services/billing/revenuecat.ts';
+import type { ReferralRepo } from '../_shared/services/referrals/repo.ts';
 import type { Sentry } from '../_shared/observability/sentry.ts';
 import type { AnalyticsRepo } from './routes/analytics.ts';
 import type { SupportRepo } from './routes/support.ts';
@@ -49,6 +53,18 @@ export interface RequestRepos {
   readonly eventPrecondition?: EventPreconditionReader;
 }
 
+/**
+ * Business services (T-7.01…T-7.03): the Pro gate every route chain runs, the referral and billing
+ * repositories (service client, verified user ids only) and the RevenueCat v2 client (null while
+ * the credential is missing).
+ */
+export interface ApiBusiness {
+  gate(auth: UserAuth): EntitlementGate;
+  readonly referrals: ReferralRepo;
+  readonly billing: BillingRepo;
+  readonly revenueCat: RevenueCatClient | null;
+}
+
 export interface ApiDeps {
   readonly env: FunctionEnv;
   readonly raw: RawEnv;
@@ -65,6 +81,7 @@ export interface ApiDeps {
   readonly keyring: () => Promise<TokenKeyring>;
   readonly capabilities: ServiceCapabilities;
   readonly repos: (auth: UserAuth) => RequestRepos;
+  readonly business: ApiBusiness;
   readonly fetch?: typeof fetch;
   readonly now?: () => Date;
 }

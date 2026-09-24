@@ -1,8 +1,16 @@
 {
   "app": {
-    "name": "Dijital Asistan Yönetim"
+    "name": "Dijital Asistan Yönetim",
+    "skipToContent": "İçeriğe geç",
+    "homeLink": "Dijital Asistan Yönetim ana sayfası"
   },
   "nav": {
+    "label": "Ana menü",
+    "collapse": "Menüyü daralt",
+    "expand": "Menüyü genişlet",
+    "open": "Menüyü aç",
+    "close": "Menüyü kapat",
+    "breadcrumb": "Konum",
     "groups": {
       "overview": "Genel Bakış",
       "users": "Kullanıcılar",
@@ -35,19 +43,136 @@
       "settings": "Ayarlar"
     }
   },
+  "shell": {
+    "search": "Ara…",
+    "searchShortcutMac": "⌘K",
+    "searchShortcutOther": "Ctrl K",
+    "envPreview": "ÖNİZLEME",
+    "accountMenu": "Hesap menüsü",
+    "signedInAs": "{name} olarak giriş yapıldı",
+    "toasts": "Bildirimler"
+  },
+  "theme": {
+    "label": "Tema",
+    "light": "Açık",
+    "dark": "Koyu",
+    "switchToDark": "Koyu temaya geç",
+    "switchToLight": "Açık temaya geç"
+  },
   "auth": {
     "title": "Yönetim paneline giriş",
+    "subtitle": "Kurumsal e-posta adresini yaz; hesabın varsa 6 haneli bir giriş kodu göndeririz.",
     "email": "E-posta",
+    "emailHint": "ad@sirket.com",
+    "emailInvalid": "Geçerli bir e-posta adresi yaz.",
     "sendCode": "Kod gönder",
+    "codeSent": "Hesap mevcutsa 6 haneli giriş kodu e-postana gönderildi.",
     "code": "E-posta kodu",
     "codeHelp": "{email} adresine gönderdiğimiz 6 haneli kodu yaz.",
+    "codeFormat": "Kod 6 rakamdan oluşur.",
+    "codeInvalid": "Kod hatalı veya süresi dolmuş.",
     "verify": "Doğrula",
+    "resend": "Kodu tekrar gönder",
+    "resendIn": "{seconds} sn sonra yeni kod isteyebilirsin.",
+    "changeEmail": "E-postayı değiştir",
+    "tooMany": "Çok fazla deneme. {minutes} dakika sonra tekrar dene.",
+    "locked": "Hesabın güvenlik nedeniyle kilitlendi. Bir süper yöneticiye başvur.",
+    "notAdmin": "Bu hesapla yönetim paneline giriş yapılamaz.",
+    "unavailable": "Kimlik doğrulama servisine ulaşılamıyor. Birazdan tekrar dene.",
+    "stepExpired": "Giriş adımının süresi doldu. E-postanı yeniden yaz.",
+    "reasons": {
+      "idle": "Güvenliğin için oturumun kapatıldı. Lütfen tekrar giriş yap.",
+      "expired": "Oturum süren doldu (12 saat). Lütfen tekrar giriş yap.",
+      "revoked": "Oturumun başka bir cihazdan veya bir yönetici tarafından sonlandırıldı.",
+      "loggedOut": "Çıkış yaptın.",
+      "notAdmin": "Bu hesapla yönetim paneline giriş yapılamaz.",
+      "mfaFailed": "Çok fazla hatalı doğrulama denemesi. Lütfen tekrar giriş yap."
+    },
     "mfaTitle": "İki adımlı doğrulama",
-    "mfaHelp": "Doğrulayıcı uygulamandaki 6 haneli kodu yaz.",
-    "mfaEnrollTitle": "Doğrulayıcı uygulamanı bağla",
+    "mfaHelp": "Kimlik doğrulayıcı uygulamandaki 6 haneli kodu gir.",
+    "mfaEnrollTitle": "İki adımlı doğrulamayı kur",
+    "mfaEnrollHint": "Google Authenticator, 1Password veya benzeri bir uygulamayla QR kodu tara.",
+    "mfaManual": "Kodu elle gir: {secret}",
+    "mfaQrAlt": "Kimlik doğrulayıcı uygulaması için QR kod",
+    "mfaCode": "Doğrulama kodu",
+    "mfaInvalid": "Kod doğrulanamadı. Tekrar dene.",
+    "mfaLost": "Kimlik doğrulayıcıma erişemiyorum",
+    "recovery": {
+      "title": "Kurtarma koduyla devam et",
+      "help": "Kurtarma kodlarından birini yaz. Kod kullanıldıktan sonra doğrulayıcı uygulamanı yeniden kurarsın.",
+      "label": "Kurtarma kodu",
+      "submit": "Kodu kullan",
+      "invalid": "Kurtarma kodu geçersiz veya daha önce kullanılmış.",
+      "back": "Doğrulayıcı koduna dön",
+      "used": "Kurtarma kodu kullanıldı. Doğrulayıcı uygulamanı yeniden kur."
+    },
+    "codes": {
+      "title": "Kurtarma kodların",
+      "text": "Her kod yalnızca bir kez kullanılabilir. Güvenli bir yerde sakla.",
+      "listLabel": "Kurtarma kodları",
+      "copy": "Kopyala",
+      "copied": "Kodlar panoya kopyalandı.",
+      "download": "İndir (.txt)",
+      "saved": "Kodları güvenli bir yere kaydettim",
+      "continue": "Devam et",
+      "failed": "Kurtarma kodları oluşturulamadı. Tekrar dene.",
+      "retry": "Kodları oluştur"
+    },
+    "invite": {
+      "title": "Yönetim paneli daveti",
+      "text": "Daveti kabul ettiğinde e-posta adresine 6 haneli bir giriş kodu göndeririz. Ardından iki adımlı doğrulamayı kurarsın.",
+      "accept": "Daveti kabul et",
+      "expired": "Davet bağlantısının süresi doldu. Yöneticinden yeni davet iste.",
+      "invalid": "Davet bağlantısı geçersiz. Bağlantıyı e-postadan yeniden aç veya yöneticinden yeni davet iste."
+    },
+    "forbidden": {
+      "title": "Erişim yok",
+      "text": "Bu bölümü görüntüleme yetkin yok.",
+      "back": "Panoya dön"
+    },
     "sessionExpired": "Oturumun sona erdi. Yeniden giriş yap.",
     "signOut": "Çıkış yap",
-    "signOutAll": "Tüm oturumlardan çıkış yap"
+    "signOutAll": "Tüm oturumlardan çık"
+  },
+  "session": {
+    "warningTitle": "Oturumun kapanmak üzere",
+    "warningText": "Hareketsizlik nedeniyle oturumun 2 dakika içinde kapanacak.",
+    "absoluteText": "Oturum süren (12 saat) 2 dakika içinde doluyor. Sonra yeniden giriş yapman gerekir.",
+    "remaining": "Kalan süre: {time}",
+    "continue": "Oturumu sürdür",
+    "signOut": "Çıkış yap",
+    "logoutTitle": "Çıkış yap",
+    "logoutText": "Bu cihazdaki oturumun kapanır.",
+    "logoutAllTitle": "Tüm oturumlardan çık",
+    "logoutAllText": "Bu hesapla açık tüm oturumlar kapanır, bu cihazdaki de dahil. Tekrar giriş yapman gerekir."
+  },
+  "palette": {
+    "hint": "Ara ya da komut yaz…",
+    "title": "Komut paleti",
+    "description": "Sayfalara git, kayıt ara veya komut çalıştır.",
+    "empty": "Sonuç bulunamadı.",
+    "minChars": "Aramak için en az 3 karakter yaz.",
+    "failed": "Arama yapılamadı. Tekrar dene.",
+    "searching": "Aranıyor…",
+    "groups": {
+      "navigation": "Sayfalar",
+      "results": "Kayıtlar",
+      "commands": "Komutlar"
+    },
+    "types": {
+      "user": "Kullanıcı",
+      "job": "İş",
+      "ticket": "Talep",
+      "subscription": "Abonelik",
+      "referral": "Davet kodu",
+      "integration": "Entegrasyon"
+    },
+    "copyId": "Kimliği kopyala",
+    "idCopied": "Kimlik kopyalandı.",
+    "themeDark": "Tema: Koyu",
+    "themeLight": "Tema: Açık",
+    "logout": "Çıkış yap",
+    "logoutAll": "Tüm oturumlardan çık"
   },
   "roles": {
     "super_admin": "Süper yönetici",
@@ -60,16 +185,32 @@
   },
   "table": {
     "emptyFiltered": "Filtrelerle eşleşen kayıt yok.",
+    "emptyDefault": "Henüz kayıt yok.",
     "clearFilters": "Filtreleri temizle",
     "loadFailed": "Veriler yüklenemedi.",
     "errorId": "Hata kimliği: {correlationId}",
     "forbidden": "Bu bölümü görüntüleme yetkin yok.",
     "columns": "Sütunlar",
+    "requiredColumn": "Bu sütun gizlenemez.",
     "previous": "Önceki",
     "next": "Sonraki",
     "selected": "{count} seçildi",
     "rowsPerPage": "Sayfa başına",
+    "pageStatus": "Sayfa {page} / {pages}",
+    "range": "{from}–{to} / {total}",
+    "rangeEstimate": "{from}–{to} / {total}+",
+    "sortAscending": "Artan sıralı",
+    "sortDescending": "Azalan sıralı",
+    "sortNone": "Sıralanmamış",
+    "sortBy": "{column} sütununa göre sırala",
+    "retry": "Tekrar dene",
+    "loading": "Yükleniyor",
+    "search": "Kimlik ile ara",
+    "searchSubmit": "Ara",
+    "activeFilters": "Etkin filtreler",
+    "removeFilter": "{filter} filtresini kaldır",
     "density": {
+      "label": "Yoğunluk",
       "comfortable": "Rahat",
       "compact": "Kompakt"
     }
@@ -77,21 +218,120 @@
   "confirm": {
     "reason": "Gerekçe",
     "reasonHelp": "Bu işlem denetim kaydına gerekçesiyle yazılır (10–500 karakter).",
+    "reasonCount": "{count}/500",
+    "reasonTooShort": "Gerekçe zorunlu (en az 10 karakter).",
+    "reasonTooLong": "Gerekçe en fazla 500 karakter olabilir.",
+    "whatHappens": "Ne olacak",
+    "typed": "Onaylamak için <strong>{token}</strong> yaz",
+    "typedLabel": "Onay metni",
+    "typedMismatch": "Yazdığın metin eşleşmiyor.",
+    "stepUp": "Doğrulama kodu",
+    "stepUpHelp": "Kimlik doğrulayıcı uygulamandaki 6 haneli kodu gir.",
+    "stepUpInvalid": "Kod doğrulanamadı. Tekrar dene.",
+    "pending": "İşleniyor…",
+    "saved": "Kaydedildi.",
     "confirm": "Onayla",
     "cancel": "Vazgeç"
   },
   "pii": {
     "reveal": "Göster",
+    "revealLabel": "{label} değerini göster",
+    "revealTitle": "Bilgiyi göster",
+    "revealEffect": "Değer 60 saniye görünür, sonra yeniden maskelenir. Bu işlem gerekçesiyle denetim kaydına yazılır.",
     "revealReason": "Bu bilgiyi neden görmen gerekiyor?",
+    "revealedFor": "{seconds} sn sonra yeniden maskelenecek",
+    "hide": "Gizle",
     "masked": "Maskeli"
+  },
+  "states": {
+    "loading": "Yükleniyor",
+    "offline": "Bağlantı yok. Veriler güncel olmayabilir.",
+    "error": "Veriler yüklenemedi.",
+    "errorId": "Hata kimliği: {correlationId}",
+    "copyErrorId": "Hata kimliğini kopyala",
+    "copied": "Kopyalandı.",
+    "retry": "Tekrar dene",
+    "forbidden": "Bu bölümü görüntüleme yetkin yok.",
+    "aggregatesOnly": "Bu tablo için satır düzeyinde erişim yetkin yok; yalnızca özet metrikleri görebilirsin.",
+    "notFound": "Kayıt bulunamadı veya silinmiş.",
+    "pageNotFound": "Sayfa bulunamadı.",
+    "backToDashboard": "Panoya dön",
+    "notConfigured": "Yapılandırılmadı",
+    "externalCredential": "Harici kimlik bilgisi gerekli: {service}",
+    "stale": "Son güncelleme {relative}.",
+    "noData": "Henüz veri yok"
+  },
+  "errors": {
+    "forbidden": "Bu işlem için yetkin yok.",
+    "stepUpRequired": "Bu işlem için doğrulama kodu gerekli.",
+    "notFound": "Kayıt bulunamadı veya silinmiş.",
+    "conflict": "Kayıt başka bir yönetici tarafından değiştirildi. Sayfayı yenileyip tekrar dene.",
+    "lastSuperAdmin": "Son aktif süper yönetici devre dışı bırakılamaz veya rolü değiştirilemez.",
+    "invalidState": "Bu kayıt mevcut durumunda bu işleme uygun değil.",
+    "reasonRequired": "Gerekçe zorunlu (en az 10 karakter).",
+    "validation": "Bazı alanlar geçersiz. Kontrol edip tekrar dene.",
+    "rateLimited": "Çok fazla istek. Lütfen {seconds} saniye sonra tekrar dene.",
+    "externalCredential": "Harici kimlik bilgisi gerekli: {service}. Yapılandırma tamamlanana kadar bu işlem yapılamaz.",
+    "upstream": "{service} şu anda yanıt vermiyor. Daha sonra tekrar dene.",
+    "internal": "Beklenmeyen bir hata oluştu. Hata kimliği: {correlationId}",
+    "csrf": "İstek doğrulanamadı. Sayfayı yenileyip tekrar dene.",
+    "network": "Sunucuya ulaşılamadı. Bağlantını kontrol edip tekrar dene.",
+    "serviceFallback": "Servis"
+  },
+  "dashboard": {
+    "title": "Pano",
+    "description": "Kullanıcı, kullanım ve maliyet özeti.",
+    "range": {
+      "label": "Zaman aralığı",
+      "r24h": "24 saat",
+      "r7d": "7 gün",
+      "r30d": "30 gün",
+      "r90d": "90 gün"
+    },
+    "kpisLabel": "Temel metrikler",
+    "kpis": {
+      "total_users": "Toplam kullanıcı",
+      "active_users": "Aktif kullanıcı",
+      "new_users": "Yeni kullanıcı",
+      "pro_users": "Pro kullanıcı",
+      "trials": "Deneme",
+      "connected_emails": "Bağlı e-posta hesabı",
+      "connected_calendars": "Bağlı takvim",
+      "ai_requests": "AI istekleri",
+      "ai_cost_usd": "AI maliyeti",
+      "briefings_generated": "Brifingler",
+      "push_sent": "Push bildirimleri"
+    },
+    "delta": {
+      "up": "Önceki döneme göre %{value} artış",
+      "down": "Önceki döneme göre %{value} azalış",
+      "flat": "Önceki dönemle aynı",
+      "none": "Önceki dönem verisi yok"
+    },
+    "noData": "Henüz veri yok",
+    "metricsFailed": "Metrikler yüklenemedi",
+    "chartsLabel": "Grafikler",
+    "charts": {
+      "user_growth": "Kullanıcı büyümesi",
+      "active_usage": "Aktif kullanım",
+      "ai_costs": "AI maliyeti",
+      "subscriptions": "Abonelikler",
+      "sync_failures": "Senkron hataları"
+    }
+  },
+  "charts": {
+    "showTable": "Tablo olarak göster",
+    "showChart": "Grafik olarak göster",
+    "empty": "Bu aralıkta veri yok.",
+    "summary": "Toplam {total}; en yüksek değer {peak} ({peakDate}).",
+    "date": "Tarih",
+    "value": "Değer",
+    "approx": "Günlük histogramlardan yaklaşık hesaplandı."
   },
   "health": {
     "notConfigured": "Harici kimlik bilgisi gerekli",
     "healthy": "Sağlıklı",
     "degraded": "Kısmi sorun",
     "down": "Çalışmıyor"
-  },
-  "palette": {
-    "hint": "Ara ya da komut yaz…"
   }
 }

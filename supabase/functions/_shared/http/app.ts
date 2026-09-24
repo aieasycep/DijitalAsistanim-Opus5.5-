@@ -111,13 +111,14 @@ export function createApp(options: CreateAppOptions): Hono<AppEnv> {
       '*',
       cors({
         origin: (origin) => (allowed.has(origin) ? origin : null),
-        allowMethods: ['GET', 'POST'],
+        allowMethods: ['GET', 'POST', 'OPTIONS'],
         allowHeaders: [
           'Content-Type',
           'X-Correlation-Id',
           'Accept-Language',
           'apikey',
           'Authorization',
+          'x-client-info',
         ],
         exposeHeaders: ['X-Correlation-Id', 'X-Request-Id', 'Retry-After'],
         credentials: false,

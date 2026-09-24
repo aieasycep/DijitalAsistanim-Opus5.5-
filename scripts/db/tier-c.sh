@@ -84,3 +84,5 @@ if ((${#DA_PG_RUNNER[@]} > 0)) && ! da_pg test -r "${tests[0]}"; then
 fi
 da_log "running pg_prove over ${#tests[@]} file(s)"
 da_pg pg_prove --dbname "$DA_TEST_DB" --failures "${tests[@]}"
+
+bash "$(dirname "${BASH_SOURCE[0]}")/plpgsql-lint.sh"

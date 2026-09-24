@@ -5778,26 +5778,29 @@ export type Database = {
       };
       support_notes: {
         Row: {
-          author_admin_id: string;
+          author_admin_id: string | null;
           body: string;
           created_at: string;
           id: string;
+          kind: string;
           ticket_id: string;
           user_id: string | null;
         };
         Insert: {
-          author_admin_id: string;
+          author_admin_id?: string | null;
           body: string;
           created_at?: string;
           id?: string;
+          kind?: string;
           ticket_id: string;
           user_id?: string | null;
         };
         Update: {
-          author_admin_id?: string;
+          author_admin_id?: string | null;
           body?: string;
           created_at?: string;
           id?: string;
+          kind?: string;
           ticket_id?: string;
           user_id?: string | null;
         };
@@ -5825,6 +5828,7 @@ export type Database = {
           category: Database['public']['Enums']['ticket_category'];
           closed_at: string | null;
           contact_email: string | null;
+          contact_name: string | null;
           created_at: string;
           first_response_at: string | null;
           id: string;
@@ -5845,6 +5849,7 @@ export type Database = {
           category: Database['public']['Enums']['ticket_category'];
           closed_at?: string | null;
           contact_email?: string | null;
+          contact_name?: string | null;
           created_at?: string;
           first_response_at?: string | null;
           id?: string;
@@ -5865,6 +5870,7 @@ export type Database = {
           category?: Database['public']['Enums']['ticket_category'];
           closed_at?: string | null;
           contact_email?: string | null;
+          contact_name?: string | null;
           created_at?: string;
           first_response_at?: string | null;
           id?: string;
@@ -6538,6 +6544,20 @@ export type Database = {
         };
         Returns: Json;
       };
+      apply_referral: {
+        Args: {
+          p_code: string;
+          p_correlation_id?: string;
+          p_device_hash: string;
+          p_email_hash: string;
+          p_referee: string;
+          p_referrer: string;
+          p_run_after: string;
+          p_signals: Json;
+          p_source: string;
+        };
+        Returns: Json;
+      };
       audit_log_append: {
         Args: {
           p_action: string;
@@ -6562,6 +6582,23 @@ export type Database = {
           first_bad_seq: number;
           ok: boolean;
         }[];
+      };
+      billing_apply_mirror: {
+        Args: {
+          p_event_id?: string;
+          p_rc_app_user_id: string;
+          p_snapshot: Json;
+          p_user: string;
+        };
+        Returns: Json;
+      };
+      billing_mark_event: {
+        Args: { p_event_id: string; p_status: string };
+        Returns: undefined;
+      };
+      billing_sync_context: {
+        Args: { p_app_user_id: string; p_event_id?: string };
+        Returns: Json;
       };
       cancel_reminder: {
         Args: { p_id: string; p_reason?: string; p_user: string };
@@ -6715,6 +6752,21 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      create_deletion_request: {
+        Args: {
+          p_account?: string;
+          p_confirmation: string;
+          p_correlation_id?: string;
+          p_kind: Database['public']['Enums']['deletion_kind'];
+          p_origin: string;
+          p_scope?: string;
+          p_source?: string;
+          p_status_token_hash: string;
+          p_subject_email_hash?: string;
+          p_user: string;
+        };
+        Returns: Json;
+      };
       dismiss_announcement: {
         Args: { p_announcement_id: string };
         Returns: undefined;
@@ -6806,6 +6858,10 @@ export type Database = {
           p_type: Database['public']['Enums']['job_type'];
           p_user_id?: string;
         };
+        Returns: string;
+      };
+      ensure_referral_code: {
+        Args: { p_candidate: string; p_user: string };
         Returns: string;
       };
       evaluate_flag: {
@@ -6935,6 +6991,34 @@ export type Database = {
         Returns: Json;
       };
       pseudonymize_audit_subject: { Args: { p_user: string }; Returns: number };
+      public_deletion_status: { Args: { p_request_id: string }; Returns: Json };
+      public_deletion_subject: { Args: { p_email: string }; Returns: Json };
+      public_otp_lock_seconds: {
+        Args: { p_lock_seconds?: number; p_subject: string };
+        Returns: number;
+      };
+      public_otp_record_failure: {
+        Args: {
+          p_lock_seconds?: number;
+          p_max?: number;
+          p_subject: string;
+          p_window_seconds?: number;
+        };
+        Returns: Json;
+      };
+      public_plans: { Args: Record<PropertyKey, never>; Returns: Json };
+      public_referral_resolve: { Args: { p_code: string }; Returns: Json };
+      public_subscription_active: { Args: { p_user: string }; Returns: boolean };
+      public_support_ticket: {
+        Args: {
+          p_category: Database['public']['Enums']['ticket_category'];
+          p_email: string;
+          p_message: string;
+          p_name: string;
+          p_subject: string;
+        };
+        Returns: Json;
+      };
       purge_user_history: { Args: { p_user: string }; Returns: Json };
       rate_limit_hit: {
         Args: { p_key: string; p_limit: number; p_window_seconds: number };
@@ -6944,6 +7028,49 @@ export type Database = {
         Args: { p_batch?: number; p_user: string };
         Returns: number;
       };
+      record_billing_event: {
+        Args: {
+          p_app_user_id: string;
+          p_correlation_id?: string;
+          p_environment: string;
+          p_event_id: string;
+          p_event_timestamp: string;
+          p_event_type: string;
+          p_payload: Json;
+          p_payload_digest: string;
+          p_product_id: string;
+          p_store: string;
+          p_sync_ids: string[];
+          p_transferred_from: string[];
+          p_transferred_to: string[];
+        };
+        Returns: Json;
+      };
+      referral_apply_context: {
+        Args: { p_code: string; p_installation?: string; p_referee: string };
+        Returns: Json;
+      };
+      referral_decide: {
+        Args: {
+          p_assessment?: Json;
+          p_correlation_id?: string;
+          p_decision: string;
+          p_qualification?: Json;
+          p_referral_id: string;
+          p_reject_reason?: string;
+          p_risk_score?: number;
+        };
+        Returns: Json;
+      };
+      referral_evaluation_context: {
+        Args: { p_now?: string; p_referral_id: string };
+        Returns: Json;
+      };
+      referral_overview: {
+        Args: { p_now?: string; p_user: string };
+        Returns: Json;
+      };
+      referral_tombstone_match: { Args: { p_signals: Json }; Returns: boolean };
       retention_cleanup: {
         Args: { p_batch?: number; p_now?: string };
         Returns: Json;
@@ -7143,6 +7270,16 @@ export type Database = {
         };
         Returns: Json;
       };
+      support_inbound_note: {
+        Args: {
+          p_body: string;
+          p_digest: string;
+          p_message_id: string;
+          p_reference: string;
+          p_sender: string;
+        };
+        Returns: Json;
+      };
       today_overview: { Args: { p_local_date?: string }; Returns: Json };
       transition_approval: {
         Args: {
@@ -7237,6 +7374,10 @@ export type Database = {
       };
       user_apple_sub: { Args: { p_user: string }; Returns: string };
       vip_suggestions: { Args: Record<PropertyKey, never>; Returns: Json };
+      web_analytics_increment: {
+        Args: { p_day: string; p_dims: Json; p_event: string };
+        Returns: undefined;
+      };
     };
     Enums: {
       account_status:

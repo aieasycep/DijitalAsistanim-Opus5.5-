@@ -1,7 +1,7 @@
 -- pgTAP · storage buckets and folder policies (§8), pg_cron schedules and the worker poke (§9)
 -- (DATABASE_AND_RLS_PLAN §13.2 130, 140).
 begin;
-select plan(20);
+select plan(21);
 
 -- ─── Buckets ─────────────────────────────────────────────────────────────────────────────────
 select results_eq(
@@ -42,7 +42,11 @@ select throws_ok(format($$ insert into storage.objects (bucket_id, name) values 
                  '42501', null, 'clients cannot insert objects (uploads use signed upload URLs)');
 select results_eq($$ with u as (update storage.objects set name = name || '.bak' returning 1) select count(*)::integer from u $$, array[0],
                   'clients cannot update objects');
-select results_eq($$ with d as (delete from storage.objects returning 1) select count(*)::integer from d $$, array[0],
+-- Hosted Supabase also blocks every direct DELETE on storage.objects (storage.protect_delete); either
+-- way a client's delete must remove nothing.
+select lives_ok($$ do $d$ begin delete from storage.objects; exception when others then null; end $d$ $$,
+                'a client delete on storage.objects is blocked or matches no row');
+select results_eq($$ select count(*)::integer from storage.objects where bucket_id in ('captures', 'exports') $$, array[3],
                   'clients cannot delete objects');
 select tests.clear_authentication();
 

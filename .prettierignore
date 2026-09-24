@@ -13,3 +13,5 @@ apps/mobile/android
 .expo
 .expo-export
 .claude/
+# Next.js regenerates this file on every build and typegen
+**/next-env.d.ts

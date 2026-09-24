@@ -13,6 +13,8 @@ import { type ApprovalExecuteDeps, approvalExecuteJob } from './approval_execute
 import { notificationJob } from './notification.ts';
 import { pushReceiptsJob } from './push_receipts.ts';
 import type { NotificationPipelineDeps } from '../../_shared/services/notifications/pipeline.ts';
+import { billingSyncJob, type BillingSyncJobDeps } from './billing_sync.ts';
+import { referralEvaluateJob, type ReferralEvaluateJobDeps } from './referral_evaluate.ts';
 
 export interface HandlerDeps {
   readonly credentials: CredentialsRepo;
@@ -21,6 +23,8 @@ export interface HandlerDeps {
   readonly notifications?: NotificationPipelineDeps;
   /** `approval_execute` (T-6.02…T-6.04). */
   readonly approvals?: ApprovalExecuteDeps;
+  /** T-7.01 / T-7.03: `billing_sync` (JOB-24) and `referral_evaluate` (JOB-25). */
+  readonly business: { billing: BillingSyncJobDeps; referrals: ReferralEvaluateJobDeps };
 }
 
 export function jobDefinitions(deps: HandlerDeps): JobDefinition<never>[] {
@@ -38,6 +42,8 @@ export function jobDefinitions(deps: HandlerDeps): JobDefinition<never>[] {
     ...(deps.approvals === undefined
       ? []
       : [approvalExecuteJob(deps.approvals) as unknown as JobDefinition<never>]),
+    billingSyncJob(deps.business.billing) as unknown as JobDefinition<never>,
+    referralEvaluateJob(deps.business.referrals) as unknown as JobDefinition<never>,
   ];
 }
 

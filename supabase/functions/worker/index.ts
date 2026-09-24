@@ -7,6 +7,12 @@ import { createLogger } from '../_shared/logging/logger.ts';
 import { createSentry } from '../_shared/observability/sentry.ts';
 import { assertDemoAllowed } from '../_shared/providers/demo/guard.ts';
 import { supabaseCredentialsRepo } from '../_shared/services/credentials.ts';
+import { supabaseBillingRepo } from '../_shared/services/billing/repo.ts';
+import {
+  createRevenueCatClient,
+  revenueCatConfig,
+} from '../_shared/services/billing/revenuecat.ts';
+import { supabaseReferralRepo } from '../_shared/services/referrals/repo.ts';
 import { createWorkerApp } from './app.ts';
 import { createHandlerRegistry } from './handlers/index.ts';
 import { createProviderRegistry } from '../_shared/providers/registry.ts';
@@ -24,6 +30,7 @@ assertDemoAllowed(raw);
 const env = loadEnv(raw);
 const system = serviceClient(clientConfigFromEnv(raw));
 let keyring: Promise<TokenKeyring> | null = null;
+const revenueCat = revenueCatConfig(env);
 const app = createWorkerApp({
   secret: env.CRON_SECRET,
   repo: supabaseJobsRepo(system),
@@ -43,6 +50,14 @@ const app = createWorkerApp({
         keyring: () => (keyring ??= loadKeyring(env)),
       }),
       markers: { mailDomain: env.MAIL_MESSAGE_ID_DOMAIN, webUrl: env.PUBLIC_WEB_URL },
+    },
+    business: {
+      billing: {
+        repo: supabaseBillingRepo(system),
+        revenueCat: revenueCat === null ? null : createRevenueCatClient({ config: revenueCat }),
+        production: env.APP_ENV === 'production',
+      },
+      referrals: { repo: supabaseReferralRepo(system), pepper: env },
     },
   }),
   log: createLogger({ fn: 'worker' }),

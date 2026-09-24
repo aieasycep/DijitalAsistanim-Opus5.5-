@@ -1663,7 +1663,7 @@ Copy this checklist into the PR description of every feature PR. A feature is do
 | W-DEL-01 | "Devam" (account or history) / "Vazgeç" | tap | `confirm` / clear session → `email` | confirm step / reset | WEB-E2E-06 | ☐ |
 | W-DEL-01 | Destructive "Hesabımı sil" / "Geçmişimi sil" (typed SİL/DELETE) | submit | public-api data-deletion request endpoint (R-24) → `data_deletion_requests` → job | 202 → `status`; no success state without 202 | WEB-E2E-06, REL-12 | ☐ |
 | W-DEL-01 | Subscription / Microsoft links / support link | link | external handoffs / `/support?category=privacy#contact` | target | WEB-E2E-06 | ☐ |
-| W-REF-01 | **Store badges** (Play URL carries `referrer=da_ref%3D{CODE}`) | link | store | store page | WEB-E2E-07 | ☐ |
+| W-REF-01 | **Store badges** (Play URL carries `referrer=code%3D{CODE}`) | link | store | store page | WEB-E2E-07 | ☐ |
 | W-REF-01 | QR (≥768) / Android "Uygulamada aç" | tap | QR of `/r/{CODE}` / intent to `settings/referral?code={CODE}` with Play fallback | app opens with code / store | WEB-E2E-07 | ☐ |
 | W-OAUTH-01 | **Open-in-app button** | link | callback URL rebuilt from validated params only | app handles `integrations/callback` | WEB-E2E-08 | ☐ |
 | W-APP-01 | **"Uygulamada aç"** / badges / QR | link | intent `dijitalasistan://{path}` (Play fallback) / stores / same URL QR | app opens the path | app-link.spec | ☐ |

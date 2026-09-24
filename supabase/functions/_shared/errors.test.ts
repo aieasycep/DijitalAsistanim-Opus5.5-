@@ -52,7 +52,11 @@ Deno.test('database errors map to API codes without leaking SQL', () => {
   assertEquals(ent.code, 'ENTITLEMENT_REQUIRED');
   assertEquals(ent.details, { feature: 'capture' });
   assertEquals(mapDbError({ code: 'P0001', message: 'PLAN_LIMIT:max_mail_accounts' }).details, {
+    feature: 'mail_accounts',
     limit_key: 'max_mail_accounts',
+  });
+  assertEquals(mapDbError({ code: 'P0001', message: 'PLAN_LIMIT:priority_rules_max' }).details, {
+    limit_key: 'priority_rules_max',
   });
   assertEquals(
     mapDbError({ code: '42501', message: 'permission denied for table x' }).code,

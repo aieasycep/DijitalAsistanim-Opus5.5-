@@ -49,6 +49,10 @@ export interface RateLimitClass {
 export const RATE_LIMITS = {
   api_default: { limit: 120, windowSeconds: 60, subject: 'user' },
   devices_register: { limit: 30, windowSeconds: 3600, subject: 'user' },
+  // Business (T-7.01, T-7.03): referral apply user 5/h + IP hash 20/h; purchases sync 6/60 s.
+  referral_apply: { limit: 5, windowSeconds: 3600, subject: 'user' },
+  referral_apply_ip: { limit: 20, windowSeconds: 3600, subject: 'ip' },
+  purchases_sync: { limit: 6, windowSeconds: 60, subject: 'user' },
   support_ticket: { limit: 5, windowSeconds: 3600, subject: 'user' },
   feedback: { limit: 10, windowSeconds: 3600, subject: 'user' },
   analytics: { limit: 60, windowSeconds: 60, subject: 'installation' },

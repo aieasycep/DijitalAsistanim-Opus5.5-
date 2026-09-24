@@ -2,7 +2,8 @@
  * The `api` Hono app (`/functions/v1/api`; API_CONTRACTS §8, IMPLEMENTATION_PLAN T-3.11).
  *
  * Middleware order per route: correlation id and request log (app) → user auth (`getClaims`, admin
- * identities rejected) → account-state and client-version gate → rate limit → JSON body parse → zod
+ * identities rejected) → account-state and client-version gate → rate limit → Pro gate of the route
+ * (`PRO_ROUTE_FEATURES`, 402 `ENTITLEMENT_REQUIRED`) → JSON body parse → zod
  * validation from the `@da/validation` route registry → handler (HTTP idempotency for `[IK]` routes)
  * → `{data, meta}` envelope; errors → the standard error envelope. Browser `Origin` requests are
  * refused (native client only).
@@ -14,7 +15,8 @@ import { requireUser } from '../_shared/auth/user.ts';
 import { logHash } from '../_shared/crypto/hash.ts';
 import { rateLimit } from '../_shared/ratelimit.ts';
 import { requireActiveAccount } from '../_shared/services/account-state.ts';
-import type { ApiDeps, RouteKit } from './deps.ts';
+import { routeEntitlementGate } from '../_shared/services/entitlements/middleware.ts';
+import type { ApiDeps, RouteKit, RouteRegistrar } from './deps.ts';
 import { registerAnalyticsRoutes } from './routes/analytics.ts';
 import { registerAppleRoutes } from './routes/auth-apple.ts';
 import { registerDeviceRoutes } from './routes/devices.ts';
@@ -24,8 +26,11 @@ import { registerApprovalRoutes } from './routes/approvals.ts';
 import { registerReminderRoutes } from './routes/reminders.ts';
 import { registerNotificationRoutes } from './routes/notifications.ts';
 import { registerWidgetRoutes } from './routes/widgets.ts';
+import { registerBusinessRoutes } from './routes/business.ts';
+import { registerReferralRoutes } from './routes/referrals.ts';
 
-export function createApiApp(deps: ApiDeps): Hono<AppEnv> {
+/** `extra` registrars mount after the built-in routes (tests use it for the Pro-gate matrix). */
+export function createApiApp(deps: ApiDeps, extra: readonly RouteRegistrar[] = []): Hono<AppEnv> {
   const app = createApp({
     fn: 'api',
     logger: deps.log,
@@ -35,6 +40,8 @@ export function createApiApp(deps: ApiDeps): Hono<AppEnv> {
   const now = deps.now ?? (() => new Date());
   const auth = requireUser(deps.verifier, { userHash: (userId) => logHash(deps.env, userId) });
   const gate = requireActiveAccount({ accounts: deps.accounts, settings: deps.settings });
+  // Pro gate of every route listed in PRO_ROUTE_FEATURES (API_CONTRACTS §4.1; T-7.02).
+  const proGate = routeEntitlementGate((auth) => deps.business.gate(auth));
   const kit: RouteKit = {
     deps,
     now,
@@ -44,6 +51,7 @@ export function createApiApp(deps: ApiDeps): Hono<AppEnv> {
       list.push(
         rateLimit({ store: deps.rateLimits, scope: 'api', now: () => now().getTime() }, cls),
       );
+      list.push(proGate);
       return list;
     },
   };
@@ -56,5 +64,8 @@ export function createApiApp(deps: ApiDeps): Hono<AppEnv> {
   registerReminderRoutes(app, kit);
   registerNotificationRoutes(app, kit);
   registerWidgetRoutes(app, kit);
+  registerBusinessRoutes(app, kit);
+  registerReferralRoutes(app, kit);
+  for (const register of extra) register(app, kit);
   return app;
 }
