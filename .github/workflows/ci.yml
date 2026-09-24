@@ -60,6 +60,13 @@ jobs:
         with:
           turbo-cache-key: mobile
       - run: pnpm mobile:check
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Android Notification Intelligence rules (pure-Kotlin JVM tests)
+        run: pnpm --filter @da/mobile ni:test
 
   functions:
     name: functions (import maps, deno check, lint, test)
