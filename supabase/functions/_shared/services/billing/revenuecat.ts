@@ -415,3 +415,63 @@ export function toMirrorSnapshot(
     is_family_share: sub?.ownership === 'family_shared',
   };
 }
+
+/**
+ * Deletes the RevenueCat customer at account deletion (API_CONTRACTS JOB-23 step 4;
+ * SECURITY_AND_PRIVACY_PLAN §4.8 step 5): `DELETE /v2/projects/{pid}/customers/{app_user_id}`
+ * [verify endpoint against the RevenueCat reference before launch]. The store subscription itself is
+ * not cancelled (the user was told). A missing customer is `not_found`; errors map like the reads
+ * above (429 → `PROVIDER_RATE_LIMITED` with `Retry-After`, 5xx / network → `PROVIDER_UNAVAILABLE`,
+ * timeout → `UPSTREAM_TIMEOUT`, 401/403 → `EXTERNAL_CREDENTIAL_REQUIRED`).
+ */
+export async function deleteRevenueCatCustomer(
+  options: RevenueCatClientOptions,
+  appUserId: string,
+  signal?: AbortSignal,
+): Promise<'deleted' | 'not_found'> {
+  const base = `${(options.baseUrl ?? REVENUECAT_API_BASE).replace(/\/+$/, '')}/projects/${encodeURIComponent(options.config.projectId)}`;
+  const timeout = AbortSignal.timeout(options.timeoutMs ?? OUTBOUND.providerTimeoutMs);
+  let response: Response;
+  try {
+    response = await (options.fetch ?? fetch)(
+      `${base}/customers/${encodeURIComponent(appUserId)}`,
+      {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${options.config.secretKey}`,
+          Accept: 'application/json',
+        },
+        signal: signal === undefined ? timeout : AbortSignal.any([signal, timeout]),
+      },
+    );
+  } catch (error) {
+    const name = error instanceof Error ? error.name : '';
+    throw new AppError(
+      name === 'TimeoutError' || name === 'AbortError'
+        ? 'UPSTREAM_TIMEOUT'
+        : 'PROVIDER_UNAVAILABLE',
+      { details: { provider: 'revenuecat' }, cause: error },
+    );
+  }
+  await response.body?.cancel();
+  if (response.ok) return 'deleted';
+  if (response.status === 404) return 'not_found';
+  if (response.status === 401 || response.status === 403) {
+    throw new AppError('EXTERNAL_CREDENTIAL_REQUIRED', {
+      details: {
+        feature: 'purchases',
+        credential_keys: ['REVENUECAT_API_V2_SECRET_KEY'],
+        provider_status: response.status,
+      },
+    });
+  }
+  if (response.status === 429) {
+    throw new AppError('PROVIDER_RATE_LIMITED', {
+      details: { provider: 'revenuecat' },
+      headers: { 'Retry-After': retryAfterSeconds(response) },
+    });
+  }
+  throw new AppError('PROVIDER_UNAVAILABLE', {
+    details: { provider: 'revenuecat', provider_status: response.status },
+  });
+}

@@ -2,6 +2,7 @@
  * Dependencies of the `api` function. `index.ts` wires the real (supabase-backed) implementations
  * through `repos/system/index.ts`; tests pass in-memory ones.
  */
+import type { PrivacyApiDeps } from './routes/privacy.ts';
 import type { Hono, MiddlewareHandler } from 'hono';
 import type { RateLimitClassName } from '../_shared/config.ts';
 import type { FunctionEnv, RawEnv } from '../_shared/env.ts';
@@ -86,6 +87,8 @@ export interface ApiDeps {
   readonly business: ApiBusiness;
   /** Integration engine (API-INT-01…07, API-MAIL-01); the routes are mounted when present. */
   readonly integrations?: IntegrationRuntime;
+  /** Privacy (API-PRV-01…04, T-11.01…T-11.03); the routes are mounted when present. */
+  readonly privacy?: PrivacyApiDeps;
   readonly fetch?: typeof fetch;
   readonly now?: () => Date;
   /** AI pipeline routes (API-MAIL-07, API-SRCH-01, API-BRF-02…04). */

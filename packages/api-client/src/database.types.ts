@@ -3167,6 +3167,8 @@ export type Database = {
           id: string;
           job_id: string | null;
           kind: Database['public']['Enums']['deletion_kind'];
+          notify_email_ciphertext: string | null;
+          notify_locale: string | null;
           origin: string;
           reason: string | null;
           scope: string | null;
@@ -3188,6 +3190,8 @@ export type Database = {
           id?: string;
           job_id?: string | null;
           kind: Database['public']['Enums']['deletion_kind'];
+          notify_email_ciphertext?: string | null;
+          notify_locale?: string | null;
           origin: string;
           reason?: string | null;
           scope?: string | null;
@@ -3209,6 +3213,8 @@ export type Database = {
           id?: string;
           job_id?: string | null;
           kind?: Database['public']['Enums']['deletion_kind'];
+          notify_email_ciphertext?: string | null;
+          notify_locale?: string | null;
           origin?: string;
           reason?: string | null;
           scope?: string | null;
@@ -3238,6 +3244,7 @@ export type Database = {
           expires_at: string | null;
           file_size_bytes: number | null;
           id: string;
+          include: string[] | null;
           job_id: string | null;
           ready_at: string | null;
           requested_via: string;
@@ -3254,6 +3261,7 @@ export type Database = {
           expires_at?: string | null;
           file_size_bytes?: number | null;
           id?: string;
+          include?: string[] | null;
           job_id?: string | null;
           ready_at?: string | null;
           requested_via?: string;
@@ -3270,6 +3278,7 @@ export type Database = {
           expires_at?: string | null;
           file_size_bytes?: number | null;
           id?: string;
+          include?: string[] | null;
           job_id?: string | null;
           ready_at?: string | null;
           requested_via?: string;
@@ -6550,6 +6559,15 @@ export type Database = {
         };
         Returns: boolean;
       };
+      account_deletion_begin: {
+        Args: { p_job?: string; p_request: string; p_user: string };
+        Returns: Json;
+      };
+      account_deletion_context: { Args: { p_user: string }; Returns: Json };
+      account_deletion_system_purge: {
+        Args: { p_job?: string; p_user: string };
+        Returns: Json;
+      };
       account_paused_by_plan: { Args: { p_account: string }; Returns: boolean };
       acquire_sync_lease: {
         Args: { p_owner: string; p_seconds?: number; p_sync_state: string };
@@ -6836,6 +6854,26 @@ export type Database = {
         };
         Returns: Json;
       };
+      create_export_request: {
+        Args: {
+          p_correlation_id?: string;
+          p_include?: string[];
+          p_user: string;
+        };
+        Returns: Json;
+      };
+      deletion_request_update: {
+        Args: {
+          p_clear_notify?: boolean;
+          p_error_code?: string;
+          p_notify?: string;
+          p_notify_locale?: string;
+          p_request: string;
+          p_status?: Database['public']['Enums']['deletion_status'];
+          p_steps?: Json;
+        };
+        Returns: Json;
+      };
       demo_state_get: { Args: { p_account: string }; Returns: Json };
       demo_state_record_write: {
         Args: {
@@ -7034,6 +7072,10 @@ export type Database = {
         };
       };
       hash_subject: { Args: { p_user: string }; Returns: string };
+      history_deletion_counts: {
+        Args: { p_account?: string; p_user: string };
+        Returns: Json;
+      };
       history_deletion_preview: {
         Args: { p_older_than?: string };
         Returns: Json;
@@ -7128,6 +7170,7 @@ export type Database = {
         };
         Returns: Json;
       };
+      privacy_tombstones_upsert: { Args: { p_signals: Json }; Returns: number };
       prune_calendar_events: {
         Args: {
           p_calendar: string;
@@ -7164,6 +7207,10 @@ export type Database = {
           p_name: string;
           p_subject: string;
         };
+        Returns: Json;
+      };
+      purge_history: {
+        Args: { p_account?: string; p_user: string };
         Returns: Json;
       };
       purge_user_history: { Args: { p_user: string }; Returns: Json };
@@ -7227,6 +7274,14 @@ export type Database = {
         Returns: undefined;
       };
       retention_cleanup: {
+        Args: { p_batch?: number; p_now?: string };
+        Returns: Json;
+      };
+      retention_orphan_objects: {
+        Args: { p_limit?: number; p_now?: string };
+        Returns: Json;
+      };
+      retention_system_sweep: {
         Args: { p_batch?: number; p_now?: string };
         Returns: Json;
       };
@@ -7566,6 +7621,7 @@ export type Database = {
         Returns: Json;
       };
       user_apple_sub: { Args: { p_user: string }; Returns: string };
+      user_rows_remaining: { Args: { p_user: string }; Returns: Json };
       vip_suggestions: { Args: Record<PropertyKey, never>; Returns: Json };
       web_analytics_increment: {
         Args: { p_day: string; p_dims: Json; p_event: string };

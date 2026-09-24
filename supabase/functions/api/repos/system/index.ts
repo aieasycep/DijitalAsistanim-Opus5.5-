@@ -41,6 +41,9 @@ import {
 import { supabaseReferralRepo } from '../../../_shared/services/referrals/repo.ts';
 import { supabaseFlagSource } from '../../../_shared/services/flags.ts';
 import { createIntegrationWiring } from '../../../_shared/system/integrations.ts';
+import { supabasePrivacyRepo } from '../../../_shared/services/privacy/repo.ts';
+import { supabaseObjectStore } from '../../../_shared/services/privacy/storage.ts';
+import { supabaseAuthAdmin } from '../../../_shared/services/privacy/providers.ts';
 import type { ApiDeps } from '../../deps.ts';
 import { supabaseAnalyticsRepo } from '../../routes/analytics.ts';
 import { supabaseSupportRepo } from '../../routes/support.ts';
@@ -133,6 +136,11 @@ export function createApiDeps(input: {
     appleSub: (userId) => rpc<string | null>(system, DB_FN.userAppleSub, { p_user: userId }),
     keyring: () => (keyring ??= loadKeyring(env)),
     integrations: integrations.runtime,
+    privacy: {
+      repo: supabasePrivacyRepo(system),
+      store: supabaseObjectStore(system),
+      authAdmin: supabaseAuthAdmin(system),
+    },
     capabilities: {
       aiGenerate: ai.available('anthropic') || ai.available('openai'),
       embeddings: ai.available('voyage'),

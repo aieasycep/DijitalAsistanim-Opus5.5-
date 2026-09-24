@@ -66,6 +66,11 @@ export const RATE_LIMITS = {
   integrations_complete: { limit: 20, windowSeconds: 600, subject: 'user' },
   integrations_sync: { limit: 1, windowSeconds: 60, subject: 'user' },
   mail_original: { limit: 60, windowSeconds: 60, subject: 'user' },
+  // Privacy (API-PRV-01…04): export / delete-history / delete-account 3 per 24 h each; download 20/h.
+  privacy_export: { limit: 3, windowSeconds: 86_400, subject: 'user' },
+  privacy_delete_history: { limit: 3, windowSeconds: 86_400, subject: 'user' },
+  privacy_delete_account: { limit: 3, windowSeconds: 86_400, subject: 'user' },
+  privacy_export_download: { limit: 20, windowSeconds: 3600, subject: 'user' },
   search: { limit: 30, windowSeconds: 60, subject: 'user' },
   thread_summary: { limit: 20, windowSeconds: 60, subject: 'user' },
   /** API-BRF-04: 1 per 10 min per briefing (enforced with the briefing id as the subject). */

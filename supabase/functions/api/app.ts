@@ -30,6 +30,7 @@ import { registerNotificationRoutes } from './routes/notifications.ts';
 import { registerWidgetRoutes } from './routes/widgets.ts';
 import { registerBusinessRoutes } from './routes/business.ts';
 import { registerReferralRoutes } from './routes/referrals.ts';
+import { privacyRoutes } from './routes/privacy.ts';
 import { registerThreadSummaryRoutes } from './routes/mail-summary.ts';
 import { registerSearchRoutes } from './routes/search.ts';
 import { registerBriefingRoutes } from './routes/briefings.ts';
@@ -72,6 +73,7 @@ export function createApiApp(deps: ApiDeps, extra: readonly RouteRegistrar[] = [
   registerBusinessRoutes(app, kit);
   registerReferralRoutes(app, kit);
   for (const register of extra) register(app, kit);
+  if (deps.privacy !== undefined) privacyRoutes(deps.privacy)(app, kit);
   if (deps.integrations !== undefined) {
     integrationRoutes(deps.integrations)(app, kit);
     mailOriginalRoutes(deps.integrations)(app, kit);

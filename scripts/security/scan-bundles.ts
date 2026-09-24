@@ -4,8 +4,14 @@
  * for the name of every SERVER-ONLY key in `.env.example`. Findings print the file, the rule and a
  * redacted excerpt, never the value. Exits 1 on any finding or when a scanned directory is missing.
  *
+ * Server output (`.next/server/app`, T-11.06) is checked for secret-shaped values only: its route
+ * code legitimately names server-only keys, and non-production prerenders list the missing launch
+ * keys by name (the web "Harici kimlik bilgisi gerekli" notice). Key names in browser code are
+ * caught in `.next/static`; a secret value in a prerendered page or route is caught here.
+ *
  * Usage:
  *   node scripts/security/scan-bundles.ts --dir apps/backoffice/.next/static [--dir …]
+ *   node scripts/security/scan-bundles.ts --server-dir apps/web/.next/server/app [--server-dir …]
  *   node scripts/security/scan-bundles.ts            # every known app output that exists
  */
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
@@ -14,12 +20,13 @@ import { fileURLToPath } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..', '..');
-const TEXT_FILE = /\.(js|mjs|cjs|css|html|json|map|txt|rsc)$/i;
+const TEXT_FILE = /\.(js|mjs|cjs|css|html|json|map|txt|rsc|body)$/i;
 const KNOWN_OUTPUTS = [
   'apps/backoffice/.next/static',
   'apps/web/.next/static',
   'apps/mobile/.expo-export',
 ];
+const KNOWN_SERVER_OUTPUTS = ['apps/backoffice/.next/server/app', 'apps/web/.next/server/app'];
 
 export interface BundleFinding {
   readonly file: string;
@@ -111,18 +118,24 @@ function* walk(dir: string): Generator<string> {
 export function scanDirectories(
   dirs: readonly string[],
   keyNames: readonly string[],
+  serverDirs: readonly string[] = [],
 ): { findings: BundleFinding[]; missing: string[]; files: number } {
   const findings: BundleFinding[] = [];
   const missing: string[] = [];
   let files = 0;
-  for (const dir of dirs) {
+  const targets = [
+    ...dirs.map((dir) => ({ dir, server: false })),
+    ...serverDirs.map((dir) => ({ dir, server: true })),
+  ];
+  for (const { dir, server } of targets) {
     if (!existsSync(dir)) {
       missing.push(dir);
       continue;
     }
     for (const file of walk(dir)) {
       files += 1;
-      findings.push(...scanText(readFileSync(file, 'utf8'), relative(ROOT, file), keyNames));
+      const names = server ? [] : keyNames;
+      findings.push(...scanText(readFileSync(file, 'utf8'), relative(ROOT, file), names));
     }
   }
   return { findings, missing, files };
@@ -131,23 +144,25 @@ export function scanDirectories(
 function main(): void {
   const args = process.argv.slice(2);
   const explicit: string[] = [];
+  const explicitServer: string[] = [];
   for (let i = 0; i < args.length; i += 1) {
     const value = args[i + 1];
-    if (args[i] === '--dir' && value !== undefined) {
-      explicit.push(resolve(process.cwd(), value));
+    if ((args[i] === '--dir' || args[i] === '--server-dir') && value !== undefined) {
+      (args[i] === '--dir' ? explicit : explicitServer).push(resolve(process.cwd(), value));
       i += 1;
     }
   }
-  const dirs =
-    explicit.length > 0
-      ? explicit
-      : KNOWN_OUTPUTS.map((dir) => join(ROOT, dir)).filter((dir) => existsSync(dir));
-  if (dirs.length === 0) {
+  const useKnown = explicit.length === 0 && explicitServer.length === 0;
+  const existing = (list: readonly string[]) =>
+    list.map((dir) => join(ROOT, dir)).filter((dir) => existsSync(dir));
+  const dirs = useKnown ? existing(KNOWN_OUTPUTS) : explicit;
+  const serverDirs = useKnown ? existing(KNOWN_SERVER_OUTPUTS) : explicitServer;
+  if (dirs.length === 0 && serverDirs.length === 0) {
     console.error('scan-bundles: no build output to scan (build an app first).');
     process.exit(1);
   }
   const keys = serverOnlyKeys(readFileSync(join(ROOT, '.env.example'), 'utf8'));
-  const { findings, missing, files } = scanDirectories(dirs, keys);
+  const { findings, missing, files } = scanDirectories(dirs, keys, serverDirs);
   for (const dir of missing) console.error(`scan-bundles: missing ${relative(ROOT, dir)}`);
   for (const f of findings) console.error(`${f.file}  [${f.rule}]  …${f.excerpt}`);
   if (findings.length > 0 || missing.length > 0) {
@@ -155,7 +170,7 @@ function main(): void {
     process.exit(1);
   }
   console.info(
-    `scan-bundles: clean · ${String(files)} files · ${String(keys.length)} server-only names · ${dirs.map((d) => relative(ROOT, d)).join(', ')}`,
+    `scan-bundles: clean · ${String(files)} files · ${String(keys.length)} server-only names · ${[...dirs, ...serverDirs].map((d) => relative(ROOT, d)).join(', ')}`,
   );
 }
 
