@@ -72,6 +72,12 @@
       "title": "Your morning briefing will be ready at {time}.",
       "context": "{count, plural, one {# item} other {# items}} moved to tomorrow",
       "quiet": "Notifications are quiet until morning"
+    },
+    "context": {
+      "mail": "{count, plural, one {# important email} other {# important emails}}",
+      "events": "{count, plural, one {# event} other {# events}}",
+      "followUps": "{count, plural, one {# follow-up} other {# follow-ups}}",
+      "deadlines": "{count, plural, one {# deadline} other {# deadlines}}"
     }
   },
   "sections": {
@@ -81,7 +87,9 @@
     "digitalLife": "Your digital life",
     "carryOver": "Carrying over to tomorrow",
     "itemCount": "{count, plural, one {# item} other {# items}}",
-    "eventCount": "{count, plural, one {# event} other {# events}}"
+    "eventCount": "{count, plural, one {# event} other {# events}}",
+    "deadlines": "Deadlines",
+    "followUps": "Follow-ups"
   },
   "footer": {
     "seeAllInFlow": "See all in Flow",
@@ -108,9 +116,48 @@
   },
   "announcement": {
     "more": "Show more",
-    "dismissA11y": "Dismiss announcement"
+    "dismissA11y": "Dismiss announcement",
+    "open": "Open",
+    "a11y": "Announcement: {title}. {body}"
   },
   "refresh": {
     "updated": "Up to date · {time}"
+  },
+  "approvalPill": "Pending approvals · {count}",
+  "notImportant": "Not important",
+  "cardA11y": "{badge}, {time}. {title}. {subtitle}",
+  "sourceA11y": "Source: {source}. Where did this come from?",
+  "meetingA11y": "{time}, {title}",
+  "attendees": "{count, plural, one {# person} other {# people}}",
+  "errors": {
+    "title": "Today couldn't be loaded.",
+    "body": "I couldn't reach the server. I'll try again shortly."
+  },
+  "correction": {
+    "reason": "Why: {reason}"
+  },
+  "snooze": {
+    "title": "When should I show this again?",
+    "tonight": "This evening · {time}",
+    "tomorrowMorning": "Tomorrow morning · {time}",
+    "custom": "Pick a time",
+    "day": "Day",
+    "time": "Time",
+    "past": "You can't pick a time in the past."
+  },
+  "toasts": {
+    "snoozed": "Snoozed · {when}",
+    "offlineQueued": "Offline · will save when you're back online.",
+    "learningOff": "Saved · Learning is off, so the ranking won't change.",
+    "stopTracking": "Got it · I'll stop tracking this."
+  },
+  "why": {
+    "loadFailed": "The explanation couldn't be loaded.",
+    "offline": "The explanation can't be loaded while offline.",
+    "unavailable": "No explanation was found for this item.",
+    "noReason": "This was surfaced by your priority rules.",
+    "lowConfidence": "I'm not sure; I suggest checking the source.",
+    "tierLearned": "A preference I learned: {statement}",
+    "quoteA11y": "Quote: {quote}"
   }
 }

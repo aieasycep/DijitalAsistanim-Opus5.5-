@@ -187,9 +187,9 @@ describe('screen registry', () => {
     expect(isScreenAvailable('/settings', false)).toBe(false);
   });
 
-  it('knows no onboarding step screen yet (T-8.06 adds them with the registry entries)', () => {
+  it('has a screen for every onboarding step (T-8.06)', () => {
     for (const route of Object.values(ONBOARDING_STEP_ROUTES)) {
-      expect(isScreenAvailable(route, false)).toBe(false);
+      expect(isScreenAvailable(route, false)).toBe(true);
     }
   });
 

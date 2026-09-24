@@ -36,6 +36,30 @@ export const SCREEN_ROUTES: readonly string[] = [
   '/auth/callback',
   '/integrations/callback',
   '/demo/setup',
+  // T-8.06 onboarding (`(onboarding)/*`)
+  '/welcome',
+  '/noise',
+  '/proactive',
+  '/control',
+  '/connect-mail',
+  '/connect-calendar',
+  '/permissions',
+  '/personalization',
+  '/briefing-schedule',
+  '/vip',
+  '/analysis',
+  '/ready',
+  '/notifications',
+  '/android-notifications',
+  // T-8.07 connected accounts
+  '/settings/accounts',
+  '/settings/accounts/:id',
+  // T-8.09 briefings and weekly
+  '/briefing/:id',
+  '/briefing/:id/listen',
+  '/briefings',
+  '/weekly/:id',
+  '/weekly/:id/share',
 ];
 
 /** Screens compiled only into demo builds (`metro.config.js` drops their files otherwise). */

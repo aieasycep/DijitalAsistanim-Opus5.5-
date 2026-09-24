@@ -59,9 +59,27 @@ export const SIGNED_OUT_ROOT_SCREENS = ['(auth)'] as const;
  * The onboarding group (T-8.06): its intro pages need `signed_out`, its steps need
  * `signed_in && !onboardingComplete`; the group layout splits the two.
  */
-export const ONBOARDING_ROOT_SCREENS: readonly string[] = [];
+export const ONBOARDING_ROOT_SCREENS: readonly string[] = ['(onboarding)'];
 /** Signed in, onboarded, supported version, active account: `(tabs)` and every detail route. */
-export const APP_ROOT_SCREENS: readonly string[] = ['(tabs)'];
+export const APP_ROOT_SCREENS: readonly string[] = [
+  '(tabs)',
+  // T-8.07
+  'settings/accounts/index',
+  'settings/accounts/[id]',
+  // T-8.09
+  'briefing/[id]/index',
+  'briefing/[id]/listen',
+  'briefings/index',
+  'weekly/[id]/index',
+  'weekly/[id]/share',
+];
+/** Presentation of root routes that are not plain stack pushes (SCREEN_AND_FLOW_MAP §0.2). */
+export const ROOT_SCREEN_OPTIONS: Readonly<
+  Record<string, { readonly presentation: 'modal' | 'fullScreenModal' }>
+> = {
+  'briefing/[id]/listen': { presentation: 'fullScreenModal' },
+  'weekly/[id]/share': { presentation: 'modal' },
+};
 /** Demo builds only. */
 export const DEMO_ROOT_SCREENS = ['demo/setup'] as const;
 

@@ -30,7 +30,8 @@
     "question": "Bu brifing işine yaradı mı?",
     "helpful": "Evet",
     "inaccurate": "Hatalı bir şey var",
-    "thanks": "Teşekkürler, not aldım."
+    "thanks": "Teşekkürler, not aldım.",
+    "failed": "Geri bildirim kaydedilemedi."
   },
   "audio": {
     "listen": "Dinle · {minutes} dk",
@@ -43,15 +44,32 @@
     "seekA11y": "Konum, {position} / {duration}",
     "preparing": "Ses hazırlanıyor…",
     "failed": "Ses hazırlanamadı. Metni okuyabilirsin.",
-    "chapter": "Bölüm {current} / {total}"
+    "chapter": "Bölüm {current} / {total}",
+    "listenShort": "Brifingi Dinle",
+    "listenLong": "Brifingi Dinle · {minutes} dk",
+    "close": "Oynatıcıyı küçült",
+    "rateLabel": "{rate}x",
+    "speedA11y": "Hız, {rate} kat",
+    "scrubber": "Konum",
+    "nowPlaying": "şu an çalıyor",
+    "nativeNotice": "Cihaz sesiyle okunuyor",
+    "useDevice": "Cihaz Sesiyle Dinle",
+    "offline": "Ses indirilmedi · çevrimdışısın."
   },
   "midday": {
-    "noChange": "Sabahından beri önemli bir değişiklik yok."
+    "noChange": "Sabahından beri önemli bir değişiklik yok.",
+    "kicker": "Sabahtan beri",
+    "title": "Sabahından beri {count} önemli gelişme oldu.",
+    "allGood": "Her şey planlandığı gibi.",
+    "restOfDay": "Günün geri kalanı"
   },
   "evening": {
     "ready": "Yarına Hazırım",
     "readyDone": "Yarına hazırsın. Sabah brifingin {time_loc} hazır olacak.",
-    "quietUntilMorning": "Bildirimleri sabaha kadar sessize al"
+    "quietUntilMorning": "Bildirimleri sabaha kadar sessize al",
+    "title": "Bugünden yarına {count} konu kaldı.",
+    "allClosed": "Bugün her şeyi kapattın.",
+    "confirmedRow": "Yarına hazırsın · {time}"
   },
   "weekly": {
     "title": "Haftan nasıl geçti?",
@@ -61,7 +79,26 @@
     "outlook": "Önümüzdeki haftanın görünümü",
     "timeSaved": "Tahmini kazandırılan zaman: {duration}",
     "share": "Paylaş",
-    "shareCardTitle": "Dijital Haftam"
+    "shareCardTitle": "Dijital Haftam",
+    "kicker": "Haftalık özet",
+    "loadFailed": "Haftalık özet yüklenemedi.",
+    "goneTitle": "Bu haftalık özet artık yok.",
+    "goneBody": "Saklama süren dolduğu için silinmiş olabilir.",
+    "stats": {
+      "mails": "mail analiz edildi",
+      "important": "önemli konu öne çıkarıldı",
+      "meetings": "toplantı",
+      "meetingsWithPrep": "toplantı, {prep} tanesine hazırlık notu",
+      "followups": "takip, {answered} tanesi cevaplandı",
+      "deadlinesAll": "son tarih, hepsi zamanında öne çıkarıldı",
+      "deadlinesSome": "son tarih, {onTime} tanesi zamanında öne çıkarıldı"
+    },
+    "timeSavedKicker": "Kazandığın zaman",
+    "timeSavedNote": "Okunmayan {mails} mail, {prep} hazırlık notu ve {drafts} takip taslağı üzerinden tahmin.",
+    "personMeta": "{count} mail",
+    "personUnknown": "Kişi",
+    "briefingsLink": "Bu haftanın brifingleri",
+    "shareCta": "Dijital Haftamı Paylaş"
   },
   "generated": {
     "online": "Online",
@@ -76,5 +113,62 @@
       "timeSavedPrefix": "Tahmini kazandırılan zaman",
       "shareText": "Dijital Haftam: {mails} mail analiz edildi, {important} önemli konu öne çıktı. Tahmini kazandırılan zaman: {hours} saat {minutes} dakika."
     }
+  },
+  "generating": "Brifingin hazırlanıyor…",
+  "calm": {
+    "title": "Bugün sakin bir gün.",
+    "body": "Dikkat gerektiren yeni bir konu yok. Yeni bir şey olursa haber veririm."
+  },
+  "errors": {
+    "loadFailed": "Brifing yüklenemedi.",
+    "failedTitle": "Brifing hazırlanamadı.",
+    "failedBody": "Önceliklerin Bugün ekranında güncel.",
+    "goneTitle": "Bu brifing artık yok.",
+    "goneBody": "Saklama süren dolduğu için silinmiş olabilir."
+  },
+  "reask": {
+    "title": "Brifingin hazır olduğunda haber vereyim mi?",
+    "allow": "Bildirimleri Aç",
+    "no": "Hayır, teşekkürler"
+  },
+  "eveningReady": {
+    "title": "Yarına taşıyalım mı?",
+    "titleZero": "Günü kapatalım mı?",
+    "subtitle": "Seçtiğin konular yarının sabah brifingine eklenir.",
+    "section": "Yarına taşınacaklar",
+    "quiet": "Sabaha kadar bildirimleri sessize al",
+    "quietMeta": "Kritik mailler ve toplantı hatırlatmaları gelmeye devam eder",
+    "echo": "Sabah brifingin {time_loc} hazır olacak.",
+    "cta": "Yarına Hazırım",
+    "offline": "Bu işlem için internet bağlantısı gerekiyor.",
+    "successTitle": "Yarına hazırsın.",
+    "successBody": "{count} konu yarının brifingine taşındı. İyi akşamlar."
+  },
+  "share": {
+    "title": "Dijital Haftamı Paylaş",
+    "post": "Gönderi · 4:5",
+    "story": "Hikâye · 9:16",
+    "formatA11y": "Paylaşım biçimi",
+    "invite": "Davet bağlantımı ekle",
+    "privacy": "Paylaşım kartında isim, kişi veya konu yer almaz; yalnızca toplamlar.",
+    "kicker": "Dijital haftam · {week}",
+    "headline": "{mails} maili okumadım. Önemli {important_possacc} gördüm.",
+    "stats": {
+      "meetings": "toplantı",
+      "followups": "takip",
+      "saved": "kazandım"
+    },
+    "a11y": "Dijital haftam, {week}: {mails} mail analiz edildi, {important} önemli konu, {meetings} toplantı, {followups} takip, tahmini {saved} kazanıldı.",
+    "loadFailed": "Paylaşım kartı yüklenemedi.",
+    "failed": "Paylaşım hazırlanamadı. Tekrar dene."
+  },
+  "history": {
+    "kicker": "Brifingler",
+    "today": "Bugün",
+    "yesterday": "Dün",
+    "noChange": "Değişiklik yoktu",
+    "emptyTitle": "Henüz brifing yok.",
+    "emptyBody": "İlk sabah brifingin {time_loc} hazır olacak.",
+    "loadFailed": "Brifingler yüklenemedi."
   }
 }

@@ -121,8 +121,35 @@
       "purging": "This account's analyses are being deleted…",
       "removeAtMicrosoft": "Remove at Microsoft",
       "revokeFailed": "Disconnected, but Google access couldn't be revoked. You can remove it in Google Account › Security › Third-party connections.",
-      "removeAtGoogle": "Remove at Google"
-    }
+      "removeAtGoogle": "Remove at Google",
+      "bodyCalendar": "New events won't be read anymore and {provider} access is revoked. Your events in {service} aren't affected.",
+      "bodyDevice": "This device's calendar won't be read anymore. You can remove calendar permission in system settings.",
+      "failed": "The connection couldn't be removed. Try again."
+    },
+    "rowTitle": "{service} · {email}",
+    "rowA11y": "{title}, {status}, {meta}, manage",
+    "notConfigured": "External credential required",
+    "meta": {
+      "syncing": "First analysis in progress",
+      "partial": "Some permissions weren't granted.",
+      "needsReauth": "Your {identityProvider} session expired.",
+      "error": "Something went wrong while syncing.",
+      "firstSync": "Waiting for the first sync",
+      "lastSync": "Last synced {time}"
+    },
+    "resources": {
+      "mail": "Mail",
+      "calendar": "Calendar",
+      "tasks": "Tasks"
+    },
+    "never": "not yet",
+    "noCalendars": "No calendars found in this account.",
+    "partialTitle": "Missing permission",
+    "partialMail": "Mail access wasn't granted. Allow it so I can analyse your mail.",
+    "partialCalendar": "Calendar access wasn't granted. Allow it so I can read your calendar.",
+    "syncStarted": "Sync started.",
+    "syncFresh": "Just synced; your data is up to date.",
+    "syncFailed": "Sync couldn't start. Try again."
   },
   "briefings": {
     "title": "Briefings",

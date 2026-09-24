@@ -29,9 +29,10 @@ describe('root layout (app/_layout)', () => {
   it('boots the providers, picks the device language and resolves the first route', async () => {
     installFakeSupabase(null);
     const { router } = await renderApp('/');
-    const en = loadMessages('en').auth;
-    expect(await screen.findByText(en.signUp.title)).toBeOnTheScreen();
-    expect(router.getPathname()).toBe('/sign-in');
+    // A first launch opens the intro pager (M-ON-01) in the device language.
+    const en = loadMessages('en').onboarding;
+    expect(await screen.findByText(en.welcome.cta)).toBeOnTheScreen();
+    expect(router.getPathname()).toBe('/welcome');
     expect(SplashScreen.hideAsync).toHaveBeenCalled();
   });
 });

@@ -20,9 +20,14 @@ import {
   APP_ROOT_SCREENS,
   DEMO_ROOT_SCREENS,
   ONBOARDING_ROOT_SCREENS,
+  ROOT_SCREEN_OPTIONS,
   SIGNED_OUT_ROOT_SCREENS,
 } from '../src/lib/router-guards';
 import { AppProviders } from '../src/providers/AppProviders';
+// Feature hooks that must exist before the first sign-in or OAuth return (T-8.06, T-8.07, T-8.09).
+import '../src/features/onboarding/post-sign-in';
+import '../src/features/integrations/callback-handler';
+import '../src/features/briefing/audio-cache';
 
 export { RootErrorBoundary as ErrorBoundary } from '../src/features/shell/ShellErrorBoundary';
 
@@ -56,7 +61,7 @@ function RootNavigator() {
         </Stack.Protected>
         <Stack.Protected guard={flags.app}>
           {APP_ROOT_SCREENS.map((name) => (
-            <Stack.Screen key={name} name={name} />
+            <Stack.Screen key={name} name={name} options={ROOT_SCREEN_OPTIONS[name]} />
           ))}
         </Stack.Protected>
         {demo ? DEMO_ROOT_SCREENS.map((name) => <Stack.Screen key={name} name={name} />) : null}

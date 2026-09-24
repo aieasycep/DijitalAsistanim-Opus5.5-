@@ -48,7 +48,7 @@ describe('entry and guards', () => {
     expect(events('entry_resolved').at(-1)?.props).toEqual({ target: 'today' });
   });
 
-  it('keeps the launch view for an onboarding step whose screen is not in this build', async () => {
+  it('resumes onboarding at the persisted step (T-8.06 screens exist)', async () => {
     signedIn(
       bootstrap({
         profile: {
@@ -64,8 +64,10 @@ describe('entry and guards', () => {
         step: 'personalization',
       });
     });
-    expect(router.getPathname()).toBe('/');
-    expect(screen.getByTestId('launch-screen')).toBeOnTheScreen();
+    await waitFor(() => {
+      expect(router.getPathname()).toBe('/personalization');
+    });
+    expect(await screen.findByText('Senin için neler önemli?')).toBeOnTheScreen();
     expect(screen.queryAllByRole('tab')).toHaveLength(0);
   });
 
@@ -92,7 +94,8 @@ describe('entry and guards', () => {
     await waitFor(() => {
       expect(fake.auth.signOut).toHaveBeenCalledWith({ scope: 'local' });
     });
-    expect(await screen.findByText('Hesabını oluştur')).toBeOnTheScreen();
+    // Signed out on a device without a previous sign-in: the intro pager (M-ON-01).
+    expect(await screen.findByTestId('intro.pager')).toBeOnTheScreen();
   });
 
   it('shows the error screen with retry when bootstrap fails without a cached copy', async () => {
@@ -168,12 +171,15 @@ describe('tabs', () => {
     expect(await screen.findByText('Bu filtrede şu an bir şey yok.')).toBeOnTheScreen();
   });
 
-  it('shows the connect state without a dead CTA while the accounts screen does not exist', async () => {
+  it('shows the connect state with its CTA to the accounts screen', async () => {
     signedIn(bootstrap({ accounts: [] }));
-    await renderApp('/');
+    const { router } = await renderApp('/');
     expect(await screen.findByText('Mailini bağla.')).toBeOnTheScreen();
-    expect(screen.queryByRole('button', { name: 'Hesap Bağla' })).toBeNull();
-    // Nor an avatar: `/settings` has no screen yet.
+    await fireEvent.press(screen.getByRole('button', { name: 'Hesap Bağla' }));
+    await waitFor(() => {
+      expect(router.getPathname()).toBe('/settings/accounts');
+    });
+    // No avatar: `/settings` has no screen yet.
     expect(screen.queryByLabelText('Profil ve ayarlar')).toBeNull();
   });
 

@@ -30,7 +30,8 @@
     "question": "Was this briefing useful?",
     "helpful": "Yes",
     "inaccurate": "Something is wrong",
-    "thanks": "Thanks, I've noted that."
+    "thanks": "Thanks, I've noted that.",
+    "failed": "Your feedback couldn't be saved."
   },
   "audio": {
     "listen": "Listen · {minutes} min",
@@ -43,15 +44,32 @@
     "seekA11y": "Position, {position} of {duration}",
     "preparing": "Preparing audio…",
     "failed": "The audio couldn't be prepared. You can read the text instead.",
-    "chapter": "Part {current} of {total}"
+    "chapter": "Part {current} of {total}",
+    "listenShort": "Listen to briefing",
+    "listenLong": "Listen to briefing · {minutes} min",
+    "close": "Minimise player",
+    "rateLabel": "{rate}x",
+    "speedA11y": "Speed, {rate} times",
+    "scrubber": "Position",
+    "nowPlaying": "now playing",
+    "nativeNotice": "Read by the device voice",
+    "useDevice": "Listen with device voice",
+    "offline": "Audio not downloaded · you're offline."
   },
   "midday": {
-    "noChange": "No important changes since this morning."
+    "noChange": "No important changes since this morning.",
+    "kicker": "Since this morning",
+    "title": "{count, plural, one {# important thing has} other {# important things have}} changed since this morning.",
+    "allGood": "Everything is going to plan.",
+    "restOfDay": "Rest of the day"
   },
   "evening": {
     "ready": "I'm ready for tomorrow",
     "readyDone": "You're ready for tomorrow. Your morning briefing will be ready at {time}.",
-    "quietUntilMorning": "Mute notifications until morning"
+    "quietUntilMorning": "Mute notifications until morning",
+    "title": "{count, plural, one {# item carries} other {# items carry}} over to tomorrow.",
+    "allClosed": "You closed everything today.",
+    "confirmedRow": "Ready for tomorrow · {time}"
   },
   "weekly": {
     "title": "How was your week?",
@@ -61,7 +79,26 @@
     "outlook": "Next week at a glance",
     "timeSaved": "Estimated time saved: {duration}",
     "share": "Share",
-    "shareCardTitle": "My Digital Week"
+    "shareCardTitle": "My Digital Week",
+    "kicker": "Weekly summary",
+    "loadFailed": "The weekly summary couldn't be loaded.",
+    "goneTitle": "This weekly summary no longer exists.",
+    "goneBody": "It may have been deleted when your retention period ended.",
+    "stats": {
+      "mails": "emails analysed",
+      "important": "important topics surfaced",
+      "meetings": "meetings",
+      "meetingsWithPrep": "meetings, {prep} with prep notes",
+      "followups": "follow-ups, {answered} answered",
+      "deadlinesAll": "deadlines, all surfaced on time",
+      "deadlinesSome": "deadlines, {onTime} surfaced on time"
+    },
+    "timeSavedKicker": "Time you saved",
+    "timeSavedNote": "Estimated from {mails} unopened emails, {prep} prep notes and {drafts} follow-up drafts.",
+    "personMeta": "{count, plural, one {# email} other {# emails}}",
+    "personUnknown": "Person",
+    "briefingsLink": "This week's briefings",
+    "shareCta": "Share my digital week"
   },
   "generated": {
     "online": "Online",
@@ -76,5 +113,62 @@
       "timeSavedPrefix": "Estimated time saved",
       "shareText": "My Digital Week: {mails} emails analysed, {important} important topics surfaced. Estimated time saved: {hours} h {minutes} min."
     }
+  },
+  "generating": "Your briefing is being prepared…",
+  "calm": {
+    "title": "A calm day today.",
+    "body": "Nothing new needs your attention. I'll let you know if something comes up."
+  },
+  "errors": {
+    "loadFailed": "The briefing couldn't be loaded.",
+    "failedTitle": "The briefing couldn't be prepared.",
+    "failedBody": "Your priorities are up to date on Today.",
+    "goneTitle": "This briefing no longer exists.",
+    "goneBody": "It may have been deleted when your retention period ended."
+  },
+  "reask": {
+    "title": "Shall I let you know when your briefing is ready?",
+    "allow": "Turn on notifications",
+    "no": "No, thanks"
+  },
+  "eveningReady": {
+    "title": "Move these to tomorrow?",
+    "titleZero": "Close the day?",
+    "subtitle": "The items you choose are added to tomorrow's morning briefing.",
+    "section": "Moving to tomorrow",
+    "quiet": "Silence notifications until morning",
+    "quietMeta": "Critical emails and meeting reminders still come through",
+    "echo": "Your morning briefing will be ready at {time}.",
+    "cta": "Ready for tomorrow",
+    "offline": "This needs an internet connection.",
+    "successTitle": "You're ready for tomorrow.",
+    "successBody": "{count, plural, one {# item was} other {# items were}} moved to tomorrow's briefing. Have a good evening."
+  },
+  "share": {
+    "title": "Share my digital week",
+    "post": "Post · 4:5",
+    "story": "Story · 9:16",
+    "formatA11y": "Share format",
+    "invite": "Add my invite link",
+    "privacy": "The share card has no names, people or topics; only totals.",
+    "kicker": "My digital week · {week}",
+    "headline": "I didn't read {mails} emails. I saw the {important} that mattered.",
+    "stats": {
+      "meetings": "meetings",
+      "followups": "follow-ups",
+      "saved": "saved"
+    },
+    "a11y": "My digital week, {week}: {mails} emails analysed, {important} important topics, {meetings} meetings, {followups} follow-ups, about {saved} saved.",
+    "loadFailed": "The share card couldn't be loaded.",
+    "failed": "The share couldn't be prepared. Try again."
+  },
+  "history": {
+    "kicker": "Briefings",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "noChange": "No changes",
+    "emptyTitle": "No briefings yet.",
+    "emptyBody": "Your first morning briefing will be ready at {time}.",
+    "loadFailed": "Briefings couldn't be loaded."
   }
 }

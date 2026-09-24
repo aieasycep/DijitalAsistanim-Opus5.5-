@@ -115,6 +115,12 @@ jest.mock('expo-notifications', () => ({
   getPermissionsAsync: jest.fn(() => Promise.resolve({ status: 'undetermined' })),
   unregisterForNotificationsAsync: jest.fn(() => Promise.resolve()),
   cancelAllScheduledNotificationsAsync: jest.fn(() => Promise.resolve()),
+  // T-8.06 notification step
+  AndroidImportance: { HIGH: 4, DEFAULT: 3, LOW: 2 },
+  AndroidNotificationVisibility: { PRIVATE: 0 },
+  requestPermissionsAsync: jest.fn(() => Promise.resolve({ status: 'granted' })),
+  setNotificationChannelAsync: jest.fn(() => Promise.resolve(null)),
+  getExpoPushTokenAsync: jest.fn(() => Promise.resolve({ data: 'ExponentPushToken[test]' })),
 }));
 
 jest.mock('expo-apple-authentication', () => {
@@ -154,4 +160,72 @@ jest.mock('@react-native-google-signin/google-signin', () => ({
   isErrorWithCode: (error: unknown) =>
     typeof error === 'object' && error !== null && 'code' in error,
   isSuccessResponse: (response: { type: string }) => response.type === 'success',
+}));
+
+// ── T-8.07 / T-8.09 native doubles ─────────────────────────────────────────────────────────
+
+jest.mock('expo-calendar/legacy', () => ({
+  EntityTypes: { EVENT: 'event', REMINDER: 'reminder' },
+  CalendarType: { LOCAL: 'local', SUBSCRIBED: 'subscribed', BIRTHDAYS: 'birthdays' },
+  EventStatus: { CONFIRMED: 'confirmed', TENTATIVE: 'tentative', CANCELED: 'canceled' },
+  getCalendarPermissionsAsync: jest.fn(() =>
+    Promise.resolve({ status: 'undetermined', canAskAgain: true }),
+  ),
+  requestCalendarPermissionsAsync: jest.fn(() =>
+    Promise.resolve({ status: 'granted', canAskAgain: true }),
+  ),
+  getCalendarsAsync: jest.fn(() => Promise.resolve([])),
+  getEventsAsync: jest.fn(() => Promise.resolve([])),
+}));
+
+jest.mock('expo-audio', () => {
+  const player = {
+    play: jest.fn(),
+    pause: jest.fn(),
+    seekTo: jest.fn(() => Promise.resolve()),
+    setPlaybackRate: jest.fn(),
+    setActiveForLockScreen: jest.fn(),
+    updateLockScreenMetadata: jest.fn(),
+    remove: jest.fn(),
+  };
+  const status = {
+    currentTime: 0,
+    duration: 0,
+    playing: false,
+    isLoaded: true,
+    didJustFinish: false,
+  };
+  return {
+    __player: player,
+    __status: status,
+    setAudioModeAsync: jest.fn(() => Promise.resolve()),
+    useAudioPlayer: jest.fn(() => player),
+    useAudioPlayerStatus: jest.fn(() => ({ ...status })),
+  };
+});
+
+jest.mock('expo-speech', () => ({
+  speak: jest.fn(),
+  stop: jest.fn(() => Promise.resolve()),
+  pause: jest.fn(() => Promise.resolve()),
+  resume: jest.fn(() => Promise.resolve()),
+}));
+
+jest.mock('expo-sharing', () => ({
+  isAvailableAsync: jest.fn(() => Promise.resolve(true)),
+  shareAsync: jest.fn(() => Promise.resolve()),
+}));
+
+jest.mock('expo-file-system/legacy', () => ({
+  cacheDirectory: 'file:///cache/',
+  getInfoAsync: jest.fn(() => Promise.resolve({ exists: false })),
+  makeDirectoryAsync: jest.fn(() => Promise.resolve()),
+  downloadAsync: jest.fn((_url: string, target: string) =>
+    Promise.resolve({ uri: target, status: 200 }),
+  ),
+  deleteAsync: jest.fn(() => Promise.resolve()),
+}));
+
+jest.mock('react-native-view-shot', () => ({
+  captureRef: jest.fn(() => Promise.resolve('file:///cache/share.png')),
 }));

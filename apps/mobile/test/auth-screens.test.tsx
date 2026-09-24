@@ -8,6 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals
 import { AuthApiError } from '@supabase/supabase-js';
 import { onlineManager } from '@tanstack/react-query';
 import { act, fireEvent, screen, waitFor } from 'expo-router/testing-library';
+import { router as appRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 
 import type { OpenAuthSession } from '../src/lib/auth/browser-oauth';
@@ -100,10 +101,29 @@ afterEach(() => {
   globalThis.fetch = realFetch;
 });
 
+/**
+ * Opens the auth screens the way the app does: the entry resolver sends a first launch to the intro
+ * pager (M-ON-01), from which "Hesap Oluştur" leads to sign-up; a returning device goes straight
+ * to sign-in.
+ */
+async function renderAuth() {
+  const rendered = await renderApp('/');
+  await waitFor(() => {
+    expect(rendered.router.getPathname()).not.toBe('/');
+  });
+  if (rendered.router.getPathname() === '/welcome') {
+    await act(async () => {
+      appRouter.push('/sign-in?mode=signup');
+      await Promise.resolve();
+    });
+  }
+  return rendered;
+}
+
 describe('sign-in (M-ON-05)', () => {
   it('orders Apple first on iOS and shows the unconfigured Google client as a disabled row', async () => {
     signedOut();
-    const { router } = await renderApp('/');
+    const { router } = await renderAuth();
     expect(await screen.findByText('Hesabını oluştur')).toBeOnTheScreen();
     expect(router.getPathname()).toBe('/sign-in');
     await waitFor(() => {
@@ -127,7 +147,7 @@ describe('sign-in (M-ON-05)', () => {
   it('turns a provider the project has not enabled into the same disabled row', async () => {
     projectProviders({ apple: true, google: true, azure: false, email: true });
     signedOut();
-    await renderApp('/');
+    await renderAuth();
     expect(
       await screen.findByLabelText('Microsoft ile devam et, Harici kimlik bilgisi gerekli'),
     ).toBeOnTheScreen();
@@ -137,7 +157,7 @@ describe('sign-in (M-ON-05)', () => {
   it('opens on "Tekrar hoş geldin" for a returning device and toggles to sign-up', async () => {
     signedOut();
     rememberSignIn('microsoft');
-    await renderApp('/');
+    await renderAuth();
     expect(await screen.findByText('Tekrar hoş geldin')).toBeOnTheScreen();
     await fireEvent.press(screen.getByText('Hesap oluştur'));
     expect(await screen.findByText('Hesabını oluştur')).toBeOnTheScreen();
@@ -149,7 +169,7 @@ describe('sign-in (M-ON-05)', () => {
 
   it('opens the terms and privacy pages in the in-app browser', async () => {
     signedOut();
-    await renderApp('/');
+    await renderAuth();
     await screen.findByText('Hesabını oluştur');
     await fireEvent.press(screen.getByText('Kullanım Koşulları'));
     await fireEvent.press(screen.getByText('Gizlilik Politikası'));
@@ -163,7 +183,7 @@ describe('sign-in (M-ON-05)', () => {
   it('disables every method offline and says why', async () => {
     signedOut();
     onlineManager.setOnline(false);
-    await renderApp('/');
+    await renderAuth();
     expect(await screen.findByText('Giriş için internet bağlantısı gerekli.')).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: 'Microsoft ile devam et' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'E-posta ile devam et' })).toBeDisabled();
@@ -178,7 +198,7 @@ describe('sign-in (M-ON-05)', () => {
       }),
     );
     openAuthSession.mockResolvedValueOnce({ type: 'cancel' });
-    await renderApp('/');
+    await renderAuth();
     await screen.findByText('Hesabını oluştur');
 
     await fireEvent.press(screen.getByRole('button', { name: 'Microsoft ile devam et' }));
@@ -223,7 +243,7 @@ describe('sign-in (M-ON-05)', () => {
       fake.setSession(session());
       return Promise.resolve({ data: { user: session().user, session: session() }, error: null });
     });
-    const { router } = await renderApp('/');
+    const { router } = await renderAuth();
     await screen.findByText('Hesabını oluştur');
     await fireEvent.press(screen.getByRole('button', { name: 'Microsoft ile devam et' }));
     await waitFor(() => {
@@ -249,7 +269,7 @@ describe('sign-in (M-ON-05)', () => {
 
 describe('e-mail code (M-ON-05E / M-ON-05V)', () => {
   async function openEmailStep() {
-    const rendered = await renderApp('/');
+    const rendered = await renderAuth();
     await screen.findByText(/^(Hesabını oluştur|Tekrar hoş geldin)$/);
     await fireEvent.press(screen.getByRole('button', { name: 'E-posta ile devam et' }));
     expect(await screen.findByText('Sana 6 haneli bir giriş kodu göndereceğiz.')).toBeOnTheScreen();
