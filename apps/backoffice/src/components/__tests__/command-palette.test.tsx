@@ -55,7 +55,7 @@ describe('command palette (BACKOFFICE_PLAN §6.25)', () => {
     expect(push).toHaveBeenCalledWith('/dashboard');
   });
 
-  it('asks for 3 characters, searches through the read proxy and copies IDs of unbuilt modules', async () => {
+  it('asks for 3 characters, searches through the read proxy, opens built routes and copies other IDs', async () => {
     const fetchMock = vi.fn(
       async () =>
         new Response(
@@ -66,6 +66,12 @@ describe('command palette (BACKOFFICE_PLAN §6.25)', () => {
                 id: '0190f5e0-1111-7000-8000-00000000abcd',
                 label: 'yu***@gmail.com',
                 route: '/users/0190f5e0-1111-7000-8000-00000000abcd',
+              },
+              {
+                type: 'job',
+                id: '0190f5e0-4444-7000-8000-000000000001',
+                label: 'gmail_sync',
+                route: '/archive/jobs/0190f5e0-4444-7000-8000-000000000001',
               },
             ],
           }),
@@ -81,16 +87,24 @@ describe('command palette (BACKOFFICE_PLAN §6.25)', () => {
     await user.type(input, 'yu');
     expect(await screen.findByText('Aramak için en az 3 karakter yaz.')).toBeInTheDocument();
     await user.type(input, 'suf');
-    const result = await screen.findByRole('option', { name: /yu\*\*\*@gmail\.com/ });
+    const unbuilt = await screen.findByRole('option', { name: /gmail_sync/ });
     expect(fetchMock).toHaveBeenCalledWith(
       '/api/admin/search?q=yusuf',
       expect.objectContaining({ cache: 'no-store' }),
     );
-    expect(result).toHaveTextContent('Kimliği kopyala');
-    await user.click(result);
-    expect(writeText).toHaveBeenCalledWith('0190f5e0-1111-7000-8000-00000000abcd');
+    expect(unbuilt).toHaveTextContent('Kimliği kopyala');
+    await user.click(unbuilt);
+    expect(writeText).toHaveBeenCalledWith('0190f5e0-4444-7000-8000-000000000001');
     expect(push).not.toHaveBeenCalled();
     expect(await screen.findByText('Kimlik kopyalandı.')).toBeInTheDocument();
+
+    await user.keyboard('{Control>}k{/Control}');
+    const again = await screen.findByRole('combobox');
+    await user.type(again, 'yusuf');
+    const built = await screen.findByRole('option', { name: /yu\*\*\*@gmail\.com/ });
+    expect(built).not.toHaveTextContent('Kimliği kopyala');
+    await user.click(built);
+    expect(push).toHaveBeenCalledWith('/users/0190f5e0-1111-7000-8000-00000000abcd');
   });
 
   it('never executes a destructive command directly: it opens the confirmation', async () => {

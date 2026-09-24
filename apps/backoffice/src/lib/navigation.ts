@@ -144,7 +144,9 @@ export const NAVIGATION: readonly NavGroup[] = [
  * Module routes that exist in `src/app/(admin)`. Checked against the filesystem by
  * `src/lib/__tests__/navigation.test.ts`.
  */
-export const BUILT_ROUTES: ReadonlySet<string> = new Set(['/dashboard']);
+export const BUILT_ROUTES: ReadonlySet<string> = new Set(
+  NAVIGATION.flatMap((group) => group.items.map((item) => item.href)),
+);
 
 /** The groups and items this admin sees: permitted and built, empty groups dropped. */
 export function visibleNavigation(

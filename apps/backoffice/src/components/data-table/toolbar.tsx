@@ -18,7 +18,14 @@ import type { TableUrlState } from './url-state';
 export interface DataTableFilter {
   readonly key: string;
   readonly label: string;
+  /** Enum filters; text and date filters leave this empty. */
   readonly options: readonly { readonly value: string; readonly label: string }[];
+  /** The route accepts one value for this filter: choosing an option replaces the previous one. */
+  readonly single?: boolean;
+  /** `text` (an exact id or key) or `date` (`YYYY-MM-DD`) input instead of an option menu. */
+  readonly kind?: 'options' | 'text' | 'date';
+  /** Allowed input for `text` filters (e.g. a uuid), checked before the URL changes. */
+  readonly pattern?: string;
 }
 
 /** The slice of a TanStack table the toolbar reads (column list and visibility). */
@@ -41,6 +48,7 @@ export function Toolbar({
   filters,
   state,
   searchable,
+  searchPattern,
   onFilterChange,
   onSearch,
   onClear,
@@ -49,6 +57,8 @@ export function Toolbar({
   filters: readonly DataTableFilter[];
   state: TableUrlState;
   searchable: boolean;
+  /** Accepted identifier shape; anything else (e.g. an email) never reaches the URL. */
+  searchPattern?: string;
   onFilterChange: (key: string, values: string[]) => void;
   onSearch: (q: string) => void;
   onClear: () => void;
@@ -56,6 +66,7 @@ export function Toolbar({
   const t = useTranslations('backoffice.table');
   const searchId = useId();
   const [q, setQ] = useState(state.q ?? '');
+  const [searchInvalid, setSearchInvalid] = useState(false);
 
   const columns: VisibilityColumn[] = table.getAllLeafColumns().map((column) => ({
     id: column.id,
@@ -78,7 +89,13 @@ export function Toolbar({
 
   function submit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    onSearch(q.trim());
+    const next = q.trim();
+    if (next !== '' && searchPattern !== undefined && !new RegExp(searchPattern).test(next)) {
+      setSearchInvalid(true);
+      return;
+    }
+    setSearchInvalid(false);
+    onSearch(next);
   }
 
   return (
@@ -100,15 +117,33 @@ export function Toolbar({
               className="h-8 w-64"
               autoComplete="off"
               spellCheck={false}
+              aria-invalid={searchInvalid}
             />
             <Button type="submit" variant="secondary" size="sm">
               <Icon name="search" size={16} />
               {t('searchSubmit')}
             </Button>
+            {searchInvalid ? (
+              <span role="alert" className="text-bo-meta text-tone-critical-text">
+                {t('searchInvalid')}
+              </span>
+            ) : null}
           </form>
         ) : null}
         {filters.map((filter) => {
           const selected = state[`f.${filter.key}`] ?? [];
+          if (filter.kind === 'text' || filter.kind === 'date') {
+            return (
+              <InputFilter
+                key={filter.key}
+                filter={filter}
+                value={selected[0] ?? ''}
+                onApply={(value) => {
+                  onFilterChange(filter.key, value === '' ? [] : [value]);
+                }}
+              />
+            );
+          }
           return (
             <DropdownMenu key={filter.key}>
               <DropdownMenuTrigger asChild>
@@ -131,10 +166,11 @@ export function Toolbar({
                       event.preventDefault();
                     }}
                     onCheckedChange={(checked) => {
+                      const others = filter.single === true ? [] : selected;
                       onFilterChange(
                         filter.key,
                         checked
-                          ? [...selected, option.value]
+                          ? [...others.filter((v) => v !== option.value), option.value]
                           : selected.filter((v) => v !== option.value),
                       );
                     }}
@@ -180,5 +216,58 @@ export function Toolbar({
         </ul>
       ) : null}
     </div>
+  );
+}
+
+/** A text (exact id, key) or date filter: typed, checked against its pattern, then applied. */
+function InputFilter({
+  filter,
+  value,
+  onApply,
+}: {
+  filter: DataTableFilter;
+  value: string;
+  onApply: (value: string) => void;
+}) {
+  const t = useTranslations('backoffice.table');
+  const id = useId();
+  const [draft, setDraft] = useState(value);
+  const [invalid, setInvalid] = useState(false);
+  function submit(event: SubmitEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const next = draft.trim();
+    if (next !== '' && filter.pattern !== undefined && !new RegExp(filter.pattern).test(next)) {
+      setInvalid(true);
+      return;
+    }
+    setInvalid(false);
+    onApply(next);
+  }
+  return (
+    <form onSubmit={submit} className="flex items-center gap-1">
+      <label htmlFor={id} className="text-bo-meta font-semibold text-ink-2">
+        {filter.label}
+      </label>
+      <Input
+        id={id}
+        type={filter.kind === 'date' ? 'date' : 'text'}
+        value={draft}
+        aria-invalid={invalid}
+        autoComplete="off"
+        spellCheck={false}
+        className={filter.kind === 'date' ? 'h-8 w-40' : 'h-8 w-56 font-mono'}
+        onChange={(event) => {
+          setDraft(event.target.value);
+        }}
+      />
+      <Button type="submit" variant="secondary" size="sm">
+        {t('applyFilter')}
+      </Button>
+      {invalid ? (
+        <span role="alert" className="text-bo-meta text-tone-critical-text">
+          {t('invalidFilter')}
+        </span>
+      ) : null}
+    </form>
   );
 }
