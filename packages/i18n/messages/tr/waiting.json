@@ -17,5 +17,20 @@
     "openMail": "İlgili maili aç",
     "prepareReply": "Yanıt Hazırla",
     "remind": "Hatırlat"
+  },
+  "screen": {
+    "done": "Cevaplandı olarak işaretlendi.",
+    "dueBy": "Beklenen: {when}",
+    "emptyBody": "Senden cevap bekleyen mailler burada görünür.",
+    "emptyTitle": "Cevap bekleyen kimse yok.",
+    "groups": {
+      "urgent": "Acil",
+      "today": "Bugün",
+      "later": "Daha sonra"
+    },
+    "noReplyNeeded": "Cevap gerekmiyor",
+    "notImportant": "Önemli değil",
+    "openMail": "Mail Zekâsı'nı Aç",
+    "sub": "{count} kişi senden cevap bekliyor"
   }
 }

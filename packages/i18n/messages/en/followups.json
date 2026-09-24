@@ -9,5 +9,23 @@
     "followUp": "Follow up",
     "remindTomorrow": "Remind me tomorrow",
     "close": "Close"
+  },
+  "screen": {
+    "closed": "Follow-up closed.",
+    "days": "{count, plural, one {# day} other {# days}}",
+    "draft": "Prepare Follow-up",
+    "draftFailed": "The follow-up could not be prepared.",
+    "gateBody": "I watch emails that got no reply and prepare a polite follow-up at the right time.",
+    "gateCount": "{count, plural, one {# of your emails has} other {# of your emails have}} no reply.",
+    "gateKicker": "Pro",
+    "gateTitle": "Follow-up reminders come with Pro.",
+    "hint": "Follow-ups are never sent without your approval.",
+    "notImportant": "Not important",
+    "remindTomorrow": "Remind me tomorrow",
+    "seeCommitments": "See Commitments",
+    "sentAt": "Sent: {when}",
+    "stopTracking": "Stop tracking this person",
+    "stopped": "{name} is no longer tracked.",
+    "sub": "{count, plural, one {# topic} other {# topics}} · oldest {days, plural, one {# day} other {# days}}"
   }
 }

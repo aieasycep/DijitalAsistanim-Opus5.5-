@@ -12,7 +12,8 @@
     "title": "Kaynak",
     "quote": "Kaynaktaki ifade",
     "open": "Kaynağı Aç",
-    "deviceStale": "Cihaz takvimi en son {time} eşitlendi"
+    "deviceStale": "Cihaz takvimi en son {time} eşitlendi",
+    "quoted": "“{quote}”"
   },
   "confidence": "%{percent} güven"
 }

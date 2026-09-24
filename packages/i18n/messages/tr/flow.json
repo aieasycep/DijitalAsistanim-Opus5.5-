@@ -117,5 +117,89 @@
         "title": "{count, plural, one {# işlem onayını bekliyor} other {# işlem onayını bekliyor}}"
       }
     }
+  },
+  "actions": {
+    "failed": "İşlem tamamlanamadı · Tekrar dene"
+  },
+  "snooze": {
+    "title": "Ne zamana erteleyelim?",
+    "inHour": "1 saat sonra",
+    "thisEvening": "Bu akşam",
+    "tomorrowMorning": "Yarın sabah",
+    "done": "Ertelendi · {when}"
+  },
+  "reminder": {
+    "failed": "Hatırlatıcı kurulamadı · Tekrar dene",
+    "noTimes": "Bu konu için uygun bir hatırlatma zamanı kalmadı.",
+    "offline": "Hatırlatıcı kurmak için bağlantı gerekli."
+  },
+  "header": {
+    "profile": "Profil ve ayarlar"
+  },
+  "meta": {
+    "topics": "{count} konu",
+    "important": "{count} önemli",
+    "lastAnalysis": "Son analiz {time}",
+    "paused": "{count} hesap duraklatıldı"
+  },
+  "card": {
+    "openEvent": "Etkinliği Aç",
+    "followUpDraft": "Takip Mesajı Hazırla",
+    "review": "İncele",
+    "check": "Kontrol Et",
+    "noSummary": "Özet hazırlanamadı",
+    "why": "Bu nereden çıktı?",
+    "showMore": "Bunu daha sık göster",
+    "dismissed": "Kaldırıldı"
+  },
+  "feed": {
+    "empty": {
+      "openMail": "Mail Zekâsı'nı Aç",
+      "all": {
+        "title": "Her şey kontrol altında.",
+        "body": "Şu an dikkat gerektiren bir konu yok. Yeni bir gelişme olursa burada görürsün."
+      },
+      "important": {
+        "title": "Önemli bir konu yok.",
+        "body": "Önemli işaretlenen her şey burada toplanır.",
+        "cta": "Öncelik Kuralları"
+      },
+      "mail": {
+        "title": "Dikkat gerektiren mail yok.",
+        "body": "Bugün {count} maili senin için okudum."
+      },
+      "calendar": {
+        "title": "Bugün takvimin oldukça sakin.",
+        "body": "Yaklaşan toplantı veya son tarih yok.",
+        "cta": "Plan'ı Aç"
+      },
+      "calendarNone": {
+        "title": "Takvim bağlı değil.",
+        "body": "Toplantıların ve son tarihlerin burada görünsün diye takvimini bağla.",
+        "cta": "Takvimi Bağla"
+      },
+      "followup": {
+        "cta": "Taahhütlerini gör"
+      },
+      "personal": {
+        "title": "Kişisel sinyal yok.",
+        "body": "Kargo, uçuş, rezervasyon, ödeme, abonelik ve güvenlik bilgilerini mail ve belgelerinden çıkarırım."
+      }
+    }
+  },
+  "gate": {
+    "kicker": "Takip · Pro",
+    "title": "Yanıtsız kalan maillerini takip edeyim.",
+    "titleCount": "{count} gönderdiğin mail yanıtsız.",
+    "body": "Takip ve taahhütler Pro'da. Sabah brifingin her zaman ücretsiz."
+  },
+  "proposal": {
+    "alreadyPending": "Bu işlem zaten onayını bekliyor.",
+    "view": "Görüntüle",
+    "proRequired": "Bu işlem Pro'da kullanılabilir.",
+    "sourceOff": "Bu hesap için takvime yazma kapalı. Ayarlar'dan açabilirsin.",
+    "failed": "Öneri hazırlanamadı · Tekrar dene",
+    "noCalendar": "Yazılabilir bir takvim bulunamadı.",
+    "noSlot": "Bu aralıkta boş zaman bulamadım."
   }
 }

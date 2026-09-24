@@ -71,15 +71,38 @@ export const APP_ROOT_SCREENS: readonly string[] = [
   'briefings/index',
   'weekly/[id]/index',
   'weekly/[id]/share',
+  // T-8.10…T-8.14 flow, mail, commitments, life, plan, meetings
+  'mail/index',
+  'mail/category/[category]',
+  'mail/[id]/index',
+  'mail/[id]/reply',
+  'waiting',
+  'followups',
+  'commitments/index',
+  'commitments/[id]',
+  'life/[id]',
+  'event/[id]',
+  'plan/proposal/[approvalId]',
+  'plan/conflict/[insightId]',
+  'meeting/[eventId]/prep',
+  'meeting/[eventId]/summary',
+  'meeting/[eventId]/post',
 ];
 /** Presentation of root routes that are not plain stack pushes (SCREEN_AND_FLOW_MAP §0.2). */
 export const ROOT_SCREEN_OPTIONS: Readonly<
-  Record<string, { readonly presentation: 'modal' | 'fullScreenModal' }>
+  Record<
+    string,
+    { readonly presentation: 'modal' | 'fullScreenModal' | 'transparentModal' | 'formSheet' }
+  >
 > = {
   settings: { presentation: 'modal' },
   paywall: { presentation: 'modal' },
   'briefing/[id]/listen': { presentation: 'fullScreenModal' },
   'weekly/[id]/share': { presentation: 'modal' },
+  'mail/[id]/reply': { presentation: 'modal' },
+  'life/[id]': { presentation: 'transparentModal' },
+  'plan/proposal/[approvalId]': { presentation: 'modal' },
+  'meeting/[eventId]/summary': { presentation: 'modal' },
 };
 /**
  * The settings stack (`app/settings/_layout.tsx`, T-8.07 accounts + T-8.19…T-8.22): reachable with

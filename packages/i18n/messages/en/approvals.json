@@ -121,5 +121,25 @@
   },
   "learned": {
     "statement": "Show “{type}” suggestions more selectively."
+  },
+  "row": {
+    "what": "What",
+    "why": "Why",
+    "source": "Source",
+    "sourceHint": "Opens the source",
+    "change": "Change",
+    "destination": "Account",
+    "sideEffect": "Effect"
+  },
+  "m2": {
+    "updated": "This approval changed; review its latest version.",
+    "networkFailed": "Couldn't send · Try again",
+    "cancel": "Cancel",
+    "expired": "This proposal has expired.",
+    "slow": "Still working on it. I'll let you know when it's done.",
+    "device": "This will finish in your device calendar; you can follow it in the Approval Center.",
+    "sheetTitle": "Your approval is needed",
+    "close": "Close",
+    "openCenter": "Approval details"
   }
 }

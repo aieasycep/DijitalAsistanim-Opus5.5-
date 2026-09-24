@@ -204,11 +204,39 @@ jest.mock('expo-audio', () => {
   };
 });
 
+// Flow list (T-8.10): FlashList v2 needs native layout; tests render the same props through FlatList.
+jest.mock('@shopify/flash-list', () => ({
+  ...jest.requireActual<Record<string, unknown>>('@shopify/flash-list'),
+  FlashList: jest.requireActual<{ FlatList: unknown }>('react-native').FlatList,
+}));
+
+// Meeting summary (T-8.14): device text-to-speech.
 jest.mock('expo-speech', () => ({
   speak: jest.fn(),
   stop: jest.fn(() => Promise.resolve()),
   pause: jest.fn(() => Promise.resolve()),
   resume: jest.fn(() => Promise.resolve()),
+  isSpeakingAsync: jest.fn(() => Promise.resolve(false)),
+  getAvailableVoicesAsync: jest.fn(() =>
+    Promise.resolve([{ identifier: 'tr', name: 'Yelda', quality: 'Default', language: 'tr-TR' }]),
+  ),
+}));
+
+// Meeting notes / post-meeting dictation (T-8.14): on-device speech recognition.
+jest.mock('expo-speech-recognition', () => ({
+  ExpoSpeechRecognitionModule: {
+    isRecognitionAvailable: jest.fn(() => true),
+    requestPermissionsAsync: jest.fn(() => Promise.resolve({ granted: true })),
+    start: jest.fn(),
+    stop: jest.fn(),
+    abort: jest.fn(),
+  },
+  useSpeechRecognitionEvent: jest.fn(),
+}));
+
+// Reply attachments (T-8.11): the system document picker.
+jest.mock('expo-document-picker', () => ({
+  getDocumentAsync: jest.fn(() => Promise.resolve({ canceled: true, assets: null })),
 }));
 
 jest.mock('expo-sharing', () => ({

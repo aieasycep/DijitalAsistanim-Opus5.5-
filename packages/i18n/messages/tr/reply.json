@@ -14,5 +14,89 @@
   "sendNote": "Onayladığında {account} hesabından gönderilir.",
   "disabled": "Yanıt taslakları bu hesap için kapalı.",
   "generating": "Taslak hazırlanıyor…",
-  "followUpMode": "Takip mesajı"
+  "followUpMode": "Takip mesajı",
+  "scope": {
+    "google": "Google",
+    "microsoft": "Microsoft",
+    "gmail": "Gmail",
+    "outlook": "Outlook",
+    "allow": "İzin Ver",
+    "later": "Vazgeç",
+    "waiting": "Bekleniyor…",
+    "verifying": "İzin doğrulanıyor…",
+    "hint": "Tarayıcıda {service} izin ekranı açılır.",
+    "offline": "İzin için bağlantı gerekli.",
+    "failed": "İzin alınamadı. Tekrar dene.",
+    "adminConsent": "Kurumunun yöneticisi bu uygulamaya onay vermeli.",
+    "mail_send": {
+      "title": "Gönderim izni gerekli",
+      "body": "Yanıtını {app} üzerinden gönderebilmem için {service} hesabından “senin adına e-posta gönderme” izni gerekiyor. Bu izin yalnızca onayladığın mailleri göndermek için kullanılır."
+    },
+    "calendar_write": {
+      "title": "Takvime yazma izni gerekli",
+      "body": "Takvimine yazabilmem için {service} hesabından ek izin gerekiyor. Bu izin yalnızca onayladığın etkinlikleri eklemek veya güncellemek için kullanılır."
+    },
+    "tasks_write": {
+      "title": "Görev yazma izni gerekli",
+      "body": "Görev listene yazabilmem için {service} hesabından ek izin gerekiyor. Bu izin yalnızca onayladığın görevleri oluşturmak için kullanılır."
+    },
+    "denied": {
+      "mail_send": "İzin verilmedi. Mail gönderilmedi; taslağın kaydedildi.",
+      "calendar_write": "İzin verilmedi. Takvime yazılmadı; önerin kaydedildi.",
+      "tasks_write": "İzin verilmedi. Görev oluşturulmadı; önerin kaydedildi."
+    }
+  },
+  "screen": {
+    "addFile": "Dosya Ekle",
+    "assurance": "Onaylamadan hiçbir şey gönderilmez.",
+    "attachFailed": "Dosya eklenemedi.",
+    "attachmentType": "Bu dosya türü eklenemiyor.",
+    "attachmentsTooLarge": "Ekler toplamda 3 MB sınırını aşıyor.",
+    "backToFlow": "Akış'a Dön",
+    "backToMail": "Mail'e Dön",
+    "budgetBody": "Hakkın yarın yenilenir. Pro'da günlük sınır daha yüksek.",
+    "conflict": "Bu taslak başka bir cihazda değişti.",
+    "ctaHint": "Gönderim özetini gösterir; mail onayından sonra gönderilir.",
+    "editable": "Dokunarak düzenleyebilirsin",
+    "editorA11y": "Yanıt metni",
+    "editorKicker": "Taslak · {tone}",
+    "emptyDraft": "Taslak boş. Göndermeden önce bir şey yaz.",
+    "failed": "Mail gönderilemedi.",
+    "keep": "Taslağı Sakla",
+    "keepEditing": "Düzenlemeye devam et",
+    "keepTitle": "Taslak saklansın mı?",
+    "kicker": "AI Yanıt",
+    "kickerFollowUp": "Takip Mesajı",
+    "offline": "Çevrimdışısın. Gönderim için bağlantı gerekiyor.",
+    "openGmail": "Gmail'de Aç",
+    "openOutlook": "Outlook'ta Aç",
+    "outlookLimit": "Outlook yanıtlarında ekler toplam 3 MB ile sınırlı.",
+    "regenerateFailed": "Taslak yeniden yazılamadı.",
+    "reload": "Son Hali Yükle",
+    "saveFailed": "Taslak kaydedilemedi.",
+    "sendFailed": "Mail gönderilemedi. Tekrar dene.",
+    "sending": "Gönderiliyor",
+    "sendingLabel": "Gönderiliyor",
+    "sent": "Gönderildi",
+    "sentBody": "Yanıtın {name} kişisine gönderildi.",
+    "shorten": "Kısalt",
+    "shortenInstruction": "Yanıtı anlamını koruyarak kısalt.",
+    "shortened": "Taslak kısaltıldı.",
+    "slow": "Gönderim beklenenden uzun sürüyor. Sonucu Onay Merkezi'nde görebilirsin.",
+    "summary": {
+      "attachments": "Ekler",
+      "cc": "Bilgi",
+      "effect": "Ne olacak",
+      "effectValue": "Onayladığında mail senin hesabından gönderilir.",
+      "from": "Kimden",
+      "none": "Yok",
+      "subject": "Konu",
+      "title": "Gönderim özeti",
+      "to": "Kime"
+    },
+    "to": "Kime",
+    "toneA11y": "Yanıt tonu",
+    "toneApplied": "Ton güncellendi.",
+    "toneOverwrite": "Taslak {tone} tonla yeniden yazılsın mı? Yaptığın değişiklikler kaybolur."
+  }
 }

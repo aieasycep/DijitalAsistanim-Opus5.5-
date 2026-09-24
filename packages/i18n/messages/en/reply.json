@@ -14,5 +14,89 @@
   "sendNote": "When you approve, it's sent from {account}.",
   "disabled": "Reply drafts are turned off for this account.",
   "generating": "Preparing a draft…",
-  "followUpMode": "Follow-up message"
+  "followUpMode": "Follow-up message",
+  "scope": {
+    "google": "Google",
+    "microsoft": "Microsoft",
+    "gmail": "Gmail",
+    "outlook": "Outlook",
+    "allow": "Allow",
+    "later": "Not now",
+    "waiting": "Waiting…",
+    "verifying": "Checking permission…",
+    "hint": "Opens the {service} permission screen in the browser.",
+    "offline": "Granting permission needs a connection.",
+    "failed": "Couldn't get the permission. Try again.",
+    "adminConsent": "Your organisation admin needs to approve this app.",
+    "mail_send": {
+      "title": "Send permission needed",
+      "body": "To send your reply through {app}, your {service} account needs to allow “send email on your behalf”. It is only used for emails you approve."
+    },
+    "calendar_write": {
+      "title": "Calendar write permission needed",
+      "body": "To write to your calendar, your {service} account needs one more permission. It is only used for events you approve."
+    },
+    "tasks_write": {
+      "title": "Task write permission needed",
+      "body": "To add to your task list, your {service} account needs one more permission. It is only used for tasks you approve."
+    },
+    "denied": {
+      "mail_send": "Permission not granted. Nothing was sent; your draft is saved.",
+      "calendar_write": "Permission not granted. Nothing was added; your proposal is saved.",
+      "tasks_write": "Permission not granted. No task was created; your proposal is saved."
+    }
+  },
+  "screen": {
+    "addFile": "Add File",
+    "assurance": "Nothing is sent without your approval.",
+    "attachFailed": "The file could not be attached.",
+    "attachmentType": "This file type cannot be attached.",
+    "attachmentsTooLarge": "Attachments exceed the 3 MB total limit.",
+    "backToFlow": "Back to Flow",
+    "backToMail": "Back to Email",
+    "budgetBody": "Your limit renews tomorrow. Pro has a higher daily limit.",
+    "conflict": "This draft changed on another device.",
+    "ctaHint": "Shows the send summary; the email is sent after you approve.",
+    "editable": "Tap to edit",
+    "editorA11y": "Reply text",
+    "editorKicker": "Draft · {tone}",
+    "emptyDraft": "The draft is empty. Write something before sending.",
+    "failed": "The email could not be sent.",
+    "keep": "Keep Draft",
+    "keepEditing": "Keep editing",
+    "keepTitle": "Keep this draft?",
+    "kicker": "AI Reply",
+    "kickerFollowUp": "Follow-up",
+    "offline": "You are offline. Sending needs a connection.",
+    "openGmail": "Open in Gmail",
+    "openOutlook": "Open in Outlook",
+    "outlookLimit": "Outlook replies are limited to 3 MB of attachments in total.",
+    "regenerateFailed": "The draft could not be rewritten.",
+    "reload": "Load Latest",
+    "saveFailed": "The draft could not be saved.",
+    "sendFailed": "The email could not be sent. Try again.",
+    "sending": "Sending",
+    "sendingLabel": "Sending",
+    "sent": "Sent",
+    "sentBody": "Your reply was sent to {name}.",
+    "shorten": "Shorten",
+    "shortenInstruction": "Shorten the reply and keep its meaning.",
+    "shortened": "Draft shortened.",
+    "slow": "Sending is taking longer than expected. You can see the result in the Approval Center.",
+    "summary": {
+      "attachments": "Attachments",
+      "cc": "Cc",
+      "effect": "What happens",
+      "effectValue": "When you approve, the email is sent from your account.",
+      "from": "From",
+      "none": "None",
+      "subject": "Subject",
+      "title": "Send summary",
+      "to": "To"
+    },
+    "to": "To",
+    "toneA11y": "Reply tone",
+    "toneApplied": "Tone updated.",
+    "toneOverwrite": "Rewrite the draft in a {tone} tone? Your edits will be lost."
+  }
 }

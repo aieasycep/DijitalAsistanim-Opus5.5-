@@ -38,5 +38,53 @@
       "changeDue": "Taahhütlerine eklenecek: {text} · Son tarih: {due}",
       "sideEffect": "Yalnızca Dijital Asistan içindeki taahhüt listene eklenir; kimseye mesaj gönderilmez."
     }
+  },
+  "screen": {
+    "actionFailed": "İşlem tamamlanamadı. Tekrar dene.",
+    "awaitingConfirmation": "Onay bekleyenler",
+    "backToList": "Taahhütler'e Dön",
+    "confirm": "Evet, Taahhüt",
+    "corrected": "Düzeltildi",
+    "doneSection": "Tamamlananlar",
+    "editTitle": "Taahhüdü Düzenle",
+    "emptyMine": "Açık taahhüdün yok.",
+    "emptyMineBody": "Mail ve toplantılarda verdiğin sözler burada toplanır.",
+    "emptyTheirs": "Sana verilen açık bir söz yok.",
+    "followUpDraft": "Takip Mesajı Hazırla",
+    "gateBody": "Verdiğin ve sana verilen sözleri kaynağıyla takip et; son tarihten önce hatırlatayım.",
+    "gateKicker": "Pro",
+    "gateTitle": "Taahhüt takibi Pro ile gelir.",
+    "gone": "Bu taahhüt artık yok.",
+    "isPromise": "Bu bir taahhüt mü?",
+    "kicker": "Taahhüt",
+    "mine": "Benim sözlerim",
+    "noSlot": "Son tarihten önce uygun boş zaman bulunamadı.",
+    "pending": "Onay bekliyor",
+    "proposalA11y": "Taahhüt önerisi. Onaylamak için Evet, Taahhüt düğmesini kullan.",
+    "quote": "“{quote}”",
+    "quoteA11y": "Kaynaktaki ifade: {quote}",
+    "reject": "Hayır",
+    "removeDue": "Son Tarihi Kaldır",
+    "reopen": "Yeniden Aç",
+    "reopened": "Taahhüt yeniden açıldı.",
+    "source": {
+      "document": "Belgeden",
+      "mail": "Mailden",
+      "meeting": "Toplantıdan"
+    },
+    "status": {
+      "today": "Bugün",
+      "open": "Açık",
+      "done": "Tamamlandı",
+      "snoozed": "Ertelendi",
+      "cancelled": "İptal edildi",
+      "overdue": "Gecikti"
+    },
+    "subMine": "{open} açık · {overdue} gecikmiş",
+    "subTheirs": "Sana verilen {count} açık söz",
+    "textRequired": "Taahhüt metni boş olamaz.",
+    "theirs": "Bana verilenler",
+    "title": "Taahhütler",
+    "updated": "Taahhüt güncellendi."
   }
 }

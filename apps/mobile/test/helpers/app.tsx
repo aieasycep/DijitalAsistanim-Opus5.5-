@@ -20,6 +20,7 @@ import { encryptedStorage, isEncryptedStorageOpen } from '../../src/lib/storage'
 import { resetUiPrefsForTests } from '../../src/lib/ui-prefs';
 import { resetSheetsForTests } from '../../src/providers/SheetHost';
 import { fakePostgrest, type PostgrestFake } from './postgrest';
+import { DEFAULT_RPC, fakeData, type FakeData } from './supabase-data';
 
 type Listener = (event: AuthChangeEvent, session: Session | null) => void;
 
@@ -49,6 +50,8 @@ export interface FakeSupabase {
   readonly db: PostgrestFake;
   /** Changes the session and emits the matching auth event. */
   setSession(next: Session | null): void;
+  /** PostgREST / RPC double (empty feeds by default). */
+  readonly data: FakeData;
 }
 
 export function fakeSupabase(initial: Session | null = null): FakeSupabase {
@@ -88,11 +91,28 @@ export function fakeSupabase(initial: Session | null = null): FakeSupabase {
     verifyOtp: jest.fn(),
     updateUser: jest.fn(() => Promise.resolve({ data: {}, error: null })),
   };
+  // Two PostgREST doubles coexist: `db` (fakePostgrest, onboarding/Today/settings tests) and `data`
+  // (fakeData, flow/mail/plan/meeting tests). A test uses one of them; the client routes to the
+  // one the test reads first, and before that to `data` for the tab-root feeds it answers by default.
   const db = fakePostgrest();
+  const data = fakeData();
+  let mode: 'db' | 'data' | null = null;
+  const rpc = (name: string, args?: Record<string, unknown>) => {
+    const target = mode ?? (name in DEFAULT_RPC ? 'data' : 'db');
+    return target === 'data' ? data.rpc(name, args) : db.rpc(name, args);
+  };
+  const from = (table: string) => (mode === 'data' ? data.from(table) : db.from(table));
   return {
-    client: { auth, rpc: db.rpc, from: db.from } as unknown as AppSupabaseClient,
+    client: { auth, rpc, from } as unknown as AppSupabaseClient,
     auth,
-    db,
+    get db() {
+      mode ??= 'db';
+      return db;
+    },
+    get data() {
+      mode ??= 'data';
+      return data;
+    },
     setSession(next) {
       current = next;
       emit(next === null ? 'SIGNED_OUT' : 'SIGNED_IN');

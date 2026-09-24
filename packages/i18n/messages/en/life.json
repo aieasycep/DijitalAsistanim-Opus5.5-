@@ -35,5 +35,40 @@
     "payment": "{payee, select, none {Payment} other {{payee}}} · {status, select, due {Payment due} paid {Paid} failed {Payment failed} refund {Refund} other {Payment notice}}",
     "subscription": "{service, select, none {Subscription} other {{service}}} · {event, select, renewal_upcoming {Renewal coming up} renewed {Renewed} trial_ending {Trial ending} cancelled {Cancelled} price_change {Price change} other {Subscription notice}}",
     "security": "{service, select, none {Account} other {{service}}} · {event, select, password_changed {Password changed} recovery_changed {Recovery details changed} suspicious_activity {Suspicious activity} new_sign_in {New sign-in} other {Security alert}}"
+  },
+  "screen": {
+    "confirm": "Confirm Reservation",
+    "directions": "Directions",
+    "dismissed": "Removed.",
+    "failed": "The action could not be completed. Try again.",
+    "fields": {
+      "accountRef": "Account / subscriber no",
+      "address": "Address",
+      "airline": "Airline",
+      "carrier": "Carrier",
+      "device": "Device",
+      "flightNo": "Flight no",
+      "location": "Location",
+      "merchant": "Merchant",
+      "payee": "Payee",
+      "pnr": "PNR",
+      "route": "Route",
+      "service": "Service",
+      "time": "Time",
+      "trackingNo": "Tracking no",
+      "venue": "Venue",
+      "when": "Date"
+    },
+    "gone": "This item no longer exists.",
+    "itWasMe": "It Was Me",
+    "mineDone": "Okay, this sign-in was you.",
+    "neverShow": "Never show this type again",
+    "notImportant": "Not important",
+    "paid": "I Paid",
+    "paidDone": "Marked as paid.",
+    "pastKicker": "{type} · past",
+    "received": "I Received It",
+    "receivedDone": "Marked as received.",
+    "securityGuidance": "If this sign-in was not you, change your password in the account’s own app or website. Do not tap links in the email."
   }
 }
