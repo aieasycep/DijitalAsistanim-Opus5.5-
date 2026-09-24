@@ -121,5 +121,96 @@
   },
   "learned": {
     "statement": "Show “{type}” suggestions more selectively."
+  },
+  "rows": {
+    "source": "Source",
+    "sourceSelf": "Your request",
+    "sourceHint": "Opens the source",
+    "account": "Account",
+    "sideEffect": "Effect",
+    "expiry": "Expires",
+    "diff": "{before} → {after}"
+  },
+  "toasts": {
+    "conflict": "This approval was updated; review the latest version.",
+    "expired": "Expired",
+    "rejected": "Rejected",
+    "rejectedLearned": "Rejected · Noted",
+    "offline": "You're offline · This action needs a connection.",
+    "waiting": "Waiting in the Approval Center",
+    "longRunning": "Still working on it. I'll let you know when it's done.",
+    "view": "View",
+    "batchSummary": "{done}/{total} actions completed"
+  },
+  "reauth": {
+    "title": "The destination account needs to be reconnected"
+  },
+  "offline": {
+    "banner": "You're offline. Approvals can be made once you're back online.",
+    "sheet": "Connection required"
+  },
+  "sheet": {
+    "title": "Approval needed",
+    "subtitle": "Nothing happens until you approve.",
+    "batchTitle": "{count, plural, one {Approve · # action} other {Approve · # actions}}",
+    "batchSubtitle": "Nothing happens until you approve. Remove what you don't want.",
+    "approveCount": "Approve · {count}",
+    "footer": "Approved actions are recorded in the Approval Center history."
+  },
+  "editor": {
+    "sheetTitle": "Edit action",
+    "reproposeTitle": "Propose again",
+    "title": "Title",
+    "commitment": "Commitment",
+    "direction": "Direction",
+    "directionMine": "You promised",
+    "directionTheirs": "Promised to you",
+    "noDue": "No due date",
+    "duration": "Duration",
+    "location": "Location",
+    "notes": "Notes",
+    "invalid": "One of the details isn't valid; please check.",
+    "conflict": "This approval was updated; review the latest version.",
+    "saved": "Edited",
+    "offline": "Edits can't be saved while you're offline.",
+    "loadFailed": "Couldn't load the approval."
+  },
+  "center": {
+    "subtitle": "{count, plural, one {# action is waiting for your approval.} other {# actions are waiting for your approval.}} Nothing happens until you approve.",
+    "pending": "Pending",
+    "inFlight": "In progress",
+    "failed": "Couldn't complete",
+    "doneToday": "Completed today",
+    "assurance": "Important actions never happen without your approval. No bulk approval; each card on its own."
+  },
+  "history": {
+    "title": "Approval history",
+    "filters": {
+      "all": "All",
+      "executed": "Completed",
+      "rejected": "Rejected",
+      "failed": "Failed",
+      "expired": "Expired"
+    },
+    "emptyTitle": "No history yet.",
+    "emptyBody": "Actions you approve or reject appear here. Your retention period: {retention}.",
+    "rowA11y": "{status}, {title}, {time}"
+  },
+  "detail": {
+    "kicker": "Approval details",
+    "exactChange": "Change",
+    "diffA11y": "{field}: {after} instead of {before}",
+    "timeline": "Status history",
+    "events": {
+      "created": "Created",
+      "edited": "Edited · version {version}",
+      "approved": "Approved",
+      "executing": "In progress",
+      "executed": "Completed",
+      "failed": "Failed",
+      "rejected": "Rejected",
+      "expired": "Expired"
+    },
+    "supportCode": "Support code: {code}"
   }
 }

@@ -29,7 +29,24 @@
     "loadFailed": "Sohbetler yüklenemedi.",
     "sources": "Kaynaklar",
     "noAnswer": "Bunu kaynaklarında bulamadım.",
-    "thinking": "Kaynaklarına bakıyorum…"
+    "thinking": "Kaynaklarına bakıyorum…",
+    "untitled": "Sohbet",
+    "newTitle": "Yeni sohbet",
+    "newChat": "Yeni sohbet",
+    "stop": "Durdur",
+    "stopped": "Durduruldu",
+    "verifying": "Kaynaklar kontrol ediliyor…",
+    "youSaid": "Sen: {text}",
+    "assistantSaid": "Asistan: {text}",
+    "helpful": "Faydalı",
+    "notHelpful": "Faydalı değil",
+    "feedbackThanks": "Teşekkürler · Öğrendim",
+    "searchMemory": "Hafızada ara",
+    "rephrase": "Soruyu değiştir",
+    "rateLimited": "Çok hızlı soruyorsun. {seconds} saniye sonra tekrar dene.",
+    "disconnected": "Bağlantı koptu.",
+    "interrupted": "Yanıt yarıda kaldı.",
+    "askAbout": "{name} hakkında sor…"
   },
   "generated": {
     "notFound": "Maillerinde ve takviminde bununla ilgili bir şey bulamadım.",
@@ -70,5 +87,11 @@
     "snooze": "Ertelemek için karttaki Ertele düğmesine dokun.",
     "eventTitle": "Toplantı",
     "reminderTitle": "Hatırlatma"
+  },
+  "cards": {
+    "event": "Etkinlik",
+    "mail": "Mail",
+    "person": "Kişi",
+    "life": "Kişisel"
   }
 }

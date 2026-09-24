@@ -6,5 +6,45 @@
     "title": "Nothing in memory yet.",
     "body": "As your emails and meetings are analysed, summaries collect here."
   },
-  "retentionNote": "Memory is limited to your retention period."
+  "retentionNote": "Memory is limited to your retention period.",
+  "gate": {
+    "title": "Ask your past.",
+    "body": "AI Memory is part of Pro. Search is always free.",
+    "searchFree": "Search is always free"
+  },
+  "offlineTitle": "Memory search needs a connection.",
+  "recents": "Recent searches",
+  "clearRecents": "Clear",
+  "examplesKicker": "Example searches",
+  "examples": {
+    "flight": "What was the flight ticket I bought last month?",
+    "payments": "Which payments are due this month?",
+    "lastTalk": "Who did I meet last week?"
+  },
+  "retentionExcluded": "This date is outside your retention period ({retention}).",
+  "retentionSetting": "Retention setting",
+  "noResultsTitle": "I couldn't find anything about that.",
+  "noResultsBody": "Try different words or remove the filter.",
+  "clearFilters": "Clear filters",
+  "noSummary": "I can't write a summary answer right now; the sources are below.",
+  "answerKicker": "Answer",
+  "answerMeta": "{count, plural, one {From # source} other {From # sources}} · {label}",
+  "confidence": {
+    "high": "Strong match",
+    "partial": "Partial match",
+    "unsure": "Not sure"
+  },
+  "sourcesKicker": "Sources · {count}",
+  "openOriginal": "Open original",
+  "relatedKicker": "You could also ask",
+  "scoped": "This person",
+  "filters": {
+    "all": "All",
+    "email": "Email",
+    "event": "Calendar",
+    "note": "Notes",
+    "document": "Documents",
+    "recent30": "Last 30 days"
+  },
+  "retentionFooter": "Memory follows your retention setting ({retention}). Older records are deleted automatically."
 }

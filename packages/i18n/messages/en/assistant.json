@@ -29,7 +29,24 @@
     "loadFailed": "Chats couldn't be loaded.",
     "sources": "Sources",
     "noAnswer": "I couldn't find that in your sources.",
-    "thinking": "I'm checking your sources…"
+    "thinking": "I'm checking your sources…",
+    "untitled": "Chat",
+    "newTitle": "New chat",
+    "newChat": "New chat",
+    "stop": "Stop",
+    "stopped": "Stopped",
+    "verifying": "Checking the sources…",
+    "youSaid": "You: {text}",
+    "assistantSaid": "Assistant: {text}",
+    "helpful": "Helpful",
+    "notHelpful": "Not helpful",
+    "feedbackThanks": "Thanks · Noted",
+    "searchMemory": "Search memory",
+    "rephrase": "Rephrase",
+    "rateLimited": "You're asking a bit fast. Try again in {seconds} seconds.",
+    "disconnected": "Connection lost.",
+    "interrupted": "The answer was interrupted.",
+    "askAbout": "Ask about {name}…"
   },
   "generated": {
     "notFound": "I could not find anything about this in your mail and calendar.",
@@ -70,5 +87,11 @@
     "snooze": "Tap Snooze on the card to postpone it.",
     "eventTitle": "Meeting",
     "reminderTitle": "Reminder"
+  },
+  "cards": {
+    "event": "Event",
+    "mail": "Email",
+    "person": "Person",
+    "life": "Personal"
   }
 }

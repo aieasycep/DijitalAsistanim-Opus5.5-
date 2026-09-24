@@ -23,11 +23,60 @@
   "existing": "Mevcut: {time} · Değiştir",
   "destination": {
     "label": "Nereye kurulsun?",
-    "inApp": "Dijital Asistan bildirimi"
+    "inApp": "Dijital Asistan bildirimi",
+    "row": "Nereye: {destination}",
+    "inAppMeta": "Bu cihaz ve diğer cihazların",
+    "apple": "Apple Anımsatıcılar",
+    "appleMeta": "Cihazda saklanır",
+    "appleDenied": "İzin verilmedi · Ayarlar",
+    "googleWith": "Google Görevler · {email}",
+    "googleMeta": "Yalnızca tarih saklanır; saat bildirimini Google göstermez",
+    "microsoftWith": "Microsoft To Do · {email}",
+    "microsoftMeta": "Microsoft To Do listene eklenir",
+    "connect": "Hesap bağla",
+    "notConnected": "Bağlı değil"
   },
   "confirm": "Hatırlatıcıyı Kur",
   "set": "Hatırlatıcı kuruldu · {when}",
   "cancelled": "Hatırlatıcı iptal edildi",
   "snoozeTitle": "Ne zamana erteleyelim?",
-  "notificationsOff": "Bildirimler kapalı olduğu için hatırlatıcı gelmez."
+  "notificationsOff": "Bildirimler kapalı olduğu için hatırlatıcı gelmez.",
+  "local": {
+    "generic": "Hatırlatıcın var.",
+    "titleOnly": "Hatırlatıcı",
+    "full": "Hatırlatıcı · {time}"
+  },
+  "toasts": {
+    "pendingSync": "Kaydedildi · Eşitleme bekliyor",
+    "queued": "Hatırlatıcı kuruldu · {when} · Eşitleme bekliyor",
+    "snoozed": "Ertelendi · {when}"
+  },
+  "custom": {
+    "title": "Kendin seç",
+    "date": "Tarih",
+    "time": "Saat",
+    "hour": "Saat",
+    "minute": "Dakika",
+    "increase": "{unit} artır",
+    "decrease": "{unit} azalt",
+    "past": "Geçmiş bir zaman seçilemez.",
+    "tooFar": "En fazla 1 yıl sonrası seçilebilir.",
+    "choose": "Bu zamanı seç"
+  },
+  "meta": {
+    "noCalendar": "Takvim bağlı değil",
+    "offline": "Bağlantı gerekli",
+    "smartFailed": "Şu an hesaplanamadı · Tekrar dene",
+    "noTime": "Saat yok",
+    "past": "Geçti",
+    "quiet": "{time} · sessiz saatte"
+  },
+  "cta": {
+    "approval": "Onaya Gönder",
+    "snoozePlain": "Ertele",
+    "snooze": "Ertele · {time}",
+    "remind": "Hatırlatıcıyı Kur · {time}"
+  },
+  "snoozeNotify": "Zamanı gelince bildir",
+  "permissionDenied": "Bildirim izni kapalı; hatırlatıcı kaydedilir ama bu cihazda bildirim gösterilemez."
 }

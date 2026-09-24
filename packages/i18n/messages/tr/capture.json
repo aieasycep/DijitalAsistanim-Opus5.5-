@@ -12,13 +12,16 @@
   "sources": {
     "camera": "Kamera",
     "library": "Fotoğraflar",
-    "files": "Dosyalar"
+    "files": "Dosyalar",
+    "title": "Fotoğraf kaynağı"
   },
   "link": {
     "hint": "Bağlantıyı yapıştır"
   },
   "text": {
-    "hint": "Metni buraya yaz ya da yapıştır"
+    "hint": "Metni buraya yaz ya da yapıştır",
+    "label": "Not veya metin",
+    "counter": "{count} karakter"
   },
   "statuses": {
     "pending_upload": "Yükleniyor…",
@@ -35,7 +38,8 @@
     "suggestedAction": "Önerilen işlem",
     "eventDetected": "Etkinlik tespit edildi.",
     "addToCalendarQuestion": "Takvime ekleyeyim mi?",
-    "nothingFound": "Bu içerikte işlem gerektiren bir şey bulamadım."
+    "nothingFound": "Bu içerikte işlem gerektiren bir şey bulamadım.",
+    "detectedCount": "{type} · {count} öğe"
   },
   "entityTypes": {
     "event": "Etkinlik",
@@ -53,10 +57,111 @@
     "addToCalendar": "Takvime Ekle",
     "createTask": "Görev Oluştur",
     "setReminder": "Hatırlatıcı Kur",
-    "discard": "Vazgeç"
+    "discard": "Vazgeç",
+    "calendar_create": "Takvime eklenecek",
+    "task_create": "Görev oluşturulacak",
+    "reminder_create": "Hatırlatıcı kurulacak",
+    "commitment_create": "Taahhüt kaydedilecek"
   },
   "permission": {
     "camera": "Kamerayı yalnızca sen “Kamera”yı seçtiğinde kullanırım."
   },
-  "privacyNote": "Yüklediğin dosyalar yalnızca senin hesabında saklanır ve saklama süren dolunca silinir."
+  "privacyNote": "Yüklediğin dosyalar yalnızca senin hesabında saklanır ve saklama süren dolunca silinir.",
+  "kickers": {
+    "base": "Ekle",
+    "link": "Ekle · Link",
+    "text": "Ekle · Metin",
+    "shared": "Paylaşılan içerik"
+  },
+  "errors": {
+    "tooLarge": "Dosya çok büyük (en fazla {limit}).",
+    "unsupported": "Bu dosya türü desteklenmiyor.",
+    "cameraUnavailable": "Kamera kullanılamıyor.",
+    "cameraDenied": "Kamera izni kapalı · Ayarlar'dan açabilirsin.",
+    "invalidUrl": "Geçerli bir bağlantı yaz (https://…)",
+    "scheme": "Bu bağlantı türü desteklenmiyor.",
+    "blocked": "Bu adres güvenlik nedeniyle açılamıyor.",
+    "previewFailed": "Önizleme alınamadı; yine de analiz edebilirsin.",
+    "uploadFailed": "Yükleme başarısız · Tekrar dene",
+    "textTooLong": "En fazla 5.000 karakter."
+  },
+  "fileA11y": "{kind}, {name}, {size}",
+  "sourcesA11y": "Kaynak seç",
+  "gate": {
+    "title": "Fotoğraf ve belgelerden işleri çıkarayım.",
+    "body": "Fotoğraf, ekran görüntüsü, PDF, link veya metinden etkinlik, görev ve son tarihleri çıkarırım."
+  },
+  "share": {
+    "waitsForPro": "Paylaştığın içerik Pro'ya geçersen burada bekler.",
+    "truncated": "En fazla 5 öğe analiz edebilirim; ilk 5'i seçtim.",
+    "unsupported": "Desteklenmeyen öğeler çıkarıldı.",
+    "unsupportedTitle": "Bu içerik türü desteklenmiyor.",
+    "unsupportedBody": "Fotoğraf, PDF, dosya, link veya metin paylaşabilirsin."
+  },
+  "hint": "Serbest yaz; tarih, kişi ve görevleri ben ayırırım.",
+  "offline": "Çevrimdışısın · Analiz için bağlantı gerekli.",
+  "analyze": "Analiz Et",
+  "uploading": "Yükleniyor… %{percent}",
+  "multiQueued": "{count} öğe ayrı ayrı analiz ediliyor.",
+  "files": {
+    "title": "PDF veya dosya seç",
+    "subtitle": "Cihazındaki dosyalardan",
+    "fromDevice": "Dosyalar'dan seç…"
+  },
+  "discard": {
+    "title": "Taslak silinsin mi?",
+    "keep": "Sakla"
+  },
+  "offlineAnalyzing": "Çevrimdışısın · Analiz sunucuda sürüyor; bağlantı gelince güncellenecek.",
+  "steps": {
+    "read": "İçerik okunuyor",
+    "extract": "Tarih, kişi ve görevler çıkarılıyor",
+    "ready": "Sonuçlar hazırlanıyor"
+  },
+  "stepStates": {
+    "done": "tamamlandı",
+    "active": "sürüyor",
+    "pending": "bekliyor"
+  },
+  "slowKicker": "Biraz uzun sürüyor; hazır olunca bildiririm.",
+  "privacy": {
+    "file": "Belge güvenli sunucumuzda analiz edilir; dosya 24 saat içinde silinir, yalnızca çıkarılan öğeler saklanır.",
+    "link": "Sayfa yalnızca bir kez okunur; çerez veya oturum paylaşılmaz."
+  },
+  "failures": {
+    "pdf_encrypted": "Parola korumalı PDF okunamıyor.",
+    "ocr_failed": "Metin okunamadı; daha net bir görüntü dene.",
+    "link_unreadable": "Sayfa okunamadı · Metni kopyalayıp yapıştırabilirsin.",
+    "link_blocked": "Bu adres güvenlik nedeniyle açılamıyor.",
+    "timeout": "Analiz zaman aşımına uğradı.",
+    "generic": "Analiz tamamlanamadı."
+  },
+  "retry": "Tekrar dene",
+  "executing": "Onaylananlar işleniyor…",
+  "success": {
+    "title": "Eklendi.",
+    "partialTitle": "{done}/{total} öğe eklendi",
+    "noneTitle": "Hiçbir öğe eklenemedi.",
+    "seeFailed": "Başarısızları gör",
+    "done": "Eklendi",
+    "failed": "Başarısız"
+  },
+  "memorySaved": "Hafızaya kaydedildi",
+  "quick": {
+    "calendar_create": "Takvime Ekle · {count}",
+    "task_create": "Görev Oluştur · {count}",
+    "reminder_create": "Hatırlat · {count}",
+    "commitment_create": "Taahhüt · {count}"
+  },
+  "pageRef": "Kaynak: s.{page}",
+  "suggestion": "Öneri",
+  "warnings": {
+    "past": "Bu tarih geçmişte",
+    "lowConfidence": "Emin değilim · kontrol et"
+  },
+  "saveToMemory": "Hafızaya kaydet",
+  "noApprovalNeeded": "Onay gerektirmez",
+  "editItem": "Öğeyi düzenle",
+  "itemTitle": "Başlık",
+  "sendToApproval": "{count} Öğeyi Onaya Gönder"
 }

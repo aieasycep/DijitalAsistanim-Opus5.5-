@@ -121,5 +121,96 @@
   },
   "learned": {
     "statement": "“{type}” önerilerini daha seçici göster."
+  },
+  "rows": {
+    "source": "Kaynak",
+    "sourceSelf": "Senin isteğin",
+    "sourceHint": "Kaynağı açar",
+    "account": "Hesap",
+    "sideEffect": "Yan etki",
+    "expiry": "Süre",
+    "diff": "{before} → {after}"
+  },
+  "toasts": {
+    "conflict": "Bu onay güncellendi; son hâlini incele.",
+    "expired": "Süresi doldu",
+    "rejected": "Reddedildi",
+    "rejectedLearned": "Reddedildi · Öğrendim",
+    "offline": "Çevrimdışısın · Bu işlem için bağlantı gerekli.",
+    "waiting": "Onay Merkezi'nde bekliyor",
+    "longRunning": "İşlem sürüyor. Bitince bildireceğim.",
+    "view": "Görüntüle",
+    "batchSummary": "{done}/{total} işlem tamamlandı"
+  },
+  "reauth": {
+    "title": "Hedef hesabın bağlantısı yenilenmeli"
+  },
+  "offline": {
+    "banner": "Çevrimdışısın. Onaylar bağlantı gelince yapılabilir.",
+    "sheet": "Bağlantı gerekli"
+  },
+  "sheet": {
+    "title": "Onay gerekiyor",
+    "subtitle": "Sen onaylamadan hiçbiri yapılmaz.",
+    "batchTitle": "Onay · {count} işlem",
+    "batchSubtitle": "Sen onaylamadan hiçbiri yapılmaz. İstemediğini kaldır.",
+    "approveCount": "Onayla · {count}",
+    "footer": "Onaylananlar Onay Merkezi geçmişine yazılır."
+  },
+  "editor": {
+    "sheetTitle": "İşlemi düzenle",
+    "reproposeTitle": "Yeniden öner",
+    "title": "Başlık",
+    "commitment": "Taahhüt",
+    "direction": "Yön",
+    "directionMine": "Verdiğin",
+    "directionTheirs": "Sana verilen",
+    "noDue": "Son tarih yok",
+    "duration": "Süre",
+    "location": "Konum",
+    "notes": "Notlar",
+    "invalid": "Bilgilerden biri geçersiz; kontrol et.",
+    "conflict": "Bu onay güncellendi; son hâlini incele.",
+    "saved": "Düzenlendi",
+    "offline": "Çevrimdışıyken düzenleme kaydedilemez.",
+    "loadFailed": "Onay yüklenemedi."
+  },
+  "center": {
+    "subtitle": "{count} işlem onayını bekliyor. Hiçbiri sen onaylamadan yapılmaz.",
+    "pending": "Bekleyen",
+    "inFlight": "İşleniyor",
+    "failed": "Tamamlanamadı",
+    "doneToday": "Bugün tamamlananlar",
+    "assurance": "Önemli işlemler sen onaylamadan gerçekleştirilmez. Toplu onay yok; her kart tek tek."
+  },
+  "history": {
+    "title": "Onay geçmişi",
+    "filters": {
+      "all": "Tümü",
+      "executed": "Tamamlanan",
+      "rejected": "Reddedilen",
+      "failed": "Başarısız",
+      "expired": "Süresi dolan"
+    },
+    "emptyTitle": "Henüz geçmiş yok.",
+    "emptyBody": "Onayladığın veya reddettiğin işlemler burada görünür. Saklama süren: {retention}.",
+    "rowA11y": "{status}, {title}, {time}"
+  },
+  "detail": {
+    "kicker": "Onay detayı",
+    "exactChange": "Değişim",
+    "diffA11y": "{field}: {before} yerine {after}",
+    "timeline": "Durum geçmişi",
+    "events": {
+      "created": "Oluşturuldu",
+      "edited": "Düzenlendi · sürüm {version}",
+      "approved": "Onaylandı",
+      "executing": "İşleniyor",
+      "executed": "Tamamlandı",
+      "failed": "Başarısız",
+      "rejected": "Reddedildi",
+      "expired": "Süresi doldu"
+    },
+    "supportCode": "Destek kodu: {code}"
   }
 }

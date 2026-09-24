@@ -48,6 +48,7 @@
     "expo-constants": "catalog:expo",
     "expo-crypto": "catalog:expo",
     "expo-dev-client": "catalog:expo",
+    "expo-document-picker": "catalog:expo",
     "expo-file-system": "catalog:expo",
     "expo-font": "catalog:expo",
     "expo-haptics": "catalog:expo",

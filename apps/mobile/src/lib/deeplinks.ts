@@ -60,6 +60,20 @@ export const SCREEN_ROUTES: readonly string[] = [
   '/briefings',
   '/weekly/:id',
   '/weekly/:id/share',
+  // T-8.15 assistant, voice, search and memory
+  '/chat/:threadId',
+  '/voice',
+  '/search',
+  '/memory',
+  // T-8.16 person and VIP (`/vip` is also the onboarding VIP step URL)
+  '/person/:id',
+  // T-8.17 capture
+  '/capture',
+  '/capture/:id',
+  // T-8.18 approvals and reminders
+  '/approvals',
+  '/approvals/:id',
+  '/reminders/new',
 ];
 
 /** Screens compiled only into demo builds (`metro.config.js` drops their files otherwise). */
@@ -79,10 +93,13 @@ function stripQuery(path: string): string {
   return q === -1 ? path : path.slice(0, q);
 }
 
-/** Whether a URL pattern matches a concrete path (`:param` matches one segment). */
+/**
+ * Whether a URL pattern matches a concrete path (`:param` matches one segment). Route-group
+ * segments of an href (`/(onboarding)/vip`) are not part of the URL.
+ */
 export function patternMatches(pattern: string, path: string): boolean {
   const p = segments(pattern);
-  const s = segments(stripQuery(path));
+  const s = segments(stripQuery(path)).filter((seg) => !/^\(.+\)$/.test(seg));
   if (p.length !== s.length) return false;
   return p.every((seg, i) => seg.startsWith(':') || seg === s[i]);
 }
