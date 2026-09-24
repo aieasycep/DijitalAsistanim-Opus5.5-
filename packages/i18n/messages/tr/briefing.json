@@ -62,5 +62,22 @@
     "timeSaved": "Tahmini kazandırılan zaman: {duration}",
     "share": "Paylaş",
     "shareCardTitle": "Dijital Haftam"
+  },
+  "generated": {
+    "online": "Online",
+    "morning": {
+      "template": "Bugün {meetings, plural, =0 {takviminde toplantı yok} other {# etkinliğin var}}, {replies, plural, =0 {yanıt bekleyen mail yok} other {# mail yanıtını bekliyor}}. {deadlines, plural, =0 {Yaklaşan son tarih görünmüyor} other {# son tarih yaklaşıyor}}{waiting, plural, =0 {.} other {; # konuda yanıt bekliyorsun.}}"
+    },
+    "evening": {
+      "waitingDays": "{days, plural, one {# gündür bekliyor} other {# gündür bekliyor}}"
+    },
+    "weekly": {
+      "template": "Bu hafta {mails} mail analiz edildi; {important} önemli konu, {meetings} toplantı ve {followups} takip vardı.",
+      "timeSavedPrefix": "Tahmini kazandırılan zaman",
+      "shareText": "Dijital Haftam: {mails} mail analiz edildi, {important} önemli konu öne çıktı. Tahmini kazandırılan zaman: {hours} saat {minutes} dakika."
+    },
+    "audio": {
+      "overview": "Genel bakış"
+    }
   }
 }

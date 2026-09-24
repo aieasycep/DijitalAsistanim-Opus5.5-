@@ -49,9 +49,13 @@ export type Database = {
       admin_preferences_set: {
         Args: {
           p_dashboard_range?: string;
+          p_density?: string;
           p_locale?: string;
+          p_recent_items?: Json;
+          p_sidebar_collapsed?: boolean;
           p_table_prefs?: Json;
           p_theme?: string;
+          p_timezone?: string;
         };
         Returns: Json;
       };
@@ -112,6 +116,8 @@ export type Database = {
         Args: {
           p_batch_policy?: string;
           p_cache_ttl?: string;
+          p_clear_cache_ttl?: boolean;
+          p_clear_escalation?: boolean;
           p_enabled: boolean;
           p_escalation_target: Json;
           p_expected_version: number;
@@ -582,6 +588,20 @@ export type Database = {
       };
       ticket_add_note: { Args: { p_body: string; p_id: string }; Returns: Json };
       ticket_detail: { Args: { p_id: string }; Returns: Json };
+      ticket_patch: {
+        Args: {
+          p_assignee?: string;
+          p_category?: Database['public']['Enums']['ticket_category'];
+          p_id: string;
+          p_status?: Database['public']['Enums']['ticket_status'];
+          p_unassign?: boolean;
+        };
+        Returns: Json;
+      };
+      ticket_reply: {
+        Args: { p_body: string; p_id: string; p_locale?: string };
+        Returns: Json;
+      };
       ticket_update: {
         Args: {
           p_assignee?: string;
@@ -629,7 +649,12 @@ export type Database = {
         Returns: Json;
       };
       user_force_sync: {
-        Args: { p_account?: string; p_reason?: string; p_user: string };
+        Args: {
+          p_account?: string;
+          p_reason?: string;
+          p_resources?: string[];
+          p_user: string;
+        };
         Returns: Json;
       };
       user_integrations: { Args: { p_user: string }; Returns: Json };
@@ -709,25 +734,37 @@ export type Database = {
         Row: {
           admin_user_id: string;
           dashboard_range: string;
+          density: string;
           locale: string;
+          recent_items: NonNullable<Json>;
+          sidebar_collapsed: boolean;
           table_prefs: NonNullable<Json>;
           theme: string;
+          timezone: string;
           updated_at: string;
         };
         Insert: {
           admin_user_id: string;
           dashboard_range?: string;
+          density?: string;
           locale?: string;
+          recent_items?: NonNullable<Json>;
+          sidebar_collapsed?: boolean;
           table_prefs?: NonNullable<Json>;
           theme?: string;
+          timezone?: string;
           updated_at?: string;
         };
         Update: {
           admin_user_id?: string;
           dashboard_range?: string;
+          density?: string;
           locale?: string;
+          recent_items?: NonNullable<Json>;
+          sidebar_collapsed?: boolean;
           table_prefs?: NonNullable<Json>;
           theme?: string;
+          timezone?: string;
           updated_at?: string;
         };
         Relationships: [
@@ -2184,6 +2221,7 @@ export type Database = {
       assistant_threads: {
         Row: {
           archived_at: string | null;
+          client_thread_id: string | null;
           created_at: string;
           expires_at: string | null;
           id: string;
@@ -2197,6 +2235,7 @@ export type Database = {
         };
         Insert: {
           archived_at?: string | null;
+          client_thread_id?: string | null;
           created_at?: string;
           expires_at?: string | null;
           id?: string;
@@ -2210,6 +2249,7 @@ export type Database = {
         };
         Update: {
           archived_at?: string | null;
+          client_thread_id?: string | null;
           created_at?: string;
           expires_at?: string | null;
           id?: string;
@@ -2764,6 +2804,7 @@ export type Database = {
           id: string;
           idempotency_key: string;
           kind: Database['public']['Enums']['capture_kind'];
+          link_preview: Json | null;
           mime_type: string | null;
           original_filename: string | null;
           page_count: number | null;
@@ -2793,6 +2834,7 @@ export type Database = {
           id?: string;
           idempotency_key: string;
           kind: Database['public']['Enums']['capture_kind'];
+          link_preview?: Json | null;
           mime_type?: string | null;
           original_filename?: string | null;
           page_count?: number | null;
@@ -2822,6 +2864,7 @@ export type Database = {
           id?: string;
           idempotency_key?: string;
           kind?: Database['public']['Enums']['capture_kind'];
+          link_preview?: Json | null;
           mime_type?: string | null;
           original_filename?: string | null;
           page_count?: number | null;
@@ -3130,6 +3173,8 @@ export type Database = {
           id: string;
           job_id: string | null;
           kind: Database['public']['Enums']['deletion_kind'];
+          notify_email_ciphertext: string | null;
+          notify_locale: string | null;
           origin: string;
           reason: string | null;
           scope: string | null;
@@ -3151,6 +3196,8 @@ export type Database = {
           id?: string;
           job_id?: string | null;
           kind: Database['public']['Enums']['deletion_kind'];
+          notify_email_ciphertext?: string | null;
+          notify_locale?: string | null;
           origin: string;
           reason?: string | null;
           scope?: string | null;
@@ -3172,6 +3219,8 @@ export type Database = {
           id?: string;
           job_id?: string | null;
           kind?: Database['public']['Enums']['deletion_kind'];
+          notify_email_ciphertext?: string | null;
+          notify_locale?: string | null;
           origin?: string;
           reason?: string | null;
           scope?: string | null;
@@ -3201,6 +3250,7 @@ export type Database = {
           expires_at: string | null;
           file_size_bytes: number | null;
           id: string;
+          include: string[] | null;
           job_id: string | null;
           ready_at: string | null;
           requested_via: string;
@@ -3217,6 +3267,7 @@ export type Database = {
           expires_at?: string | null;
           file_size_bytes?: number | null;
           id?: string;
+          include?: string[] | null;
           job_id?: string | null;
           ready_at?: string | null;
           requested_via?: string;
@@ -3233,6 +3284,7 @@ export type Database = {
           expires_at?: string | null;
           file_size_bytes?: number | null;
           id?: string;
+          include?: string[] | null;
           job_id?: string | null;
           ready_at?: string | null;
           requested_via?: string;
@@ -3787,6 +3839,7 @@ export type Database = {
           id: string;
           kind: Database['public']['Enums']['insight_kind'];
           learned_preference_id: string | null;
+          payload: Json | null;
           rank_score: number;
           reason_code: string;
           rule_id: string | null;
@@ -3823,6 +3876,7 @@ export type Database = {
           id?: string;
           kind: Database['public']['Enums']['insight_kind'];
           learned_preference_id?: string | null;
+          payload?: Json | null;
           rank_score?: number;
           reason_code: string;
           rule_id?: string | null;
@@ -3859,6 +3913,7 @@ export type Database = {
           id?: string;
           kind?: Database['public']['Enums']['insight_kind'];
           learned_preference_id?: string | null;
+          payload?: Json | null;
           rank_score?: number;
           reason_code?: string;
           rule_id?: string | null;
@@ -4202,6 +4257,7 @@ export type Database = {
         Row: {
           body: string;
           calendar_event_id: string;
+          client_note_id: string | null;
           created_at: string;
           expires_at: string | null;
           id: string;
@@ -4214,6 +4270,7 @@ export type Database = {
         Insert: {
           body: string;
           calendar_event_id: string;
+          client_note_id?: string | null;
           created_at?: string;
           expires_at?: string | null;
           id?: string;
@@ -4226,6 +4283,7 @@ export type Database = {
         Update: {
           body?: string;
           calendar_event_id?: string;
+          client_note_id?: string | null;
           created_at?: string;
           expires_at?: string | null;
           id?: string;
@@ -5512,11 +5570,14 @@ export type Database = {
           cc_emails: string[];
           confidence: number;
           connected_account_id: string;
+          content_key: string | null;
           created_at: string;
           expires_at: string | null;
+          facts_used: Json | null;
           generated_by: string;
           id: string;
           kind: string;
+          language: string | null;
           message_id: string | null;
           prompt_version_id: string | null;
           source_id: string;
@@ -5531,6 +5592,7 @@ export type Database = {
           updated_at: string;
           user_id: string;
           version: number;
+          warnings: string[] | null;
         };
         Insert: {
           ai_request_id?: string | null;
@@ -5540,11 +5602,14 @@ export type Database = {
           cc_emails?: string[];
           confidence: number;
           connected_account_id: string;
+          content_key?: string | null;
           created_at?: string;
           expires_at?: string | null;
+          facts_used?: Json | null;
           generated_by: string;
           id?: string;
           kind?: string;
+          language?: string | null;
           message_id?: string | null;
           prompt_version_id?: string | null;
           source_id: string;
@@ -5559,6 +5624,7 @@ export type Database = {
           updated_at?: string;
           user_id: string;
           version?: number;
+          warnings?: string[] | null;
         };
         Update: {
           ai_request_id?: string | null;
@@ -5568,11 +5634,14 @@ export type Database = {
           cc_emails?: string[];
           confidence?: number;
           connected_account_id?: string;
+          content_key?: string | null;
           created_at?: string;
           expires_at?: string | null;
+          facts_used?: Json | null;
           generated_by?: string;
           id?: string;
           kind?: string;
+          language?: string | null;
           message_id?: string | null;
           prompt_version_id?: string | null;
           source_id?: string;
@@ -5587,6 +5656,7 @@ export type Database = {
           updated_at?: string;
           user_id?: string;
           version?: number;
+          warnings?: string[] | null;
         };
         Relationships: [
           {
@@ -6513,6 +6583,20 @@ export type Database = {
         };
         Returns: boolean;
       };
+      account_deletion_begin: {
+        Args: { p_job?: string; p_request: string; p_user: string };
+        Returns: Json;
+      };
+      account_deletion_context: { Args: { p_user: string }; Returns: Json };
+      account_deletion_system_purge: {
+        Args: { p_job?: string; p_user: string };
+        Returns: Json;
+      };
+      account_paused_by_plan: { Args: { p_account: string }; Returns: boolean };
+      acquire_sync_lease: {
+        Args: { p_owner: string; p_seconds?: number; p_sync_state: string };
+        Returns: boolean;
+      };
       ai_breaker_state: {
         Args: { p_model: string; p_provider: string };
         Returns: Json;
@@ -6536,12 +6620,22 @@ export type Database = {
         };
         Returns: undefined;
       };
+      ai_cost_by_model: { Args: { p_day: string }; Returns: Json };
+      ai_org_budget_evaluate: { Args: { p_now?: string }; Returns: Json };
+      apply_device_snapshot: {
+        Args: { p_account: string; p_snapshot: Json };
+        Returns: Json;
+      };
       apply_insight_feedback: {
         Args: {
           p_client_mutation_id?: string;
           p_insight_id: string;
           p_kind: string;
         };
+        Returns: Json;
+      };
+      apply_mail_changes: {
+        Args: { p_account: string; p_deleted: string[]; p_label_changes: Json };
         Returns: Json;
       };
       apply_referral: {
@@ -6556,6 +6650,10 @@ export type Database = {
           p_signals: Json;
           p_source: string;
         };
+        Returns: Json;
+      };
+      apply_staged_device_snapshot: {
+        Args: { p_account: string; p_content_hash: string };
         Returns: Json;
       };
       audit_log_append: {
@@ -6598,6 +6696,19 @@ export type Database = {
       };
       billing_sync_context: {
         Args: { p_app_user_id: string; p_event_id?: string };
+        Returns: Json;
+      };
+      briefing_evening_ready: {
+        Args: {
+          p_briefing_id: string;
+          p_item_ids?: string[];
+          p_now?: string;
+          p_user: string;
+        };
+        Returns: Json;
+      };
+      briefing_retry: {
+        Args: { p_briefing_id: string; p_now?: string; p_user: string };
         Returns: Json;
       };
       cancel_reminder: {
@@ -6767,6 +6878,54 @@ export type Database = {
         };
         Returns: Json;
       };
+      create_export_request: {
+        Args: {
+          p_correlation_id?: string;
+          p_include?: string[];
+          p_user: string;
+        };
+        Returns: Json;
+      };
+      deletion_request_update: {
+        Args: {
+          p_clear_notify?: boolean;
+          p_error_code?: string;
+          p_notify?: string;
+          p_notify_locale?: string;
+          p_request: string;
+          p_status?: Database['public']['Enums']['deletion_status'];
+          p_steps?: Json;
+        };
+        Returns: Json;
+      };
+      demo_state_get: { Args: { p_account: string }; Returns: Json };
+      demo_state_record_write: {
+        Args: {
+          p_account: string;
+          p_item: Json;
+          p_key: string;
+          p_resource: string;
+        };
+        Returns: Json;
+      };
+      demo_state_set_clock: {
+        Args: { p_account: string; p_clock: string; p_resource: string };
+        Returns: undefined;
+      };
+      discard_capture: {
+        Args: { p_capture_id: string; p_user: string };
+        Returns: Json;
+      };
+      disconnect_integration: {
+        Args: {
+          p_account: string;
+          p_correlation_id?: string;
+          p_purge_content: boolean;
+          p_revocation_mode: string;
+          p_user: string;
+        };
+        Returns: Json;
+      };
       dismiss_announcement: {
         Args: { p_announcement_id: string };
         Returns: undefined;
@@ -6896,6 +7055,10 @@ export type Database = {
         };
         Returns: Database['public']['Enums']['job_status'];
       };
+      first_analysis_counts: {
+        Args: { p_now: string; p_since: string; p_user: string };
+        Returns: Json;
+      };
       flow_feed: {
         Args: { p_cursor?: string; p_filter?: string; p_limit?: number };
         Returns: Json;
@@ -6941,9 +7104,27 @@ export type Database = {
         };
       };
       hash_subject: { Args: { p_user: string }; Returns: string };
+      history_deletion_counts: {
+        Args: { p_account?: string; p_user: string };
+        Returns: Json;
+      };
       history_deletion_preview: {
         Args: { p_older_than?: string };
         Returns: Json;
+      };
+      integration_purge_batch: {
+        Args: {
+          p_account: string;
+          p_batch?: number;
+          p_disconnected_at: string;
+          p_purge_derived: boolean;
+          p_reason?: string;
+        };
+        Returns: Json;
+      };
+      link_contact_refs: {
+        Args: { p_event_ids: string[]; p_thread_ids: string[]; p_user: string };
+        Returns: number;
       };
       list_approvals: {
         Args: {
@@ -6967,6 +7148,10 @@ export type Database = {
         Args: { p_briefing_id: string };
         Returns: undefined;
       };
+      mark_calendar_events_deleted: {
+        Args: { p_calendar: string; p_provider_event_ids: string[] };
+        Returns: number;
+      };
       memory_stats: { Args: { p_user: string }; Returns: Json };
       memory_vector_candidates: {
         Args: {
@@ -6977,6 +7162,33 @@ export type Database = {
           p_to?: string;
         };
         Returns: string[];
+      };
+      next_morning_briefing_at: {
+        Args: { p_after_date: string; p_user: string };
+        Returns: string;
+      };
+      oauth_callback_store: {
+        Args: {
+          p_account?: Json;
+          p_credentials?: Json;
+          p_state: Json;
+          p_state_id: string;
+        };
+        Returns: Json;
+      };
+      oauth_close_flow: {
+        Args: { p_error_code?: string; p_result: string; p_state_id: string };
+        Returns: Json;
+      };
+      oauth_complete_binding: {
+        Args: {
+          p_account: Json;
+          p_account_id: string;
+          p_credentials?: Json;
+          p_state_id: string;
+          p_user: string;
+        };
+        Returns: Json;
       };
       person_intelligence: { Args: { p_contact_id: string }; Returns: Json };
       plan_limit: { Args: { p_key: string; p_user: string }; Returns: Json };
@@ -6989,6 +7201,16 @@ export type Database = {
           p_outcome: Database['public']['Enums']['rule_outcome'];
         };
         Returns: Json;
+      };
+      privacy_tombstones_upsert: { Args: { p_signals: Json }; Returns: number };
+      prune_calendar_events: {
+        Args: {
+          p_calendar: string;
+          p_since: string;
+          p_window_end?: string;
+          p_window_start?: string;
+        };
+        Returns: number;
       };
       pseudonymize_audit_subject: { Args: { p_user: string }; Returns: number };
       public_deletion_status: { Args: { p_request_id: string }; Returns: Json };
@@ -7017,6 +7239,10 @@ export type Database = {
           p_name: string;
           p_subject: string;
         };
+        Returns: Json;
+      };
+      purge_history: {
+        Args: { p_account?: string; p_user: string };
         Returns: Json;
       };
       purge_user_history: { Args: { p_user: string }; Returns: Json };
@@ -7071,7 +7297,23 @@ export type Database = {
         Returns: Json;
       };
       referral_tombstone_match: { Args: { p_signals: Json }; Returns: boolean };
+      refresh_contact_stats: {
+        Args: { p_contact_ids?: string[]; p_now?: string; p_user: string };
+        Returns: number;
+      };
+      release_sync_lease: {
+        Args: { p_owner: string; p_sync_state: string };
+        Returns: undefined;
+      };
       retention_cleanup: {
+        Args: { p_batch?: number; p_now?: string };
+        Returns: Json;
+      };
+      retention_orphan_objects: {
+        Args: { p_limit?: number; p_now?: string };
+        Returns: Json;
+      };
+      retention_system_sweep: {
         Args: { p_batch?: number; p_now?: string };
         Returns: Json;
       };
@@ -7175,6 +7417,7 @@ export type Database = {
           id: string;
           kind: Database['public']['Enums']['insight_kind'];
           learned_preference_id: string | null;
+          payload: Json | null;
           rank_score: number;
           reason_code: string;
           rule_id: string | null;
@@ -7198,6 +7441,10 @@ export type Database = {
           isOneToOne: true;
           isSetofReturn: false;
         };
+      };
+      stage_device_snapshot: {
+        Args: { p_account: string; p_snapshot: Json };
+        Returns: string;
       };
       start_device_execution: {
         Args: {
@@ -7356,6 +7603,32 @@ export type Database = {
         Args: { p_job_id: string; p_progress: Json; p_worker_id: string };
         Returns: undefined;
       };
+      upsert_calendar_events: {
+        Args: {
+          p_account: string;
+          p_calendar: string;
+          p_events: Json;
+          p_origin: string;
+        };
+        Returns: Json;
+      };
+      upsert_calendars: {
+        Args: { p_account: string; p_calendars: Json };
+        Returns: Json;
+      };
+      upsert_contacts_from_people: {
+        Args: { p_people: Json; p_user: string };
+        Returns: Json;
+      };
+      upsert_device_account: {
+        Args: {
+          p_capabilities: Database['public']['Enums']['capability'][];
+          p_installation: string;
+          p_provider: Database['public']['Enums']['provider'];
+          p_user: string;
+        };
+        Returns: Json;
+      };
       upsert_learned_preference: {
         Args: {
           p_effect: Json;
@@ -7368,11 +7641,20 @@ export type Database = {
         };
         Returns: string;
       };
+      upsert_mail_messages: {
+        Args: { p_account: string; p_messages: Json };
+        Returns: Json;
+      };
       upsert_manual_contact: {
         Args: { p_display_name?: string; p_email: string };
         Returns: string;
       };
+      upsert_tasks: {
+        Args: { p_account: string; p_tasks: Json };
+        Returns: Json;
+      };
       user_apple_sub: { Args: { p_user: string }; Returns: string };
+      user_rows_remaining: { Args: { p_user: string }; Returns: Json };
       vip_suggestions: { Args: Record<PropertyKey, never>; Returns: Json };
       web_analytics_increment: {
         Args: { p_day: string; p_dims: Json; p_event: string };

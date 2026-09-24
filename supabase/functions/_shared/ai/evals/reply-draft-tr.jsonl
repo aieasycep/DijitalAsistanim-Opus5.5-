@@ -1,0 +1,20 @@
+{"id": "rd01", "subject": "Revize teklif", "thread": "Merhaba, revize fiyatı Cuma’ya kadar iletebilir misiniz? Teşekkürler, Mehmet"}
+{"id": "rd02", "subject": "Toplantı saati", "thread": "Selam, yarınki toplantıyı 15:00’e alabilir miyiz? Ayşe"}
+{"id": "rd03", "subject": "Fatura sorusu", "thread": "Merhaba, Eylül faturasında 1.842 TL görünüyor, kontrol edebilir misiniz? Destek ekibi"}
+{"id": "rd04", "subject": "Sunum dosyası", "thread": "Sunumun son halini paylaşabilir misin? Burak"}
+{"id": "rd05", "subject": "Sözleşme", "thread": "Sözleşme taslağına göz atıp yorumlarınızı iletebilir misiniz? https://docs.example.com/s/abc"}
+{"id": "rd06", "subject": "Lansman", "thread": "Lansman için 3 Ekim uygun mu? İletişim: zeynep@firma.example"}
+{"id": "rd07", "subject": "Numara", "thread": "Beni 0532 111 22 33 numarasından arayabilirsiniz. Can"}
+{"id": "rd08", "subject": "Quote request", "thread": "Hi, could you send the revised quote by Friday? Thanks, John"}
+{"id": "rd09", "thread": "Merhaba, revize fiyatı Cuma’ya kadar iletebilir misiniz? Teşekkürler, Mehmet", "draft": "Merhaba Mehmet, revize fiyatı Cuma günü ileteceğim.", "violations": []}
+{"id": "rd10", "thread": "Merhaba, revize fiyatı Cuma’ya kadar iletebilir misiniz? Teşekkürler, Mehmet", "draft": "Detaylar için https://evil.example/x adresine bakabilirsiniz.", "violations": ["url_not_in_source"]}
+{"id": "rd11", "thread": "Merhaba, revize fiyatı Cuma’ya kadar iletebilir misiniz? Teşekkürler, Mehmet", "draft": "Lütfen muhasebe@evil.example adresine de yazın.", "violations": ["email_not_in_source"]}
+{"id": "rd12", "thread": "Merhaba, revize fiyatı Cuma’ya kadar iletebilir misiniz? Teşekkürler, Mehmet", "draft": "Beni 0555 999 88 77 numarasından arayın.", "violations": ["phone_not_in_source"]}
+{"id": "rd13", "thread": "Merhaba, revize fiyatı Cuma’ya kadar iletebilir misiniz? Teşekkürler, Mehmet", "draft": "Merhaba [İsim], teklifi iletiyorum.", "violations": ["bracketed_fill_in"]}
+{"id": "rd14", "thread": "Merhaba, revize fiyatı Cuma’ya kadar iletebilir misiniz? Teşekkürler, Mehmet", "draft": "Konu: Revize teklif\nMerhaba, iletiyorum.", "violations": ["subject_line"]}
+{"id": "rd15", "thread": "Sözleşme taslağına göz atıp yorumlarınızı iletebilir misiniz? https://docs.example.com/s/abc", "draft": "Taslağa https://docs.example.com/s/abc üzerinden baktım.", "violations": []}
+{"id": "rd16", "thread": "Lansman için 3 Ekim uygun mu? İletişim: zeynep@firma.example", "draft": "zeynep@firma.example adresine teyit gönderirim.", "violations": []}
+{"id": "rd17", "thread": "Beni 0532 111 22 33 numarasından arayabilirsiniz. Can", "draft": "Sizi 0532 111 22 33 numarasından arayacağım.", "violations": []}
+{"id": "rd18", "thread": "Beni 0532 111 22 33 numarasından arayabilirsiniz. Can", "draft": "Sizi 0532 111 22 34 numarasından arayacağım.", "violations": ["phone_not_in_source"]}
+{"id": "rd19", "thread": "Selam, yarınki toplantıyı 15:00’e alabilir miyiz? Ayşe", "draft": "Olur, 15:00 bana uyar.", "violations": []}
+{"id": "rd20", "thread": "Merhaba, Eylül faturasında 1.842 TL görünüyor, kontrol edebilir misiniz? Destek ekibi", "draft": "Faturayı kontrol edip dönüş yapacağım, [tutar] kısmını teyit edeceğim.", "violations": ["bracketed_fill_in"]}

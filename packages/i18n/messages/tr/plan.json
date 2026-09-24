@@ -28,5 +28,35 @@
     "calm": "Sakin"
   },
   "focusBlock": "Odak bloğu",
-  "commitments": "Taahhütler"
+  "commitments": "Taahhütler",
+  "generated": {
+    "rationale": "{day} {start}–{end} arasında boşsun. {task} görevini buraya yerleştirebilirim.",
+    "newTimeInstruction": "Toplantı için yeni bir saat öner: {time}.",
+    "newTimeOpen": "Toplantı için başka bir saat öner.",
+    "options": {
+      "move": {
+        "title": "Etkinliği taşı",
+        "description": "{title} için yeni bir saat seç."
+      },
+      "shorten": {
+        "title": "Etkinliği kısalt",
+        "description": "{title} çakışmayacak şekilde kısaltılır."
+      },
+      "email": {
+        "title": "Yeni saat öner",
+        "description": "Düzenleyene yeni saat öneren bir yanıt taslağı hazırlanır."
+      },
+      "remind": {
+        "title": "Hatırlatıcı kur",
+        "description": "Çakışmayı uygun bir zamanda hatırlatırım."
+      },
+      "contact": {
+        "title": "Katılımcıyı ara",
+        "description": "Kaynaktaki telefon numarası kullanılır."
+      },
+      "ignore": {
+        "description": "Bu çakışma bir daha gösterilmez."
+      }
+    }
+  }
 }

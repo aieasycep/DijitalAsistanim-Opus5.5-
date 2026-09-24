@@ -74,6 +74,9 @@ function walk(
       if (!ctx.aliases.has(value)) counters.refs++;
       return value;
     }
+    // Enum tokens (`awaiting_my_reply`, `direct_request`) carry no free text; markup stripping
+    // would remove their underscores and break the schema.
+    if (/^[a-z][a-z0-9_]*$/.test(value)) return value;
     const guarded = guardOutputText(value, {
       sources: ctx.sources,
       ...(ctx.canary === undefined ? {} : { canary: ctx.canary }),

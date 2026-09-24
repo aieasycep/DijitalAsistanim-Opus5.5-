@@ -93,3 +93,52 @@ jobs:
         run: pnpm db:types:check --no-migrate
         env:
           DA_TYPEGEN_DB_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+
+  web:
+    name: web (next build, Playwright E2E)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+        with:
+          turbo-cache-key: web
+      - run: pnpm --filter @da/web exec playwright install --with-deps chromium
+      - run: pnpm --filter @da/web e2e:web
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: web-playwright-report
+          path: apps/web/playwright-report
+          retention-days: 7
+
+  backoffice:
+    name: backoffice (next build, Playwright E2E)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+        with:
+          turbo-cache-key: backoffice
+      - run: pnpm --filter @da/backoffice exec playwright install --with-deps chromium
+      - run: pnpm --filter @da/backoffice e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: backoffice-playwright-report
+          path: apps/backoffice/playwright-report
+          retention-days: 7
+
+  security:
+    name: security (bundle secret scan, env split, headers)
+    runs-on: ubuntu-24.04
+    env:
+      EXPO_OFFLINE: '1'
+      EXPO_NO_TELEMETRY: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+        with:
+          turbo-cache-key: security
+      - run: pnpm turbo run build --filter=@da/web --filter=@da/backoffice
+      - run: pnpm --filter @da/mobile export
+      - run: pnpm scan:bundles

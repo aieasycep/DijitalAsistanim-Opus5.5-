@@ -255,10 +255,228 @@ export const DB_FN = {
     'upsert_learned_preference',
     '(p_user uuid, p_target_type text, p_target_ref text, p_group_key text, p_effect jsonb, p_evidence_delta int, p_statement text) returns uuid',
   ),
+  // Integrations (migration 20260924002000; IMPLEMENTATION_PLAN T-4.01…T-4.13); accountCan is above.
   tryLockCredentialRefresh: fn(
     'public',
     'try_lock_credential_refresh',
     '(p_account uuid, p_owner text, p_seconds int) returns boolean',
+  ),
+  accountPausedByPlan: fn('public', 'account_paused_by_plan', '(p_account uuid) returns boolean'),
+  acquireSyncLease: fn(
+    'public',
+    'acquire_sync_lease',
+    '(p_sync_state uuid, p_owner text, p_seconds int) returns boolean',
+  ),
+  releaseSyncLease: fn(
+    'public',
+    'release_sync_lease',
+    '(p_sync_state uuid, p_owner text) returns void',
+  ),
+  oauthCallbackStore: fn(
+    'public',
+    'oauth_callback_store',
+    '(p_state_id uuid, p_state jsonb, p_account jsonb, p_credentials jsonb) returns jsonb',
+  ),
+  oauthCompleteBinding: fn(
+    'public',
+    'oauth_complete_binding',
+    '(p_state_id uuid, p_user uuid, p_account_id uuid, p_account jsonb, p_credentials jsonb) returns jsonb',
+  ),
+  oauthCloseFlow: fn(
+    'public',
+    'oauth_close_flow',
+    '(p_state_id uuid, p_result text, p_error_code text) returns jsonb',
+  ),
+  upsertMailMessages: fn(
+    'public',
+    'upsert_mail_messages',
+    '(p_account uuid, p_messages jsonb) returns jsonb [{id, provider_message_id, thread_id, inserted}]',
+  ),
+  applyMailChanges: fn(
+    'public',
+    'apply_mail_changes',
+    '(p_account uuid, p_label_changes jsonb, p_deleted text[]) returns jsonb',
+  ),
+  upsertCalendarEvents: fn(
+    'public',
+    'upsert_calendar_events',
+    '(p_account uuid, p_calendar uuid, p_events jsonb, p_origin text) returns jsonb',
+  ),
+  markCalendarEventsDeleted: fn(
+    'public',
+    'mark_calendar_events_deleted',
+    '(p_calendar uuid, p_provider_event_ids text[]) returns int',
+  ),
+  pruneCalendarEvents: fn(
+    'public',
+    'prune_calendar_events',
+    '(p_calendar uuid, p_since timestamptz, p_window_start timestamptz, p_window_end timestamptz) returns int',
+  ),
+  upsertCalendars: fn(
+    'public',
+    'upsert_calendars',
+    '(p_account uuid, p_calendars jsonb) returns jsonb {calendars, missing}',
+  ),
+  upsertTasks: fn('public', 'upsert_tasks', '(p_account uuid, p_tasks jsonb) returns jsonb'),
+  upsertDeviceAccount: fn(
+    'public',
+    'upsert_device_account',
+    '(p_user uuid, p_provider provider, p_installation uuid, p_capabilities capability[]) returns jsonb',
+  ),
+  stageDeviceSnapshot: fn(
+    'public',
+    'stage_device_snapshot',
+    '(p_account uuid, p_snapshot jsonb) returns uuid',
+  ),
+  applyStagedDeviceSnapshot: fn(
+    'public',
+    'apply_staged_device_snapshot',
+    '(p_account uuid, p_content_hash text) returns jsonb',
+  ),
+  disconnectIntegration: fn(
+    'public',
+    'disconnect_integration',
+    '(p_account uuid, p_user uuid, p_revocation_mode text, p_purge_content boolean, p_correlation_id uuid) returns jsonb',
+  ),
+  integrationPurgeBatch: fn(
+    'public',
+    'integration_purge_batch',
+    '(p_account uuid, p_disconnected_at timestamptz, p_purge_derived boolean, p_batch int, p_reason text) returns jsonb',
+  ),
+  demoStateGet: fn('public', 'demo_state_get', '(p_account uuid) returns jsonb'),
+  demoStateRecordWrite: fn(
+    'public',
+    'demo_state_record_write',
+    '(p_account uuid, p_resource text, p_key text, p_item jsonb) returns jsonb {created, item}',
+  ),
+  demoStateSetClock: fn(
+    'public',
+    'demo_state_set_clock',
+    '(p_account uuid, p_resource text, p_clock timestamptz) returns void',
+  ),
+  // AI pipeline part 1 (T-5.01…T-5.08, T-5.17; migration 20260924002400)
+  searchUserContent: fn(
+    'public',
+    'search_user_content',
+    '(p_query text, p_query_embedding vector(1024), p_types text[], p_from timestamptz, p_to timestamptz, p_contact_id uuid, p_cursor text, p_limit int) returns table(result_type, entity_id, title, snippet, source_type, source_id, source_provider, source_timestamp, score)',
+  ),
+  upsertContactsFromPeople: fn(
+    'public',
+    'upsert_contacts_from_people',
+    '(p_user uuid, p_people jsonb) returns jsonb {email: contact_id}',
+  ),
+  linkContactRefs: fn(
+    'public',
+    'link_contact_refs',
+    '(p_user uuid, p_thread_ids uuid[], p_event_ids uuid[]) returns int',
+  ),
+  refreshContactStats: fn(
+    'public',
+    'refresh_contact_stats',
+    '(p_user uuid, p_contact_ids uuid[], p_now timestamptz) returns int',
+  ),
+  briefingEveningReady: fn(
+    'public',
+    'briefing_evening_ready',
+    '(p_user uuid, p_briefing_id uuid, p_item_ids uuid[], p_now timestamptz) returns jsonb {ok, reason?, carried, next_morning_at, closed_at, replayed}',
+  ),
+  briefingRetry: fn(
+    'public',
+    'briefing_retry',
+    '(p_user uuid, p_briefing_id uuid, p_now timestamptz) returns jsonb {ok, reason?, briefing_id, status, job_id, job_status}',
+  ),
+  nextMorningBriefingAt: fn(
+    'public',
+    'next_morning_briefing_at',
+    '(p_user uuid, p_after_date date) returns timestamptz',
+  ),
+  aiOrgBudgetEvaluate: fn(
+    'public',
+    'ai_org_budget_evaluate',
+    '(p_now timestamptz) returns jsonb {status, spent_micros, ceiling_micros, pct, alerts, tripped}',
+  ),
+  aiCostByModel: fn(
+    'public',
+    'ai_cost_by_model',
+    '(p_day date) returns jsonb [{provider, model, cost_usd_micros, requests}]',
+  ),
+  // Privacy: export, history and account deletion, retention (T-11.01…T-11.04; migrations 2500/2510)
+  createExportRequest: fn(
+    'public',
+    'create_export_request',
+    '(p_user uuid, p_include text[], p_correlation_id uuid) returns jsonb {created, request_id, status, job_id?}',
+  ),
+  historyDeletionCounts: fn(
+    'public',
+    'history_deletion_counts',
+    '(p_user uuid, p_account uuid) returns jsonb {summaries, priority_decisions, memory_chunks, assistant_threads, learned_preferences, insights, briefings}',
+  ),
+  purgeHistory: fn(
+    'public',
+    'purge_history',
+    '(p_user uuid, p_account uuid) returns jsonb {deleted, storage_paths}',
+  ),
+  deletionRequestUpdate: fn(
+    'public',
+    'deletion_request_update',
+    '(p_request uuid, p_status deletion_status, p_steps jsonb, p_error_code text, p_notify bytea, p_notify_locale text, p_clear_notify boolean) returns jsonb {id, kind, status, steps, user_id, completed_at}',
+  ),
+  accountDeletionContext: fn(
+    'public',
+    'account_deletion_context',
+    '(p_user uuid) returns jsonb {user_exists, email, locale, installation_ids, apple_sub, accounts, watches, subscription}',
+  ),
+  accountDeletionBegin: fn(
+    'public',
+    'account_deletion_begin',
+    '(p_request uuid, p_user uuid, p_job uuid) returns jsonb {state, steps, user_id, jobs_cancelled?}',
+  ),
+  accountDeletionSystemPurge: fn(
+    'public',
+    'account_deletion_system_purge',
+    '(p_user uuid, p_job uuid) returns jsonb',
+  ),
+  privacyTombstonesUpsert: fn(
+    'public',
+    'privacy_tombstones_upsert',
+    '(p_signals jsonb) returns int',
+  ),
+  userRowsRemaining: fn('public', 'user_rows_remaining', '(p_user uuid) returns jsonb'),
+  pseudonymizeAuditSubject: fn(
+    'public',
+    'pseudonymize_audit_subject',
+    '(p_user uuid) returns bigint',
+  ),
+  retentionCleanup: fn(
+    'public',
+    'retention_cleanup',
+    '(p_batch int, p_now timestamptz) returns jsonb {deleted, storage_paths}',
+  ),
+  recomputeExpiresAt: fn(
+    'public',
+    'recompute_expires_at',
+    '(p_user uuid, p_batch int) returns int',
+  ),
+  retentionOrphanObjects: fn(
+    'public',
+    'retention_orphan_objects',
+    '(p_now timestamptz, p_limit int) returns jsonb {captures, briefing-audio, exports}',
+  ),
+  retentionSystemSweep: fn(
+    'public',
+    'retention_system_sweep',
+    '(p_batch int, p_now timestamptz) returns jsonb',
+  ),
+  // AI pipeline part 2 (T-5.13, T-5.15; migration 20260924002600)
+  discardCapture: fn(
+    'public',
+    'discard_capture',
+    '(p_user uuid, p_capture_id uuid) returns jsonb {capture, storage_path, rejected, changed}',
+  ),
+  firstAnalysisCounts: fn(
+    'public',
+    'first_analysis_counts',
+    '(p_user uuid, p_since timestamptz, p_now timestamptz) returns jsonb {mails_found, classified, potential_important, upcoming_events, possible_followups}',
   ),
 } as const satisfies Record<string, DbFunction>;
 

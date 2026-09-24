@@ -62,5 +62,22 @@
     "timeSaved": "Estimated time saved: {duration}",
     "share": "Share",
     "shareCardTitle": "My Digital Week"
+  },
+  "generated": {
+    "online": "Online",
+    "morning": {
+      "template": "Today {meetings, plural, =0 {your calendar has no meetings} one {you have # event} other {you have # events}}, {replies, plural, =0 {no email is waiting for your reply} one {# email is waiting for your reply} other {# emails are waiting for your reply}}. {deadlines, plural, =0 {No deadline is coming up} one {# deadline is coming up} other {# deadlines are coming up}}{waiting, plural, =0 {.} other {; you are waiting on # replies.}}"
+    },
+    "evening": {
+      "waitingDays": "{days, plural, one {Waiting # day} other {Waiting # days}}"
+    },
+    "weekly": {
+      "template": "This week {mails} emails were analysed; there were {important} important topics, {meetings} meetings and {followups} follow-ups.",
+      "timeSavedPrefix": "Estimated time saved",
+      "shareText": "My Digital Week: {mails} emails analysed, {important} important topics surfaced. Estimated time saved: {hours} h {minutes} min."
+    },
+    "audio": {
+      "overview": "Overview"
+    }
   }
 }

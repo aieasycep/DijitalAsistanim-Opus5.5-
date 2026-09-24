@@ -60,6 +60,28 @@ export const RATE_LIMITS = {
   device_execution: { limit: 60, windowSeconds: 60, subject: 'installation' },
   notifications_test: { limit: 3, windowSeconds: 3600, subject: 'user' },
   widgets_snapshot: { limit: 60, windowSeconds: 3600, subject: 'installation' },
+  // Integrations (API-INT-01/02 start / upgrade, API-INT-07 completion, API-INT-04 per account).
+  integrations_start: { limit: 10, windowSeconds: 60, subject: 'user' },
+  integrations_start_hourly: { limit: 30, windowSeconds: 3600, subject: 'user' },
+  integrations_complete: { limit: 20, windowSeconds: 600, subject: 'user' },
+  integrations_sync: { limit: 1, windowSeconds: 60, subject: 'user' },
+  mail_original: { limit: 60, windowSeconds: 60, subject: 'user' },
+  // Privacy (API-PRV-01…04): export / delete-history / delete-account 3 per 24 h each; download 20/h.
+  privacy_export: { limit: 3, windowSeconds: 86_400, subject: 'user' },
+  privacy_delete_history: { limit: 3, windowSeconds: 86_400, subject: 'user' },
+  privacy_delete_account: { limit: 3, windowSeconds: 86_400, subject: 'user' },
+  privacy_export_download: { limit: 20, windowSeconds: 3600, subject: 'user' },
+  search: { limit: 30, windowSeconds: 60, subject: 'user' },
+  // AI pipeline part 2 (API_CONTRACTS §2.9): reply drafts, assistant, transcribe, captures, audio.
+  reply_draft: { limit: 10, windowSeconds: 60, subject: 'user' },
+  reply_attachment: { limit: 20, windowSeconds: 60, subject: 'user' },
+  assistant_message: { limit: 12, windowSeconds: 60, subject: 'user' },
+  transcribe: { limit: 6, windowSeconds: 60, subject: 'user' },
+  captures: { limit: 20, windowSeconds: 60, subject: 'user' },
+  meeting_prep_audio: { limit: 10, windowSeconds: 3600, subject: 'user' },
+  thread_summary: { limit: 20, windowSeconds: 60, subject: 'user' },
+  /** API-BRF-04: 1 per 10 min per briefing (enforced with the briefing id as the subject). */
+  briefing_retry: { limit: 1, windowSeconds: 600, subject: 'user' },
 } as const satisfies Record<string, RateLimitClass>;
 export type RateLimitClassName = keyof typeof RATE_LIMITS;
 

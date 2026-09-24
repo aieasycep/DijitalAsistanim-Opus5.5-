@@ -32,7 +32,8 @@ select tables_are(
   ],
   'public has exactly the DATABASE_AND_RLS_PLAN §4 tables'
 );
-select tables_are('private', array['demo_fixture_state', 'admin_role_permissions'], 'private has exactly its two tables');
+select tables_are('private', array['demo_fixture_state', 'admin_role_permissions', 'device_snapshot_uploads'],
+                  'private has exactly its tables (device_snapshot_uploads: migration 20260924002000)');
 select views_are('public', array['connected_account_sync_health'], 'public has exactly one view');
 select ok(
   (select coalesce('security_invoker=true' = any (c.reloptions), false)
@@ -466,6 +467,8 @@ select throws_ok(
 );
 
 -- ─── Intelligence (T-2.07) ────────────────────────────────────────────────────────────────────
+-- Every prompt key is seeded active (20260924002410, 20260924002610); this block needs its own rows.
+delete from public.prompt_versions where prompt_key = 'reply_draft';
 insert into public.prompt_versions (id, prompt_key, version, status, system_prompt, user_template, output_schema_ref, schema_hash, model_role, eval_passed)
 values ('00000000-0000-4000-8000-0000000b0001', 'reply_draft', 1, 'active', 's', 'u', 'ReplyDraftsV1', 'h', 'reasoning', true);
 select throws_ok(

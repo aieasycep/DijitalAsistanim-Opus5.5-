@@ -44,6 +44,7 @@ import trWeb from '../messages/tr/web.json';
 import trLegal from '../messages/tr/legal.json';
 import trFaq from '../messages/tr/faq.json';
 import trBackoffice from '../messages/tr/backoffice.json';
+import trBackofficeEmail from '../messages/tr/backoffice_email.json';
 import enCommon from '../messages/en/common.json';
 import enStates from '../messages/en/states.json';
 import enErrors from '../messages/en/errors.json';
@@ -83,6 +84,7 @@ import enWeb from '../messages/en/web.json';
 import enLegal from '../messages/en/legal.json';
 import enFaq from '../messages/en/faq.json';
 import enBackoffice from '../messages/en/backoffice.json';
+import enBackofficeEmail from '../messages/en/backoffice_email.json';
 
 import type { Locale } from './locales.ts';
 import type { Namespace } from './namespaces.ts';
@@ -127,6 +129,7 @@ const tr = {
   legal: trLegal,
   faq: trFaq,
   backoffice: trBackoffice,
+  backoffice_email: trBackofficeEmail,
 };
 
 /** The catalog shape, inferred from the Turkish catalog (the default locale). */
@@ -172,6 +175,7 @@ const en: Messages = {
   legal: enLegal,
   faq: enFaq,
   backoffice: enBackoffice,
+  backoffice_email: enBackofficeEmail,
 };
 
 const CATALOGS: Readonly<Record<Locale, Messages>> = { tr, en };

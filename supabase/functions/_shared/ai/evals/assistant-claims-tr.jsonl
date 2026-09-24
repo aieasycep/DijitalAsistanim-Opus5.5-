@@ -1,0 +1,30 @@
+{"id": "ac01", "cited": ["Elektrik faturası 1.842 TL, son ödeme 5 Ekim."], "sentence": "Elektrik faturası 1.842 TL ve son ödeme 5 Ekim.", "expect": "verified", "set": "answerable"}
+{"id": "ac02", "cited": ["Elektrik faturası 1.842 TL, son ödeme 5 Ekim."], "sentence": "Elektrik faturasının son ödeme günü 5 Ekim.", "expect": "verified", "set": "answerable"}
+{"id": "ac03", "cited": ["Elektrik faturası 1.842 TL, son ödeme 5 Ekim."], "sentence": "Elektrik faturası 1.842 TL, son ödeme 7 Ekim.", "expect": "partial", "set": "answerable"}
+{"id": "ac04", "cited": ["Elektrik faturası 1.842 TL, son ödeme 5 Ekim."], "sentence": "Su faturası 320 TL, son ödeme 12 Kasım.", "expect": "unsupported", "set": "unanswerable"}
+{"id": "ac05", "cited": ["Mehmet Yılmaz revize teklifi Cuma istiyor; fiyatlarda yüzde 5 iskonto konuşuldu."], "sentence": "Mehmet Yılmaz revize teklifi Cuma istiyor.", "expect": "verified", "set": "answerable"}
+{"id": "ac06", "cited": ["Mehmet Yılmaz revize teklifi Cuma istiyor; fiyatlarda yüzde 5 iskonto konuşuldu."], "sentence": "Revize teklifte yüzde 5 iskonto konuşuldu.", "expect": "verified", "set": "answerable"}
+{"id": "ac07", "cited": ["Mehmet Yılmaz revize teklifi Cuma istiyor; fiyatlarda yüzde 5 iskonto konuşuldu."], "sentence": "Revize teklifte yüzde 10 iskonto konuşuldu.", "expect": "unsupported", "set": "unanswerable"}
+{"id": "ac08", "cited": ["Mehmet Yılmaz revize teklifi Cuma istiyor; fiyatlarda yüzde 5 iskonto konuşuldu."], "sentence": "Mehmet Yılmaz teklifi Salı istiyor.", "expect": "partial", "set": "answerable"}
+{"id": "ac09", "cited": ["İstanbul Ankara uçuşu TK2124 için biletin onaylandı, PNR ABC123."], "sentence": "Ankara uçuşun TK2124 ve PNR ABC123.", "expect": "verified", "set": "answerable"}
+{"id": "ac10", "cited": ["İstanbul Ankara uçuşu TK2124 için biletin onaylandı, PNR ABC123."], "sentence": "Uçuşun TK2125 numaralı sefer.", "expect": "unsupported", "set": "unanswerable"}
+{"id": "ac11", "cited": ["İstanbul Ankara uçuşu TK2124 için biletin onaylandı, PNR ABC123."], "sentence": "Zürih uçuşun B12 kapısından 14:30’da kalkıyor.", "expect": "unsupported", "set": "unanswerable"}
+{"id": "ac12", "cited": ["Kira sözleşmesi 1 Mart 2027 tarihinde yenileniyor, aylık kira 18.500 TL."], "sentence": "Kira sözleşmen 1 Mart 2027 tarihinde yenileniyor.", "expect": "verified", "set": "answerable"}
+{"id": "ac13", "cited": ["Kira sözleşmesi 1 Mart 2027 tarihinde yenileniyor, aylık kira 18.500 TL."], "sentence": "Aylık kira 18.500 TL.", "expect": "verified", "set": "answerable"}
+{"id": "ac14", "cited": ["Kira sözleşmesi 1 Mart 2027 tarihinde yenileniyor, aylık kira 18.500 TL."], "sentence": "Aylık kira 21.000 TL ve sözleşme 1 Nisan 2027 tarihinde bitiyor.", "expect": "partial", "set": "unanswerable"}
+{"id": "ac15", "cited": ["Kira sözleşmesi 1 Mart 2027 tarihinde yenileniyor, aylık kira 18.500 TL."], "sentence": "Kira 18.500 TL, sözleşme 1 Nisan 2027 tarihinde yenileniyor.", "expect": "partial", "set": "answerable"}
+{"id": "ac16", "cited": [], "sentence": "Elektrik faturası 1.842 TL.", "expect": "unsupported", "set": "unanswerable"}
+{"id": "ac17", "cited": [], "sentence": "Evet, öyle görünüyor.", "expect": "unsupported", "set": "unanswerable"}
+{"id": "ac18", "cited": ["Mehmet Yılmaz revize teklifi Cuma istiyor; fiyatlarda yüzde 5 iskonto konuşuldu."], "sentence": "Evet, öyle görünüyor.", "expect": "verified", "set": "answerable"}
+{"id": "ac19", "cited": ["Elektrik faturası 1.842 TL, son ödeme 5 Ekim.", "Mehmet Yılmaz revize teklifi Cuma istiyor; fiyatlarda yüzde 5 iskonto konuşuldu."], "sentence": "Mehmet Yılmaz Cuma teklif istiyor, elektrik faturası 1.842 TL.", "expect": "verified", "set": "answerable"}
+{"id": "ac20", "cited": ["Elektrik faturası 1.842 TL, son ödeme 5 Ekim."], "sentence": "Doğalgaz faturası Aralık ayında 2.300 TL geldi.", "expect": "unsupported", "set": "unanswerable"}
+{"id": "ac21", "cited": ["Mehmet Yılmaz revize teklifi Cuma istiyor; fiyatlarda yüzde 5 iskonto konuşuldu."], "sentence": "Ayşe Demir sözleşmeyi Pazartesi imzalayacak.", "expect": "unsupported", "set": "unanswerable"}
+{"id": "ac22", "cited": ["İstanbul Ankara uçuşu TK2124 için biletin onaylandı, PNR ABC123."], "sentence": "Otel rezervasyonun Hilton İzmir’de 3 gece.", "expect": "unsupported", "set": "unanswerable"}
+{"id": "ac23", "cited": ["Kira sözleşmesi 1 Mart 2027 tarihinde yenileniyor, aylık kira 18.500 TL."], "sentence": "Depozito 40.000 TL olarak ödendi.", "expect": "unsupported", "set": "unanswerable"}
+{"id": "ac24", "cited": ["Elektrik faturası 1.842 TL, son ödeme 5 Ekim."], "sentence": "Son ödeme tarihi 15 Eylül.", "expect": "unsupported", "set": "unanswerable"}
+{"id": "ac25", "cited": ["Mehmet Yılmaz revize teklifi Cuma istiyor; fiyatlarda yüzde 5 iskonto konuşuldu."], "sentence": "Burak Kaya fiyatları onayladı.", "expect": "unsupported", "set": "unanswerable"}
+{"id": "ac26", "cited": ["İstanbul Ankara uçuşu TK2124 için biletin onaylandı, PNR ABC123."], "sentence": "Dönüş uçuşun 22 Ekim’de TK2155 ile.", "expect": "unsupported", "set": "unanswerable"}
+{"id": "ac27", "cited": ["Kira sözleşmesi 1 Mart 2027 tarihinde yenileniyor, aylık kira 18.500 TL."], "sentence": "Ev sahibi Selin Hanım kirayı 2028’de artıracak.", "expect": "unsupported", "set": "unanswerable"}
+{"id": "ac28", "cited": ["Elektrik faturası 1.842 TL, son ödeme 5 Ekim.", "Kira sözleşmesi 1 Mart 2027 tarihinde yenileniyor, aylık kira 18.500 TL."], "sentence": "Bu ay elektrik 1.842 TL, kira 18.500 TL.", "expect": "verified", "set": "answerable"}
+{"id": "ac29", "cited": ["Elektrik faturası 1.842 TL, son ödeme 5 Ekim."], "sentence": "Elektrik faturası 1.842 TL, son ödeme 5 Ekim, abone numarası 778812.", "expect": "partial", "set": "answerable"}
+{"id": "ac30", "cited": ["Mehmet Yılmaz revize teklifi Cuma istiyor; fiyatlarda yüzde 5 iskonto konuşuldu."], "sentence": "Toplantı Zoom üzerinden Perşembe 15:00’te.", "expect": "unsupported", "set": "unanswerable"}

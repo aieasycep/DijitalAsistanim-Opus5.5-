@@ -17,7 +17,8 @@
     "quality-gate": "node scripts/quality-gate/run.ts",
     "test:scripts": "node --test \"scripts/**/*.test.ts\"",
     "admin:bootstrap": "node scripts/admin-bootstrap.ts",
-    "scan:bundles": "node scripts/security/scan-bundles.ts",
+    "scan:bundles": "node scripts/security/check-env-split.ts && node scripts/security/scan-bundles.ts",
+    "check:env-split": "node scripts/security/check-env-split.ts",
     "e2e:backoffice": "turbo run e2e:backoffice --filter=@da/backoffice",
     "mobile:check": "turbo run mobile:check --filter=@da/mobile",
     "design:extract": "node scripts/design/extract-tokens.ts && node scripts/design/extract-icons.ts && node scripts/design/extract-copy.ts",
@@ -37,7 +38,9 @@
     "functions:imports": "node scripts/functions/sync-import-maps.ts",
     "functions:check": "node scripts/functions/deno-tasks.ts check",
     "functions:lint": "node scripts/functions/deno-tasks.ts lint",
-    "functions:test": "node scripts/functions/deno-tasks.ts test"
+    "functions:test": "node scripts/functions/deno-tasks.ts test",
+    "ai:prompts": "node scripts/gen-prompt-migration.ts",
+    "ai:eval": "node scripts/gen-prompt-migration.ts --check && deno test --config supabase/functions/deno.json --allow-env --allow-read --no-prompt supabase/functions/_shared/ai/evals"
   },
   "devDependencies": {
     "@da/config": "workspace:*",

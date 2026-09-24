@@ -2,6 +2,7 @@
  * Dependencies of the `api` function. `index.ts` wires the real (supabase-backed) implementations
  * through `repos/system/index.ts`; tests pass in-memory ones.
  */
+import type { PrivacyApiDeps } from './routes/privacy.ts';
 import type { Hono, MiddlewareHandler } from 'hono';
 import type { RateLimitClassName } from '../_shared/config.ts';
 import type { FunctionEnv, RawEnv } from '../_shared/env.ts';
@@ -21,6 +22,7 @@ import type { EntitlementGate } from '../_shared/services/entitlements/gate.ts';
 import type { BillingRepo } from '../_shared/services/billing/sync.ts';
 import type { RevenueCatClient } from '../_shared/services/billing/revenuecat.ts';
 import type { ReferralRepo } from '../_shared/services/referrals/repo.ts';
+import type { IntegrationRuntime } from '../_shared/services/integrations/runtime.ts';
 import type { Sentry } from '../_shared/observability/sentry.ts';
 import type { AnalyticsRepo } from './routes/analytics.ts';
 import type { SupportRepo } from './routes/support.ts';
@@ -36,6 +38,8 @@ export interface JobQueue {
   enqueue(input: EnqueueInput): Promise<string>;
   byKey(key: string): Promise<{ id: string; status: string } | null>;
 }
+import type { IntelApi } from './routes/intel-api.ts';
+import type { AssistApi } from './routes/assist-api.ts';
 
 /** Per-request repositories bound to the caller (their RLS client plus scoped system access). */
 export interface RequestRepos {
@@ -82,8 +86,16 @@ export interface ApiDeps {
   readonly capabilities: ServiceCapabilities;
   readonly repos: (auth: UserAuth) => RequestRepos;
   readonly business: ApiBusiness;
+  /** Integration engine (API-INT-01…07, API-MAIL-01); the routes are mounted when present. */
+  readonly integrations?: IntegrationRuntime;
+  /** Privacy (API-PRV-01…04, T-11.01…T-11.03); the routes are mounted when present. */
+  readonly privacy?: PrivacyApiDeps;
   readonly fetch?: typeof fetch;
   readonly now?: () => Date;
+  /** AI pipeline routes (API-MAIL-07, API-SRCH-01, API-BRF-02…04). */
+  readonly intel?: IntelApi;
+  /** AI pipeline part 2 (T-5.09…T-5.15): replies, meetings, assistant, captures, plan, onboarding. */
+  readonly assist?: AssistApi;
 }
 
 export interface RouteKit {

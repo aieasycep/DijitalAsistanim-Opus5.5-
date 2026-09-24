@@ -1,0 +1,36 @@
+{"id": "pm01", "kind": "explicit", "note": "Mehmet'e yarın teklifi göndereceğim.", "expect": 1}
+{"id": "pm02", "kind": "explicit", "note": "Ayşe'ye Cuma bütçe tablosunu ileteceğim.", "expect": 1}
+{"id": "pm03", "kind": "explicit", "note": "Burak'a Pazartesi fiyat listesini göndereceğim.", "expect": 1}
+{"id": "pm04", "kind": "explicit", "note": "Zeynep'e haftaya sözleşme taslağını ileteceğim.", "expect": 1}
+{"id": "pm05", "kind": "explicit", "note": "Can'a Perşembe raporu paylaşacağım.", "expect": 1}
+{"id": "pm06", "kind": "explicit", "note": "Elif'e bugün sunumu göndereceğim.", "expect": 1}
+{"id": "pm07", "kind": "explicit", "note": "Mehmet'e yarın teklifi göndereceğim.", "expect": 1}
+{"id": "pm08", "kind": "explicit", "note": "Ayşe'ye Cuma bütçe tablosunu ileteceğim.", "expect": 1}
+{"id": "pm09", "kind": "explicit", "note": "Burak'a Pazartesi fiyat listesini göndereceğim.", "expect": 1}
+{"id": "pm10", "kind": "explicit", "note": "Zeynep'e haftaya sözleşme taslağını ileteceğim.", "expect": 1}
+{"id": "pm11", "kind": "explicit", "note": "Can'a Perşembe raporu paylaşacağım.", "expect": 1}
+{"id": "pm12", "kind": "explicit", "note": "Elif'e bugün sunumu göndereceğim.", "expect": 1}
+{"id": "pm13", "kind": "explicit", "note": "Mehmet'e yarın teklifi göndereceğim.", "expect": 1}
+{"id": "pm14", "kind": "explicit", "note": "Ayşe'ye Cuma bütçe tablosunu ileteceğim.", "expect": 1}
+{"id": "pm15", "kind": "explicit", "note": "Burak'a Pazartesi fiyat listesini göndereceğim.", "expect": 1}
+{"id": "pm16", "kind": "explicit", "note": "Zeynep'e haftaya sözleşme taslağını ileteceğim.", "expect": 1}
+{"id": "pm17", "kind": "explicit", "note": "Can'a Perşembe raporu paylaşacağım.", "expect": 1}
+{"id": "pm18", "kind": "explicit", "note": "Elif'e bugün sunumu göndereceğim.", "expect": 1}
+{"id": "pm19", "kind": "negated", "note": "Mehmet'e teklifi bu hafta göndermeyeceğim.", "expect": 0}
+{"id": "pm20", "kind": "negated", "note": "Ayşe'ye sunumu bu hafta göndermeyeceğim.", "expect": 0}
+{"id": "pm21", "kind": "negated", "note": "Burak'a raporu bu hafta göndermeyeceğim.", "expect": 0}
+{"id": "pm22", "kind": "negated", "note": "Zeynep'e sözleşme taslağını bu hafta göndermeyeceğim.", "expect": 0}
+{"id": "pm23", "kind": "negated", "note": "Can'a fiyat listesini bu hafta göndermeyeceğim.", "expect": 0}
+{"id": "pm24", "kind": "negated", "note": "Elif'e bütçe tablosunu bu hafta göndermeyeceğim.", "expect": 0}
+{"id": "pm25", "kind": "none", "note": "Toplantıda bütçe ve takvim konuşuldu.", "expect": 0}
+{"id": "pm26", "kind": "none", "note": "Mehmet fiyatların yüksek olduğunu söyledi.", "expect": 0}
+{"id": "pm27", "kind": "none", "note": "Ayşe yeni ofise taşındıklarını anlattı.", "expect": 0}
+{"id": "pm28", "kind": "none", "note": "Genel durum değerlendirmesi yapıldı, karar alınmadı.", "expect": 0}
+{"id": "pm29", "kind": "none", "note": "Burak ekibin yoğun olduğunu belirtti.", "expect": 0}
+{"id": "pm30", "kind": "none", "note": "Proje planı gözden geçirildi.", "expect": 0}
+{"id": "pm31", "kind": "none", "note": "Satış rakamları geçen çeyrekle karşılaştırıldı.", "expect": 0}
+{"id": "pm32", "kind": "none", "note": "Zeynep lansman tarihini sordu.", "expect": 0}
+{"id": "pm33", "kind": "explicit", "note": "Mehmet'e yarın teklifi göndereceğim. Ayşe'ye Cuma sunumu ileteceğim.", "expect": 2}
+{"id": "pm34", "kind": "explicit", "note": "Toplantı verimliydi. Burak'a Pazartesi raporu göndereceğim.", "expect": 1}
+{"id": "pm35", "kind": "explicit", "note": "Zeynep'e haftaya fiyat listesini ileteceğim. Bütçe konusu açık kaldı.", "expect": 1}
+{"id": "pm36", "kind": "explicit", "note": "Can'a bugün sözleşme taslağını göndereceğim. Elif'e yarın bütçe tablosunu ileteceğim.", "expect": 2}

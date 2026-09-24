@@ -1,0 +1,8 @@
+{"id": "mp01", "title": "Fiyat revizyonu", "description": "Ekim teslimatı için fiyat revizyonunu görüşelim.", "external": true, "mails": [["Revize teklif", "Revize fiyatı Cuma’ya kadar iletebilir misiniz?"]], "notes": []}
+{"id": "mp02", "title": "Lansman planı", "description": "Lansman takvimini ve bütçeyi netleştirelim.", "external": true, "mails": [["Lansman tarihi", "3 Ekim uygun görünüyor, teyit eder misiniz?"]], "notes": ["Geçen toplantıda bütçe onaylandı."]}
+{"id": "mp03", "title": "Sözleşme görüşmesi", "description": null, "external": true, "mails": [["Sözleşme", "Sözleşme taslağına göz atıp yorumlarınızı iletebilir misiniz?"]], "notes": []}
+{"id": "mp04", "title": "Haftalık ekip", "description": "Sprint durumunu ve engelleri konuşalım.", "external": false, "mails": [], "notes": []}
+{"id": "mp05", "title": "VIP müşteri", "description": "Yıllık anlaşmanın yenilenmesini görüşelim.", "external": true, "mails": [["Yenileme", "Yıllık anlaşmayı aynı koşullarla yenilemek istiyoruz."], ["Fatura", "Son faturada bir düzeltme gerekiyor."]], "notes": ["Müşteri hizmet seviyesinden memnun."]}
+{"id": "mp06", "title": "İşe alım", "description": null, "external": false, "mails": [["Aday", "Adayın referans kontrolleri tamamlandı."]], "notes": []}
+{"id": "mp07", "title": "Tedarikçi", "description": "Teslimat gecikmelerini değerlendirelim.", "external": true, "mails": [["Gecikme", "Kasım sevkiyatı iki hafta gecikecek."]], "notes": ["Alternatif tedarikçi araştırılıyor."]}
+{"id": "mp08", "title": "Yatırımcı", "description": "Çeyrek sonuçlarını paylaşalım.", "external": true, "mails": [["Sonuçlar", "Çeyrek gelirleri yüzde 12 arttı."]], "notes": []}
