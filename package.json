@@ -16,15 +16,24 @@
     "format:check": "prettier --check .",
     "quality-gate": "node scripts/quality-gate/run.ts",
     "test:scripts": "node --test \"scripts/**/*.test.ts\"",
-    "design:extract": "node scripts/design/extract-tokens.ts && node scripts/design/extract-icons.ts && node scripts/design/extract-copy.ts"
+    "design:extract": "node scripts/design/extract-tokens.ts && node scripts/design/extract-icons.ts && node scripts/design/extract-copy.ts",
+    "db:start": "supabase start -x studio,imgproxy",
+    "db:stop": "supabase stop",
+    "db:test": "bash scripts/db/tier-a.sh",
+    "db:test:c": "bash scripts/db/tier-c.sh",
+    "db:test:local": "bash scripts/db/tier-c.sh",
+    "db:reset-twice": "bash scripts/db/reset-twice.sh",
+    "db:seed-blocks": "bash scripts/db/sync-seed-blocks.sh --write",
+    "db:psql": "bash scripts/db/psql.sh"
   },
   "devDependencies": {
     "@da/config": "workspace:*",
     "@types/node": "24.13.6",
+    "deno": "2.1.4",
     "eslint": "9.39.5",
     "prettier": "3.9.9",
+    "supabase": "2.117.0",
     "turbo": "2.11.3",
-    "typescript": "catalog:",
-    "deno": "2.1.4"
+    "typescript": "catalog:"
   }
 }

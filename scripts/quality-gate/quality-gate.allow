@@ -1,2 +1,4 @@
 # Allowed occurrences of otherwise-flagged text. Format: <path-substring> | <line-substring> | <justification>
 # Every entry must carry a justification.
+supabase/migrations/20260924000500_intelligence.sql | lower(p_model) not like 'claude-fable-%' | R-02/ADR-44: private.model_routable() behind the ai_model_config check constraint that rejects Covered Models
+supabase/tests/database/001_structure.test.sql | claude-fable-5-1 | R-02: pgTAP asserts the ai_model_config check rejects a Covered Model as primary, fallback and escalation target

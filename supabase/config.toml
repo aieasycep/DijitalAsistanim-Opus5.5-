@@ -1,0 +1,202 @@
+# Supabase project configuration: the local stack (`supabase start`; tier A in CI) and the source of
+# the hosted API/auth settings the deploy job applies with `supabase config push`.
+# Spec: docs/IMPLEMENTATION_PLAN.md T-2.01, docs/INTEGRATION_PLAN.md §8, docs/DATABASE_AND_RLS_PLAN.md §10.
+# No literal secrets: credentials are env(...) substitutions with the .env.example names. The CLI
+# also lets SUPABASE_<SECTION>_<KEY> environment variables override values at push time, e.g.
+# SUPABASE_AUTH_EMAIL_SMTP_ENABLED=true in the deploy job (see [auth.email.smtp] below).
+project_id = "dijital-asistan"
+
+[api]
+enabled = true
+port = 54321
+# admin_api is reachable only through the admin-api Edge Function (gateway header + aal2 + RBAC).
+schemas = ["public", "admin_api"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[api.tls]
+enabled = false
+
+[db]
+port = 54322
+shadow_port = 54320
+# Hosted and CI run PostgreSQL 17; migrations stay PostgreSQL 16 compatible for tier-C tests.
+major_version = 17
+
+[db.pooler]
+enabled = false
+port = 54329
+pool_mode = "transaction"
+default_pool_size = 20
+max_client_conn = 100
+
+[db.migrations]
+enabled = true
+schema_paths = []
+
+[db.seed]
+# Reference data (plan limits, flags, model routing, prices, permissions) ships inside migrations.
+# Demo data is loaded only by `pnpm db:seed:demo` (T-2.24), never by `supabase db reset`.
+enabled = false
+
+[realtime]
+# R-19: Supabase Realtime is not used; the supabase_realtime publication stays empty (pgTAP asserts it).
+enabled = false
+
+[studio]
+enabled = true
+port = 54323
+api_url = "http://127.0.0.1"
+
+# Local mail catcher: email OTP codes (app sign-in, backoffice first factor) are read here locally and in CI.
+[local_smtp]
+enabled = true
+port = 54324
+
+[storage]
+enabled = true
+# Upper bound for every bucket (the largest is `exports`, 512 MiB); per-bucket limits in migration
+# 0016 keep captures at 20 MiB.
+file_size_limit = "512MiB"
+
+[auth]
+enabled = true
+site_url = "https://dijitalasistan.app"
+# Every app variant scheme, the web origin, the backoffice origin and the local dev servers.
+additional_redirect_urls = [
+  "dijitalasistan://auth/callback",
+  "dijitalasistan-preview://auth/callback",
+  "dijitalasistan-dev://auth/callback",
+  "dijitalasistan-e2e://auth/callback",
+  "https://dijitalasistan.app",
+  "https://admin.dijitalasistan.app",
+  "http://127.0.0.1:3000",
+  "http://localhost:3000",
+  "http://127.0.0.1:3001",
+  "http://localhost:3001",
+]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+refresh_token_reuse_interval = 10
+enable_signup = true
+enable_anonymous_sign_ins = false
+enable_manual_linking = false
+
+[auth.rate_limit]
+# INTEGRATION_PLAN §8.4: raised custom-SMTP allowance at launch.
+email_sent = 300
+token_refresh = 150
+sign_in_sign_ups = 30
+token_verifications = 30
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = false
+secure_password_change = false
+# 6-digit one-time code valid for 10 minutes; resend after 60 s (INTEGRATION_PLAN §8.4).
+otp_length = 6
+otp_expiry = 600
+max_frequency = "60s"
+
+# Custom SMTP (Resend) for app and backoffice sign-in codes — External credential required.
+# Disabled here so the local stack and CI deliver codes to the local mail catcher; the deploy job
+# runs `supabase config push` with SUPABASE_AUTH_EMAIL_SMTP_ENABLED=true and the SMTP variables set.
+[auth.email.smtp]
+enabled = false
+host = "env(SUPABASE_AUTH_SMTP_HOST)"
+port = 465
+user = "env(SUPABASE_AUTH_SMTP_USER)"
+pass = "env(SUPABASE_AUTH_SMTP_PASS)"
+admin_email = "env(SUPABASE_AUTH_SMTP_SENDER)"
+sender_name = "Dijital Asistan"
+
+[auth.sms]
+enable_signup = false
+enable_confirmations = false
+
+# Adds the admin_role claim only for active admins (private.custom_access_token_hook, migration 0013).
+[auth.hook.custom_access_token]
+enabled = true
+uri = "pg-functions://postgres/private/custom_access_token_hook"
+
+[auth.mfa]
+max_enrolled_factors = 10
+
+# TOTP is mandatory for backoffice admins (aal2, ADR-06 / R-08).
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
+
+[auth.mfa.phone]
+enroll_enabled = false
+verify_enabled = false
+
+# Sign in with Apple: native id_token on iOS, web OAuth on Android. client_id is the comma-separated
+# Services ID and bundle IDs of every app variant.
+[auth.external.apple]
+enabled = true
+client_id = "env(SUPABASE_AUTH_EXTERNAL_APPLE_CLIENT_ID)"
+secret = "env(SUPABASE_AUTH_EXTERNAL_APPLE_SECRET)"
+redirect_uri = ""
+url = ""
+skip_nonce_check = false
+
+# Google login via native id_token (openid email profile only). The Original sign-in API cannot pass
+# a nonce, so the nonce check is skipped (INTEGRATION_PLAN §8.2; residual risk documented).
+[auth.external.google]
+enabled = true
+client_id = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID)"
+secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET)"
+redirect_uri = ""
+url = ""
+skip_nonce_check = true
+
+# Microsoft login (Supabase `azure` provider, PKCE, multi-tenant; xms_edov configured in Entra).
+[auth.external.azure]
+enabled = true
+client_id = "env(SUPABASE_AUTH_EXTERNAL_AZURE_CLIENT_ID)"
+secret = "env(SUPABASE_AUTH_EXTERNAL_AZURE_SECRET)"
+redirect_uri = ""
+url = "https://login.microsoftonline.com/common"
+skip_nonce_check = false
+
+[edge_runtime]
+enabled = true
+policy = "per_worker"
+inspector_port = 8083
+deno_version = 2
+
+# verify_jwt: only `api` is verified by the gateway; every other function verifies in code
+# (state + PKCE, webhook signatures, the automations secret, admin JWT + BFF key, rate limits).
+[functions.api]
+verify_jwt = true
+
+[functions.oauth]
+verify_jwt = false
+
+[functions.webhooks-google]
+verify_jwt = false
+
+[functions.webhooks-microsoft]
+verify_jwt = false
+
+[functions.webhooks-revenuecat]
+verify_jwt = false
+
+[functions.worker]
+verify_jwt = false
+
+[functions.admin-api]
+verify_jwt = false
+
+[functions.public-api]
+verify_jwt = false
+
+[functions.health]
+verify_jwt = false
+
+[analytics]
+enabled = true
+port = 54327
+backend = "postgres"
