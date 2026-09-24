@@ -52,6 +52,10 @@ export const RATE_LIMITS = {
   support_ticket: { limit: 5, windowSeconds: 3600, subject: 'user' },
   feedback: { limit: 10, windowSeconds: 3600, subject: 'user' },
   analytics: { limit: 60, windowSeconds: 60, subject: 'installation' },
+  approvals_mutate: { limit: 60, windowSeconds: 60, subject: 'user' },
+  device_execution: { limit: 60, windowSeconds: 60, subject: 'installation' },
+  notifications_test: { limit: 3, windowSeconds: 3600, subject: 'user' },
+  widgets_snapshot: { limit: 60, windowSeconds: 3600, subject: 'installation' },
 } as const satisfies Record<string, RateLimitClass>;
 export type RateLimitClassName = keyof typeof RATE_LIMITS;
 

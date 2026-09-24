@@ -9,10 +9,18 @@ import {
   credentialReencryptJob,
   type CredentialsRepo,
 } from '../../_shared/services/credentials.ts';
+import { type ApprovalExecuteDeps, approvalExecuteJob } from './approval_execute.ts';
+import { notificationJob } from './notification.ts';
+import { pushReceiptsJob } from './push_receipts.ts';
+import type { NotificationPipelineDeps } from '../../_shared/services/notifications/pipeline.ts';
 
 export interface HandlerDeps {
   readonly credentials: CredentialsRepo;
   readonly keyring: () => Promise<TokenKeyring>;
+  /** `notification` + `push_receipts` (T-6.07/T-6.08). */
+  readonly notifications?: NotificationPipelineDeps;
+  /** `approval_execute` (T-6.02…T-6.04). */
+  readonly approvals?: ApprovalExecuteDeps;
 }
 
 export function jobDefinitions(deps: HandlerDeps): JobDefinition<never>[] {
@@ -21,6 +29,15 @@ export function jobDefinitions(deps: HandlerDeps): JobDefinition<never>[] {
       repo: deps.credentials,
       keyring: deps.keyring,
     }) as unknown as JobDefinition<never>,
+    ...(deps.notifications === undefined
+      ? []
+      : [
+          notificationJob(deps.notifications) as unknown as JobDefinition<never>,
+          pushReceiptsJob(deps.notifications) as unknown as JobDefinition<never>,
+        ]),
+    ...(deps.approvals === undefined
+      ? []
+      : [approvalExecuteJob(deps.approvals) as unknown as JobDefinition<never>]),
   ];
 }
 

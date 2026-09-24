@@ -20,6 +20,10 @@ import { registerAppleRoutes } from './routes/auth-apple.ts';
 import { registerDeviceRoutes } from './routes/devices.ts';
 import { registerMeRoutes } from './routes/me.ts';
 import { registerSupportRoutes } from './routes/support.ts';
+import { registerApprovalRoutes } from './routes/approvals.ts';
+import { registerReminderRoutes } from './routes/reminders.ts';
+import { registerNotificationRoutes } from './routes/notifications.ts';
+import { registerWidgetRoutes } from './routes/widgets.ts';
 
 export function createApiApp(deps: ApiDeps): Hono<AppEnv> {
   const app = createApp({
@@ -48,5 +52,9 @@ export function createApiApp(deps: ApiDeps): Hono<AppEnv> {
   registerMeRoutes(app, kit);
   registerAnalyticsRoutes(app, kit);
   registerSupportRoutes(app, kit);
+  registerApprovalRoutes(app, kit);
+  registerReminderRoutes(app, kit);
+  registerNotificationRoutes(app, kit);
+  registerWidgetRoutes(app, kit);
   return app;
 }

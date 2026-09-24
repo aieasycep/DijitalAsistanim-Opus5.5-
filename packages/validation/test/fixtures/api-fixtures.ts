@@ -1009,7 +1009,7 @@ export const apiFixtures = {
       },
       {
         part: 'response',
-        why: 'device mode without token',
+        why: 'device mode without token for a server approval',
         value: ok({
           approval: approvalView,
           job: null,

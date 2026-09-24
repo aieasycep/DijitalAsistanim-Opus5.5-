@@ -60,5 +60,66 @@
     "title": "One more permission is needed",
     "body": "To do this, I need an extra permission from your {service} account. It is only used for actions you approve.",
     "cta": "Allow"
+  },
+  "why": {
+    "reply_draft": "You chose to send the reply draft.",
+    "assistant": "You asked the assistant to do this.",
+    "voice": "You asked by voice.",
+    "capture": "Found in something you captured.",
+    "plan_proposal": "Suggested from a free slot in your calendar.",
+    "conflict_resolution": "Suggested to resolve a calendar conflict.",
+    "post_meeting": "Taken from your meeting notes.",
+    "email_detail": "Detected in the email.",
+    "life_event": "Taken from your personal updates.",
+    "follow_up": "From a conversation you are waiting on.",
+    "reminder_sheet": "You chose to set a reminder.",
+    "commitment_detection": "A promise was detected.",
+    "insight": "From one of your priorities.",
+    "manual": "You added it yourself."
+  },
+  "summary": {
+    "timed": "{date} · {start}–{end}",
+    "allDay": "{date} · All day",
+    "moved": "{from} → {to}",
+    "updated": "Event details change.",
+    "taskDue": "Due {date}",
+    "taskNoDue": "No due date",
+    "reminderAt": "{date} · {time}",
+    "commitmentDue": "{counterparty} · {date}",
+    "commitmentNoDue": "{counterparty}",
+    "email": "{count, plural, one {# recipient} other {# recipients}} · {subject}"
+  },
+  "sideEffects": {
+    "emailSentTo": "The email is sent to {count, plural, one {# recipient} other {# recipients}}.",
+    "invitesSent": "Invitations go to {count, plural, one {# attendee} other {# attendees}}.",
+    "attendeesNotified": "{count, plural, one {# attendee gets} other {# attendees get}} an update.",
+    "pushReminder": "You get a notification at {time}.",
+    "quietHours": "Rings during quiet hours.",
+    "providerTask": "The task is added to {service}.",
+    "deviceCalendar": "The event is written to the calendar on this device.",
+    "deviceReminders": "Written to Reminders on your device.",
+    "internalTask": "The task is created in the app.",
+    "internalReminder": "The reminder is set in the app.",
+    "internalCommitment": "The commitment is saved in the app."
+  },
+  "destination": {
+    "inApp": "Dijital Asistan",
+    "device": "This device"
+  },
+  "failure": {
+    "stale": "The event changed in the meantime; refresh the suggestion.",
+    "reauth": "The account connection needs to be renewed.",
+    "scope": "This action needs one more permission.",
+    "rejected": "The service did not accept this action.",
+    "rate_limited": "The service is busy right now. Try again.",
+    "unavailable": "The service can't be reached right now. Try again.",
+    "timeout": "The service didn't answer in time. Try again.",
+    "device_missing": "No result came back from the device. Try again.",
+    "device_failed": "Couldn't write to the device. Try again.",
+    "device_cancelled": "Cancelled on the device. Try again if you like.",
+    "generic": "The action couldn't be completed. Try again."
+  },
+  "learned": {
+    "statement": "Show “{type}” suggestions more selectively."
   }
 }

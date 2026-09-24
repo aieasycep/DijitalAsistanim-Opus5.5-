@@ -103,6 +103,49 @@ export const DB_FN = {
   ),
   // Admin gateway (DB §6.10, BACKOFFICE_PLAN §2.6)
   adminAuthorize: fn('admin_api', 'authorize', '(p_permission text) returns jsonb'),
+  // Approvals, reminders (DB §6.6; migration 20260924002100)
+  createApproval: fn(
+    'public',
+    'create_approval',
+    '(p_user uuid, p_row jsonb, p_actor text) returns approval_actions',
+  ),
+  transitionApproval: fn(
+    'public',
+    'transition_approval',
+    '(p_id uuid, p_to approval_status, p_actor text, p_actor_id uuid, p_idempotency_key text, p_reason text, p_result jsonb, p_error_code text, p_error_message text, p_via approval_via, p_device_token_hash bytea) returns approval_actions',
+  ),
+  editApprovalPayload: fn(
+    'public',
+    'edit_approval_payload',
+    '(p_id uuid, p_user uuid, p_payload jsonb, p_payload_hash bytea, p_change_summary text, p_exact_change jsonb) returns approval_actions',
+  ),
+  startDeviceExecution: fn(
+    'public',
+    'start_device_execution',
+    '(p_id uuid, p_user uuid, p_installation uuid, p_token_hash bytea) returns approval_actions',
+  ),
+  scheduleReminder: fn(
+    'public',
+    'schedule_reminder',
+    '(p_user uuid, p_row jsonb) returns jsonb {created, reminder}',
+  ),
+  cancelReminder: fn(
+    'public',
+    'cancel_reminder',
+    '(p_user uuid, p_id uuid, p_reason text) returns reminders',
+  ),
+  accountCan: fn('public', 'account_can', '(p_account uuid, p_cap capability) returns boolean'),
+  planLimitValue: fn('public', 'plan_limit', '(p_user uuid, p_key text) returns jsonb'),
+  upsertLearnedPreference: fn(
+    'public',
+    'upsert_learned_preference',
+    '(p_user uuid, p_target_type text, p_target_ref text, p_group_key text, p_effect jsonb, p_evidence_delta int, p_statement text) returns uuid',
+  ),
+  tryLockCredentialRefresh: fn(
+    'public',
+    'try_lock_credential_refresh',
+    '(p_account uuid, p_owner text, p_seconds int) returns boolean',
+  ),
 } as const satisfies Record<string, DbFunction>;
 
 export type DbFunctionName = keyof typeof DB_FN;

@@ -36,6 +36,17 @@ import { supabaseFlagSource } from '../../../_shared/services/flags.ts';
 import type { ApiDeps } from '../../deps.ts';
 import { supabaseAnalyticsRepo } from '../../routes/analytics.ts';
 import { supabaseSupportRepo } from '../../routes/support.ts';
+import { enqueueJob } from '../../../_shared/jobs/client.ts';
+import { createProviderRegistry } from '../../../_shared/providers/registry.ts';
+import { SERVER_ADAPTER_FACTORIES } from '../../../_shared/providers/factories.ts';
+import { supabaseApprovalsRepo } from '../../../_shared/services/approvals/repo.ts';
+import { supabaseExecuteRepo } from '../../../_shared/services/approvals/execute/repo.ts';
+import { registryProviderSessions } from '../../../_shared/services/approvals/execute/session.ts';
+import { providerEventPrecondition } from '../../../_shared/services/approvals/precondition.ts';
+import { supabaseNotificationsRepo } from '../../../_shared/services/notifications/repo.ts';
+import { supabaseRemindersRepo } from '../../../_shared/services/reminders.ts';
+import { supabaseWidgetSources } from '../../../_shared/services/widgets/sources.ts';
+import type { JobQueue } from '../../deps.ts';
 
 export function createApiDeps(input: {
   readonly env: FunctionEnv;
@@ -60,6 +71,30 @@ export function createApiDeps(input: {
   );
   let keyring: Promise<TokenKeyring> | null = null;
   const ai = createAiProviders(raw);
+  const approvals = supabaseApprovalsRepo(system);
+  const reminders = supabaseRemindersRepo(system);
+  const notifications = supabaseNotificationsRepo(system);
+  const jobs: JobQueue = {
+    enqueue: (job) => enqueueJob(system, job),
+    async byKey(key) {
+      const { data, error } = await system
+        .from('jobs')
+        .select('id,status')
+        .eq('idempotency_key', key)
+        .maybeSingle();
+      if (error !== null) return null;
+      return (data ?? null) as { id: string; status: string } | null;
+    },
+  };
+  const eventPrecondition = providerEventPrecondition({
+    sessions: registryProviderSessions({
+      system,
+      registry: createProviderRegistry(SERVER_ADAPTER_FACTORIES, raw),
+      keyring: () => (keyring ??= loadKeyring(env)),
+    }),
+    accounts: supabaseExecuteRepo(system),
+    log: input.log,
+  });
 
   return {
     env,
@@ -101,6 +136,12 @@ export function createApiDeps(input: {
         ),
         analytics: supabaseAnalyticsRepo({ system, user }),
         support: supabaseSupportRepo(system),
+        approvals,
+        reminders,
+        notifications,
+        widgets: supabaseWidgetSources(user, auth.userId),
+        jobs,
+        eventPrecondition,
       };
     },
   };

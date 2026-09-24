@@ -9,6 +9,15 @@ import { assertDemoAllowed } from '../_shared/providers/demo/guard.ts';
 import { supabaseCredentialsRepo } from '../_shared/services/credentials.ts';
 import { createWorkerApp } from './app.ts';
 import { createHandlerRegistry } from './handlers/index.ts';
+import { createProviderRegistry } from '../_shared/providers/registry.ts';
+import { SERVER_ADAPTER_FACTORIES } from '../_shared/providers/factories.ts';
+import { supabaseExecuteRepo } from '../_shared/services/approvals/execute/repo.ts';
+import { registryProviderSessions } from '../_shared/services/approvals/execute/session.ts';
+import { expoPushClientFromEnv } from '../_shared/services/notifications/expo-push.ts';
+import {
+  supabaseNotificationsRepo,
+  supabaseTriggerRepo,
+} from '../_shared/services/notifications/repo.ts';
 
 const raw = processEnv();
 assertDemoAllowed(raw);
@@ -21,6 +30,20 @@ const app = createWorkerApp({
   registry: createHandlerRegistry({
     credentials: supabaseCredentialsRepo(system),
     keyring: () => (keyring ??= loadKeyring(env)),
+    notifications: {
+      repo: supabaseNotificationsRepo(system),
+      triggers: supabaseTriggerRepo(system),
+      expo: expoPushClientFromEnv(raw),
+    },
+    approvals: {
+      repo: supabaseExecuteRepo(system),
+      sessions: registryProviderSessions({
+        system,
+        registry: createProviderRegistry(SERVER_ADAPTER_FACTORIES, raw),
+        keyring: () => (keyring ??= loadKeyring(env)),
+      }),
+      markers: { mailDomain: env.MAIL_MESSAGE_ID_DOMAIN, webUrl: env.PUBLIC_WEB_URL },
+    },
   }),
   log: createLogger({ fn: 'worker' }),
   sentry: createSentry({ dsn: env.SENTRY_DSN, environment: env.APP_ENV }),
