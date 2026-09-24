@@ -2563,7 +2563,7 @@ CaptureActionsBody = z.strictObject({
   items: z.array(z.object({ item_id: z.string().max(40),
     action_type: z.enum(['calendar_create','task_create','reminder_create','commitment_create']),
     overrides: z.record(z.string(), z.unknown()).optional(),
-    destination: z.unknown() })).min(0).max(10),                // parsed per action type's target schema
+    destination: z.unknown().optional() })).min(0).max(10),     // parsed per action type's target schema; omitted = default
   save_to_memory: z.boolean().default(false) });
 CaptureActionsResponse = Success(z.object({ approvals: z.array(ApprovalView), batch_id: Uuid, memory_saved: z.boolean() }));
 ```

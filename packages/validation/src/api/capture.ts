@@ -133,7 +133,8 @@ export const CaptureActionsBody = z
             'commitment_create',
           ]),
           overrides: z.record(z.string(), z.unknown()).optional(),
-          destination: z.unknown(),
+          // Omitted = the action type's default destination (parsed per action type's target schema).
+          destination: z.unknown().optional(),
         }),
       )
       .min(0)
