@@ -1,0 +1,699 @@
+{
+  "description": "Shared vectors for effectiveEntitlement() (packages/domain/src/entitlements/effective.ts) and public.effective_entitlement() (DB-17). Timestamps compare as instants. expected.source null = SQL 'none'.",
+  "vectors": [
+    {
+      "id": "UT-ENT-01",
+      "case": "store mirror active (da_pro_annual, expires +30 d)",
+      "now": "2026-09-23T06:00:00Z",
+      "subscription": {
+        "is_active": true,
+        "status": "active",
+        "environment": "production",
+        "period_type": "normal",
+        "expires_at": "2026-10-23T06:00:00Z",
+        "grace_expires_at": null,
+        "will_renew": true
+      },
+      "grants": [],
+      "ignore_sandbox_store": false,
+      "expected": {
+        "entitlement": "pro",
+        "source": "store",
+        "expires_at": "2026-10-23T06:00:00Z",
+        "is_trial": false,
+        "will_renew": true,
+        "store_expires_at": "2026-10-23T06:00:00Z",
+        "grant_ends_at": null
+      }
+    },
+    {
+      "id": "UT-ENT-02",
+      "case": "store expired + active referral_referee grant",
+      "now": "2026-09-23T06:00:00Z",
+      "subscription": {
+        "is_active": false,
+        "status": "expired",
+        "environment": "production",
+        "period_type": "normal",
+        "expires_at": "2026-09-20T00:00:00Z",
+        "grace_expires_at": null,
+        "will_renew": false
+      },
+      "grants": [
+        {
+          "source": "referral_referee",
+          "starts_at": "2026-09-21T00:00:00Z",
+          "ends_at": "2026-10-05T00:00:00Z",
+          "revoked_at": null
+        }
+      ],
+      "ignore_sandbox_store": false,
+      "expected": {
+        "entitlement": "pro",
+        "source": "grant",
+        "expires_at": "2026-10-05T00:00:00Z",
+        "is_trial": false,
+        "will_renew": false,
+        "store_expires_at": null,
+        "grant_ends_at": "2026-10-05T00:00:00Z"
+      }
+    },
+    {
+      "id": "UT-ENT-03",
+      "case": "two stacked grants (admin 7 d then referral 14 d) end at the second",
+      "now": "2026-09-23T06:00:00Z",
+      "subscription": null,
+      "grants": [
+        {
+          "source": "admin",
+          "starts_at": "2026-09-22T00:00:00Z",
+          "ends_at": "2026-09-29T00:00:00Z",
+          "revoked_at": null
+        },
+        {
+          "source": "referral_referee",
+          "starts_at": "2026-09-29T00:00:00Z",
+          "ends_at": "2026-10-13T00:00:00Z",
+          "revoked_at": null
+        }
+      ],
+      "ignore_sandbox_store": false,
+      "expected": {
+        "entitlement": "pro",
+        "source": "grant",
+        "expires_at": "2026-10-13T00:00:00Z",
+        "is_trial": false,
+        "will_renew": false,
+        "store_expires_at": null,
+        "grant_ends_at": "2026-10-13T00:00:00Z"
+      }
+    },
+    {
+      "id": "UT-ENT-04",
+      "case": "grant with revoked_at is ignored",
+      "now": "2026-09-23T06:00:00Z",
+      "subscription": null,
+      "grants": [
+        {
+          "source": "compensation",
+          "starts_at": "2026-09-20T00:00:00Z",
+          "ends_at": "2026-10-20T00:00:00Z",
+          "revoked_at": "2026-09-22T10:00:00Z"
+        }
+      ],
+      "ignore_sandbox_store": false,
+      "expected": {
+        "entitlement": "free",
+        "source": null,
+        "expires_at": null,
+        "is_trial": false,
+        "will_renew": false,
+        "store_expires_at": null,
+        "grant_ends_at": null
+      }
+    },
+    {
+      "id": "UT-ENT-05",
+      "case": "trial (period_type=trial)",
+      "now": "2026-09-23T06:00:00Z",
+      "subscription": {
+        "is_active": true,
+        "status": "trial",
+        "environment": "production",
+        "period_type": "trial",
+        "expires_at": "2026-09-30T06:00:00Z",
+        "grace_expires_at": null,
+        "will_renew": true
+      },
+      "grants": [],
+      "ignore_sandbox_store": false,
+      "expected": {
+        "entitlement": "pro",
+        "source": "store",
+        "expires_at": "2026-09-30T06:00:00Z",
+        "is_trial": true,
+        "will_renew": true,
+        "store_expires_at": "2026-09-30T06:00:00Z",
+        "grant_ends_at": null
+      }
+    },
+    {
+      "id": "UT-ENT-06",
+      "case": "billing issue while RevenueCat still lists pro (grace until grace_expires_at)",
+      "now": "2026-09-23T06:00:00Z",
+      "subscription": {
+        "is_active": true,
+        "status": "billing_issue",
+        "environment": "production",
+        "period_type": "normal",
+        "expires_at": "2026-09-22T00:00:00Z",
+        "grace_expires_at": "2026-09-30T00:00:00Z",
+        "will_renew": true
+      },
+      "grants": [],
+      "ignore_sandbox_store": false,
+      "expected": {
+        "entitlement": "pro",
+        "source": "store",
+        "expires_at": "2026-09-30T00:00:00Z",
+        "is_trial": false,
+        "will_renew": true,
+        "store_expires_at": "2026-09-30T00:00:00Z",
+        "grant_ends_at": null
+      }
+    },
+    {
+      "id": "UT-ENT-06b",
+      "case": "grace_period status extends to grace_expires_at",
+      "now": "2026-09-23T06:00:00Z",
+      "subscription": {
+        "is_active": true,
+        "status": "grace_period",
+        "environment": "production",
+        "period_type": "normal",
+        "expires_at": "2026-09-23T05:00:00Z",
+        "grace_expires_at": "2026-09-26T05:00:00Z",
+        "will_renew": true
+      },
+      "grants": [],
+      "ignore_sandbox_store": false,
+      "expected": {
+        "entitlement": "pro",
+        "source": "store",
+        "expires_at": "2026-09-26T05:00:00Z",
+        "is_trial": false,
+        "will_renew": true,
+        "store_expires_at": "2026-09-26T05:00:00Z",
+        "grant_ends_at": null
+      }
+    },
+    {
+      "id": "UT-ENT-06c",
+      "case": "grace period over (grace_expires_at passed) is free",
+      "now": "2026-09-23T06:00:00Z",
+      "subscription": {
+        "is_active": true,
+        "status": "grace_period",
+        "environment": "production",
+        "period_type": "normal",
+        "expires_at": "2026-09-10T00:00:00Z",
+        "grace_expires_at": "2026-09-23T06:00:00Z",
+        "will_renew": true
+      },
+      "grants": [],
+      "ignore_sandbox_store": false,
+      "expected": {
+        "entitlement": "free",
+        "source": null,
+        "expires_at": null,
+        "is_trial": false,
+        "will_renew": false,
+        "store_expires_at": null,
+        "grant_ends_at": null
+      }
+    },
+    {
+      "id": "UT-ENT-07",
+      "case": "refund then EXPIRATION, no grants",
+      "now": "2026-09-23T06:00:00Z",
+      "subscription": {
+        "is_active": false,
+        "status": "refunded",
+        "environment": "production",
+        "period_type": "normal",
+        "expires_at": "2026-10-23T06:00:00Z",
+        "grace_expires_at": null,
+        "will_renew": false
+      },
+      "grants": [],
+      "ignore_sandbox_store": false,
+      "expected": {
+        "entitlement": "free",
+        "source": null,
+        "expires_at": null,
+        "is_trial": false,
+        "will_renew": false,
+        "store_expires_at": null,
+        "grant_ends_at": null
+      }
+    },
+    {
+      "id": "UT-ENT-07b",
+      "case": "refunded status wins over a stale is_active flag",
+      "now": "2026-09-23T06:00:00Z",
+      "subscription": {
+        "is_active": true,
+        "status": "refunded",
+        "environment": "production",
+        "period_type": "normal",
+        "expires_at": "2026-10-23T06:00:00Z",
+        "grace_expires_at": null,
+        "will_renew": false
+      },
+      "grants": [],
+      "ignore_sandbox_store": false,
+      "expected": {
+        "entitlement": "free",
+        "source": null,
+        "expires_at": null,
+        "is_trial": false,
+        "will_renew": false,
+        "store_expires_at": null,
+        "grant_ends_at": null
+      }
+    },
+    {
+      "id": "UT-ENT-07c",
+      "case": "refunded store with an active referral grant stays Pro through the grant",
+      "now": "2026-09-23T06:00:00Z",
+      "subscription": {
+        "is_active": false,
+        "status": "refunded",
+        "environment": "production",
+        "period_type": "normal",
+        "expires_at": "2026-10-23T06:00:00Z",
+        "grace_expires_at": null,
+        "will_renew": false
+      },
+      "grants": [
+        {
+          "source": "referral_referrer",
+          "starts_at": "2026-09-20T00:00:00Z",
+          "ends_at": "2026-10-04T00:00:00Z",
+          "revoked_at": null
+        }
+      ],
+      "ignore_sandbox_store": false,
+      "expected": {
+        "entitlement": "pro",
+        "source": "grant",
+        "expires_at": "2026-10-04T00:00:00Z",
+        "is_trial": false,
+        "will_renew": false,
+        "store_expires_at": null,
+        "grant_ends_at": "2026-10-04T00:00:00Z"
+      }
+    },
+    {
+      "id": "UT-ENT-08",
+      "case": "sandbox store row in production, user not allow-listed: ignored",
+      "now": "2026-09-23T06:00:00Z",
+      "subscription": {
+        "is_active": true,
+        "status": "active",
+        "environment": "sandbox",
+        "period_type": "normal",
+        "expires_at": "2026-09-23T07:00:00Z",
+        "grace_expires_at": null,
+        "will_renew": true
+      },
+      "grants": [],
+      "ignore_sandbox_store": true,
+      "expected": {
+        "entitlement": "free",
+        "source": null,
+        "expires_at": null,
+        "is_trial": false,
+        "will_renew": false,
+        "store_expires_at": null,
+        "grant_ends_at": null
+      }
+    },
+    {
+      "id": "UT-ENT-08b",
+      "case": "sandbox store row for an allow-listed tester counts",
+      "now": "2026-09-23T06:00:00Z",
+      "subscription": {
+        "is_active": true,
+        "status": "active",
+        "environment": "sandbox",
+        "period_type": "normal",
+        "expires_at": "2026-09-23T07:00:00Z",
+        "grace_expires_at": null,
+        "will_renew": true
+      },
+      "grants": [],
+      "ignore_sandbox_store": false,
+      "expected": {
+        "entitlement": "pro",
+        "source": "store",
+        "expires_at": "2026-09-23T07:00:00Z",
+        "is_trial": false,
+        "will_renew": true,
+        "store_expires_at": "2026-09-23T07:00:00Z",
+        "grant_ends_at": null
+      }
+    },
+    {
+      "id": "ENT-V-01",
+      "case": "cancelled (will not renew) but paid period not over",
+      "now": "2026-09-23T06:00:00Z",
+      "subscription": {
+        "is_active": true,
+        "status": "cancelled",
+        "environment": "production",
+        "period_type": "normal",
+        "expires_at": "2026-10-01T00:00:00Z",
+        "grace_expires_at": null,
+        "will_renew": false
+      },
+      "grants": [],
+      "ignore_sandbox_store": false,
+      "expected": {
+        "entitlement": "pro",
+        "source": "store",
+        "expires_at": "2026-10-01T00:00:00Z",
+        "is_trial": false,
+        "will_renew": false,
+        "store_expires_at": "2026-10-01T00:00:00Z",
+        "grant_ends_at": null
+      }
+    },
+    {
+      "id": "ENT-V-02",
+      "case": "stale mirror: is_active true but expires_at passed",
+      "now": "2026-09-23T06:00:00Z",
+      "subscription": {
+        "is_active": true,
+        "status": "active",
+        "environment": "production",
+        "period_type": "normal",
+        "expires_at": "2026-09-23T05:59:59Z",
+        "grace_expires_at": null,
+        "will_renew": true
+      },
+      "grants": [],
+      "ignore_sandbox_store": false,
+      "expected": {
+        "entitlement": "free",
+        "source": null,
+        "expires_at": null,
+        "is_trial": false,
+        "will_renew": false,
+        "store_expires_at": null,
+        "grant_ends_at": null
+      }
+    },
+    {
+      "id": "ENT-V-03",
+      "case": "paused subscription is not active",
+      "now": "2026-09-23T06:00:00Z",
+      "subscription": {
+        "is_active": false,
+        "status": "paused",
+        "environment": "production",
+        "period_type": "normal",
+        "expires_at": "2026-10-23T06:00:00Z",
+        "grace_expires_at": null,
+        "will_renew": false
+      },
+      "grants": [],
+      "ignore_sandbox_store": false,
+      "expected": {
+        "entitlement": "free",
+        "source": null,
+        "expires_at": null,
+        "is_trial": false,
+        "will_renew": false,
+        "store_expires_at": null,
+        "grant_ends_at": null
+      }
+    },
+    {
+      "id": "ENT-V-04",
+      "case": "store and grant both active: store wins, coverage continues through the grant",
+      "now": "2026-09-23T06:00:00Z",
+      "subscription": {
+        "is_active": true,
+        "status": "active",
+        "environment": "production",
+        "period_type": "normal",
+        "expires_at": "2026-10-01T00:00:00Z",
+        "grace_expires_at": null,
+        "will_renew": false
+      },
+      "grants": [
+        {
+          "source": "referral_referee",
+          "starts_at": "2026-09-20T00:00:00Z",
+          "ends_at": "2026-10-10T00:00:00Z",
+          "revoked_at": null
+        }
+      ],
+      "ignore_sandbox_store": false,
+      "expected": {
+        "entitlement": "pro",
+        "source": "store",
+        "expires_at": "2026-10-10T00:00:00Z",
+        "is_trial": false,
+        "will_renew": false,
+        "store_expires_at": "2026-10-01T00:00:00Z",
+        "grant_ends_at": "2026-10-10T00:00:00Z"
+      }
+    },
+    {
+      "id": "ENT-V-05",
+      "case": "grant scheduled after the store end with a gap does not extend coverage",
+      "now": "2026-09-23T06:00:00Z",
+      "subscription": {
+        "is_active": true,
+        "status": "active",
+        "environment": "production",
+        "period_type": "normal",
+        "expires_at": "2026-10-01T00:00:00Z",
+        "grace_expires_at": null,
+        "will_renew": true
+      },
+      "grants": [
+        {
+          "source": "admin",
+          "starts_at": "2026-10-02T00:00:00Z",
+          "ends_at": "2026-10-09T00:00:00Z",
+          "revoked_at": null
+        }
+      ],
+      "ignore_sandbox_store": false,
+      "expected": {
+        "entitlement": "pro",
+        "source": "store",
+        "expires_at": "2026-10-01T00:00:00Z",
+        "is_trial": false,
+        "will_renew": true,
+        "store_expires_at": "2026-10-01T00:00:00Z",
+        "grant_ends_at": null
+      }
+    },
+    {
+      "id": "ENT-V-06",
+      "case": "grant starting exactly at the store end continues coverage",
+      "now": "2026-09-23T06:00:00Z",
+      "subscription": {
+        "is_active": true,
+        "status": "cancelled",
+        "environment": "production",
+        "period_type": "normal",
+        "expires_at": "2026-10-01T00:00:00Z",
+        "grace_expires_at": null,
+        "will_renew": false
+      },
+      "grants": [
+        {
+          "source": "support",
+          "starts_at": "2026-10-01T00:00:00Z",
+          "ends_at": "2026-10-08T00:00:00Z",
+          "revoked_at": null
+        }
+      ],
+      "ignore_sandbox_store": false,
+      "expected": {
+        "entitlement": "pro",
+        "source": "store",
+        "expires_at": "2026-10-08T00:00:00Z",
+        "is_trial": false,
+        "will_renew": false,
+        "store_expires_at": "2026-10-01T00:00:00Z",
+        "grant_ends_at": null
+      }
+    },
+    {
+      "id": "ENT-V-07",
+      "case": "grant that starts in the future does not make the user Pro yet",
+      "now": "2026-09-23T06:00:00Z",
+      "subscription": null,
+      "grants": [
+        {
+          "source": "admin",
+          "starts_at": "2026-09-24T00:00:00Z",
+          "ends_at": "2026-10-01T00:00:00Z",
+          "revoked_at": null
+        }
+      ],
+      "ignore_sandbox_store": false,
+      "expected": {
+        "entitlement": "free",
+        "source": null,
+        "expires_at": null,
+        "is_trial": false,
+        "will_renew": false,
+        "store_expires_at": null,
+        "grant_ends_at": null
+      }
+    },
+    {
+      "id": "ENT-V-08",
+      "case": "grant ending exactly now has ended (end is exclusive)",
+      "now": "2026-09-23T06:00:00Z",
+      "subscription": null,
+      "grants": [
+        {
+          "source": "admin",
+          "starts_at": "2026-09-16T06:00:00Z",
+          "ends_at": "2026-09-23T06:00:00Z",
+          "revoked_at": null
+        }
+      ],
+      "ignore_sandbox_store": false,
+      "expected": {
+        "entitlement": "free",
+        "source": null,
+        "expires_at": null,
+        "is_trial": false,
+        "will_renew": false,
+        "store_expires_at": null,
+        "grant_ends_at": null
+      }
+    },
+    {
+      "id": "ENT-V-09",
+      "case": "grant starting exactly now is active (start is inclusive)",
+      "now": "2026-09-23T06:00:00Z",
+      "subscription": null,
+      "grants": [
+        {
+          "source": "admin",
+          "starts_at": "2026-09-23T06:00:00Z",
+          "ends_at": "2026-09-24T06:00:00Z",
+          "revoked_at": null
+        }
+      ],
+      "ignore_sandbox_store": false,
+      "expected": {
+        "entitlement": "pro",
+        "source": "grant",
+        "expires_at": "2026-09-24T06:00:00Z",
+        "is_trial": false,
+        "will_renew": false,
+        "store_expires_at": null,
+        "grant_ends_at": "2026-09-24T06:00:00Z"
+      }
+    },
+    {
+      "id": "ENT-V-10",
+      "case": "a gap between grants stops the chain",
+      "now": "2026-09-23T06:00:00Z",
+      "subscription": null,
+      "grants": [
+        {
+          "source": "referral_referee",
+          "starts_at": "2026-09-22T06:00:00Z",
+          "ends_at": "2026-09-25T06:00:00Z",
+          "revoked_at": null
+        },
+        {
+          "source": "referral_referrer",
+          "starts_at": "2026-09-26T06:00:00Z",
+          "ends_at": "2026-10-10T06:00:00Z",
+          "revoked_at": null
+        }
+      ],
+      "ignore_sandbox_store": false,
+      "expected": {
+        "entitlement": "pro",
+        "source": "grant",
+        "expires_at": "2026-09-25T06:00:00Z",
+        "is_trial": false,
+        "will_renew": false,
+        "store_expires_at": null,
+        "grant_ends_at": "2026-09-25T06:00:00Z"
+      }
+    },
+    {
+      "id": "ENT-V-11",
+      "case": "non-expiring store entitlement (promotional lifetime) has no end",
+      "now": "2026-09-23T06:00:00Z",
+      "subscription": {
+        "is_active": true,
+        "status": "active",
+        "environment": "production",
+        "period_type": "prepaid",
+        "expires_at": null,
+        "grace_expires_at": null,
+        "will_renew": false
+      },
+      "grants": [],
+      "ignore_sandbox_store": false,
+      "expected": {
+        "entitlement": "pro",
+        "source": "store",
+        "expires_at": null,
+        "is_trial": false,
+        "will_renew": false,
+        "store_expires_at": null,
+        "grant_ends_at": null
+      }
+    },
+    {
+      "id": "ENT-V-12",
+      "case": "no mirror row and no grants",
+      "now": "2026-09-23T06:00:00Z",
+      "subscription": null,
+      "grants": [],
+      "ignore_sandbox_store": false,
+      "expected": {
+        "entitlement": "free",
+        "source": null,
+        "expires_at": null,
+        "is_trial": false,
+        "will_renew": false,
+        "store_expires_at": null,
+        "grant_ends_at": null
+      }
+    },
+    {
+      "id": "ENT-V-13",
+      "case": "overlapping grants (legacy rows) resolve to the furthest contiguous end",
+      "now": "2026-09-23T06:00:00Z",
+      "subscription": null,
+      "grants": [
+        {
+          "source": "admin",
+          "starts_at": "2026-09-20T00:00:00Z",
+          "ends_at": "2026-09-27T00:00:00Z",
+          "revoked_at": null
+        },
+        {
+          "source": "compensation",
+          "starts_at": "2026-09-22T00:00:00Z",
+          "ends_at": "2026-10-22T00:00:00Z",
+          "revoked_at": null
+        },
+        {
+          "source": "support",
+          "starts_at": "2026-10-20T00:00:00Z",
+          "ends_at": "2026-10-27T00:00:00Z",
+          "revoked_at": null
+        }
+      ],
+      "ignore_sandbox_store": false,
+      "expected": {
+        "entitlement": "pro",
+        "source": "grant",
+        "expires_at": "2026-10-27T00:00:00Z",
+        "is_trial": false,
+        "will_renew": false,
+        "store_expires_at": null,
+        "grant_ends_at": "2026-10-27T00:00:00Z"
+      }
+    }
+  ]
+}
