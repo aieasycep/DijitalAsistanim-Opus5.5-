@@ -1,0 +1,33 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "generate": {
+      "outputs": ["src/components/icons/generated/**"]
+    },
+    "build": {
+      "outputs": [".next/**", "!.next/cache/**"],
+      "env": [
+        "NEXT_PUBLIC_*",
+        "SENTRY_*",
+        "APP_ENV",
+        "VERCEL_ENV",
+        "SITE_INDEXABLE",
+        "API_PUBLIC_BASE_URL",
+        "APPLE_TEAM_ID",
+        "IOS_BUNDLE_IDENTIFIER",
+        "ANDROID_PACKAGE",
+        "ANDROID_SHA256_CERT_FINGERPRINTS",
+        "IOS_APP_STORE_ID",
+        "APP_STORE_PROVIDER_TOKEN",
+        "MICROSOFT_CLIENT_ID",
+        "COMPANY_*",
+        "PRIVACY_CONTACT_EMAIL",
+        "EU_REPRESENTATIVE",
+        "DATA_REGION_LABEL",
+        "BACKUP_RETENTION_DAYS",
+        "EMAIL_PROVIDER"
+      ]
+    }
+  }
+}

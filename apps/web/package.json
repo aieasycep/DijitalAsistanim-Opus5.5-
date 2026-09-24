@@ -1,0 +1,49 @@
+{
+  "name": "@da/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev --port 3000",
+    "build": "next build",
+    "start": "next start --port 3000",
+    "generate": "node scripts/gen-icons.ts",
+    "lint": "next typegen && eslint .",
+    "typecheck": "next typegen && tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "e2e:web": "playwright test"
+  },
+  "dependencies": {
+    "@da/design-tokens": "workspace:*",
+    "@da/domain": "workspace:*",
+    "@da/i18n": "workspace:*",
+    "@expo-google-fonts/geist": "catalog:expo",
+    "@expo-google-fonts/lora": "catalog:expo",
+    "next": "catalog:",
+    "next-intl": "catalog:",
+    "qrcode": "1.5.4",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "server-only": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@da/config": "workspace:*",
+    "@playwright/test": "catalog:",
+    "@tailwindcss/postcss": "catalog:",
+    "@testing-library/dom": "10.4.1",
+    "@testing-library/react": "16.3.3",
+    "@types/node": "catalog:",
+    "@types/qrcode": "1.5.6",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "babel-plugin-react-compiler": "catalog:",
+    "eslint": "catalog:",
+    "eslint-config-next": "catalog:",
+    "happy-dom": "catalog:",
+    "tailwindcss": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

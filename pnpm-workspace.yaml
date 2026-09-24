@@ -137,5 +137,7 @@ allowBuilds:
   core-js: false
   msw: false
   '@sentry-internal/node-cpu-profiler': false
+  '@parcel/watcher': false
+  '@swc/core': false
 
 minimumReleaseAge: 1440
