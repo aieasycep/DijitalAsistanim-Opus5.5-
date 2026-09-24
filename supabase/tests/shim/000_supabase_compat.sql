@@ -32,6 +32,14 @@ create schema if not exists vault;
 grant usage on schema auth, storage, extensions to anon, authenticated, service_role;
 grant usage on schema auth to supabase_auth_admin;
 
+-- Supabase's default privileges on schema public (set for the migration role on every hosted
+-- and local project): new tables, sequences and functions are granted to the API roles unless a
+-- migration revokes them. Mirrored here so tier C catches a missing revoke exactly like tier A.
+grant usage on schema public to anon, authenticated, service_role;
+alter default privileges in schema public grant all on tables to anon, authenticated, service_role;
+alter default privileges in schema public grant all on sequences to anon, authenticated, service_role;
+alter default privileges in schema public grant all on functions to anon, authenticated, service_role;
+
 -- ─── auth (minimal GoTrue subset) ─────────────────────────────────────────────────────────────
 create table if not exists auth.users (
   id uuid primary key default gen_random_uuid(),
