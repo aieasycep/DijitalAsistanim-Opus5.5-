@@ -28,5 +28,35 @@
     "calm": "Calm"
   },
   "focusBlock": "Focus block",
-  "commitments": "Commitments"
+  "commitments": "Commitments",
+  "generated": {
+    "rationale": "You are free {day} {start}–{end}. I can place {task} here.",
+    "newTimeInstruction": "Propose a new time for the meeting: {time}.",
+    "newTimeOpen": "Propose another time for the meeting.",
+    "options": {
+      "move": {
+        "title": "Move the event",
+        "description": "Pick a new time for {title}."
+      },
+      "shorten": {
+        "title": "Shorten the event",
+        "description": "{title} is shortened so the events no longer overlap."
+      },
+      "email": {
+        "title": "Propose a new time",
+        "description": "A reply draft proposing a new time to the organizer is prepared."
+      },
+      "remind": {
+        "title": "Set a reminder",
+        "description": "I will remind you about the conflict at a good time."
+      },
+      "contact": {
+        "title": "Call the attendee",
+        "description": "Uses the phone number stated in the source."
+      },
+      "ignore": {
+        "description": "This conflict will not be shown again."
+      }
+    }
+  }
 }

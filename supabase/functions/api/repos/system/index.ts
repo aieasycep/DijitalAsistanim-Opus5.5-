@@ -62,6 +62,8 @@ import {
   supabaseMailStore,
   supabaseMemoryStore,
 } from '../../../_shared/services/intel/supabase-store.ts';
+import { integrationMailBodySource } from '../../../_shared/services/intel/mail-bodies.ts';
+import { supabaseAssistApi } from '../../routes/assist-api.ts';
 
 export function createApiDeps(input: {
   readonly env: FunctionEnv;
@@ -187,7 +189,9 @@ export function createApiDeps(input: {
       ai: createAiServices(system, raw, input.log),
       mail: supabaseMailStore(system),
       memory: supabaseMemoryStore(system),
-      bodies: null,
+      // Transient provider bodies through A's registry and token source (never stored or logged).
+      bodies: integrationMailBodySource(integrations.runtime, input.log),
     }),
+    assist: supabaseAssistApi(system),
   };
 }

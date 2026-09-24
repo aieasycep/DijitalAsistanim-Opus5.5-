@@ -24,6 +24,10 @@ import trCommon from '@da/i18n/messages/tr/common.json' with { type: 'json' };
 import enCommon from '@da/i18n/messages/en/common.json' with { type: 'json' };
 import trStates from '@da/i18n/messages/tr/states.json' with { type: 'json' };
 import enStates from '@da/i18n/messages/en/states.json' with { type: 'json' };
+import trAssistant from '@da/i18n/messages/tr/assistant.json' with { type: 'json' };
+import enAssistant from '@da/i18n/messages/en/assistant.json' with { type: 'json' };
+import trPlan from '@da/i18n/messages/tr/plan.json' with { type: 'json' };
+import enPlan from '@da/i18n/messages/en/plan.json' with { type: 'json' };
 
 export type CopyLocale = 'tr' | 'en';
 export type CopyValue = string | number;
@@ -41,6 +45,8 @@ const CATALOGS: Readonly<Record<CopyLocale, Readonly<Record<string, Catalog>>>> 
     commitments: trCommitments,
     common: trCommon,
     states: trStates,
+    assistant: trAssistant,
+    plan: trPlan,
   },
   en: {
     briefing: enBriefing,
@@ -51,6 +57,8 @@ const CATALOGS: Readonly<Record<CopyLocale, Readonly<Record<string, Catalog>>>> 
     commitments: enCommitments,
     common: enCommon,
     states: enStates,
+    assistant: enAssistant,
+    plan: enPlan,
   },
 };
 

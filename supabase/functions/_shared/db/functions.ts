@@ -467,6 +467,17 @@ export const DB_FN = {
     'retention_system_sweep',
     '(p_batch int, p_now timestamptz) returns jsonb',
   ),
+  // AI pipeline part 2 (T-5.13, T-5.15; migration 20260924002600)
+  discardCapture: fn(
+    'public',
+    'discard_capture',
+    '(p_user uuid, p_capture_id uuid) returns jsonb {capture, storage_path, rejected, changed}',
+  ),
+  firstAnalysisCounts: fn(
+    'public',
+    'first_analysis_counts',
+    '(p_user uuid, p_since timestamptz, p_now timestamptz) returns jsonb {mails_found, classified, potential_important, upcoming_events, possible_followups}',
+  ),
 } as const satisfies Record<string, DbFunction>;
 
 export type DbFunctionName = keyof typeof DB_FN;

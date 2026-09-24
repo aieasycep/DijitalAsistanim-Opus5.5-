@@ -4,15 +4,25 @@ import { test } from 'node:test';
 import {
   loadPrompts,
   MIGRATION,
+  MIGRATION_PART2,
+  PART1_KEYS,
   parsePromptFile,
-  renderMigration,
+  renderParts,
   schemaHash,
 } from '../gen-prompt-migration.ts';
+import { PROMPT_KEY_VALUES } from '../../packages/validation/src/ai/index.ts';
 
-test('prompt sources render the committed migration (no drift)', () => {
+test('prompt sources render the committed migrations (no drift)', () => {
   const prompts = loadPrompts();
-  assert.equal(prompts.length, 9);
-  assert.equal(renderMigration(prompts), readFileSync(MIGRATION, 'utf8'));
+  assert.equal(prompts.length, PROMPT_KEY_VALUES.length);
+  assert.deepEqual(prompts.map((p) => p.prompt_key).sort(), [...PROMPT_KEY_VALUES].sort());
+  const parts = renderParts(prompts);
+  assert.deepEqual(
+    parts.map((p) => p.file),
+    [MIGRATION, MIGRATION_PART2],
+  );
+  for (const part of parts) assert.equal(part.sql, readFileSync(part.file, 'utf8'));
+  assert.equal(PART1_KEYS.length, 9);
 });
 
 test('schema hashes are sha256 hex of the wire schema', () => {

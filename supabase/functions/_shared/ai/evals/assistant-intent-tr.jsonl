@@ -1,0 +1,65 @@
+{"id": "ai001", "text": "Merhaba", "intent": "smalltalk"}
+{"id": "ai002", "text": "selam", "intent": "smalltalk"}
+{"id": "ai003", "text": "Teşekkürler!", "intent": "smalltalk"}
+{"id": "ai004", "text": "sağol", "intent": "smalltalk"}
+{"id": "ai005", "text": "Brifingimi oku", "intent": "play_briefing"}
+{"id": "ai006", "text": "sabah brifingini dinle", "intent": "play_briefing"}
+{"id": "ai007", "text": "brifingi başlat", "intent": "play_briefing"}
+{"id": "ai008", "text": "Mehmet'e takip maili yaz", "intent": "draft_follow_up"}
+{"id": "ai009", "text": "Burak için takip mesajı hazırla", "intent": "draft_follow_up"}
+{"id": "ai010", "text": "takip maili gönderir misin", "intent": "draft_follow_up"}
+{"id": "ai011", "text": "Bu maile cevap taslağı hazırla", "intent": "draft_reply"}
+{"id": "ai012", "text": "Ayşe’ye yanıt yaz", "intent": "draft_reply"}
+{"id": "ai013", "text": "cevap yazar mısın", "intent": "draft_reply"}
+{"id": "ai014", "text": "Yarınki toplantıyı bir saat ileri al", "intent": "move_event"}
+{"id": "ai015", "text": "Görüşmeyi Cumaya ertele", "intent": "move_event"}
+{"id": "ai016", "text": "toplantıyı yarına kaydır", "intent": "move_event"}
+{"id": "ai017", "text": "Takvime yarın 10'da toplantı ekle", "intent": "create_event"}
+{"id": "ai018", "text": "Cuma 14:00 için randevu ayarla", "intent": "create_event"}
+{"id": "ai019", "text": "Perşembe öğlen Ayşe ile görüşme planla", "intent": "create_event"}
+{"id": "ai020", "text": "takvime ekle yarın on bire toplantı", "intent": "create_event"}
+{"id": "ai021", "text": "toplantı ekler misin", "intent": "create_event"}
+{"id": "ai022", "text": "Yarın sabah bana faturayı hatırlat", "intent": "create_reminder"}
+{"id": "ai023", "text": "Akşam 8’de hatırlatıcı kur", "intent": "create_reminder"}
+{"id": "ai024", "text": "bunu bana hatırlatır mısın", "intent": "create_reminder"}
+{"id": "ai025", "text": "yarin sabah faturayi hatirlat", "intent": "create_reminder"}
+{"id": "ai026", "text": "Bunu yarına ertele", "intent": "snooze_item"}
+{"id": "ai027", "text": "Bu görevi haftaya ertele", "intent": "snooze_item"}
+{"id": "ai028", "text": "Mehmet cevap verdi mi?", "intent": "reply_status_person"}
+{"id": "ai029", "text": "Ayşe’den dönüş geldi mi", "intent": "reply_status_person"}
+{"id": "ai030", "text": "Burak'a cevap vermem gerekiyor mu?", "intent": "reply_status_person"}
+{"id": "ai031", "text": "mehmet cevap verdi mi acaba", "intent": "reply_status_person"}
+{"id": "ai032", "text": "Kimlere cevap vermem lazım?", "intent": "who_needs_reply"}
+{"id": "ai033", "text": "Kimler benden yanıt bekliyor", "intent": "who_needs_reply"}
+{"id": "ai034", "text": "şey kimlere cevap vermem lazım", "intent": "who_needs_reply"}
+{"id": "ai035", "text": "Bugün neye odaklanmalıyım?", "intent": "focus_today"}
+{"id": "ai036", "text": "Bugün neler var", "intent": "focus_today"}
+{"id": "ai037", "text": "bugun neye odaklanmaliyim", "intent": "focus_today"}
+{"id": "ai038", "text": "Bugün önceliklerim ne?", "intent": "focus_today"}
+{"id": "ai039", "text": "Yarın yoğun muyum?", "intent": "am_i_busy"}
+{"id": "ai040", "text": "Bu hafta programım nasıl", "intent": "am_i_busy"}
+{"id": "ai041", "text": "Cuma boş vaktim var mı", "intent": "am_i_busy"}
+{"id": "ai042", "text": "hmm yarın yoğun muyum", "intent": "am_i_busy"}
+{"id": "ai043", "text": "Bu haftaki son tarihler neler?", "intent": "deadlines_period"}
+{"id": "ai044", "text": "ay sonuna kadar deadline var mı", "intent": "deadlines_period"}
+{"id": "ai045", "text": "Bu ay hangi ödemelerim var?", "intent": "payments_period"}
+{"id": "ai046", "text": "Faturalarım ne zaman?", "intent": "payments_period"}
+{"id": "ai047", "text": "ödenmesi gereken bir şey var mı", "intent": "payments_period"}
+{"id": "ai048", "text": "Ankara uçuşum ne zaman?", "intent": "travel_lookup"}
+{"id": "ai049", "text": "Otel rezervasyonum hangi gün", "intent": "travel_lookup"}
+{"id": "ai050", "text": "uçak biletim nerede", "intent": "travel_lookup"}
+{"id": "ai051", "text": "Mehmet ile en son ne konuştuk?", "intent": "last_talk_with_person"}
+{"id": "ai052", "text": "Ayşe hakkında neler var?", "intent": "last_talk_with_person"}
+{"id": "ai053", "text": "Burak en son ne yazdı", "intent": "last_talk_with_person"}
+{"id": "ai054", "text": "Kira sözleşmem kaç yıllıktı?", "intent": "memory_qa"}
+{"id": "ai055", "text": "Mehmet Bey’in şirketi hangi şehirde?", "intent": "memory_qa"}
+{"id": "ai056", "text": "Geçen hafta hangi teklifleri aldım?", "intent": "memory_qa"}
+{"id": "ai057", "text": "Hatırlatıcılarım neler?", "intent": "memory_qa"}
+{"id": "ai058", "text": "Yanıt yazdım mı?", "intent": "memory_qa"}
+{"id": "ai059", "text": "Toplantı notlarımda ne yazıyordu?", "intent": "memory_qa"}
+{"id": "ai060", "text": "Takip mailim gitti mi?", "intent": "memory_qa"}
+{"id": "ai061", "text": "Toplantıyı ileri aldım mı?", "intent": "memory_qa"}
+{"id": "ai062", "text": "Randevu ekledim mi?", "intent": "memory_qa"}
+{"id": "ai063", "text": "Sunum dosyası kimdeydi?", "intent": "memory_qa"}
+{"id": "ai064", "text": "Zeynep’in doğum günü ne zaman?", "intent": "memory_qa"}
+{"id": "ai065", "text": "Geçen ay kaç mail aldım?", "intent": "memory_qa"}

@@ -467,6 +467,8 @@ select throws_ok(
 );
 
 -- ─── Intelligence (T-2.07) ────────────────────────────────────────────────────────────────────
+-- Every prompt key is seeded active (20260924002410, 20260924002610); this block needs its own rows.
+delete from public.prompt_versions where prompt_key = 'reply_draft';
 insert into public.prompt_versions (id, prompt_key, version, status, system_prompt, user_template, output_schema_ref, schema_hash, model_role, eval_passed)
 values ('00000000-0000-4000-8000-0000000b0001', 'reply_draft', 1, 'active', 's', 'u', 'ReplyDraftsV1', 'h', 'reasoning', true);
 select throws_ok(

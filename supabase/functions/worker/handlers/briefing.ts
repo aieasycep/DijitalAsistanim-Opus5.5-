@@ -31,6 +31,7 @@ import { composeWeekly, weekPeriod, weeklyStats } from '../../_shared/services/b
 import { isOn } from '../../_shared/services/flags.ts';
 import type { BriefingRow } from '../../_shared/services/intel/types.ts';
 import { enqueueNotification, type IntelDeps, pipelineFor } from './intel.ts';
+import { enqueueBriefingAudio } from './briefing_audio.ts';
 
 export const BriefingPayload = z.union([
   z.object({ briefing_id: Uuid }),
@@ -249,7 +250,17 @@ export async function runBriefing(
     if (composed === 'batched')
       return { briefing_id: briefing.id, status: 'generating', narrative: 'batch' };
     await applyComposed(deps, ctx, briefing, composed, started);
+    // JOB-14 step 6: pre-render premium audio (JOB-30) for Pro + `feature.voice` + premium TTS.
+    let audio = false;
+    if ((composed.patch.status ?? 'ready') === 'ready') {
+      try {
+        audio = await enqueueBriefingAudio(ctx, deps.ai.runtime, user, briefing);
+      } catch {
+        ctx.log.warn('briefing_audio_enqueue_failed');
+      }
+    }
     return {
+      audio: audio ? 'queued' : 'none',
       briefing_id: briefing.id,
       status: composed.patch.status ?? 'ready',
       narrative: composed.narrativeMode,

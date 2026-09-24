@@ -26,6 +26,11 @@ import {
 import type { IntelDeps } from './intel.ts';
 import { intelJobDefinitions } from './intel-jobs.ts';
 import { type PrivacyJobDeps, privacyJobDefinitions } from './privacy.ts';
+import type { AssistJobDeps } from './assist.ts';
+import { briefingAudioJob } from './briefing_audio.ts';
+import { captureAnalysisJob } from './capture_analysis.ts';
+import { firstAnalysisJob } from './first_analysis.ts';
+import { meetingPrepJob } from './meeting_prep.ts';
 
 export interface HandlerDeps {
   readonly credentials: CredentialsRepo;
@@ -44,6 +49,8 @@ export interface HandlerDeps {
   readonly email?: TransactionalEmailDeps;
   /** JOB-20…JOB-23 `retention`, `export`, `history_deletion`, `account_deletion` (T-11.01…T-11.04). */
   readonly privacy?: PrivacyJobDeps;
+  /** AI pipeline part 2: JOB-13, JOB-15, JOB-27, JOB-30 (T-5.09…T-5.15). */
+  readonly assist?: AssistJobDeps;
 }
 
 export function jobDefinitions(deps: HandlerDeps): JobDefinition<never>[] {
@@ -69,6 +76,14 @@ export function jobDefinitions(deps: HandlerDeps): JobDefinition<never>[] {
       ? []
       : [transactionalEmailJob(deps.email) as unknown as JobDefinition<never>]),
     ...(deps.privacy === undefined ? [] : privacyJobDefinitions(deps.privacy)),
+    ...(deps.assist === undefined
+      ? []
+      : ([
+          firstAnalysisJob(deps.assist),
+          meetingPrepJob(deps.assist),
+          captureAnalysisJob(deps.assist),
+          briefingAudioJob(deps.assist),
+        ] as unknown as JobDefinition<never>[])),
   ];
 }
 

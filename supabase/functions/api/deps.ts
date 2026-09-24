@@ -39,6 +39,7 @@ export interface JobQueue {
   byKey(key: string): Promise<{ id: string; status: string } | null>;
 }
 import type { IntelApi } from './routes/intel-api.ts';
+import type { AssistApi } from './routes/assist-api.ts';
 
 /** Per-request repositories bound to the caller (their RLS client plus scoped system access). */
 export interface RequestRepos {
@@ -93,6 +94,8 @@ export interface ApiDeps {
   readonly now?: () => Date;
   /** AI pipeline routes (API-MAIL-07, API-SRCH-01, API-BRF-02…04). */
   readonly intel?: IntelApi;
+  /** AI pipeline part 2 (T-5.09…T-5.15): replies, meetings, assistant, captures, plan, onboarding. */
+  readonly assist?: AssistApi;
 }
 
 export interface RouteKit {

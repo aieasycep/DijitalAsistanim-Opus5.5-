@@ -32,6 +32,9 @@ import { supabaseObjectStore } from '../_shared/services/privacy/storage.ts';
 import { appleRevokerFromEnv, supabaseAuthAdmin } from '../_shared/services/privacy/providers.ts';
 import { deletionRequestRecipient } from '../_shared/email/deletion-request.ts';
 import { emailConfig } from '../_shared/email/provider.ts';
+import { integrationMailBodySource } from '../_shared/services/intel/mail-bodies.ts';
+import { supabaseAssistStore } from '../_shared/services/assist/supabase-store.ts';
+import { supabaseStorage } from '../_shared/services/storage.ts';
 
 const raw = processEnv();
 assertDemoAllowed(raw);
@@ -54,6 +57,10 @@ const privacyAudit = supabaseAuditWriter(system);
 const deletionRecipient = deletionRequestRecipient({
   repo: privacyRepo,
   keyring: () => (keyring ??= loadKeyring(env)),
+});
+// Transient provider bodies for triage, analysis and reply drafts (A's registry + token source).
+const intel = createIntelDeps(system, raw, workerLog, {
+  bodies: integrationMailBodySource(integrations.runtime, workerLog),
 });
 const app = createWorkerApp({
   secret: env.CRON_SECRET,
@@ -84,7 +91,8 @@ const app = createWorkerApp({
       referrals: { repo: supabaseReferralRepo(system), pepper: env },
     },
     integrations: { runtime: integrations.runtime, webhooks: integrations.webhooks },
-    intel: createIntelDeps(system, raw, workerLog),
+    intel,
+    assist: { intel, store: supabaseAssistStore(system), storage: supabaseStorage(system) },
     email: {
       system,
       raw,

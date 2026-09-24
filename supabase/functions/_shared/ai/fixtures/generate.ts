@@ -18,6 +18,7 @@ import {
 } from '@da/domain';
 import type { GenerateStructuredParams } from '../types.ts';
 import { parseUntrusted } from '../prompts/assemble.ts';
+import { PART2_GENERATORS } from './generate-part2.ts';
 
 type Doc = { ref: string; kind: string; text: string };
 
@@ -471,7 +472,7 @@ const GENERATORS: Readonly<Record<string, (params: GenerateStructuredParams<unkn
 
 /** A generated output for the schema, or undefined when no generator exists. */
 export function generateFixture(params: GenerateStructuredParams<unknown>): unknown {
-  const generator = GENERATORS[params.schemaName];
+  const generator = GENERATORS[params.schemaName] ?? PART2_GENERATORS[params.schemaName];
   if (generator === undefined || params.prompt.untrusted === undefined) return undefined;
   return generator(params);
 }

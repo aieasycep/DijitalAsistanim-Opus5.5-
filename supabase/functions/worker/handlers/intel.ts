@@ -36,7 +36,7 @@ export interface IntelDeps {
   readonly briefings: BriefingJobStore;
   readonly stats: StatsStore;
   readonly memory: MemoryStore;
-  /** Transient provider bodies; null until a provider context is wired (metadata-only triage). */
+  /** Transient provider bodies (integration runtime); null → metadata-only triage. */
   readonly bodies: MailBodySource | null;
   readonly reconciliation: ReconciliationPorts;
 }

@@ -1,7 +1,7 @@
 /**
- * Production wiring of the AI pipeline handlers over the worker's service client. The transient
- * mail-body source stays `null` until the provider token context of the integrations (T-4.03 /
- * T-4.04) is available to the worker; triage then runs on headers, subject and snippet.
+ * Production wiring of the AI pipeline handlers over the worker's service client. `worker/index.ts`
+ * passes the transient mail-body source built on the integration runtime
+ * (`_shared/services/intel/mail-bodies.ts`); without one, triage runs on headers, subject and snippet.
  */
 import type { DbClient } from '../../_shared/db/clients.ts';
 import { DB_FN, rpc } from '../../_shared/db/functions.ts';
