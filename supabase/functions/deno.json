@@ -4,6 +4,7 @@
     "@da/domain": "../../packages/domain/src/index.ts",
     "@da/validation": "../../packages/validation/src/index.ts",
     "@da/i18n/messages/": "../../packages/i18n/messages/",
+    "@da/i18n/tr-suffix": "../../packages/i18n/src/tr-suffix.ts",
     "hono": "jsr:@hono/hono@4.13.8",
     "hono/": "jsr:/@hono/hono@4.13.8/",
     "@supabase/supabase-js": "npm:@supabase/supabase-js@2.117.0",

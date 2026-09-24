@@ -6637,6 +6637,44 @@ export type Database = {
         Args: { p_app_user_id: string; p_event_id?: string };
         Returns: Json;
       };
+      cancel_reminder: {
+        Args: { p_id: string; p_reason?: string; p_user: string };
+        Returns: {
+          anchor_at: string | null;
+          approval_action_id: string | null;
+          cancelled_at: string | null;
+          channel: string;
+          confidence: number | null;
+          created_at: string;
+          delivered_at: string | null;
+          destination: NonNullable<Json>;
+          expires_at: string | null;
+          id: string;
+          idempotency_key: string;
+          note: string | null;
+          notification_id: string | null;
+          origin: string;
+          preset: string;
+          remind_at: string;
+          resolution_reason: string | null;
+          source_id: string | null;
+          source_provider: Database['public']['Enums']['provider'] | null;
+          source_timestamp: string | null;
+          source_type: Database['public']['Enums']['source_type'] | null;
+          status: Database['public']['Enums']['reminder_status'];
+          target_id: string | null;
+          target_type: string | null;
+          title: string;
+          updated_at: string;
+          user_id: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'reminders';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       check_plan_limit: {
         Args: { p_increment?: number; p_key: string; p_user_id?: string };
         Returns: Json;
@@ -6695,6 +6733,61 @@ export type Database = {
           p_window_seconds: number;
         };
         Returns: number;
+      };
+      create_approval: {
+        Args: { p_actor?: string; p_row: Json; p_user: string };
+        Returns: {
+          action_type: Database['public']['Enums']['approval_action_type'];
+          approval_expires_at: string;
+          approved_at: string | null;
+          approved_via: Database['public']['Enums']['approval_via'] | null;
+          attempt_count: number;
+          batch_id: string | null;
+          change_summary: string;
+          confidence: number;
+          created_at: string;
+          destination_account_id: string | null;
+          destination_label: string | null;
+          device_installation_id: string | null;
+          device_token_hash: string | null;
+          evidence: NonNullable<Json>;
+          exact_change: NonNullable<Json>;
+          executed_at: string | null;
+          executing_at: string | null;
+          executor: string;
+          expires_at: string | null;
+          failed_at: string | null;
+          id: string;
+          idempotency_key: string;
+          last_error_code: string | null;
+          last_error_message: string | null;
+          origin: string;
+          origin_ref_id: string | null;
+          payload: NonNullable<Json>;
+          payload_hash: string;
+          payload_version: number;
+          provider_idempotency_ref: string | null;
+          rejected_at: string | null;
+          rejection_reason: string | null;
+          requires_scope: string | null;
+          result: Json | null;
+          side_effects: NonNullable<Json>;
+          source_id: string;
+          source_provider: Database['public']['Enums']['provider'] | null;
+          source_timestamp: string;
+          source_type: Database['public']['Enums']['source_type'];
+          status: Database['public']['Enums']['approval_status'];
+          updated_at: string;
+          user_id: string;
+          what: string;
+          why: string | null;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'approval_actions';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
       };
       create_deletion_request: {
         Args: {
@@ -7024,6 +7117,10 @@ export type Database = {
         Returns: undefined;
       };
       reward_referral: { Args: { p_referral_id: string }; Returns: Json };
+      schedule_reminder: {
+        Args: { p_row: Json; p_user: string };
+        Returns: Json;
+      };
       search_user_content: {
         Args: {
           p_contact_id?: string;
@@ -7135,6 +7232,66 @@ export type Database = {
         SetofOptions: {
           from: '*';
           to: 'insights';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      start_device_execution: {
+        Args: {
+          p_id: string;
+          p_installation: string;
+          p_token_hash: string;
+          p_user: string;
+        };
+        Returns: {
+          action_type: Database['public']['Enums']['approval_action_type'];
+          approval_expires_at: string;
+          approved_at: string | null;
+          approved_via: Database['public']['Enums']['approval_via'] | null;
+          attempt_count: number;
+          batch_id: string | null;
+          change_summary: string;
+          confidence: number;
+          created_at: string;
+          destination_account_id: string | null;
+          destination_label: string | null;
+          device_installation_id: string | null;
+          device_token_hash: string | null;
+          evidence: NonNullable<Json>;
+          exact_change: NonNullable<Json>;
+          executed_at: string | null;
+          executing_at: string | null;
+          executor: string;
+          expires_at: string | null;
+          failed_at: string | null;
+          id: string;
+          idempotency_key: string;
+          last_error_code: string | null;
+          last_error_message: string | null;
+          origin: string;
+          origin_ref_id: string | null;
+          payload: NonNullable<Json>;
+          payload_hash: string;
+          payload_version: number;
+          provider_idempotency_ref: string | null;
+          rejected_at: string | null;
+          rejection_reason: string | null;
+          requires_scope: string | null;
+          result: Json | null;
+          side_effects: NonNullable<Json>;
+          source_id: string;
+          source_provider: Database['public']['Enums']['provider'] | null;
+          source_timestamp: string;
+          source_type: Database['public']['Enums']['source_type'];
+          status: Database['public']['Enums']['approval_status'];
+          updated_at: string;
+          user_id: string;
+          what: string;
+          why: string | null;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'approval_actions';
           isOneToOne: true;
           isSetofReturn: false;
         };

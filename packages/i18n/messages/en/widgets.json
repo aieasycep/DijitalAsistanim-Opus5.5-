@@ -30,5 +30,13 @@
     "smallDescription": "Your next important item",
     "mediumDescription": "Today's priorities",
     "largeDescription": "Briefing, next meeting and follow-up"
+  },
+  "private": {
+    "urgent": "Urgent item",
+    "deadline": "Deadline",
+    "meeting": "Meeting · {minutes} min",
+    "followUp": "Follow-up · {days, plural, one {# day} other {# days}}",
+    "personal": "Personal update",
+    "security": "Security alert"
   }
 }

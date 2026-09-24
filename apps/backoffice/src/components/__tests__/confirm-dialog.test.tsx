@@ -26,7 +26,7 @@ function setup(props: Partial<Parameters<typeof ConfirmDialog>[0]> = {}) {
       {...props}
     />,
   );
-  return { ...view, onConfirm, onOpenChange, user: userEvent.setup() };
+  return { ...view, onConfirm, onOpenChange, user: userEvent.setup({ delay: null }) };
 }
 
 describe('ConfirmDialog (BACKOFFICE_PLAN §5.4)', () => {
@@ -52,7 +52,8 @@ describe('ConfirmDialog (BACKOFFICE_PLAN §5.4)', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Kayıt başka bir yönetici tarafından değiştirildi. Sayfayı yenileyip tekrar dene.',
     );
-    await user.click(screen.getByRole('button', { name: 'Senkronu başlat' }));
+    // The alert can render one commit before the button leaves its pending (busy) label.
+    await user.click(await screen.findByRole('button', { name: 'Senkronu başlat' }));
     await waitFor(() => {
       expect(onOpenChange).toHaveBeenCalledWith(false);
     });

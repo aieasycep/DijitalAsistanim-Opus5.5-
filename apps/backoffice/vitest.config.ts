@@ -18,6 +18,9 @@ export default defineConfig({
     environment: 'node',
     setupFiles: ['./vitest.setup.ts'],
     restoreMocks: true,
+    // jsdom + Radix component tests render slowly while turbo runs lint, typecheck and other test
+    // suites in parallel; 5 s (the default) is too tight for a full dialog flow on a loaded runner.
+    testTimeout: 20_000,
     coverage: { provider: 'v8', include: ['src/**/*.{ts,tsx}'] },
   },
 });

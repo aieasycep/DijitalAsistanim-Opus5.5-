@@ -570,7 +570,15 @@
     }
   },
   "test": {
-    "titlePrefix": "Test · {title}"
+    "titlePrefix": "Test · {title}",
+    "demo": {
+      "subject": "Revize teklif",
+      "action": "Bugün 17:00'ye kadar yanıt bekliyor.",
+      "highlights": "Kuzey Lojistik teklifi ve 14:30 toplantısı",
+      "meeting": "Kuzey Lojistik görüşmesi",
+      "title": "Teklif revizyonu",
+      "summary": "Kuzey Lojistik görüşmesini takvime ekleme"
+    }
   },
   "ios": {
     "hiddenPreview": "Dijital Asistan güncellemesi"

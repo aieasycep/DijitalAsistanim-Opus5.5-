@@ -25,7 +25,7 @@ import captureTr from '@da/i18n/messages/tr/capture.json';
 import { CLIENT_SECRET_SHAPES, ENV_KEYS, parseBuildEnv, type AppEnv } from '@da/validation/env';
 
 import { IOS_PERMISSION_STRINGS } from './src/i18n/native-strings.ts';
-import { variantIdentifier, variantScheme } from './src/lib/variant.ts';
+import { DEFAULT_WEB_URL, variantIdentifier, variantScheme } from './src/lib/variant.ts';
 
 type Env = Readonly<Record<string, string | undefined>>;
 
@@ -33,7 +33,7 @@ type Env = Readonly<Record<string, string | undefined>>;
 export const DEFAULT_IDENTIFIERS = {
   bundleId: 'com.dijitalasistan.app',
   scheme: 'dijitalasistan',
-  webUrl: 'https://dijitalasistan.app',
+  webUrl: DEFAULT_WEB_URL,
 } as const;
 
 const VARIANT_NAME: Readonly<Record<AppEnv, string>> = {

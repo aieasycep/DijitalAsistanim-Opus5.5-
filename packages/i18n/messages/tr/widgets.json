@@ -30,5 +30,13 @@
     "smallDescription": "Sıradaki önemli konun",
     "mediumDescription": "Bugünün öncelikleri",
     "largeDescription": "Brifing, sonraki toplantı ve takip"
+  },
+  "private": {
+    "urgent": "Acil konu",
+    "deadline": "Son tarih",
+    "meeting": "Toplantı · {minutes} dk",
+    "followUp": "Takip · {days} gün",
+    "personal": "Kişisel güncelleme",
+    "security": "Güvenlik uyarısı"
   }
 }

@@ -60,5 +60,66 @@
     "title": "Bir izin daha gerekiyor",
     "body": "Bu işlemi yapabilmem için {service} hesabından ek izin vermen gerekiyor. İzin yalnızca onayladığın işlemler için kullanılır.",
     "cta": "İzin Ver"
+  },
+  "why": {
+    "reply_draft": "Yanıt taslağını göndermek istedin.",
+    "assistant": "Asistana bunu yapmasını söyledin.",
+    "voice": "Sesli komutla istedin.",
+    "capture": "Yakaladığın içerikte bulundu.",
+    "plan_proposal": "Takvimindeki boşluğa göre önerildi.",
+    "conflict_resolution": "Takvim çakışmasını çözmek için önerildi.",
+    "post_meeting": "Toplantı notlarından çıktı.",
+    "email_detail": "Mailde tespit edildi.",
+    "life_event": "Kişisel gelişmelerinden çıktı.",
+    "follow_up": "Yanıt beklediğin bir konuşmadan çıktı.",
+    "reminder_sheet": "Hatırlatıcı kurmak istedin.",
+    "commitment_detection": "Verilen bir söz tespit edildi.",
+    "insight": "Önceliklerinden birinden çıktı.",
+    "manual": "Kendin ekledin."
+  },
+  "summary": {
+    "timed": "{date} · {start}–{end}",
+    "allDay": "{date} · Tüm gün",
+    "moved": "{from} → {to}",
+    "updated": "Etkinlik bilgileri değişir.",
+    "taskDue": "Son tarih {date}",
+    "taskNoDue": "Son tarih yok",
+    "reminderAt": "{date} · {time}",
+    "commitmentDue": "{counterparty} · {date}",
+    "commitmentNoDue": "{counterparty}",
+    "email": "{count} alıcı · {subject}"
+  },
+  "sideEffects": {
+    "emailSentTo": "Mail {count} alıcıya gönderilir.",
+    "invitesSent": "{count} katılımcıya davet gider.",
+    "attendeesNotified": "{count} katılımcıya güncelleme gider.",
+    "pushReminder": "{time_loc} bildirim gelir.",
+    "quietHours": "Sessiz saatlerde çalar.",
+    "providerTask": "Görev {service} listesine eklenir.",
+    "deviceCalendar": "Etkinlik bu cihazdaki takvime yazılır.",
+    "deviceReminders": "Cihazındaki Anımsatıcılar listesine yazılır.",
+    "internalTask": "Görev uygulamada oluşturulur.",
+    "internalReminder": "Hatırlatıcı uygulamada kurulur.",
+    "internalCommitment": "Taahhüt uygulamaya kaydedilir."
+  },
+  "destination": {
+    "inApp": "Dijital Asistan",
+    "device": "Bu cihaz"
+  },
+  "failure": {
+    "stale": "Etkinlik bu arada değişmiş; öneriyi yenile.",
+    "reauth": "Hesap bağlantısı yenilenmeli.",
+    "scope": "Bu işlem için ek izin gerekiyor.",
+    "rejected": "Hizmet bu işlemi kabul etmedi.",
+    "rate_limited": "Hizmet şu an yoğun. Tekrar dene.",
+    "unavailable": "Hizmete şu an ulaşılamıyor. Tekrar dene.",
+    "timeout": "Hizmet zamanında yanıt vermedi. Tekrar dene.",
+    "device_missing": "Cihazdan sonuç gelmedi. Tekrar dene.",
+    "device_failed": "Cihaza yazılamadı. Tekrar dene.",
+    "device_cancelled": "Cihazda iptal edildi. İstersen tekrar dene.",
+    "generic": "İşlem tamamlanamadı. Tekrar dene."
+  },
+  "learned": {
+    "statement": "“{type}” önerilerini daha seçici göster."
   }
 }

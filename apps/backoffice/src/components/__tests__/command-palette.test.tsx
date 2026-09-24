@@ -39,7 +39,7 @@ function renderPalette(canSearch = true) {
       </CommandPaletteProvider>
     </SessionActionsProvider>,
   );
-  return { ...view, user: userEvent.setup() };
+  return { ...view, user: userEvent.setup({ delay: null }) };
 }
 
 describe('command palette (BACKOFFICE_PLAN §6.25)', () => {

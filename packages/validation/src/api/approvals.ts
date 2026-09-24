@@ -584,15 +584,17 @@ export const ApprovalExecution = z
     instructions: ApprovalPayload.nullable(),
   })
   .superRefine((execution, ctx) => {
-    const device = execution.mode === 'device';
-    if (device !== (execution.device_token !== null)) {
+    // Server targets never carry a token; a device target approved on another installation
+    // (§6.7) has neither a token nor instructions until the destination claims it.
+    const hasToken = execution.device_token !== null;
+    if (execution.mode === 'server' && hasToken) {
       ctx.addIssue({
         code: 'custom',
         path: ['device_token'],
         message: 'device_token_mode_mismatch',
       });
     }
-    if (device !== (execution.instructions !== null)) {
+    if (hasToken !== (execution.instructions !== null)) {
       ctx.addIssue({
         code: 'custom',
         path: ['instructions'],
@@ -601,7 +603,14 @@ export const ApprovalExecution = z
     }
   });
 export const ApprovalApproveResponse = Success(
-  z.object({ approval: ApprovalView, job: JobRef.nullable(), execution: ApprovalExecution }),
+  z
+    .object({ approval: ApprovalView, job: JobRef.nullable(), execution: ApprovalExecution })
+    .superRefine((data, ctx) => {
+      // A device approval approved on another installation has no token until its claim (§6.7).
+      if (data.execution.mode !== data.approval.executor) {
+        ctx.addIssue({ code: 'custom', path: ['execution', 'mode'], message: 'executor_mismatch' });
+      }
+    }),
 );
 
 // API-APR-04 · POST /approvals/:id/reject

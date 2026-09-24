@@ -22,6 +22,10 @@ import { registerAppleRoutes } from './routes/auth-apple.ts';
 import { registerDeviceRoutes } from './routes/devices.ts';
 import { registerMeRoutes } from './routes/me.ts';
 import { registerSupportRoutes } from './routes/support.ts';
+import { registerApprovalRoutes } from './routes/approvals.ts';
+import { registerReminderRoutes } from './routes/reminders.ts';
+import { registerNotificationRoutes } from './routes/notifications.ts';
+import { registerWidgetRoutes } from './routes/widgets.ts';
 import { registerBusinessRoutes } from './routes/business.ts';
 import { registerReferralRoutes } from './routes/referrals.ts';
 
@@ -56,6 +60,10 @@ export function createApiApp(deps: ApiDeps, extra: readonly RouteRegistrar[] = [
   registerMeRoutes(app, kit);
   registerAnalyticsRoutes(app, kit);
   registerSupportRoutes(app, kit);
+  registerApprovalRoutes(app, kit);
+  registerReminderRoutes(app, kit);
+  registerNotificationRoutes(app, kit);
+  registerWidgetRoutes(app, kit);
   registerBusinessRoutes(app, kit);
   registerReferralRoutes(app, kit);
   for (const register of extra) register(app, kit);
