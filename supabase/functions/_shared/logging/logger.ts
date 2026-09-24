@@ -47,10 +47,20 @@ const CONTENT_FIELDS = new Set([
   'id_token',
   'authorization',
   'cookie',
+  'set-cookie',
   'secret',
+  'client_secret',
   'api_key',
   'apikey',
   'private_key',
+  'signature',
+  // OAuth flow secrets (CTL-3.14 key denylist; R-07): a 43-character PKCE verifier, state or
+  // completion code is shorter than the generic long-run scrubber, so it is denied by name.
+  'code',
+  'code_verifier',
+  'state',
+  'completion_code',
+  'device_nonce',
 ]);
 
 const REDACTED = '[redacted]';

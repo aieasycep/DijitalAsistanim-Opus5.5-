@@ -106,14 +106,14 @@ async function providerTeardown(
       } catch (error) {
         log.warn('integration_watch_stop_failed', {
           provider: account.provider,
-          code: error instanceof ProviderError ? error.code : 'unknown',
+          error_code: error instanceof ProviderError ? error.code : 'unknown',
         });
       }
     }
   } catch (error) {
     log.warn('integration_teardown_context_failed', {
       provider: account.provider,
-      code: error instanceof ProviderError ? error.code : 'unknown',
+      error_code: error instanceof ProviderError ? error.code : 'unknown',
     });
   }
   try {
@@ -132,7 +132,7 @@ async function providerTeardown(
   } catch (error) {
     log.warn('integration_revoke_failed', {
       provider: account.provider,
-      code: error instanceof ProviderError ? error.code : 'unknown',
+      error_code: error instanceof ProviderError ? error.code : 'unknown',
     });
     return null;
   }
@@ -269,7 +269,7 @@ export async function runIntegrationPurge(
       }
     } catch (error) {
       job.log.warn('binding_expired_revoke_failed', {
-        code: error instanceof ProviderError ? error.code : 'unknown',
+        error_code: error instanceof ProviderError ? error.code : 'unknown',
       });
     }
   }

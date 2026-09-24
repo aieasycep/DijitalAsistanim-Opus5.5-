@@ -486,7 +486,7 @@ async function revokeQuietly(
   } catch (error) {
     rt.log.warn('oauth_revoke_failed', {
       provider: oauth.provider,
-      code: error instanceof ProviderError ? error.code : 'unknown',
+      error_code: error instanceof ProviderError ? error.code : 'unknown',
     });
   }
 }
@@ -845,7 +845,7 @@ async function rejectCompletion(
           }
         } catch (error) {
           rt.log.warn('oauth_reject_revoke_failed', {
-            code: error instanceof Error ? error.name : 'unknown',
+            error_code: error instanceof Error ? error.name : 'unknown',
           });
         }
       }

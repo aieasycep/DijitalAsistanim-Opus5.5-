@@ -418,7 +418,7 @@ flowchart LR
 |---|---|
 | Assets | Sender names, subjects, meeting titles, amounts |
 | Attack vectors | • Lock-screen shoulder-surfing<br>• Screen sharing<br>• Notification-reading apps on Android<br>• Push-relay logs<br>• A push token bound to the wrong user<br>• Smartwatch mirroring |
-| Mitigations | • Default `title_only` with lock-screen privacy on (R-05)<br>• `generic` mode available<br>• The server renders text; `data` = `{v,type,entity_id,deeplink,nid}`<br>• iOS `previewPlaceholder`; Android channels `VISIBILITY_PRIVATE`<br>• Rendered text is kept only in `notifications.title_rendered` / `body_rendered` for 30 days and is never logged (R-04)<br>• Token rebinding and `DeviceNotRegistered` handling<br>• Android 15 hides notifications during screen share (OS) |
+| Mitigations | • Default `title_only` with lock-screen privacy on (R-05)<br>• `generic` mode available<br>• The server renders text; `data` = `{type, entity_id, deeplink}`<br>• iOS `previewPlaceholder`; Android channels `VISIBILITY_PRIVATE`<br>• Rendered text is kept only in `notifications.title_rendered` / `body_rendered` for 30 days and is never logged (R-04)<br>• Token rebinding and `DeviceNotRegistered` handling<br>• Android 15 hides notifications during screen share (OS) |
 | Detection | Payload-size and key-set assertions in tests; periodic sampling of rendered templates in CI |
 | Residual risk | Users who opt into `full` with lock-screen privacy off. Informed choice, with a preview. |
 | Tests | TST-EF-12, TST-PK-03 |
@@ -1891,7 +1891,7 @@ The Notification listener also needs the prominent-disclosure screen (2.13) and 
 | TST-EF-09 | `_shared/security/upload-validate.test.ts` | Magic, MIME and extension mismatch; oversize; encrypted PDF; ZIP rejection; EXIF/XMP stripped; NUL in text; share max items |
 | TST-EF-10 | `_shared/ai/tests/injection.test.ts` | Fixtures produce no tools in extraction; proposals only allow-listed and server-recomputed; unknown recipients flagged; URLs not in the source rejected; cross-user ids rejected; markdown images stripped |
 | TST-EF-11 | `api/tests/approvals-approve.test.ts`, `worker/tests/approval-execute.test.ts` | Same key → same result; stale `payload_version` → 409; expired → 409; foreign → 404; missing scope → 424 with upgrade and the approval stays pending; `approved_via` accepts only the plan R-03 tap values; provider idempotency (Gmail pre-retry search, Calendar 409 = done) |
-| TST-EF-12 | `_shared/notifications/render.test.ts` | Property-based: `title_only`/`generic` never contain entity names or subjects; data keys exactly `{v,type,entity_id,deeplink,nid}`; lock-screen cap; payload <1 KB |
+| TST-EF-12 | `_shared/notifications/render.test.ts` | Property-based: `title_only`/`generic` never contain entity names or subjects; data keys exactly `{type, entity_id, deeplink}`; lock-screen cap; payload <1 KB |
 | TST-EF-13 | `_shared/ratelimit.test.ts` | Every catalogue entry returns 429 with `Retry-After` after its threshold |
 | TST-EF-14 | `_shared/logging/logger.test.ts` + pipeline canary | Injected secrets and PII never appear in captured logs or `job_attempts.error` |
 | TST-EF-15 | `api/tests/analytics.test.ts` | Unknown events and props dropped; non-enum strings rejected; opt-out honoured |
