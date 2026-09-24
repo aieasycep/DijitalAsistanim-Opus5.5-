@@ -40,7 +40,7 @@ import {
 import { ProGate } from '../actions/ProGate';
 import { openMenu, openReminder } from '../actions/sheets';
 import { DetailScreen, QueryFailure, useBack, useOfflineGuard } from '../actions/ui';
-import { openApprovalSheet } from '../approvals/ApprovalSheet';
+import { openApprovalSheet } from '../approvals/InlineApprovalSheet';
 import { conferenceProvider } from '../meeting/MeetingPrepScreen';
 import { eventOptions, isMeeting, notesOptions, type AttendeeData } from '../meeting/data';
 import { openNoteSheet } from '../meeting/NoteSheet';

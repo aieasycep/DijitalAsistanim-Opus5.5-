@@ -13,5 +13,27 @@
     "title": "Mikrofon izni gerekli",
     "body": "Sesli komut için mikrofonuna ve konuşma tanımaya izin vermen gerekiyor."
   },
-  "notUnderstood": "Bunu anlayamadım. Tekrar söyler misin?"
+  "notUnderstood": "Bunu anlayamadım. Tekrar söyler misin?",
+  "kicker": "Ses modu",
+  "idle": "Konuşmak için dokun",
+  "answering": "Yanıtlıyorum",
+  "tapToApproveSpoken": "Onaylamak için ekrandaki Onayla'ya dokun.",
+  "offline": "Çevrimdışıyken soru yanıtlanamaz.",
+  "noSpeech": "Seni duyamadım. Tekrar dene.",
+  "unavailable": "Sesli giriş bu cihazda kullanılamıyor.",
+  "network": "Bağlantı sorunu. Tekrar dene.",
+  "interrupted": "Ses modu kesintiye uğradı.",
+  "askWithText": "Metinle sor",
+  "readAnswer": "Yanıtı oku",
+  "startListening": "Konuşmaya başla",
+  "stopListening": "Durdur",
+  "briefingGate": {
+    "title": "Brifingini dinle.",
+    "body": "Sesli brifing Pro'da. Brifingi okumak her zaman ücretsiz."
+  },
+  "chips": {
+    "today": "Bugün ne var?",
+    "briefing": "Brifingimi oku.",
+    "tomorrow": "Yarın yoğun muyum?"
+  }
 }

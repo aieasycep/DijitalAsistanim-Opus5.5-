@@ -23,11 +23,60 @@
   "existing": "Current: {time} · Change",
   "destination": {
     "label": "Where should it be set?",
-    "inApp": "Dijital Asistan notification"
+    "inApp": "Dijital Asistan notification",
+    "row": "Where: {destination}",
+    "inAppMeta": "This device and your other devices",
+    "apple": "Apple Reminders",
+    "appleMeta": "Stored on the device",
+    "appleDenied": "Not allowed · Settings",
+    "googleWith": "Google Tasks · {email}",
+    "googleMeta": "Only the date is stored; Google doesn't show a time alert",
+    "microsoftWith": "Microsoft To Do · {email}",
+    "microsoftMeta": "Added to your Microsoft To Do list",
+    "connect": "Connect an account",
+    "notConnected": "Not connected"
   },
   "confirm": "Set reminder",
   "set": "Reminder set · {when}",
   "cancelled": "Reminder cancelled",
   "snoozeTitle": "Snooze until when?",
-  "notificationsOff": "Notifications are off, so the reminder won't arrive."
+  "notificationsOff": "Notifications are off, so the reminder won't arrive.",
+  "local": {
+    "generic": "You have a reminder.",
+    "titleOnly": "Reminder",
+    "full": "Reminder · {time}"
+  },
+  "toasts": {
+    "pendingSync": "Saved · Waiting to sync",
+    "queued": "Reminder set · {when} · Waiting to sync",
+    "snoozed": "Snoozed · {when}"
+  },
+  "custom": {
+    "title": "Pick a time",
+    "date": "Date",
+    "time": "Time",
+    "hour": "Hour",
+    "minute": "Minute",
+    "increase": "Increase {unit}",
+    "decrease": "Decrease {unit}",
+    "past": "You can't pick a time in the past.",
+    "tooFar": "You can pick up to 1 year ahead.",
+    "choose": "Use this time"
+  },
+  "meta": {
+    "noCalendar": "No calendar connected",
+    "offline": "Connection required",
+    "smartFailed": "Couldn't work it out right now · Try again",
+    "noTime": "No time",
+    "past": "Passed",
+    "quiet": "{time} · during quiet hours"
+  },
+  "cta": {
+    "approval": "Send for approval",
+    "snoozePlain": "Snooze",
+    "snooze": "Snooze · {time}",
+    "remind": "Set reminder · {time}"
+  },
+  "snoozeNotify": "Notify me when it's time",
+  "permissionDenied": "Notifications are off; the reminder is saved but can't be shown on this device."
 }

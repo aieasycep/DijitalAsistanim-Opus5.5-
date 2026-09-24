@@ -3,6 +3,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from '@jest/globals';
 import type { ExpoConfig } from 'expo/config';
+import * as ConfigPlugins from 'expo/config-plugins';
 
 import {
   ANDROID_BLOCKED_PERMISSIONS,
@@ -10,6 +11,9 @@ import {
   SHARE_EXTENSION_NAME,
   buildAppConfig,
 } from '../app.config';
+import { createWithDaShare } from '../modules/da-share/plugin/withDaShare';
+
+const withDaShare = createWithDaShare(ConfigPlugins);
 
 type Env = Record<string, string | undefined>;
 
@@ -256,6 +260,31 @@ describe('native configuration (INTEGRATION_PLAN §12.1)', () => {
     });
   });
 
+  it('enforces App Group parity and singleTask through the da-share plugin (T-8.17)', () => {
+    expect(() =>
+      withDaShare(
+        {
+          name: 'x',
+          slug: 'x',
+          plugins: [['expo-share-intent', { iosAppGroupIdentifier: 'group.com.example.other' }]],
+        },
+        { appGroup: 'group.com.dijitalasistan.app' },
+      ),
+    ).toThrow(/App Group/);
+    expect(() => withDaShare({ name: 'x', slug: 'x' }, { appGroup: 'not a group' })).toThrow();
+    const configured = withDaShare(
+      {
+        name: 'x',
+        slug: 'x',
+        plugins: [['expo-share-intent', { iosAppGroupIdentifier: 'group.com.dijitalasistan.app' }]],
+      },
+      { appGroup: 'group.com.dijitalasistan.app' },
+    );
+    const mods = (configured as { mods?: Record<string, Record<string, unknown>> }).mods;
+    expect(mods?.ios?.entitlements).toBeDefined();
+    expect(mods?.android?.manifest).toBeDefined();
+  });
+
   it('adds Google sign-in only with the reversed iOS client ID', () => {
     expect(pluginNames(expo)).not.toContain('@react-native-google-signin/google-signin');
     const scheme = 'com.googleusercontent.apps.123456789012-abcdefghijklmnopqrstuvwxyz012345';
@@ -329,12 +358,18 @@ describe('native configuration (INTEGRATION_PLAN §12.1)', () => {
     });
   });
 
-  it('publishes only the EAS project ID in extra and wires updates to it', () => {
-    expect(expo.extra).toEqual({ eas: {} });
+  it('publishes only the EAS project ID and the share extension in extra and wires updates to it', () => {
+    const shareExtension = {
+      targetName: 'DijitalAsistanaEkle',
+      bundleIdentifier: 'com.dijitalasistan.app.share-extension',
+      entitlements: { 'com.apple.security.application-groups': ['group.com.dijitalasistan.app'] },
+    };
+    const build = { experimental: { ios: { appExtensions: [shareExtension] } } };
+    expect(expo.extra).toEqual({ eas: { build } });
     expect(expo.updates).toBeUndefined();
     const projectId = '0f6b3b8e-1c1d-4d57-9a0a-4a3cc2a1b9f1';
     const linked = config({ APP_ENV: 'production', EXPO_PUBLIC_EAS_PROJECT_ID: projectId });
-    expect(linked.extra).toEqual({ eas: { projectId } });
+    expect(linked.extra).toEqual({ eas: { projectId, build } });
     expect(linked.updates?.url).toBe(`https://u.expo.dev/${projectId}`);
     const leaked = JSON.stringify(
       config({ APP_ENV: 'production', ALLOW_DEMO_IN_PRODUCTION: 'true', SENTRY_ORG: 'da-org' }),

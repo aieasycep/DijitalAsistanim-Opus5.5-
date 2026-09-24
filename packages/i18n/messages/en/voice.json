@@ -13,5 +13,27 @@
     "title": "Microphone access needed",
     "body": "Voice commands need access to your microphone and speech recognition."
   },
-  "notUnderstood": "I didn't catch that. Could you say it again?"
+  "notUnderstood": "I didn't catch that. Could you say it again?",
+  "kicker": "Voice mode",
+  "idle": "Tap to talk",
+  "answering": "Answering",
+  "tapToApproveSpoken": "To approve, tap Approve on the screen.",
+  "offline": "Questions can't be answered while you're offline.",
+  "noSpeech": "I couldn't hear you. Try again.",
+  "unavailable": "Voice input isn't available on this device.",
+  "network": "Connection problem. Try again.",
+  "interrupted": "Voice mode was interrupted.",
+  "askWithText": "Ask with text",
+  "readAnswer": "Read the answer",
+  "startListening": "Start talking",
+  "stopListening": "Stop",
+  "briefingGate": {
+    "title": "Listen to your briefing.",
+    "body": "Audio briefings are part of Pro. Reading your briefing is always free."
+  },
+  "chips": {
+    "today": "What's on today?",
+    "briefing": "Read my briefing.",
+    "tomorrow": "Am I busy tomorrow?"
+  }
 }

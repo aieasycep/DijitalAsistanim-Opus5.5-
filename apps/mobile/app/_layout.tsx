@@ -25,6 +25,7 @@ import {
   SIGNED_OUT_ROOT_SCREENS,
 } from '../src/lib/router-guards';
 import { AppProviders } from '../src/providers/AppProviders';
+import { ShareIntakeBridge } from '../src/features/capture/ShareIntakeBridge';
 // Feature hooks that must exist before the first sign-in or OAuth return (T-8.06, T-8.07, T-8.09).
 import '../src/features/onboarding/post-sign-in';
 import '../src/features/integrations/callback-handler';
@@ -32,6 +33,10 @@ import '../src/features/briefing/audio-cache';
 // T-8.22: RevenueCat log-in/log-out hooks and the pending referral code after sign-in.
 import '../src/lib/purchases';
 import '../src/features/referral/pending';
+// T-8.18 inline approval and editor sheets (registered with the sheet host at import).
+import '../src/features/approvals/ApprovalSheet';
+import '../src/features/approvals/InlineApprovalSheet';
+import '../src/features/approvals/ApprovalEditorSheet';
 
 export { RootErrorBoundary as ErrorBoundary } from '../src/features/shell/ShellErrorBoundary';
 
@@ -49,6 +54,7 @@ function RootNavigator() {
   return (
     <>
       <StatusBar style={theme.isDark ? 'light' : 'dark'} />
+      <ShareIntakeBridge signedIn={flags.app} />
       <Stack
         screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.color.bg } }}
       >

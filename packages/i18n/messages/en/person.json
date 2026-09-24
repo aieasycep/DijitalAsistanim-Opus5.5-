@@ -5,7 +5,10 @@
     "openItems": "Open items",
     "recentMail": "Recent emails",
     "meetings": "Meetings",
-    "commitments": "Commitments"
+    "commitments": "Commitments",
+    "userOwes": "Waiting on you",
+    "theyOwe": "You're waiting on",
+    "topics": "Recent topics"
   },
   "lastContact": "Last contact {relative}",
   "vipSuggestion": "You've emailed {name} {count, plural, one {# time} other {# times}} in the last 30 days. Make them a VIP?",
@@ -21,6 +24,66 @@
   },
   "vipList": {
     "title": "Important people",
-    "add": "Add a person"
+    "add": "Add a person",
+    "subtitle": "I always put messages from these people first and track waiting times more closely.",
+    "removed": "{name} removed from VIPs",
+    "added": "{name} added to VIPs",
+    "loadFailed": "Couldn't load your important people.",
+    "groups": {
+      "family": "Spouse · Family",
+      "manager": "Manager",
+      "key_client": "Client",
+      "friend": "Friend",
+      "other": "Other"
+    },
+    "alwaysNotifyMeta": "Always notify",
+    "starA11y": "VIP, {name}, tap to remove",
+    "rowHint": "Opens the person page",
+    "changeGroup": "{name} · Settings",
+    "gateTitle": "VIP priority is part of Pro; your list is kept.",
+    "gateBody": "VIP priority and VIP suggestions are part of Pro. Your list is always kept.",
+    "suggestion": "Suggestion: you exchanged {count} emails with {name} in the last 30 days. Make them a VIP?",
+    "yes": "Yes"
+  },
+  "notFound": "This person is no longer in your list.",
+  "stats": {
+    "lastContact": "Last contact",
+    "upcoming": "Upcoming",
+    "openLoops": "Open topics"
+  },
+  "gate": {
+    "title": "Commitment and follow-up tracking is part of Pro.",
+    "body": "Open topics, what they're waiting on and commitments are part of Pro. The basics are always free."
+  },
+  "resolve": "Resolved",
+  "resolveHint": "Marks the topic as resolved",
+  "allMail": "See all emails ({count})",
+  "vipChip": "VIP · {group}",
+  "vipEdit": {
+    "subtitle": "Important person",
+    "relationship": "Relationship",
+    "alwaysNotify": "Always notify",
+    "alwaysNotifyMeta": "Important emails from this person get through notification limits.",
+    "bypassQuiet": "Even during quiet hours",
+    "bypassQuietMeta": "I deliver urgent important emails during quiet hours too; at most 3 notifications.",
+    "bypassQuietOff": "Turned off in notification settings.",
+    "openNotificationSettings": "Go to notification settings",
+    "proHint": "These settings take effect with Pro.",
+    "remove": "Remove from VIPs",
+    "queued": "Will be saved once you're back online.",
+    "limitKicker": "VIP · Pro",
+    "limitTitle": "Put your important people first.",
+    "limitBody": "The free plan allows up to 5 important people."
+  },
+  "picker": {
+    "title": "Add person",
+    "hint": "Search people…",
+    "addEmail": "Add “{email}”",
+    "nameOptional": "Name (optional)",
+    "invalidEmail": "Enter a valid email address.",
+    "emptyTitle": "No one you've written to shows up yet.",
+    "noMatch": "No one found.",
+    "emptyBody": "You can add someone by typing an email address.",
+    "recent": "Recently in touch"
   }
 }

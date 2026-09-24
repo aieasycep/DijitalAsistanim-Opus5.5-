@@ -86,9 +86,11 @@ export function fakePostgrest(): PostgrestFake {
     chain('eq', (col, value) => filters.push([String(col), 'eq', value]));
     chain('neq', (col, value) => filters.push([String(col), 'neq', value]));
     chain('in', (col, value) => filters.push([String(col), 'in', value]));
-    // T-8.19…T-8.22: `is(col, null)` and range filters used by the settings screens.
+    // T-8.15…T-8.18: `is` (null checks), range comparisons and `or` (not evaluated: all rows).
     chain('is', (col, value) => filters.push([String(col), 'is', value]));
     chain('gte', (col, value) => filters.push([String(col), 'gte', value]));
+    chain('lte', (col, value) => filters.push([String(col), 'lte', value]));
+    chain('or');
     chain('range', (a, b) => {
       range = [Number(a), Number(b)];
     });
@@ -117,10 +119,8 @@ export function fakePostgrest(): PostgrestFake {
           if (kind === 'eq') return row[col] === value;
           if (kind === 'neq') return row[col] !== value;
           if (kind === 'is') return (row[col] ?? null) === value;
-          if (kind === 'gte') {
-            const cell = row[col];
-            return typeof cell === 'string' && typeof value === 'string' && cell >= value;
-          }
+          if (kind === 'gte') return String(row[col]) >= String(value);
+          if (kind === 'lte') return String(row[col]) <= String(value);
           return Array.isArray(value) && value.includes(row[col]);
         }),
       );

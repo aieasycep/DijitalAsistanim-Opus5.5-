@@ -85,6 +85,11 @@ jest.mock('expo-crypto', () => {
     digestStringAsync: jest.fn((_algorithm: string, data: string) =>
       Promise.resolve(nodeCrypto.createHash('sha256').update(data).digest('hex')),
     ),
+    // T-8.17 capture uploads hash the file bytes.
+    digest: jest.fn((_algorithm: string, data: Uint8Array) => {
+      const hash = nodeCrypto.createHash('sha256').update(data).digest();
+      return Promise.resolve(hash.buffer.slice(hash.byteOffset, hash.byteOffset + hash.byteLength));
+    }),
   };
 });
 
@@ -119,6 +124,10 @@ jest.mock('expo-notifications', () => ({
   AndroidImportance: { HIGH: 4, DEFAULT: 3, LOW: 2 },
   AndroidNotificationVisibility: { PRIVATE: 0 },
   requestPermissionsAsync: jest.fn(() => Promise.resolve({ status: 'granted' })),
+  // T-8.18 device-local reminder notifications (until T-8.24 owns them).
+  SchedulableTriggerInputTypes: { DATE: 'date' },
+  scheduleNotificationAsync: jest.fn(() => Promise.resolve('reminder')),
+  cancelScheduledNotificationAsync: jest.fn(() => Promise.resolve()),
   setNotificationChannelAsync: jest.fn(() => Promise.resolve(null)),
   getExpoPushTokenAsync: jest.fn(() => Promise.resolve({ data: 'ExponentPushToken[test]' })),
 }));
@@ -169,13 +178,23 @@ jest.mock('expo-calendar/legacy', () => ({
   CalendarType: { LOCAL: 'local', SUBSCRIBED: 'subscribed', BIRTHDAYS: 'birthdays' },
   EventStatus: { CONFIRMED: 'confirmed', TENTATIVE: 'tentative', CANCELED: 'canceled' },
   getCalendarPermissionsAsync: jest.fn(() =>
-    Promise.resolve({ status: 'undetermined', canAskAgain: true }),
+    Promise.resolve({ status: 'undetermined', canAskAgain: true, granted: false }),
   ),
   requestCalendarPermissionsAsync: jest.fn(() =>
-    Promise.resolve({ status: 'granted', canAskAgain: true }),
+    Promise.resolve({ status: 'granted', canAskAgain: true, granted: true }),
   ),
   getCalendarsAsync: jest.fn(() => Promise.resolve([])),
   getEventsAsync: jest.fn(() => Promise.resolve([])),
+  // T-8.18 device executor (EventKit / CalendarContract / Apple Reminders).
+  getRemindersPermissionsAsync: jest.fn(() =>
+    Promise.resolve({ status: 'undetermined', canAskAgain: true, granted: false }),
+  ),
+  requestRemindersPermissionsAsync: jest.fn(() =>
+    Promise.resolve({ status: 'granted', canAskAgain: true, granted: true }),
+  ),
+  createEventAsync: jest.fn(() => Promise.resolve('device-event-1')),
+  createReminderAsync: jest.fn(() => Promise.resolve('device-reminder-1')),
+  getRemindersAsync: jest.fn(() => Promise.resolve([])),
 }));
 
 jest.mock('expo-audio', () => {
@@ -201,6 +220,15 @@ jest.mock('expo-audio', () => {
     setAudioModeAsync: jest.fn(() => Promise.resolve()),
     useAudioPlayer: jest.fn(() => player),
     useAudioPlayerStatus: jest.fn(() => ({ ...status })),
+    // T-8.15 voice server-STT fallback recorder.
+    RecordingPresets: { HIGH_QUALITY: {} },
+    requestRecordingPermissionsAsync: jest.fn(() => Promise.resolve({ granted: true })),
+    useAudioRecorder: jest.fn(() => ({
+      prepareToRecordAsync: jest.fn(() => Promise.resolve()),
+      record: jest.fn(),
+      stop: jest.fn(() => Promise.resolve()),
+      uri: 'file:///cache/voice.m4a',
+    })),
   };
 });
 
@@ -223,17 +251,6 @@ jest.mock('expo-speech', () => ({
 }));
 
 // Meeting notes / post-meeting dictation (T-8.14): on-device speech recognition.
-jest.mock('expo-speech-recognition', () => ({
-  ExpoSpeechRecognitionModule: {
-    isRecognitionAvailable: jest.fn(() => true),
-    requestPermissionsAsync: jest.fn(() => Promise.resolve({ granted: true })),
-    start: jest.fn(),
-    stop: jest.fn(),
-    abort: jest.fn(),
-  },
-  useSpeechRecognitionEvent: jest.fn(),
-}));
-
 // Reply attachments (T-8.11): the system document picker.
 jest.mock('expo-document-picker', () => ({
   getDocumentAsync: jest.fn(() => Promise.resolve({ canceled: true, assets: null })),
@@ -252,6 +269,27 @@ jest.mock('expo-file-system/legacy', () => ({
     Promise.resolve({ uri: target, status: 200 }),
   ),
   deleteAsync: jest.fn(() => Promise.resolve()),
+  // T-8.15 transcribe upload, T-8.17 capture uploads and share staging.
+  FileSystemUploadType: { BINARY_CONTENT: 0, MULTIPART: 1 },
+  EncodingType: { Base64: 'base64', UTF8: 'utf8' },
+  readAsStringAsync: jest.fn(() => Promise.resolve('aGVsbG8=')),
+  copyAsync: jest.fn(() => Promise.resolve()),
+  uploadAsync: jest.fn(() =>
+    Promise.resolve({ status: 200, body: '{}', headers: {}, mimeType: 'application/json' }),
+  ),
+  createUploadTask: jest.fn(
+    (
+      _url: string,
+      _uri: string,
+      _options: unknown,
+      callback?: (p: { totalBytesSent: number; totalBytesExpectedToSend: number }) => void,
+    ) => ({
+      uploadAsync: jest.fn(() => {
+        callback?.({ totalBytesSent: 5, totalBytesExpectedToSend: 5 });
+        return Promise.resolve({ status: 200, body: '', headers: {}, mimeType: null });
+      }),
+    }),
+  ),
 }));
 
 jest.mock('react-native-view-shot', () => ({
@@ -303,3 +341,43 @@ jest.mock('react-native-purchases', () => {
     },
   };
 });
+// ── T-8.15…T-8.18 native doubles ───────────────────────────────────────────────────────────
+
+jest.mock('expo-speech-recognition', () => ({
+  ExpoSpeechRecognitionModule: {
+    isRecognitionAvailable: jest.fn(() => true),
+    supportsOnDeviceRecognition: jest.fn(() => true),
+    requestPermissionsAsync: jest.fn(() => Promise.resolve({ granted: true, status: 'granted' })),
+    start: jest.fn(),
+    stop: jest.fn(),
+    abort: jest.fn(),
+  },
+  useSpeechRecognitionEvent: jest.fn(),
+}));
+
+jest.mock('expo-share-intent', () => {
+  const state = {
+    hasShareIntent: false,
+    shareIntent: { text: null, webUrl: null, files: null, type: null },
+  };
+  return {
+    __state: state,
+    useShareIntent: jest.fn(() => ({
+      isReady: true,
+      hasShareIntent: state.hasShareIntent,
+      shareIntent: state.shareIntent,
+      resetShareIntent: jest.fn(() => {
+        state.hasShareIntent = false;
+      }),
+      error: null,
+    })),
+  };
+});
+
+jest.mock('expo-image-picker', () => ({
+  requestCameraPermissionsAsync: jest.fn(() =>
+    Promise.resolve({ granted: true, status: 'granted' }),
+  ),
+  launchCameraAsync: jest.fn(() => Promise.resolve({ canceled: true, assets: null })),
+  launchImageLibraryAsync: jest.fn(() => Promise.resolve({ canceled: true, assets: null })),
+}));

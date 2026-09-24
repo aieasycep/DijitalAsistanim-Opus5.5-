@@ -6,5 +6,45 @@
     "title": "Hafızada henüz bir şey yok.",
     "body": "Maillerin ve toplantıların analiz edildikçe özetler burada birikir."
   },
-  "retentionNote": "Hafıza, saklama sürenle sınırlıdır."
+  "retentionNote": "Hafıza, saklama sürenle sınırlıdır.",
+  "gate": {
+    "title": "Geçmişine sor.",
+    "body": "AI Hafıza Pro'da. Arama her zaman ücretsiz.",
+    "searchFree": "Arama her zaman ücretsiz"
+  },
+  "offlineTitle": "Hafıza araması için bağlantı gerekli.",
+  "recents": "Son aramalar",
+  "clearRecents": "Temizle",
+  "examplesKicker": "Örnek aramalar",
+  "examples": {
+    "flight": "Geçen ay aldığım uçak bileti neydi?",
+    "payments": "Bu ay hangi ödemeler var?",
+    "lastTalk": "Geçen hafta kimlerle toplantı yaptım?"
+  },
+  "retentionExcluded": "Bu tarih, veri saklama süren ({retention}) dışında kalıyor.",
+  "retentionSetting": "Saklama ayarı",
+  "noResultsTitle": "Bununla ilgili bir şey bulamadım.",
+  "noResultsBody": "Farklı kelimeler dene ya da filtreyi kaldır.",
+  "clearFilters": "Filtreleri temizle",
+  "noSummary": "Şu an özet cevap üretemiyorum; kaynaklar aşağıda.",
+  "answerKicker": "Cevap",
+  "answerMeta": "{count} kaynaktan · {label}",
+  "confidence": {
+    "high": "Güçlü eşleşme",
+    "partial": "Kısmi eşleşme",
+    "unsure": "Emin değilim"
+  },
+  "sourcesKicker": "Kaynaklar · {count}",
+  "openOriginal": "Orijinali Aç",
+  "relatedKicker": "Bunları da sorabilirsin",
+  "scoped": "Bu kişi",
+  "filters": {
+    "all": "Tümü",
+    "email": "Mail",
+    "event": "Takvim",
+    "note": "Notlar",
+    "document": "Belgeler",
+    "recent30": "Son 30 gün"
+  },
+  "retentionFooter": "Hafıza, veri saklama ayarına bağlı ({retention}). Daha eski kayıtlar otomatik silinir."
 }

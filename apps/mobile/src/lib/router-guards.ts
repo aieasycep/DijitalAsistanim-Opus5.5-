@@ -23,14 +23,18 @@ export type OnboardingStep = Exclude<
   'welcome' | 'noise' | 'proactive' | 'control' | 'account' | 'done'
 >;
 
-/** The M-GL-02 step table (`null` → connect-mail). URLs of `app/(onboarding)/*` (T-8.06). */
+/**
+ * The M-GL-02 step table (`null` → connect-mail). URLs of `app/(onboarding)/*` (T-8.06). The VIP
+ * step names its group: `/vip` is also M-VIP-01 (`app/vip.tsx`, T-8.16), which Expo Router would
+ * pick for the bare URL and the onboarding guard would then reject.
+ */
 export const ONBOARDING_STEP_ROUTES: Readonly<Record<OnboardingStep, string>> = {
   connect_mail: '/connect-mail',
   connect_calendar: '/connect-calendar',
   permissions: '/permissions',
   personalization: '/personalization',
   briefing_schedule: '/briefing-schedule',
-  vip: '/vip',
+  vip: '/(onboarding)/vip',
   analysis: '/analysis',
   ready: '/ready',
   notifications: '/notifications',
@@ -87,12 +91,28 @@ export const APP_ROOT_SCREENS: readonly string[] = [
   'meeting/[eventId]/prep',
   'meeting/[eventId]/summary',
   'meeting/[eventId]/post',
+  // T-8.15…T-8.18
+  'chat/[threadId]',
+  'voice',
+  'search',
+  'memory',
+  'person/[id]',
+  'vip',
+  'capture',
+  'approvals/index',
+  'approvals/[id]',
+  'reminders/new',
 ];
 /** Presentation of root routes that are not plain stack pushes (SCREEN_AND_FLOW_MAP §0.2). */
 export const ROOT_SCREEN_OPTIONS: Readonly<
   Record<
     string,
-    { readonly presentation: 'modal' | 'fullScreenModal' | 'transparentModal' | 'formSheet' }
+    {
+      readonly presentation: 'modal' | 'fullScreenModal' | 'transparentModal' | 'formSheet';
+      readonly contentStyle?: { readonly backgroundColor: 'transparent' };
+      readonly animation?: 'fade' | 'none';
+      readonly gestureEnabled?: boolean;
+    }
   >
 > = {
   settings: { presentation: 'modal' },
@@ -103,6 +123,14 @@ export const ROOT_SCREEN_OPTIONS: Readonly<
   'life/[id]': { presentation: 'transparentModal' },
   'plan/proposal/[approvalId]': { presentation: 'modal' },
   'meeting/[eventId]/summary': { presentation: 'modal' },
+  // T-8.15 voice mode, T-8.17 capture modal stack, T-8.18 reminder sheet route.
+  voice: { presentation: 'fullScreenModal', gestureEnabled: false },
+  capture: { presentation: 'modal' },
+  'reminders/new': {
+    presentation: 'transparentModal',
+    contentStyle: { backgroundColor: 'transparent' },
+    animation: 'none',
+  },
 };
 /**
  * The settings stack (`app/settings/_layout.tsx`, T-8.07 accounts + T-8.19…T-8.22): reachable with

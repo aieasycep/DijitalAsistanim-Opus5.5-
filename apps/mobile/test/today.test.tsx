@@ -5,14 +5,14 @@
  * dismissal (RPC-14) and the error state with retry.
  */
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
-import { fireEvent, screen, waitFor, within } from 'expo-router/testing-library';
+import { act, fireEvent, screen, waitFor, within } from 'expo-router/testing-library';
 
 import type * as Clock from '../src/lib/clock';
 import type { BriefingSummary } from '../src/features/today/data';
 import { analyticsHeroMode, resolveHero, type HeroInput } from '../src/features/today/hero';
 import { resetAppState } from './helpers/app';
 import { bootstrap } from './helpers/fixtures';
-import { ID, events, openApp } from './helpers/journeys';
+import { ID, appRouter, events, openApp } from './helpers/journeys';
 import { emptyTodayOverview } from './helpers/postgrest';
 
 jest.mock('expo-localization', () => ({
@@ -201,6 +201,37 @@ describe('Today (M-TD-01)', () => {
         hero_mode: 'morning_ready',
         priorities_count: 1,
       });
+    });
+  });
+
+  it('opens the Approval Center from the pill and the reminder sheet from "Hatırlat" (T-8.18)', async () => {
+    const opened = await openApp({
+      setup: (db) => {
+        db.setRpc('today_overview', () => ({
+          data: { ...overview(), pending_approvals_count: 2 },
+          error: null,
+        }));
+        db.setTable('briefings', [briefing()]);
+      },
+    });
+    const card = await screen.findByTestId(`today.card.${ID.insight}`);
+    await fireEvent.press(within(card).getByText('Hatırlat'));
+    await waitFor(() => {
+      expect(opened.router.getPathname()).toBe('/reminders/new');
+    });
+    expect(opened.router.getSearchParams()).toMatchObject({
+      targetType: 'insight',
+      targetId: ID.insight,
+      origin: 'today',
+    });
+    expect(events('priority_action')[0]?.props).toEqual({ kind: 'reply_needed', action: 'remind' });
+    await act(async () => {
+      appRouter.back();
+      await Promise.resolve();
+    });
+    await fireEvent.press(await screen.findByTestId('today.approvals'));
+    await waitFor(() => {
+      expect(opened.router.getPathname()).toBe('/approvals');
     });
   });
 

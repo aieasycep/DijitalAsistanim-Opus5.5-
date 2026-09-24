@@ -73,8 +73,11 @@ export interface ConnectRequest {
 export interface UpgradeRequest {
   readonly accountId: string;
   readonly provider: OAuthProvider;
-  readonly capability: ReadCapability;
+  /** Read capabilities, or a write capability an approval needs (T-8.18, API_CONTRACTS §7). */
+  readonly capability: ReadCapability | 'mail_send' | 'calendar_write' | 'tasks_write';
   readonly returnTo: ReturnTo;
+  /** The approval to reopen after the grant (`resume.approval_id`). */
+  readonly resumeApprovalId?: string;
 }
 
 export interface ConnectDeps {
@@ -271,7 +274,13 @@ export async function startUpgrade(
   try {
     started = await api.call('POST /integrations/:accountId/upgrade', {
       params: { accountId: request.accountId },
-      body: { capability: request.capability, device_nonce_hash: hash },
+      body: {
+        capability: request.capability,
+        device_nonce_hash: hash,
+        ...(request.resumeApprovalId === undefined
+          ? {}
+          : { resume: { approval_id: request.resumeApprovalId } }),
+      },
     });
   } catch (error) {
     return { kind: 'start_failed', error };

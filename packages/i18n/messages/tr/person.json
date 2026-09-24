@@ -5,7 +5,10 @@
     "openItems": "Açık konular",
     "recentMail": "Son mailler",
     "meetings": "Toplantılar",
-    "commitments": "Taahhütler"
+    "commitments": "Taahhütler",
+    "userOwes": "Senden bekledikleri",
+    "theyOwe": "Senin beklediklerin",
+    "topics": "Son konuşulan konular"
   },
   "lastContact": "Son görüşme {relative}",
   "vipSuggestion": "{name} ile son 30 günde {count} kez yazıştın. VIP yapayım mı?",
@@ -21,6 +24,66 @@
   },
   "vipList": {
     "title": "Önemli Kişiler",
-    "add": "Kişi Ekle"
+    "add": "Kişi Ekle",
+    "subtitle": "Bu kişilerden gelenleri her zaman öne alırım ve bekleme sürelerini daha sıkı izlerim.",
+    "removed": "{name} VIP'lerden çıkarıldı",
+    "added": "{name} VIP'lere eklendi",
+    "loadFailed": "Önemli kişiler yüklenemedi.",
+    "groups": {
+      "family": "Eş · Aile",
+      "manager": "Yönetici",
+      "key_client": "Müşteri",
+      "friend": "Arkadaş",
+      "other": "Diğer"
+    },
+    "alwaysNotifyMeta": "Her zaman bildir",
+    "starA11y": "VIP, {name}, çıkarmak için dokun",
+    "rowHint": "Kişi sayfasını açar",
+    "changeGroup": "{name} · Ayarlar",
+    "gateTitle": "VIP önceliği Pro'da; listen korunuyor.",
+    "gateBody": "VIP önceliği ve VIP önerileri Pro'da. Listen her zaman korunur.",
+    "suggestion": "Öneri: {name} ile son 30 günde {count} kez yazıştın. VIP yapayım mı?",
+    "yes": "Evet"
+  },
+  "notFound": "Bu kişi artık listende yok.",
+  "stats": {
+    "lastContact": "Son iletişim",
+    "upcoming": "Yaklaşan",
+    "openLoops": "Açık konu"
+  },
+  "gate": {
+    "title": "Taahhüt ve takip takibi Pro'da.",
+    "body": "Açık konular, senden beklenenler ve taahhütler Pro'da. Temel bilgiler her zaman ücretsiz."
+  },
+  "resolve": "Çözüldü",
+  "resolveHint": "Konuyu çözüldü olarak işaretler",
+  "allMail": "Tüm mailleri gör ({count})",
+  "vipChip": "VIP · {group}",
+  "vipEdit": {
+    "subtitle": "Önemli kişi",
+    "relationship": "İlişki",
+    "alwaysNotify": "Her zaman bildir",
+    "alwaysNotifyMeta": "Bu kişiden gelen önemli mailler, bildirim sınırlarına takılmadan iletilir.",
+    "bypassQuiet": "Sessiz saatlerde bile",
+    "bypassQuietMeta": "Acil önemli mailleri sessiz saatlerde de iletirim; en fazla 3 bildirim.",
+    "bypassQuietOff": "Bildirim ayarlarında kapalı.",
+    "openNotificationSettings": "Bildirim ayarlarına git",
+    "proHint": "Bu ayarlar Pro'da etkin.",
+    "remove": "VIP'lerden çıkar",
+    "queued": "Bağlantı gelince kaydedilecek.",
+    "limitKicker": "VIP · Pro",
+    "limitTitle": "Önemli kişilerini öne al.",
+    "limitBody": "Ücretsiz planda en fazla 5 önemli kişi ekleyebilirsin."
+  },
+  "picker": {
+    "title": "Kişi Ekle",
+    "hint": "Kişi ara…",
+    "addEmail": "“{email}” adresini ekle",
+    "nameOptional": "Ad (isteğe bağlı)",
+    "invalidEmail": "Geçerli bir e-posta adresi gir.",
+    "emptyTitle": "Henüz yazıştığın kimse görünmüyor.",
+    "noMatch": "Kişi bulunamadı.",
+    "emptyBody": "Bir e-posta adresi yazarak ekleyebilirsin.",
+    "recent": "Son yazıştıkların"
   }
 }

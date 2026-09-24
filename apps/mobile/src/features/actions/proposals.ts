@@ -21,7 +21,7 @@ import { getSupabase } from '../../lib/auth/supabase';
 import { unwrapMaybe } from '../../lib/data/rpc';
 import { useSessionContext } from '../../lib/data/session';
 import { isScreenAvailable } from '../../lib/deeplinks';
-import { openApprovalSheet, type ApprovalSheetParams } from '../approvals/ApprovalSheet';
+import { openApprovalSheet, type ApprovalSheetParams } from '../approvals/InlineApprovalSheet';
 import { useOfflineGuard } from './ui';
 
 export interface ProposalSource {

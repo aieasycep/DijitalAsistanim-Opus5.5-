@@ -37,7 +37,7 @@ import { useOnline } from '../../lib/query/online-manager';
 import { ProGate } from '../actions/ProGate';
 import { openReminder } from '../actions/sheets';
 import { DetailScreen, QueryFailure, useBack, useOfflineGuard } from '../actions/ui';
-import { ApprovalCardView } from '../approvals/ApprovalSheet';
+import { ApprovalCardView } from '../approvals/InlineApprovalSheet';
 import { useApprovalRunner } from '../approvals/runner';
 
 type OptionKind = 'move_own' | 'propose_time' | 'shorten' | 'keep';

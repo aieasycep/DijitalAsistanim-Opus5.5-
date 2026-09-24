@@ -61,6 +61,7 @@ import { INSIGHT_CORRECTION_SHEET } from './sheets/CorrectionSheet';
 import { SNOOZE_SHEET } from './sheets/SnoozeSheet';
 import { INSIGHT_WHY_SHEET } from './sheets/WhySheet';
 import { routeForEntity, routeForSource } from './sources';
+import { cardIntentActions } from './intents';
 
 export const MAX_PRIORITIES = 5;
 
@@ -482,13 +483,23 @@ function PriorityItem({
     void applyFeedback(item, localDate, 'not_important', true);
   };
   const actions: CardAction[] = [
+    ...cardIntentActions(item, {
+      reply: common('actions.reply'),
+      remind: common('actions.remind'),
+      remindTomorrow: common('actions.remindTomorrow'),
+      prepare: common('actions.prepare'),
+      push: (href, action) => {
+        track('priority_action', { kind: item.kind, action });
+        router.push(href);
+      },
+    }),
     {
       key: 'source',
       label: common('actions.viewSource'),
       onPress: why,
-      emphasis: 'secondary',
+      emphasis: 'secondary' as const,
     },
-  ];
+  ].slice(0, 2);
   const providerLabel =
     item.source?.provider === 'microsoft'
       ? common('providers.outlook')

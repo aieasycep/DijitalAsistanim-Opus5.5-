@@ -31,7 +31,7 @@ import { ListSkeleton } from '../../common/ListSkeleton';
 export const INSIGHT_WHY_SHEET = 'insight_why';
 
 export interface WhyParams {
-  readonly targetType: 'insight' | 'briefing_item';
+  readonly targetType: 'insight' | 'briefing_item' | 'approval_action';
   readonly targetId: string;
 }
 

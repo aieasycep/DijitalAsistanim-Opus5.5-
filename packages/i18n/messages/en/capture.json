@@ -12,13 +12,16 @@
   "sources": {
     "camera": "Camera",
     "library": "Photos",
-    "files": "Files"
+    "files": "Files",
+    "title": "Photo source"
   },
   "link": {
     "hint": "Paste a link"
   },
   "text": {
-    "hint": "Type or paste text here"
+    "hint": "Type or paste text here",
+    "label": "Note or text",
+    "counter": "{count, plural, one {# character} other {# characters}}"
   },
   "statuses": {
     "pending_upload": "Uploading…",
@@ -35,7 +38,8 @@
     "suggestedAction": "Suggested action",
     "eventDetected": "Event detected.",
     "addToCalendarQuestion": "Shall I add it to your calendar?",
-    "nothingFound": "I didn't find anything to act on in this content."
+    "nothingFound": "I didn't find anything to act on in this content.",
+    "detectedCount": "{type} · {count, plural, one {# item} other {# items}}"
   },
   "entityTypes": {
     "event": "Event",
@@ -53,10 +57,111 @@
     "addToCalendar": "Add to calendar",
     "createTask": "Create task",
     "setReminder": "Set reminder",
-    "discard": "Discard"
+    "discard": "Discard",
+    "calendar_create": "Will be added to your calendar",
+    "task_create": "A task will be created",
+    "reminder_create": "A reminder will be set",
+    "commitment_create": "A commitment will be saved"
   },
   "permission": {
     "camera": "I only use the camera when you choose “Camera”."
   },
-  "privacyNote": "Files you upload are stored only in your account and deleted when your retention period ends."
+  "privacyNote": "Files you upload are stored only in your account and deleted when your retention period ends.",
+  "kickers": {
+    "base": "Add",
+    "link": "Add · Link",
+    "text": "Add · Text",
+    "shared": "Shared content"
+  },
+  "errors": {
+    "tooLarge": "The file is too large (up to {limit}).",
+    "unsupported": "This file type isn't supported.",
+    "cameraUnavailable": "The camera isn't available.",
+    "cameraDenied": "Camera access is off · You can turn it on in Settings.",
+    "invalidUrl": "Enter a valid link (https://…)",
+    "scheme": "This kind of link isn't supported.",
+    "blocked": "This address can't be opened for security reasons.",
+    "previewFailed": "Couldn't get a preview; you can still analyze it.",
+    "uploadFailed": "Upload failed · Try again",
+    "textTooLong": "Up to 5,000 characters."
+  },
+  "fileA11y": "{kind}, {name}, {size}",
+  "sourcesA11y": "Choose a source",
+  "gate": {
+    "title": "Let me pull tasks out of photos and documents.",
+    "body": "I extract events, tasks and deadlines from photos, screenshots, PDFs, links or text."
+  },
+  "share": {
+    "waitsForPro": "What you shared waits here if you upgrade to Pro.",
+    "truncated": "I can analyze up to 5 items; I picked the first 5.",
+    "unsupported": "Unsupported items were removed.",
+    "unsupportedTitle": "This content type isn't supported.",
+    "unsupportedBody": "You can share photos, PDFs, files, links or text."
+  },
+  "hint": "Write freely; I'll pick out the dates, people and tasks.",
+  "offline": "You're offline · Analysis needs a connection.",
+  "analyze": "Analyze",
+  "uploading": "Uploading… {percent}%",
+  "multiQueued": "{count} items are being analyzed separately.",
+  "files": {
+    "title": "Choose a PDF or file",
+    "subtitle": "From files on your device",
+    "fromDevice": "Choose from Files…"
+  },
+  "discard": {
+    "title": "Delete the draft?",
+    "keep": "Keep"
+  },
+  "offlineAnalyzing": "You're offline · The analysis continues on the server and updates once you're back online.",
+  "steps": {
+    "read": "Reading the content",
+    "extract": "Extracting dates, people and tasks",
+    "ready": "Preparing the results"
+  },
+  "stepStates": {
+    "done": "done",
+    "active": "in progress",
+    "pending": "waiting"
+  },
+  "slowKicker": "This is taking a while; I'll let you know when it's ready.",
+  "privacy": {
+    "file": "The document is analyzed on our secure server; the file is deleted within 24 hours and only the extracted items are kept.",
+    "link": "The page is read only once; no cookies or sessions are shared."
+  },
+  "failures": {
+    "pdf_encrypted": "Password-protected PDFs can't be read.",
+    "ocr_failed": "The text couldn't be read; try a clearer image.",
+    "link_unreadable": "The page couldn't be read · You can copy and paste the text.",
+    "link_blocked": "This address can't be opened for security reasons.",
+    "timeout": "The analysis timed out.",
+    "generic": "The analysis couldn't be completed."
+  },
+  "retry": "Try again",
+  "executing": "Processing approved items…",
+  "success": {
+    "title": "Added.",
+    "partialTitle": "{done}/{total} items added",
+    "noneTitle": "No items could be added.",
+    "seeFailed": "See the failed ones",
+    "done": "Added",
+    "failed": "Failed"
+  },
+  "memorySaved": "Saved to memory",
+  "quick": {
+    "calendar_create": "Add to calendar · {count}",
+    "task_create": "Create task · {count}",
+    "reminder_create": "Remind · {count}",
+    "commitment_create": "Commitment · {count}"
+  },
+  "pageRef": "Source: p.{page}",
+  "suggestion": "Suggestion",
+  "warnings": {
+    "past": "This date is in the past",
+    "lowConfidence": "Not sure · please check"
+  },
+  "saveToMemory": "Save to memory",
+  "noApprovalNeeded": "No approval needed",
+  "editItem": "Edit item",
+  "itemTitle": "Title",
+  "sendToApproval": "{count, plural, one {Send # item for approval} other {Send # items for approval}}"
 }

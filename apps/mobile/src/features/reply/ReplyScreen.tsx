@@ -50,7 +50,7 @@ import { mailProviderUrl, openWithOs } from '../actions/handoff';
 import { openScopeUpgrade } from '../actions/scope';
 import { openMenu } from '../actions/sheets';
 import { DetailScreen, useBack, useOfflineGuard } from '../actions/ui';
-import { openApprovalSheet } from '../approvals/ApprovalSheet';
+import { openApprovalSheet } from '../approvals/InlineApprovalSheet';
 import { useApprovalRunner } from '../approvals/runner';
 import { threadIdOfMessage } from '../mail/data';
 import { fetchApprovalForEdit, fetchDraft } from './data';

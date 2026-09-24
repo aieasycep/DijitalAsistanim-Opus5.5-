@@ -46,7 +46,7 @@ import { useOpenPaywall } from '../actions/ProGate';
 import { deadlineBlock, useProposals } from '../actions/proposals';
 import { openLink, openMenu, openReminder, openSource } from '../actions/sheets';
 import { DetailScreen, QueryFailure, useBack, useOfflineGuard } from '../actions/ui';
-import { openApprovalSheet } from '../approvals/ApprovalSheet';
+import { openApprovalSheet } from '../approvals/InlineApprovalSheet';
 import { emailDetailOptions, type EmailDetail } from './data';
 
 /** "ahmet@example.com" → "a***@example.com" (source lines never show full foreign addresses). */

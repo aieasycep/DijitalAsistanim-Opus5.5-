@@ -21,5 +21,39 @@
   },
   "generated": {
     "notFound": "Bunu kayıtlarında bulamadım."
+  },
+  "resultsA11y": "{count} sonuç",
+  "askMemory": "Bu bir soru gibi görünüyor. Hafızaya sor",
+  "offlineHeader": "Çevrimdışı · yalnızca bu cihazdaki son veriler",
+  "recents": "Son aramalar",
+  "clearRecents": "Temizle",
+  "examplesKicker": "Örnek aramalar",
+  "rateLimited": "Biraz yavaşla; birkaç saniye sonra tekrar dene.",
+  "failed": "Arama yapılamadı.",
+  "noResultsTitle": "Sonuç bulunamadı",
+  "noResultsBody": "“{query}” için bir şey bulunamadı.",
+  "count": "{count} sonuç",
+  "seeAll": "Tümünü gör ({count})",
+  "groups": {
+    "email": "Mailler",
+    "person": "Kişiler",
+    "event": "Takvim",
+    "task": "Görevler",
+    "commitment": "Taahhütler",
+    "life_event": "Yaşam",
+    "memory": "Hafıza",
+    "capture": "Yakalananlar"
+  },
+  "scopes": {
+    "all": "Tümü",
+    "email": "Mailler",
+    "person": "Kişiler",
+    "event": "Takvim",
+    "task": "Görevler",
+    "commitment": "Taahhütler",
+    "life_event": "Yaşam",
+    "memory": "Hafıza",
+    "memoryLocked": "Hafıza · Pro",
+    "capture": "Yakalananlar"
   }
 }
