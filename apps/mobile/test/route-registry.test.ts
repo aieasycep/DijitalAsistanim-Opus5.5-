@@ -185,7 +185,9 @@ describe('screen registry', () => {
     expect(isScreenAvailable('/demo/setup', false)).toBe(false);
     expect(isScreenAvailable('/demo/setup', true)).toBe(true);
     expect(isScreenAvailable('/today?src=push', false)).toBe(true);
-    expect(isScreenAvailable('/settings/android-notifications', false)).toBe(false);
+    // T-8.26 added the Android NI settings screen; a referral link has no screen of its own.
+    expect(isScreenAvailable('/settings/android-notifications', false)).toBe(true);
+    expect(isScreenAvailable('/r/K7M2P9Q', false)).toBe(false);
   });
 
   it('has a screen for every onboarding step (T-8.06)', () => {

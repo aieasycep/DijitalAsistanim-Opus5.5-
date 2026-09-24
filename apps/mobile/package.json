@@ -12,7 +12,8 @@
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json",
     "test": "jest",
-    "licenses": "node scripts/generate-licenses.mjs"
+    "licenses": "node scripts/generate-licenses.mjs",
+    "ni:test": "bash scripts/ni-test.sh"
   },
   "expo": {
     "install": {

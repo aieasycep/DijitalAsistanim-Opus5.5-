@@ -418,26 +418,17 @@ export function HubScreen() {
           testID="hub.row.personalization"
         />
         {Platform.OS === 'android' ? (
-          isScreenAvailable('/settings/android-notifications') ? (
-            <ListRow
-              icon="notifications_active"
-              title={t('settings.hub.rows.phoneNotifications')}
-              trailing={pro ? { kind: 'chevron' } : { kind: 'value', text: t('common.badges.pro') }}
-              onPress={() => {
-                track('settings_row_tapped', { row: 'android_notifications' });
-                if (pro) router.push('/settings/android-notifications');
-                else openProGate('android_ni');
-              }}
-              testID="hub.row.androidNi"
-            />
-          ) : (
-            <ListRow
-              icon="notifications_active"
-              title={t('settings.hub.rows.phoneNotifications')}
-              subtitle={t('states.unavailable.featureDisabled')}
-              testID="hub.row.androidNi"
-            />
-          )
+          <ListRow
+            icon="notifications_active"
+            title={t('settings.hub.rows.phoneNotifications')}
+            trailing={pro ? { kind: 'chevron' } : { kind: 'value', text: t('common.badges.pro') }}
+            onPress={() => {
+              track('settings_row_tapped', { row: 'android_notifications' });
+              if (pro) router.push('/settings/android-notifications');
+              else openProGate('android_ni');
+            }}
+            testID="hub.row.androidNi"
+          />
         ) : null}
       </SettingsGroup>
 

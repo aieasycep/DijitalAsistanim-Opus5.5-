@@ -26,6 +26,8 @@ import {
 } from '../src/lib/router-guards';
 import { AppProviders } from '../src/providers/AppProviders';
 import { ShareIntakeBridge } from '../src/features/capture/ShareIntakeBridge';
+// T-8.26 Android NI: sign-out wipe, background upload task, foreground upload and entitlement sync.
+import { AniBridge } from '../src/features/android-ni/AniBridge';
 // Feature hooks that must exist before the first sign-in or OAuth return (T-8.06, T-8.07, T-8.09).
 import '../src/features/onboarding/post-sign-in';
 import '../src/features/integrations/callback-handler';
@@ -55,6 +57,7 @@ function RootNavigator() {
     <>
       <StatusBar style={theme.isDark ? 'light' : 'dark'} />
       <ShareIntakeBridge signedIn={flags.app} />
+      <AniBridge signedIn={flags.app} />
       <Stack
         screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.color.bg } }}
       >

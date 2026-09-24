@@ -4,8 +4,9 @@
  * (person / domain / keyword / category / sender), the outcome and a debounced live preview over
  * the last 30 days (RPC-11, security invoker: own mail only). Saving inserts or PATCHes
  * `priority_rules` under RLS (blocked offline, the preview needs the network); a duplicate rule is
- * reported; leaving with unsaved changes asks first. The Android app condition appears only with
- * Android Notification Intelligence (T-8.26), so it is not offered in this build.
+ * reported; leaving with unsaved changes asks first. The "Uygulama" (`android_app`) condition is
+ * offered on Android when notification access is granted and the user has Pro (T-8.26, M-SET-51
+ * permission edge case); its input is a picker over the NI module's candidate apps.
  */
 import { qk } from '@da/api-client';
 import type { RuleCondition, RuleOutcome } from '@da/domain';
@@ -27,7 +28,7 @@ import {
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import { useFormatter, useTranslations } from 'use-intl';
 
 import { getSupabase } from '../../lib/auth/supabase';
@@ -36,7 +37,9 @@ import { track } from '../../lib/events';
 import { DataError } from '../../lib/postgrest';
 import { useOnline } from '../../lib/query/online-manager';
 import { showToast } from '../../providers/ToastHost';
+import { isNiSupported, niCall, type NiCandidateApp } from '../android-ni/native';
 import { ListSkeleton } from '../common/ListSkeleton';
+import { isPro } from '../pro-gate/ProGate';
 import { goBack } from '../settings/ui';
 import { SettingsGroup, SettingsPage } from '../settings/ui';
 import {
@@ -58,7 +61,7 @@ import {
 } from './rules';
 import { useRuleSummary } from './summary';
 
-/** Conditions offered in this build (`android_app` needs the NI module, T-8.26). */
+/** Conditions offered everywhere; `android_app` is added by `editorConditions()`. */
 const EDITOR_CONDITIONS: readonly RuleCondition[] = [
   'person',
   'domain',
@@ -66,6 +69,23 @@ const EDITOR_CONDITIONS: readonly RuleCondition[] = [
   'category',
   'sender',
 ];
+
+/** "Uygulama" needs Android, Pro and a granted notification listener (T-8.26). */
+function editorConditions(): readonly RuleCondition[] {
+  const niApps =
+    Platform.OS === 'android' &&
+    isPro() &&
+    isNiSupported() &&
+    niCall(false, (ni) => ni.isGranted());
+  return niApps ? [...EDITOR_CONDITIONS, 'android_app'] : EDITOR_CONDITIONS;
+}
+
+/** Apps the rule can name: the NI module's candidates minus the locked denylist. */
+function ruleApps(): readonly NiCandidateApp[] {
+  return niCall([], (ni) => ni.listCandidateApps())
+    .filter((app) => !app.locked)
+    .sort((a, b) => a.label.localeCompare(b.label, 'tr'));
+}
 const CONDITION_ICON = {
   person: 'person',
   domain: 'alternate_email',
@@ -122,7 +142,7 @@ export function suggestedDomains(
 }
 
 function prefillOf(type: string | undefined, value: string | undefined): RuleDraft {
-  const condition = EDITOR_CONDITIONS.find((c) => c === type);
+  const condition = editorConditions().find((c) => c === type);
   if (condition === undefined) return EMPTY_DRAFT;
   const v = value ?? '';
   switch (condition) {
@@ -132,6 +152,8 @@ function prefillOf(type: string | undefined, value: string | undefined): RuleDra
       return { ...EMPTY_DRAFT, condition, sender: v };
     case 'keyword':
       return { ...EMPTY_DRAFT, condition, keywords: v === '' ? [] : [v] };
+    case 'android_app':
+      return { ...EMPTY_DRAFT, condition, appPackage: v === '' ? null : v };
     default:
       return { ...EMPTY_DRAFT, condition };
   }
@@ -342,7 +364,12 @@ function RuleEditor({
   const [keyword, setKeyword] = useState('');
   const [error, setError] = useState<string | undefined>(undefined);
   const [saving, setSaving] = useState(false);
-  const [sheet, setSheet] = useState<'exceptions' | 'contact' | null>(null);
+  const [sheet, setSheet] = useState<'exceptions' | 'contact' | 'app' | null>(null);
+  const [apps] = useState(ruleApps);
+  const conditions = (() => {
+    const offered = editorConditions();
+    return offered.includes(draft.condition) ? offered : [...offered, draft.condition];
+  })();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [leaveDialog, setLeaveDialog] = useState(false);
   const [showAllOutcomes, setShowAllOutcomes] = useState(rule === null);
@@ -609,7 +636,21 @@ function RuleEditor({
           />
         );
       case 'android_app':
-        return null;
+        return (
+          <ListRow
+            icon="apps"
+            title={
+              apps.find((app) => app.package === draft.appPackage)?.label ??
+              draft.appPackage ??
+              t('android_ni.picker.title')
+            }
+            trailing={{ kind: 'chevron' }}
+            onPress={() => {
+              setSheet('app');
+            }}
+            testID="rule.app"
+          />
+        );
     }
   })();
 
@@ -678,7 +719,7 @@ function RuleEditor({
         {t('settings.rulesScreen.conditionSection')}
       </Text>
       <View style={styles.tokens} accessibilityRole="radiogroup">
-        {EDITOR_CONDITIONS.map((condition) => (
+        {conditions.map((condition) => (
           <ChoiceChip
             key={condition}
             icon={CONDITION_ICON[condition]}
@@ -798,6 +839,36 @@ function RuleEditor({
             setSheet(null);
           }}
         />
+      ) : null}
+      {sheet === 'app' ? (
+        <BottomSheet
+          visible
+          onDismiss={() => {
+            setSheet(null);
+          }}
+          title={t('android_ni.picker.title')}
+          testID="sheet.ruleAppPicker"
+        >
+          {apps.length === 0 ? (
+            <Text variant="body" tone="secondary" testID="ruleAppPicker.empty">
+              {t('android_ni.picker.noApps')}
+            </Text>
+          ) : (
+            apps.slice(0, 50).map((app) => (
+              <ListRow
+                key={app.package}
+                icon="apps"
+                title={app.label}
+                trailing={{ kind: 'radio', selected: draft.appPackage === app.package }}
+                onPress={() => {
+                  update({ appPackage: app.package });
+                  setSheet(null);
+                }}
+                testID={`ruleAppPicker.${app.package}`}
+              />
+            ))
+          )}
+        </BottomSheet>
       ) : null}
       {sheet === 'contact' ? (
         <ContactPicker

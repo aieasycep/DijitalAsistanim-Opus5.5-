@@ -16,7 +16,8 @@
  *
  * The `da-share` local module (T-8.17) enforces App Group parity and the Android `singleTask`
  * launch mode, and the share extension is declared in `appExtensions` for EAS credentials. The
- * widget target and the `da-widgets` plugin arrive with T-8.25.
+ * `notification-intelligence` local module (T-8.26) adds the Android notification listener service
+ * and the launcher `<queries>`. The widget target and the `da-widgets` plugin arrive with T-8.25.
  */
 import type { ConfigContext, ExpoConfig } from 'expo/config';
 import {
@@ -31,6 +32,7 @@ import captureTr from '@da/i18n/messages/tr/capture.json';
 import { CLIENT_SECRET_SHAPES, ENV_KEYS, parseBuildEnv, type AppEnv } from '@da/validation/env';
 
 import { createWithDaShare } from './modules/da-share/plugin/withDaShare.ts';
+import { createWithNotificationIntelligence } from './modules/notification-intelligence/plugin/withNotificationIntelligence.ts';
 import { IOS_PERMISSION_STRINGS } from './src/i18n/native-strings.ts';
 import { DEFAULT_WEB_URL, variantIdentifier, variantScheme } from './src/lib/variant.ts';
 
@@ -41,6 +43,9 @@ const withDaShare = createWithDaShare({
   withAndroidManifest,
   withEntitlementsPlist,
 });
+
+/** T-8.26: the notification listener service and the launcher `<queries>` (Android only). */
+const withNotificationIntelligence = createWithNotificationIntelligence({ withAndroidManifest });
 
 /** M§108 production identifiers; every variant derives from these unless env overrides them. */
 export const DEFAULT_IDENTIFIERS = {
@@ -355,7 +360,8 @@ export function buildAppConfig(base: Partial<ExpoConfig>, env: Env): ExpoConfig 
     ? env.EXPO_PUBLIC_EAS_PROJECT_ID.trim()
     : undefined;
 
-  const withShare = (config: ExpoConfig) => withDaShare(config, { appGroup: variant.appGroup });
+  const withShare = (config: ExpoConfig) =>
+    withNotificationIntelligence(withDaShare(config, { appGroup: variant.appGroup }));
   return withShare(
     withUniqueAppGroups({
       ...base,

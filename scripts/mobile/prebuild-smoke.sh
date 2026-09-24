@@ -150,6 +150,21 @@ assert_variant() {
   expect_contains "$android/gradle.properties" "hermesEnabled=true" "Hermes"
   expect_contains "$android/app/src/main/res/values/strings.xml" "expo_runtime_version" \
     "fingerprint runtime version resource"
+  # T-8.26 Android Notification Intelligence: the listener service, bound only by the system.
+  expect_once "$manifest" \
+    "android:name=\"expo.modules.notificationintelligence.DaNotificationListenerService\"" \
+    "the notification listener service"
+  expect_contains "$manifest" \
+    "android:permission=\"android.permission.BIND_NOTIFICATION_LISTENER_SERVICE\"" \
+    "BIND_NOTIFICATION_LISTENER_SERVICE"
+  expect_contains "$manifest" \
+    "<action android:name=\"android.service.notification.NotificationListenerService\"/>" \
+    "the listener intent filter"
+  expect_contains "$manifest" "<category android:name=\"android.intent.category.LAUNCHER\"/>" \
+    "launcher <queries>"
+  expect_absent "$manifest" \
+    "<uses-permission android:name=\"android.permission.QUERY_ALL_PACKAGES\"/>" \
+    "QUERY_ALL_PACKAGES"
 
   if [[ -z "$suffix" ]]; then
     # Production carries no variant identifiers at all.

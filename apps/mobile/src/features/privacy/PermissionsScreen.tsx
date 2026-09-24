@@ -21,6 +21,7 @@ import { AppState, Linking, Platform, StyleSheet, View } from 'react-native';
 import { useTranslations } from 'use-intl';
 
 import { track } from '../../lib/events';
+import { isNiSupported, niCall } from '../android-ni/native';
 import { useAccounts } from '../integrations/accounts';
 import { SettingsGroup, SettingsPage } from '../settings/ui';
 import { useAccountTitle, useScopeLabels } from './PrivacyCenterScreen';
@@ -147,9 +148,12 @@ export function PermissionsScreen() {
   ];
   const [states, setStates] = useState<Partial<Record<OsPermissionKey, Probe>>>({});
   const [explain, setExplain] = useState<OsPermissionKey | null>(null);
+  // Android: the notification-listener grant (T-8.26), read from the NI module.
+  const [niGranted, setNiGranted] = useState<boolean | null>(null);
 
   const refresh = useCallback(() => {
     let alive = true;
+    setNiGranted(isNiSupported() ? niCall(false, (ni) => ni.isGranted()) : null);
     const all: OsPermissionKey[] = ['notifications', 'calendar', 'microphone', 'speech', 'camera'];
     void Promise.all(all.map(async (key) => [key, await probePermission(key)] as const)).then(
       (entries) => {
@@ -270,6 +274,28 @@ export function PermissionsScreen() {
             />
           );
         })}
+        {niGranted === null ? null : (
+          <ListRow
+            title={t('privacy.permissions.os.notificationAccess.title')}
+            subtitle={t('privacy.permissions.os.notificationAccess.meta')}
+            trailing={{
+              kind: 'custom',
+              node: (
+                <StatusPill
+                  label={niGranted ? t('android_ni.status.on') : t('android_ni.status.off')}
+                  tone={niGranted ? 'success' : 'neutral'}
+                />
+              ),
+            }}
+            accessibilityLabel={`${t('privacy.permissions.os.notificationAccess.title')}, ${
+              niGranted ? t('android_ni.status.on') : t('android_ni.status.off')
+            }`}
+            onPress={() => {
+              router.push('/settings/android-notifications');
+            }}
+            testID="permissions.os.notificationAccess"
+          />
+        )}
       </SettingsGroup>
 
       <BottomSheet

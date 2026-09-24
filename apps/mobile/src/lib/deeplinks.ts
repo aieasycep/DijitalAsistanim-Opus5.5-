@@ -113,6 +113,8 @@ export const SCREEN_ROUTES: readonly string[] = [
   '/approvals',
   '/approvals/:id',
   '/reminders/new',
+  // T-8.26 Android Notification Intelligence (M-ANI-01)
+  '/settings/android-notifications',
 ];
 
 /** Screens compiled only into demo builds (`metro.config.js` drops their files otherwise). */

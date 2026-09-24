@@ -181,6 +181,13 @@ export const qk = {
     all: ['rc'] as const,
     offerings: () => ['rc', 'offerings'] as const,
   },
+  // T-8.26 Android Notification Intelligence (device-local state; never persisted).
+  ani: {
+    all: ['ani'] as const,
+    status: () => ['ani', 'status'] as const,
+    signals: () => ['ani', 'signals'] as const,
+    apps: () => ['ani', 'apps'] as const,
+  },
 } as const;
 
 export const mk = {
@@ -245,5 +252,9 @@ export const mk = {
   business: {
     referralApply: ['business', 'referral-apply'] as const,
     purchasesSync: ['business', 'purchases-sync'] as const,
+  },
+  // T-8.26
+  ani: {
+    uploadSignals: ['ani', 'upload-signals'] as const,
   },
 } as const;

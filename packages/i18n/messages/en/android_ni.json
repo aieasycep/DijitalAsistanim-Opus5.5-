@@ -8,7 +8,7 @@
   },
   "grantCta": "Turn on notification access",
   "modes": {
-    "selected": "Only apps I choose",
+    "selected": "Selected apps",
     "all": "All apps"
   },
   "apps": "Apps",
@@ -21,5 +21,102 @@
     "title": "About notification access",
     "accept": "I understand, continue"
   },
-  "pro": "Phone notification intelligence is part of Pro."
+  "pro": "Phone notification intelligence is part of Pro.",
+  "screen": {
+    "title": "Phone notifications",
+    "subtitle": "I pick out personal signals from delivery, bank and app notifications.",
+    "notGrantedTitle": "Notification access is off",
+    "notGrantedBody": "Give Dijital Asistan notification access in Android settings.",
+    "enabledTitle": "On · {count, plural, one {# signal} other {# signals}} in the last 24 hours",
+    "pausedTitle": "Access on, analysis off",
+    "lapsedTitle": "Pro ended · analysis paused",
+    "lapsedBody": "When you are back on Pro, the analysis picks up where it left off.",
+    "statusLoading": "Checking status",
+    "unsupported": "This device does not support notification access.",
+    "toggle": "Analyze phone notifications",
+    "toggleNeedsAccess": "Turn on notification access first.",
+    "modeSection": "Access mode",
+    "modeAllMeta": "Except the excluded ones",
+    "categoriesSection": "Categories",
+    "pickApps": "Choose apps",
+    "pickAppsMeta": "{count, plural, =0 {No apps picked by hand} one {# app picked by hand} other {# apps picked by hand}}",
+    "lockedRow": "Security and messaging apps are always excluded",
+    "lockedA11y": "Security and messaging apps are always excluded, cannot be changed",
+    "signalsSection": "Recent signals",
+    "signalsEmpty": "No signals yet. They appear here when the apps you chose send notifications.",
+    "signalsPartial": "Signals in your account cannot be read right now; showing the ones on this device.",
+    "signalTitle": "{app} · {category}",
+    "deleteSignalA11y": "Delete the {app} signal",
+    "signalDeleted": "Signal deleted.",
+    "deleteAllTitle": "Delete all signals?",
+    "deleteAllBody": "The extracted details on this device and in your account are deleted. This cannot be undone.",
+    "removeAccess": "Remove system access",
+    "restrictedHelp": "If access cannot be turned on: Settings → Apps → Dijital Asistan → ⋮ → Allow restricted settings, then try again.",
+    "settingsFailed": "Could not open settings.",
+    "grantedToast": "Phone notifications are on"
+  },
+  "category": {
+    "cargo": "Delivery",
+    "bank_payment": "Payment",
+    "flight": "Flight",
+    "reservation": "Reservation",
+    "other": "Other"
+  },
+  "tracking": {
+    "created": "Order received",
+    "in_transit": "On the way",
+    "out_for_delivery": "Out for delivery",
+    "delivered": "Delivered",
+    "exception": "Delivery problem"
+  },
+  "detail": {
+    "gate": "Gate {gate}",
+    "due": "Due {date}"
+  },
+  "disclosureSheet": {
+    "messagingTitle": "Messaging",
+    "messagingMeta": "WhatsApp, Telegram, SMS · always excluded",
+    "messagingA11y": "Messaging apps are always excluded, cannot be changed",
+    "chatNote": "Chat and SMS apps are always excluded too.",
+    "footnote": "Opens Android Settings → Notification access."
+  },
+  "picker": {
+    "title": "Choose apps",
+    "search": "Search apps",
+    "senders": "Apps that send notifications",
+    "others": "Other apps",
+    "seenMeta": "{count, plural, one {# notification} other {# notifications}} in the last 7 days",
+    "locked": "Always excluded",
+    "empty": "No apps found.",
+    "noApps": "No apps to list on this device.",
+    "tuneA11y": "Importance for {app}",
+    "importance": {
+      "important": "Important",
+      "normal": "Normal",
+      "ignore": "Ignore"
+    },
+    "ruleFailed": "Could not save the importance.",
+    "viaCategory": "Selected through {category}",
+    "offlineImportance": "Setting the importance needs an internet connection."
+  },
+  "denylist": {
+    "title": "Always excluded",
+    "groups": {
+      "authenticator": "Authenticator apps",
+      "password_manager": "Password managers",
+      "e_devlet": "e-Devlet",
+      "messaging": "Messaging and SMS",
+      "google_play_services": "Google Play services",
+      "own_app": "Dijital Asistan"
+    },
+    "note": "Notifications from these apps are never read in any mode. Any notification with a verification code is also ignored, whatever the app.",
+    "ownApp": "This app"
+  },
+  "onboardingStep": {
+    "notGrantedTitle": "Notification access was not granted.",
+    "notGrantedBody": "You can turn it on later in Settings › Phone Notifications.",
+    "retry": "Try again",
+    "troubleTitle": "Having trouble?",
+    "troubleBody": "App info → ⋮ → Allow restricted settings"
+  }
 }
