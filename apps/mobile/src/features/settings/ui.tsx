@@ -4,15 +4,7 @@
  * subtitle; offline the persisted values stay visible under the `OfflineBanner`; an optional
  * sticky footer carries the page CTA. `SettingsGroup` is a kicker plus a grouped list.
  */
-import {
-  DetailHeader,
-  GroupedList,
-  OfflineBanner,
-  SectionHeader,
-  StickyCTABar,
-  Text,
-  useTheme,
-} from '@da/ui';
+import { DetailHeader, GroupedList, SectionHeader, StickyCTABar, Text, useTheme } from '@da/ui';
 import { qk } from '@da/api-client';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
@@ -21,7 +13,7 @@ import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslations } from 'use-intl';
 
-import { useOnline } from '../../lib/query/online-manager';
+import { AppOfflineBanner } from '../common/OfflineBanner';
 
 export const SETTINGS_ROUTE = '/settings';
 
@@ -64,7 +56,6 @@ export function SettingsPage({
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const online = useOnline();
   const queryClient = useQueryClient();
   const refresh =
     onRefresh ??
@@ -110,14 +101,15 @@ export function SettingsPage({
               ),
             })}
       >
-        {online ? null : (
-          <OfflineBanner
-            message={t('settings.common.offlineBanner')}
-            refreshLabel={t('states.offline.refresh')}
-            onRefresh={refresh}
-            testID={`${testID}.offline`}
-          />
-        )}
+        <AppOfflineBanner
+          screen="M-SET-01"
+          style={{ marginHorizontal: 0 }}
+          onRefresh={() => {
+            refresh();
+            return Promise.resolve();
+          }}
+          testID={`${testID}.offline`}
+        />
         <Text variant="h1" heading>
           {title}
         </Text>

@@ -3,31 +3,30 @@
  * writes its owner row (`user_preferences`, `notification_preferences`, `profiles`) through
  * PostgREST under RLS, optimistically on the cached bootstrap.
  * - Online failure → the cache reverts and the error toast "Kaydedilemedi. Tekrar dene." appears.
- * - Offline (a *queued* write class, §14.2) → the change stays applied, is merged into the pending
- *   patch of its table (encrypted MMKV, survives a restart) and is replayed in order when the
- *   connection returns; rows show "Bağlantı gelince kaydedilecek" while a patch is pending.
+ * - Offline (a *queued* write class, §14.2) → the change stays applied and goes to the app's offline
+ *   mutation queue (T-8.23, `own_row`, last write wins per table, encrypted, survives a restart);
+ *   it replays in order when the connection returns, and rows show "Bağlantı gelince
+ *   kaydedilecek" while a patch of the table is pending.
  */
 import { qk } from '@da/api-client';
 import type { BootstrapData } from '@da/validation/api/bootstrap';
-import { onlineManager } from '@tanstack/react-query';
-import { useSyncExternalStore } from 'react';
-import { AppState } from 'react-native';
 
 import { translator } from '../../i18n/translate';
 import {
-  cachedBootstrap,
-  patchBootstrapCache,
-  updateNotificationPreferences,
-  updateProfile,
-  updateUserPreferences,
-} from '../../lib/postgrest';
+  bindMutationQueue,
+  flushMutationQueue,
+  queueMutation,
+  resetMutationQueueForTests,
+  runOrQueue,
+  useQueuedCount,
+  type OwnTable,
+} from '../../lib/offline/mutations';
+import { cachedBootstrap, patchBootstrapCache } from '../../lib/postgrest';
 import { isOffline } from '../../lib/query/online-manager';
 import { getQueryClient } from '../../lib/query/client';
-import { encryptedStorage, isEncryptedStorageOpen } from '../../lib/storage';
 import { showToast } from '../../providers/ToastHost';
-import { flushFeedbackOutbox } from './outbox';
 
-export type OwnTable = 'user_preferences' | 'notification_preferences' | 'profiles';
+export type { OwnTable } from '../../lib/offline/mutations';
 
 export interface SaveOptions {
   /** No error toast (the caller reports the failure itself). */
@@ -36,51 +35,6 @@ export interface SaveOptions {
   readonly onFailure?: 'revert' | 'keep';
 }
 export type SaveResult = 'saved' | 'queued' | 'failed';
-
-type Pending = Partial<Record<OwnTable, Readonly<Record<string, unknown>>>>;
-
-const PENDING_KEY = 'settings.pending_writes';
-let pending: Pending = {};
-let loaded = false;
-const listeners = new Set<() => void>();
-
-function load(): void {
-  if (loaded || !isEncryptedStorageOpen()) return;
-  loaded = true;
-  const raw = encryptedStorage().prefs.getString(PENDING_KEY);
-  if (raw === undefined) return;
-  try {
-    const value: unknown = JSON.parse(raw);
-    if (typeof value === 'object' && value !== null) pending = value;
-  } catch {
-    pending = {};
-  }
-}
-
-function publish(next: Pending): void {
-  pending = next;
-  if (isEncryptedStorageOpen()) {
-    if (Object.keys(next).length === 0) encryptedStorage().prefs.remove(PENDING_KEY);
-    else encryptedStorage().prefs.set(PENDING_KEY, JSON.stringify(next));
-  }
-  for (const listener of listeners) listener();
-}
-
-function write(table: OwnTable, patch: Readonly<Record<string, unknown>>): Promise<void> {
-  switch (table) {
-    case 'user_preferences':
-      return updateUserPreferences(patch);
-    case 'notification_preferences':
-      return updateNotificationPreferences(patch);
-    case 'profiles':
-      return updateProfile(patch);
-  }
-}
-
-function enqueue(table: OwnTable, patch: Readonly<Record<string, unknown>>): void {
-  load();
-  publish({ ...pending, [table]: { ...(pending[table] ?? {}), ...patch } });
-}
 
 /** Saves one owner-row patch, applying `apply` to the cached bootstrap first. */
 export async function saveOwnRow(
@@ -92,24 +46,21 @@ export async function saveOwnRow(
   const previous = cachedBootstrap();
   patchBootstrapCache(apply);
   if (isOffline()) {
-    enqueue(table, patch);
+    queueMutation('own_row', { table, patch });
     return 'queued';
   }
-  try {
-    await write(table, patch);
-    return 'saved';
-  } catch {
-    if (options.onFailure === 'keep') {
-      // Device-first settings (theme, language): the local value stays, the write is retried.
-      enqueue(table, patch);
-      return 'queued';
-    }
-    if (previous !== undefined) getQueryClient().setQueryData(qk.me.bootstrap(), previous);
-    if (options.silent !== true) {
-      showToast({ message: translator()('states.error.saveFailed'), kind: 'error' });
-    }
-    return 'failed';
+  const result = await runOrQueue('own_row', { table, patch });
+  if (result.status !== 'failed') return result.status;
+  if (options.onFailure === 'keep') {
+    // Device-first settings (theme, language): the local value stays, the write is retried.
+    queueMutation('own_row', { table, patch });
+    return 'queued';
   }
+  if (previous !== undefined) getQueryClient().setQueryData(qk.me.bootstrap(), previous);
+  if (options.silent !== true) {
+    showToast({ message: translator()('states.error.saveFailed'), kind: 'error' });
+  }
+  return 'failed';
 }
 
 export function saveUserPreferences(
@@ -133,64 +84,21 @@ export function saveNotificationPreferences(
   }));
 }
 
-/** Replays the pending patches in table order; a failed table stays pending. */
-export async function flushPendingSettings(): Promise<void> {
-  load();
-  for (const table of ['profiles', 'user_preferences', 'notification_preferences'] as const) {
-    const patch = pending[table];
-    if (patch === undefined || isOffline()) continue;
-    try {
-      await write(table, patch);
-      const rest = { ...pending };
-      Reflect.deleteProperty(rest, table);
-      publish(rest);
-    } catch {
-      // Kept for the next reconnect.
-    }
-  }
-}
-
-function subscribe(listener: () => void): () => void {
-  listeners.add(listener);
-  return () => {
-    listeners.delete(listener);
-  };
-}
-
-function hasPending(): boolean {
-  load();
-  return Object.keys(pending).length > 0;
+/** Replays the queued writes now (settings patches and every other queued kind). */
+export function flushPendingSettings(): Promise<void> {
+  return flushMutationQueue();
 }
 
 /** Whether a settings change waits for the connection ("Bağlantı gelince kaydedilecek"). */
 export function usePendingSettings(): boolean {
-  return useSyncExternalStore(subscribe, hasPending, hasPending);
+  return useQueuedCount((entry) => entry.kind === 'own_row') > 0;
 }
 
-let unsubscribeOnline: (() => void) | null = null;
-
-/** Replays pending settings when the connection returns and on every foreground. */
+/** Replays pending writes on reconnect and foreground (the app-wide queue binding). */
 export function bindSettingsReplay(): void {
-  if (unsubscribeOnline !== null) return;
-  const offOnline = onlineManager.subscribe((online) => {
-    if (!online) return;
-    void flushPendingSettings();
-    void flushFeedbackOutbox();
-  });
-  const foreground = AppState.addEventListener('change', (state) => {
-    if (state !== 'active') return;
-    if (hasPending()) void flushPendingSettings();
-    void flushFeedbackOutbox();
-  });
-  unsubscribeOnline = () => {
-    offOnline();
-    foreground.remove();
-  };
+  bindMutationQueue();
 }
 
 export function resetPendingSettingsForTests(): void {
-  pending = {};
-  loaded = false;
-  unsubscribeOnline?.();
-  unsubscribeOnline = null;
+  resetMutationQueueForTests();
 }

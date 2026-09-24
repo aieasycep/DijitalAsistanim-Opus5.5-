@@ -38,7 +38,7 @@ import {
   ensureNotificationPermission,
   notificationPermission,
   openNotificationSettings,
-} from './local';
+} from '../../lib/notifications/local-reminders';
 
 const REMIND_PRESETS: readonly ReminderPresetKey[] = [
   'before_30m',

@@ -1,7 +1,8 @@
 /**
  * M-GL-10 error boundary: "Bir şeyler ters gitti." with "Tekrar Dene" (`retry()`) and "Bugün'e Dön".
  * The session is never touched. The footnote shows the request correlation id when the error is an
- * `ApiError` (the Sentry event id joins with T-8.28); nothing else about the error is displayed.
+ * `ApiError`; nothing else about the error is displayed. The error is reported to Sentry (T-8.28,
+ * scrubbed, tagged with the route pattern and correlation id) when this build has a DSN.
  * `RootErrorBoundary` wraps its own minimal providers because the root layout itself failed;
  * `RouteErrorBoundary` is exported by the tab layouts, inside the app providers.
  */
@@ -15,6 +16,7 @@ import { useTranslations } from 'use-intl';
 import { analyticsRoutePattern } from '../../lib/deeplinks';
 import { track } from '../../lib/events';
 import { TODAY_ROUTE, guardSnapshot } from '../../lib/router-guards';
+import { captureError } from '../../lib/sentry';
 import { UiShell } from '../../providers/AppProviders';
 
 function errorClass(error: Error): 'render' | 'network' | 'chunk_load' | 'unknown' {
@@ -31,11 +33,10 @@ function ErrorContent({ error, retry }: ErrorBoundaryProps) {
   const correlation = isApiError(error) ? error.correlationId : null;
 
   useEffect(() => {
-    track('error_boundary_shown', {
-      route_pattern: analyticsRoutePattern(pathname),
-      error_class: errorClass(error),
-    });
-  }, [error, pathname]);
+    const routePattern = analyticsRoutePattern(pathname);
+    track('error_boundary_shown', { route_pattern: routePattern, error_class: errorClass(error) });
+    captureError(error, { routePattern, correlationId: correlation });
+  }, [error, pathname, correlation]);
 
   return (
     <ErrorState

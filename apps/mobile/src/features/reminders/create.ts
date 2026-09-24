@@ -1,22 +1,31 @@
 /**
  * Reminder writes (M-REM-01): the in-app reminder is confirmed in the sheet (C-08) — a client id,
- * the local notification at once, then `POST /reminders` (API-REM-02, `channel:'local'`); offline
- * the POST waits for the connection (idempotent on `client_reminder_id`). "Geri al" cancels both
- * the local notification and the server row (API-REM-03). Snooze uses the status RPCs.
+ * the local notification at once, then `POST /reminders` (API-REM-02, `channel:'local'`) through
+ * the offline mutation queue (T-8.23): offline, the POST waits in the persisted queue and replays
+ * on reconnect, idempotent on `client_reminder_id`. "Geri al" cancels the local notification and
+ * either removes the still-queued POST (nothing reaches the server) or cancels the server row
+ * (API-REM-03). Snooze uses the status RPCs.
  */
-import { qk, isApiError } from '@da/api-client';
-import { reminderCancelMutationOptions, reminderCreateMutationOptions } from '@da/api-client/react';
+import { qk } from '@da/api-client';
 import { onlineManager } from '@tanstack/react-query';
 import * as Crypto from 'expo-crypto';
 
 import { translator } from '../../i18n/translate';
-import { getApiClient } from '../../lib/bootstrap';
 import { track } from '../../lib/events';
+import {
+  cancelLocalReminder,
+  scheduleLocalReminder,
+} from '../../lib/notifications/local-reminders';
+import {
+  cancelQueuedMutation,
+  queueMutation,
+  replayedReminderId,
+  runOrQueue,
+  type ReminderCreateBody,
+} from '../../lib/offline/mutations';
 import { rpc } from '../../lib/postgrest';
 import { getQueryClient } from '../../lib/query/client';
-import { runMutation } from '../../lib/query/run-mutation';
 import { showToast } from '../../providers/ToastHost';
-import { cancelLocalReminder, scheduleLocalReminder } from './local';
 
 export const REMINDER_UNDO_MS = 5_000;
 
@@ -60,23 +69,8 @@ export interface InAppReminder {
   readonly replaces?: string | null;
 }
 
-function whenOnline(run: () => void): void {
-  if (onlineManager.isOnline()) {
-    run();
-    return;
-  }
-  const unsubscribe = onlineManager.subscribe((online) => {
-    if (!online) return;
-    unsubscribe();
-    run();
-  });
-}
-
-async function cancelServer(id: string): Promise<void> {
-  await runMutation(reminderCancelMutationOptions(getApiClient()), {
-    input: { params: { id }, body: { reason: 'undo' } },
-    idempotencyKey: Crypto.randomUUID(),
-  });
+function cancelServer(id: string): void {
+  void runOrQueue('reminder_cancel', { id, reason: 'undo' }).catch(() => undefined);
 }
 
 /** Creates an in-app reminder; resolves once the local notification is scheduled. */
@@ -91,46 +85,41 @@ export async function createInAppReminder(reminder: InAppReminder): Promise<void
     timeLabel: reminder.timeLabel,
     deeplink: reminder.deeplink,
   }).catch(() => undefined);
+  const subject =
+    reminder.subject !== null && SUBJECT_TYPES.has(reminder.subject.type)
+      ? { subject: { type: reminder.subject.type, id: reminder.subject.id } }
+      : {};
+  const body = {
+    client_reminder_id: clientId,
+    title: reminder.title.slice(0, 200),
+    preset: reminder.preset,
+    fire_at: reminder.fireAt.toISOString(),
+    ...(reminder.anchorAt === null ? {} : { anchor_at: reminder.anchorAt }),
+    channel: 'local',
+    ...subject,
+    origin: reminder.origin,
+  } as ReminderCreateBody;
+
   let serverId: string | null = null;
+  let entryId: string | null = null;
   let undone = false;
-  const post = () => {
-    if (undone) return;
-    const subject =
-      reminder.subject !== null && SUBJECT_TYPES.has(reminder.subject.type)
-        ? { subject: { type: reminder.subject.type, id: reminder.subject.id } }
-        : {};
-    void runMutation(reminderCreateMutationOptions(getApiClient()), {
-      body: {
-        client_reminder_id: clientId,
-        title: reminder.title.slice(0, 200),
-        preset: reminder.preset,
-        fire_at: reminder.fireAt.toISOString(),
-        ...(reminder.anchorAt === null ? {} : { anchor_at: reminder.anchorAt }),
-        channel: 'local',
-        ...subject,
-        origin: reminder.origin,
-      } as never,
-    })
-      .then((created) => {
-        serverId = created.id;
-        if (undone) void cancelServer(created.id);
-        if (reminder.replaces !== undefined && reminder.replaces !== null) {
-          void cancelServer(reminder.replaces).catch(() => undefined);
-        }
-        void getQueryClient().invalidateQueries({ queryKey: qk.reminders.all });
-      })
-      .catch((error: unknown) => {
-        // A replay of the same client id is a success (API-REM-02 idempotency).
-        if (isApiError(error) && error.code === 'IDEMPOTENCY_REPLAY') return;
-        if (isApiError(error) && (error.kind === 'network' || error.kind === 'offline')) {
-          whenOnline(post);
-          showToast({ message: t('reminder.toasts.pendingSync'), kind: 'offline' });
-          return;
-        }
-        showToast({ message: t('common.toast.saveFailed'), kind: 'error' });
-      });
-  };
-  whenOnline(post);
+  const replaces = reminder.replaces ?? null;
+  void runOrQueue('reminder_create', { body }).then((result) => {
+    if (result.status === 'saved') {
+      serverId = (result.result as { id?: string } | null)?.id ?? null;
+      if (undone && serverId !== null) cancelServer(serverId);
+      if (!undone && replaces !== null) cancelServer(replaces);
+      return;
+    }
+    if (result.status === 'queued') {
+      entryId = result.entryId;
+      // The replaced reminder is cancelled after the create, in the same (FIFO) scope.
+      if (replaces !== null) queueMutation('reminder_cancel', { id: replaces, reason: 'undo' });
+      if (!queued) showToast({ message: t('reminder.toasts.pendingSync'), kind: 'offline' });
+      return;
+    }
+    showToast({ message: t('common.toast.saveFailed'), kind: 'error' });
+  });
   track('reminder_created', {
     preset: reminder.preset,
     destination: 'in_app',
@@ -149,7 +138,11 @@ export async function createInAppReminder(reminder: InAppReminder): Promise<void
         undone = true;
         track('reminder_undo');
         void cancelLocalReminder(clientId).catch(() => undefined);
-        if (serverId !== null) void cancelServer(serverId).catch(() => undefined);
+        // Still queued: drop it, so nothing reaches the server.
+        if (entryId !== null && cancelQueuedMutation(entryId)) return;
+        const id = serverId ?? replayedReminderId(clientId);
+        if (id !== null) cancelServer(id);
+        void getQueryClient().invalidateQueries({ queryKey: qk.reminders.all });
       },
     },
   });

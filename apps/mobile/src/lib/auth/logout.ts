@@ -9,7 +9,8 @@
  *   5. the SecureStore keys deleted and replaced (every store re-encrypted, `da.oauth.pending` gone);
  *   6–8. `after_wipe` hooks — widget snapshot clear + reload (T-8.25), share staging and briefing
  *      audio files (T-8.17/T-8.09), the Android NI signal buffer (T-8.26);
- *   9. push token invalidation and scheduled local notifications cancelled;
+ *   9. push token invalidation and scheduled local notifications cancelled (the offline mutation
+ *      queue, the stored push registration and the analytics buffer are `after_wipe` hooks);
  *   10. the auth state change routes to sign-in.
  */
 import type { ApiClient } from '@da/api-client';
@@ -35,6 +36,10 @@ export const LOGOUT_HOOKS = {
   shareStaging: 'share.clear_staging',
   audioCache: 'audio.clear_cache',
   niBuffer: 'android_ni.clear_buffer',
+  // T-8.23 / T-8.24 / T-8.28
+  offlineQueue: 'offline.clear_queue',
+  pushRegistration: 'push.forget_registration',
+  analyticsBuffer: 'analytics.clear_buffer',
 } as const;
 
 const hooks = new Map<string, { readonly phase: LogoutHookPhase; readonly run: LogoutHook }>();

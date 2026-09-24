@@ -35,7 +35,7 @@ import { useUiPrefs } from '../../lib/ui-prefs';
 import { isPro, openProGate } from '../pro-gate/ProGate';
 import { daysUntil, heroKindOf, latestGrant, periodOf } from '../subscription/state';
 import { useSettingsCounts } from './data';
-import { usePendingSettings } from './save';
+import { useQueuedCount } from '../../lib/offline/mutations';
 import { SettingsGroup, SettingsPage } from './ui';
 
 type SettingsRow =
@@ -84,7 +84,8 @@ export function SignOutSheet({
   readonly onDismiss: () => void;
 }) {
   const t = useTranslations();
-  const pending = usePendingSettings();
+  // M-SET-02: the paused (queued) writes this sign-out would discard.
+  const unsent = useQueuedCount();
   const [busy, setBusy] = useState(false);
   return (
     <BottomSheet
@@ -122,9 +123,9 @@ export function SignOutSheet({
       <Text variant="body" tone="secondary">
         {t('settings.signOut.body')}
       </Text>
-      {pending ? (
+      {unsent > 0 ? (
         <Text variant="bodySm" tone="warning" testID="signOut.unsent">
-          {t('settings.signOut.unsentSettings')}
+          {t('settings.signOut.unsent', { count: unsent })}
         </Text>
       ) : null}
     </BottomSheet>

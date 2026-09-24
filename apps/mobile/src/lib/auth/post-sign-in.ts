@@ -5,8 +5,8 @@
  *      `timezone_mode='auto'`);
  *   2. `GET /me/bootstrap` (fresh, not from cache);
  *   3. hooks registered by later features, in registration order: RevenueCat `Purchases.logIn`
- *      (T-8.22), `Sentry.setUser({id})` (T-8.28), the pending referral code
- *      `POST /referrals/apply` (T-8.22), the first-sign-in `profiles` locale/terms write (T-8.06);
+ *      (T-8.22; Sentry gets no user id, SECURITY_AND_PRIVACY_PLAN CTL-3.14), the pending referral
+ *      code `POST /referrals/apply` (T-8.22), the first-sign-in `profiles` locale/terms write (T-8.06);
  *   4. the device remembers the method (`hasSignedInBefore`).
  * Every step is best effort: a failure never undoes the sign-in. The result tells the caller
  * whether to show the new-account notice (M-ON-05N: sign-in mode created a brand-new profile).

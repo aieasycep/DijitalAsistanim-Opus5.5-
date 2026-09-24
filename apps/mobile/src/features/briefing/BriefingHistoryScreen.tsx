@@ -18,7 +18,8 @@ import {
 } from '@da/ui';
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
-import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
+import { RefreshControl, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFormatter, useLocale, useTranslations } from 'use-intl';
 
@@ -139,7 +140,7 @@ export function BriefingHistoryScreen() {
           {content}
         </View>
       ) : (
-        <FlatList
+        <FlashList
           data={groups}
           keyExtractor={(group) => group.date}
           contentContainerStyle={[styles.list, { paddingHorizontal: theme.layout.screenX }]}
@@ -208,7 +209,8 @@ export function BriefingHistoryScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1 },
   header: { paddingVertical: 8 },
-  list: { gap: 16, paddingBottom: 32 },
+  // FlashList (T-8.28) takes padding only; groups space themselves with their bottom margin.
+  list: { paddingBottom: 32 },
   group: { gap: 8, marginBottom: 16 },
   state: { gap: 12 },
 });

@@ -6,12 +6,10 @@
  * fallback when the screen was opened from a deep link.
  */
 import { isApiError } from '@da/api-client';
-import { withTrCases } from '@da/i18n';
 import {
   DetailHeader,
   ErrorCard,
   NotFoundState,
-  OfflineBanner,
   OfflineScreen,
   StickyCTABar,
   useTheme,
@@ -24,9 +22,9 @@ import { useState, type ReactNode } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { useTranslations } from 'use-intl';
 
-import { useFormats } from '../../lib/data/session';
 import { track } from '../../lib/events';
 import { useOnline } from '../../lib/query/online-manager';
+import { AppOfflineBanner } from '../common/OfflineBanner';
 
 export type OfflineAction =
   'reply' | 'approve' | 'reject' | 'capture' | 'assistant' | 'sync' | 'connect' | 'smart_reminder';
@@ -133,7 +131,10 @@ export function DetailScreen({
   );
 }
 
-/** "Çevrimdışısın. Son analiz {HH:mm}'den gösteriliyor." + "Yenile" (M-STATE-03 banner). */
+/**
+ * "Çevrimdışısın. Son analiz {HH:mm}'den gösteriliyor." + "Yenile" (M-STATE-03 banner) with the
+ * M-GL-09 behaviour of the shared banner (re-check, "Hâlâ çevrimdışı.", reconnect flash).
+ */
 export function OfflineNotice({
   updatedAt,
   onRefresh,
@@ -141,25 +142,14 @@ export function OfflineNotice({
   readonly updatedAt?: number;
   readonly onRefresh?: () => Promise<unknown>;
 }) {
-  const t = useTranslations('states.offline');
-  const toast = useToast();
-  const formats = useFormats();
   const theme = useTheme();
-  const time = updatedAt === undefined || updatedAt === 0 ? null : formats.time(updatedAt);
   return (
     <View style={{ paddingHorizontal: theme.layout.screenX, paddingTop: theme.space[2] }}>
-      <OfflineBanner
-        message={time === null ? t('blockedReason') : t('banner', withTrCases({ time }, ['time']))}
-        refreshLabel={t('refresh')}
-        onRefresh={() => {
-          if (onlineManager.isOnline()) {
-            track('offline_refresh_tapped', { result: 'online' });
-            void onRefresh?.();
-            return;
-          }
-          track('offline_refresh_tapped', { result: 'still_offline' });
-          toast.show({ message: t('stillOffline'), kind: 'offline' });
-        }}
+      <AppOfflineBanner
+        offline
+        style={{ marginHorizontal: 0 }}
+        {...(updatedAt === undefined ? {} : { updatedAt })}
+        {...(onRefresh === undefined ? {} : { onRefresh })}
         testID="m2.offlineBanner"
       />
     </View>

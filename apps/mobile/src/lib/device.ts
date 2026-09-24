@@ -7,6 +7,7 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
 import { deviceLocale, deviceTimeZone } from '../i18n/I18nProvider';
+import { cachedPushToken } from './notifications/token';
 import { getUiPrefs } from './ui-prefs';
 
 /** `1.2` → `1.2.0`; anything unparsable → `0.0.0` (the server then asks for an update). */
@@ -67,8 +68,13 @@ export async function pushPermission(): Promise<PushPermission> {
   }
 }
 
-/** `POST /devices/register` body without a push token (T-8.24 adds the token after the prompt). */
+/**
+ * `POST /devices/register` body. The push token is the one this installation last obtained
+ * (T-8.24 `lib/notifications/register.ts` fetches and stores it), sent only while permitted.
+ */
 export async function deviceRegisterBody(installationId: string) {
+  const permission = await pushPermission();
+  const permitted = permission === 'granted' || permission === 'provisional';
   return {
     installation_id: installationId,
     platform: platform(),
@@ -77,7 +83,7 @@ export async function deviceRegisterBody(installationId: string) {
     build_number: buildNumber(),
     locale: apiLocale(),
     timezone: deviceTimeZone(),
-    push: { permission: await pushPermission(), expo_push_token: null },
+    push: { permission, expo_push_token: permitted ? cachedPushToken() : null },
     device_fingerprint_hash: null,
   };
 }

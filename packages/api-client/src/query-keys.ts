@@ -246,4 +246,8 @@ export const mk = {
     referralApply: ['business', 'referral-apply'] as const,
     purchasesSync: ['business', 'purchases-sync'] as const,
   },
+  // T-8.28 analytics delivery.
+  analytics: {
+    events: ['analytics', 'events'] as const,
+  },
 } as const;

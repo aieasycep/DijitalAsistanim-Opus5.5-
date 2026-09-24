@@ -69,7 +69,9 @@
     "blockedToast": "Çevrimdışıyken bu işlem yapılamaz.",
     "serverUnreachable": "Şu an sunucuya ulaşılamıyor. Son analiz {time_abl} gösteriliyor.",
     "reconnected": "Güncel · {time}",
-    "stillOffline": "Hâlâ çevrimdışı."
+    "stillOffline": "Hâlâ çevrimdışı.",
+    "replayDropped": "{count} değişiklik kaydedilemedi; güncel hâli yüklendi.",
+    "sinceNoTime": "Çevrimdışısın. Kaydedilmiş içerik gösteriliyor."
   },
   "error": {
     "loadFailed": {

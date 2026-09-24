@@ -4,7 +4,9 @@
  * a real flow), attachments, the thread, and "Orijinal Mail" fetched on demand from
  * `GET /mail/:messageId/original` (sanitised by the server, memory-only query, never written to
  * the persisted cache or logged). Links inside the original go through the phishing-safe link
- * sheet. "···" holds the provider handoff ("Gmail'de / Outlook'ta Aç") and corrections.
+ * sheet. "···" holds the provider handoff ("Gmail'de / Outlook'ta Aç"), corrections and the
+ * sender's VIP toggle (M-MAIL-04: Pro; Free → paywall; an offline change is queued, T-8.23). The
+ * original's text offers "Kopyala" on long-press.
  */
 import { isApiError, qk } from '@da/api-client';
 import { callRoute, mailOriginalQueryOptions, useApiClient } from '@da/api-client/react';
@@ -30,7 +32,7 @@ import {
   useTheme,
   useToast,
 } from '@da/ui';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
@@ -44,6 +46,9 @@ import { useOnline } from '../../lib/query/online-manager';
 import { mailProviderUrl, openWithOs } from '../actions/handoff';
 import { useOpenPaywall } from '../actions/ProGate';
 import { deadlineBlock, useProposals } from '../actions/proposals';
+import { runOrQueue } from '../../lib/offline/mutations';
+import { CopyableText } from '../actions/CopyableText';
+import { vipListQueryOptions, type VipRow } from '../person/data';
 import { openLink, openMenu, openReminder, openSource } from '../actions/sheets';
 import { DetailScreen, QueryFailure, useBack, useOfflineGuard } from '../actions/ui';
 import { openApprovalSheet } from '../approvals/InlineApprovalSheet';
@@ -202,9 +207,7 @@ function OriginalMail({
   const body = originalToText(query.data.body.format, query.data.body.content);
   return (
     <View style={{ gap: 10 }} testID="email.original.body">
-      <Text variant="bodySm" selectable>
-        {body.text}
-      </Text>
+      <CopyableText text={body.text} variant="bodySm" testID="email.original.text" />
       {query.data.body.truncated ? (
         <Text variant="meta" tone="tertiaryStrong">
           {t('screen.original.truncated')}
@@ -250,6 +253,15 @@ export function EmailDetailScreen() {
   const proposals = useProposals('email_detail');
   const { id } = useLocalSearchParams<{ id: string }>();
   const query = useQuery(emailDetailOptions(id));
+  const queryClient = useQueryClient();
+  const contactId = query.data?.contactId ?? null;
+  // The sender's VIP state (M-MAIL-04), read from the cache when the menu opens.
+  useQuery({ ...vipListQueryOptions(), enabled: contactId !== null });
+  const senderIsVip = (): boolean =>
+    contactId !== null &&
+    (queryClient.getQueryData<readonly VipRow[]>(vipListQueryOptions().queryKey) ?? []).some(
+      (v) => v.contactId === contactId,
+    );
   const [originalOpen, setOriginalOpen] = useState(false);
   const [threadOpen, setThreadOpen] = useState(false);
   const detail = query.data;
@@ -403,7 +415,54 @@ export function EmailDetailScreen() {
     });
   };
 
+  const toggleVip = (sender: string) => {
+    if (contactId === null) return;
+    if (!session.isPro) {
+      openPaywall('vip');
+      return;
+    }
+    const on = !senderIsVip();
+    track('vip_toggle', { on });
+    const key = vipListQueryOptions().queryKey;
+    const previous = queryClient.getQueryData<readonly VipRow[]>(key);
+    queryClient.setQueryData<readonly VipRow[]>(key, (rows = []) =>
+      on
+        ? [
+            {
+              id: `pending:${contactId}`,
+              contactId,
+              name: sender,
+              email: message.fromEmail,
+              organization: null,
+              relationship: 'other',
+              alwaysNotify: true,
+              bypassQuietHours: true,
+              origin: 'user',
+              createdAt: new Date().toISOString(),
+            },
+            ...rows,
+          ]
+        : rows.filter((v) => v.contactId !== contactId),
+    );
+    void runOrQueue('vip_set', { contactId, on }).then((result) => {
+      if (result.status === 'failed') {
+        queryClient.setQueryData(key, previous);
+        toast.show({ message: tc('toast.saveFailed'), kind: 'error' });
+        return;
+      }
+      toast.show(
+        result.status === 'queued'
+          ? { message: t('screen.vipQueued'), kind: 'offline' }
+          : on
+            ? { message: tc('toast.vipAdded', { name: sender }), kind: 'success', icon: 'star' }
+            : { message: t('screen.vipRemoved'), kind: 'success' },
+      );
+    });
+  };
+
   const more = () => {
+    const sender = message.fromName ?? message.fromEmail;
+    const isVip = senderIsVip();
     openMenu({
       options: [
         ...(handoff === null
@@ -450,6 +509,18 @@ export function EmailDetailScreen() {
               },
             ]
           : []),
+        ...(contactId === null
+          ? []
+          : [
+              {
+                key: 'vip',
+                label: isVip ? t('screen.removeVip') : t('screen.makeVip'),
+                icon: isVip ? ('person_remove' as const) : ('star' as const),
+                onPress: () => {
+                  toggleVip(sender);
+                },
+              },
+            ]),
         ...(isScreenAvailable('/settings/priority-rules/new')
           ? [
               {

@@ -6,11 +6,11 @@
  * returns (the server value wins on the next bootstrap refresh).
  */
 import { qk } from '@da/api-client';
-import { onlineManager } from '@tanstack/react-query';
 import type { router as appRouter } from 'expo-router';
 
 import { now } from '../../lib/clock';
 import { track } from '../../lib/events';
+import { queueMutation } from '../../lib/offline/mutations';
 import { cachedBootstrap, patchBootstrapCache, updateProfile } from '../../lib/postgrest';
 import { getQueryClient } from '../../lib/query/client';
 import { getOnboardingState, resetOnboardingState } from './store';
@@ -41,12 +41,9 @@ export async function completeOnboarding(
     },
   }));
   const patch = { onboarding_step: 'done', onboarding_completed_at: at.toISOString() } as const;
+  // Offline or failed: the offline mutation queue (T-8.23) replays it (last write wins).
   await updateProfile(patch).catch(() => {
-    const unsubscribe = onlineManager.subscribe((online) => {
-      if (!online) return;
-      unsubscribe();
-      void updateProfile(patch).catch(() => undefined);
-    });
+    queueMutation('own_row', { table: 'profiles', patch });
   });
   resetOnboardingState();
   void getQueryClient().invalidateQueries({ queryKey: qk.today.all });

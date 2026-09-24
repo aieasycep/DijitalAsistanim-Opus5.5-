@@ -41,10 +41,9 @@
   "cancelled": "Hatırlatıcı iptal edildi",
   "snoozeTitle": "Ne zamana erteleyelim?",
   "notificationsOff": "Bildirimler kapalı olduğu için hatırlatıcı gelmez.",
-  "local": {
-    "generic": "Hatırlatıcın var.",
-    "titleOnly": "Hatırlatıcı",
-    "full": "Hatırlatıcı · {time}"
+  "notificationActions": {
+    "snooze": "1 saat ertele",
+    "done": "Tamamlandı"
   },
   "toasts": {
     "pendingSync": "Kaydedildi · Eşitleme bekliyor",

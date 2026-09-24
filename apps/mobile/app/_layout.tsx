@@ -5,14 +5,22 @@
  * every detail route only when signed in, onboarded, on a supported version and active; the entry
  * resolver, `+not-found`, `update-required` and the two callbacks are always reachable. The demo
  * route exists only in demo builds. `ErrorBoundary` is M-GL-10.
+ *
+ * T-8.23/T-8.24/T-8.28: the startup clock starts with this module, Sentry starts before the first
+ * render (scrubbed, no screenshots), the root is wrapped for the SDK's app-start measurement, and
+ * `NotificationBridge` routes notification taps from the first frame.
  */
+// The startup clock starts when this module is evaluated (T-8.28).
+import { markStartupComplete } from '../src/lib/perf';
 import { useTheme } from '@da/ui';
+import * as Sentry from '@sentry/react-native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 
+import { NotificationBridge } from '../src/features/shell/NotificationBridge';
 import { useShell } from '../src/features/shell/useShell';
 import { isDemoBuild } from '../src/lib/env';
 import { APP_FONTS } from '../src/lib/fonts';
@@ -24,6 +32,7 @@ import {
   SETTINGS_ROOT_SCREENS,
   SIGNED_OUT_ROOT_SCREENS,
 } from '../src/lib/router-guards';
+import { initSentry } from '../src/lib/sentry';
 import { AppProviders } from '../src/providers/AppProviders';
 import { ShareIntakeBridge } from '../src/features/capture/ShareIntakeBridge';
 // Feature hooks that must exist before the first sign-in or OAuth return (T-8.06, T-8.07, T-8.09).
@@ -41,6 +50,7 @@ import '../src/features/approvals/ApprovalEditorSheet';
 export { RootErrorBoundary as ErrorBoundary } from '../src/features/shell/ShellErrorBoundary';
 
 void SplashScreen.preventAutoHideAsync();
+initSentry();
 
 function RootNavigator() {
   const theme = useTheme();
@@ -48,13 +58,16 @@ function RootNavigator() {
   const demo = isDemoBuild();
 
   useEffect(() => {
-    if (context.auth !== 'loading') void SplashScreen.hideAsync();
+    if (context.auth === 'loading') return;
+    void SplashScreen.hideAsync();
+    markStartupComplete();
   }, [context.auth]);
 
   return (
     <>
       <StatusBar style={theme.isDark ? 'light' : 'dark'} />
       <ShareIntakeBridge signedIn={flags.app} />
+      <NotificationBridge signedIn={flags.app} />
       <Stack
         screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.color.bg } }}
       >
@@ -92,7 +105,7 @@ function RootNavigator() {
   );
 }
 
-export default function RootLayout() {
+function RootLayout() {
   const [fontsLoaded, fontError] = useFonts(APP_FONTS);
   // The same files are embedded natively, so a failed runtime registration still renders text.
   const ready = fontsLoaded || fontError !== null;
@@ -103,3 +116,5 @@ export default function RootLayout() {
     </AppProviders>
   );
 }
+
+export default Sentry.wrap(RootLayout);

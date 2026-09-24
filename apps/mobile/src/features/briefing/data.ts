@@ -15,7 +15,8 @@ import {
 import { z } from 'zod';
 
 import { getSupabase } from '../../lib/auth/supabase';
-import { rpc, toDataError } from '../../lib/postgrest';
+import { runOrQueue } from '../../lib/offline/mutations';
+import { toDataError } from '../../lib/postgrest';
 
 export const BriefingRow = z.object({
   id: z.string(),
@@ -110,9 +111,12 @@ export function useBriefing(id: string) {
   return useQuery(briefingQueryOptions(id));
 }
 
-/** RPC-07 `mark_briefing_opened` (idempotent; first write wins on the server). */
+/**
+ * RPC-07 `mark_briefing_opened` (idempotent; first write wins on the server), through the offline
+ * mutation queue so an offline open is recorded on reconnect (T-8.23).
+ */
 export function markOpened(id: string): Promise<void> {
-  return rpc('mark_briefing_opened', { p_briefing_id: id }).then(() => undefined);
+  return runOrQueue('briefing_opened', { briefingId: id }).then(() => undefined);
 }
 
 export const HISTORY_PAGE = 30;

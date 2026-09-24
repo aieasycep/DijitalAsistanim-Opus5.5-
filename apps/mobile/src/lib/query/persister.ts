@@ -38,9 +38,25 @@ export function createCachePersister(store: MMKV): Persister {
   });
 }
 
-/** Only successful queries that opted in (`meta: { persist: true }`). */
+/**
+ * Query keys that are never written to disk even if a query opts in by mistake (T-8.23): original
+ * mail bodies, search and memory results, signed audio URLs and anything auth-related.
+ */
+export function isNeverPersisted(key: readonly unknown[]): boolean {
+  const [root, second, third] = key;
+  if (root === 'mail' && second === 'original') return true;
+  if (root === 'search' || root === 'auth') return true;
+  if (root === 'briefings' && third === 'audio') return true;
+  return false;
+}
+
+/** Only successful queries that opted in (`meta: { persist: true }`) and are not deny-listed. */
 export function shouldPersistQuery(query: Query): boolean {
-  return query.meta?.persist === true && query.state.status === 'success';
+  return (
+    query.meta?.persist === true &&
+    query.state.status === 'success' &&
+    !isNeverPersisted(query.queryKey)
+  );
 }
 
 export function cacheBuster(appVersion: string): string {

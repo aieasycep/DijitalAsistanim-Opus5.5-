@@ -37,6 +37,7 @@ import {
   openInBrowser,
   openWithOs,
 } from '../actions/handoff';
+import { CopyableText } from '../actions/CopyableText';
 import { ProGate } from '../actions/ProGate';
 import { openMenu, openReminder } from '../actions/sheets';
 import { DetailScreen, QueryFailure, useBack, useOfflineGuard } from '../actions/ui';
@@ -415,13 +416,11 @@ export function EventDetailScreen() {
 
       {event.description === null || event.description.trim() === '' ? null : (
         <Section title={t('description')}>
-          <Text
-            variant="body"
+          <CopyableText
+            text={event.description}
             {...(expanded ? {} : { numberOfLines: 4 })}
             testID="event.description"
-          >
-            {event.description}
-          </Text>
+          />
           {event.description.length > 180 ? (
             <Button
               label={expanded ? t('showLess') : t('showMore')}

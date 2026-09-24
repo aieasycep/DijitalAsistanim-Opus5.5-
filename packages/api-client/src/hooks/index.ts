@@ -174,3 +174,5 @@ export * from './settings.ts';
 // T-8.10…T-8.14 option factories (flow, mail, reply, approvals, plan, meetings).
 export * from './actions.ts';
 export * from './assist.ts';
+// T-8.23…T-8.28 platform services (analytics delivery).
+export * from './platform.ts';

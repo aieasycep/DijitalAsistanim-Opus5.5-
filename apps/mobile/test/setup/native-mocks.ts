@@ -130,6 +130,26 @@ jest.mock('expo-notifications', () => ({
   cancelScheduledNotificationAsync: jest.fn(() => Promise.resolve()),
   setNotificationChannelAsync: jest.fn(() => Promise.resolve(null)),
   getExpoPushTokenAsync: jest.fn(() => Promise.resolve({ data: 'ExponentPushToken[test]' })),
+  // T-8.24 notification layer: categories, handlers, listeners and the scheduled list.
+  setNotificationCategoryAsync: jest.fn(() => Promise.resolve(null)),
+  setNotificationHandler: jest.fn(),
+  getLastNotificationResponse: jest.fn(() => null),
+  addNotificationResponseReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
+  addNotificationReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
+  addPushTokenListener: jest.fn(() => ({ remove: jest.fn() })),
+  getAllScheduledNotificationsAsync: jest.fn(() => Promise.resolve([])),
+  dismissNotificationAsync: jest.fn(() => Promise.resolve()),
+}));
+
+// T-8.28: Sentry is initialised only with a DSN (unset in tests); the SDK surface is a double.
+jest.mock('@sentry/react-native', () => ({
+  init: jest.fn(),
+  wrap: <T>(component: T): T => component,
+  setTags: jest.fn(),
+  setTag: jest.fn(),
+  captureException: jest.fn(() => 'event-id'),
+  appLoaded: jest.fn(),
+  startInactiveSpan: jest.fn(() => ({ end: jest.fn() })),
 }));
 
 jest.mock('expo-apple-authentication', () => {

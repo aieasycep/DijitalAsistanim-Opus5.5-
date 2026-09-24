@@ -14,6 +14,8 @@ import { setApiClientForTests } from '../../src/lib/bootstrap';
 import { setSupabaseForTests, type AppSupabaseClient } from '../../src/lib/auth/supabase';
 import { resetPendingLinksForTests } from '../../src/lib/deeplinks';
 import { resetAnalyticsForTests } from '../../src/lib/events';
+import { resetNotificationHandlersForTests } from '../../src/lib/notifications/handlers';
+import { resetMutationQueueForTests } from '../../src/lib/offline/mutations';
 import { createAppQueryClient, setQueryClientForTests } from '../../src/lib/query/client';
 import { setGuardSnapshot } from '../../src/lib/router-guards';
 import { encryptedStorage, isEncryptedStorageOpen } from '../../src/lib/storage';
@@ -198,6 +200,8 @@ export async function resetAppState(): Promise<void> {
     encryptedStorage().cache.clearAll();
     encryptedStorage().prefs.clearAll();
   }
+  resetMutationQueueForTests();
+  resetNotificationHandlersForTests();
 }
 
 export function installFakeSupabase(initial: Session | null): FakeSupabase {
