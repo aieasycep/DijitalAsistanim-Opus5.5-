@@ -6,7 +6,7 @@
  * can stack; closing hides the top one and removes it after its exit animation.
  */
 import type { SHEET_KEYS } from '@da/domain/analytics/vocab';
-import { Fragment, useSyncExternalStore, type ReactNode } from 'react';
+import { useSyncExternalStore, type ReactNode } from 'react';
 
 import { track } from '../lib/events';
 
@@ -106,19 +106,20 @@ export function SheetHost(): ReactNode {
   return entries.map((entry) => {
     const registration = registry.get(entry.key);
     if (registration === undefined) return null;
+    // Rendered as a component (not called), so each sheet owns its hooks and state.
+    const Render = registration.render;
     return (
-      <Fragment key={entry.id}>
-        {registration.render({
-          params: entry.params,
-          visible: entry.visible,
-          onDismiss: () => {
-            sheets.close(entry.id);
-          },
-          onHidden: () => {
-            remove(entry.id);
-          },
-        })}
-      </Fragment>
+      <Render
+        key={entry.id}
+        params={entry.params}
+        visible={entry.visible}
+        onDismiss={() => {
+          sheets.close(entry.id);
+        }}
+        onHidden={() => {
+          remove(entry.id);
+        }}
+      />
     );
   });
 }
