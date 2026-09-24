@@ -72,6 +72,12 @@
       "title": "Sabah brifingin {time_loc} hazır olacak.",
       "context": "{count} konu yarına taşındı",
       "quiet": "Bildirimler sabaha kadar sessizde"
+    },
+    "context": {
+      "mail": "{count} önemli mail",
+      "events": "{count} etkinlik",
+      "followUps": "{count} takip",
+      "deadlines": "{count} son tarih"
     }
   },
   "sections": {
@@ -81,7 +87,9 @@
     "digitalLife": "Dijital hayatın",
     "carryOver": "Yarına kalanlar",
     "itemCount": "{count} konu",
-    "eventCount": "{count} etkinlik"
+    "eventCount": "{count} etkinlik",
+    "deadlines": "Son tarihler",
+    "followUps": "Takip"
   },
   "footer": {
     "seeAllInFlow": "Akış'ta tümünü gör",
@@ -108,9 +116,48 @@
   },
   "announcement": {
     "more": "Devamı",
-    "dismissA11y": "Duyuruyu kapat"
+    "dismissA11y": "Duyuruyu kapat",
+    "open": "Aç",
+    "a11y": "Duyuru: {title}. {body}"
   },
   "refresh": {
     "updated": "Güncel · {time}"
+  },
+  "approvalPill": "Onay Bekleyenler · {count}",
+  "notImportant": "Önemli değil",
+  "cardA11y": "{badge}, {time}. {title}. {subtitle}",
+  "sourceA11y": "Kaynak: {source}. Bu nereden çıktı?",
+  "meetingA11y": "{time}, {title}",
+  "attendees": "{count} kişi",
+  "errors": {
+    "title": "Bugün yüklenemedi.",
+    "body": "Sunucuya ulaşamadım. Birazdan tekrar deneyeceğim."
+  },
+  "correction": {
+    "reason": "Neden: {reason}"
+  },
+  "snooze": {
+    "title": "Ne zaman tekrar göstereyim?",
+    "tonight": "Bu akşam · {time}",
+    "tomorrowMorning": "Yarın sabah · {time}",
+    "custom": "Kendin seç",
+    "day": "Gün",
+    "time": "Saat",
+    "past": "Geçmiş bir zaman seçilemez."
+  },
+  "toasts": {
+    "snoozed": "Ertelendi · {when}",
+    "offlineQueued": "Çevrimdışı · bağlantı gelince kaydedilecek.",
+    "learningOff": "Kaydettim · Öğrenme kapalı olduğu için sıralama değişmeyecek.",
+    "stopTracking": "Öğrendim · Bu konuyu artık takip etmeyeceğim."
+  },
+  "why": {
+    "loadFailed": "Açıklama yüklenemedi.",
+    "offline": "Çevrimdışıyken açıklama yüklenemedi.",
+    "unavailable": "Bu konu için açıklama bulunamadı.",
+    "noReason": "Bu konu öncelik kurallarına göre öne çıkarıldı.",
+    "lowConfidence": "Emin değilim; kaynağı kontrol etmeni öneririm.",
+    "tierLearned": "Öğrendiğim tercih: {statement}",
+    "quoteA11y": "Alıntı: {quote}"
   }
 }

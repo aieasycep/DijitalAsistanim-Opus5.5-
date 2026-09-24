@@ -64,4 +64,20 @@ export const mk = {
   auth: {
     appleExchange: ['auth', 'apple-exchange'] as const,
   },
+  integrations: {
+    start: ['integrations', 'start'] as const,
+    upgrade: ['integrations', 'upgrade'] as const,
+    complete: ['integrations', 'oauth-complete'] as const,
+    disconnect: ['integrations', 'disconnect'] as const,
+    sync: ['integrations', 'sync'] as const,
+    dataSources: ['integrations', 'data-sources'] as const,
+    deviceSnapshot: ['integrations', 'device-snapshot'] as const,
+  },
+  onboarding: {
+    firstAnalysis: ['onboarding', 'first-analysis'] as const,
+  },
+  briefings: {
+    eveningReady: ['briefings', 'evening-ready'] as const,
+    retry: ['briefings', 'retry'] as const,
+  },
 } as const;

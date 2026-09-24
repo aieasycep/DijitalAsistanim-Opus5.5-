@@ -19,6 +19,7 @@ import { setGuardSnapshot } from '../../src/lib/router-guards';
 import { encryptedStorage, isEncryptedStorageOpen } from '../../src/lib/storage';
 import { resetUiPrefsForTests } from '../../src/lib/ui-prefs';
 import { resetSheetsForTests } from '../../src/providers/SheetHost';
+import { fakePostgrest, type PostgrestFake } from './postgrest';
 
 type Listener = (event: AuthChangeEvent, session: Session | null) => void;
 
@@ -44,6 +45,8 @@ export type FakeAuth = Record<
 export interface FakeSupabase {
   readonly client: AppSupabaseClient;
   readonly auth: FakeAuth;
+  /** PostgREST double (`rpc`, `from`). */
+  readonly db: PostgrestFake;
   /** Changes the session and emits the matching auth event. */
   setSession(next: Session | null): void;
 }
@@ -85,9 +88,11 @@ export function fakeSupabase(initial: Session | null = null): FakeSupabase {
     verifyOtp: jest.fn(),
     updateUser: jest.fn(() => Promise.resolve({ data: {}, error: null })),
   };
+  const db = fakePostgrest();
   return {
-    client: { auth } as unknown as AppSupabaseClient,
+    client: { auth, rpc: db.rpc, from: db.from } as unknown as AppSupabaseClient,
     auth,
+    db,
     setSession(next) {
       current = next;
       emit(next === null ? 'SIGNED_OUT' : 'SIGNED_IN');

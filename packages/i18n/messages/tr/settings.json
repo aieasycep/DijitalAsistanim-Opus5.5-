@@ -121,8 +121,35 @@
       "purging": "Bu hesabın analizleri siliniyor…",
       "removeAtMicrosoft": "Microsoft'ta kaldır",
       "revokeFailed": "Bağlantı kaldırıldı; Google erişimi iptal edilemedi. Google Hesabı › Güvenlik › Üçüncü taraf bağlantıları bölümünden kaldırabilirsin.",
-      "removeAtGoogle": "Google'da kaldır"
-    }
+      "removeAtGoogle": "Google'da kaldır",
+      "bodyCalendar": "Yeni etkinlikler artık okunmaz ve {provider} erişimi iptal edilir. {service} içindeki etkinliklerin etkilenmez.",
+      "bodyDevice": "Bu cihazdaki takvim artık okunmaz. Takvim iznini sistem ayarlarından kaldırabilirsin.",
+      "failed": "Bağlantı kaldırılamadı. Tekrar dene."
+    },
+    "rowTitle": "{service} · {email}",
+    "rowA11y": "{title}, {status}, {meta}, yönet",
+    "notConfigured": "Harici kimlik bilgisi gerekli",
+    "meta": {
+      "syncing": "İlk analiz sürüyor",
+      "partial": "Bazı izinler verilmedi.",
+      "needsReauth": "{identityProvider} oturumu süresi doldu.",
+      "error": "Eşitleme sırasında bir sorun oldu.",
+      "firstSync": "İlk eşitleme bekleniyor",
+      "lastSync": "Son eşitleme {time}"
+    },
+    "resources": {
+      "mail": "Mail",
+      "calendar": "Takvim",
+      "tasks": "Görevler"
+    },
+    "never": "henüz yok",
+    "noCalendars": "Bu hesapta takvim bulunamadı.",
+    "partialTitle": "Eksik izin",
+    "partialMail": "Mail izni verilmedi. Mailleri analiz etmem için izin ver.",
+    "partialCalendar": "Takvim izni verilmedi. Takvimini okumam için izin ver.",
+    "syncStarted": "Eşitleme başladı.",
+    "syncFresh": "Az önce eşitlendi; veriler güncel.",
+    "syncFailed": "Eşitleme başlatılamadı. Tekrar dene."
   },
   "briefings": {
     "title": "Brifing",
