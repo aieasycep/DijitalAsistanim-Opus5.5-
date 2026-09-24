@@ -1,0 +1,26 @@
+{
+  "schema": "WeeklyReviewV1",
+  "prompt_keys": ["weekly_review"],
+  "default": {
+    "narrative": [
+      {
+        "text_tr": "Bu hafta 9 toplantın vardı.",
+        "refs": ["s1"]
+      }
+    ],
+    "busiest_day": {
+      "text_tr": "En yoğun gün Perşembe.",
+      "refs": ["s2"]
+    },
+    "next_week": {
+      "text_tr": "Önümüzdeki hafta daha sakin.",
+      "refs": ["s3"]
+    },
+    "suggestion": {
+      "kind": "focus_block",
+      "slot_ref": "f1",
+      "text_tr": "Perşembe’ye teklif bloğu planla."
+    }
+  },
+  "by_input": {}
+}

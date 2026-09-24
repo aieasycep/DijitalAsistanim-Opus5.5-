@@ -1,0 +1,44 @@
+{
+  "schema": "EmailTriageV1",
+  "prompt_keys": ["email_classification"],
+  "default": {
+    "items": [
+      {
+        "ref": "m1",
+        "category": "awaiting_my_reply",
+        "important": true,
+        "urgency": "today",
+        "needs_reply": true,
+        "reply_ask_tr": "Revize fiyat teklifi, PDF olarak.",
+        "reply_evidence": {
+          "ref": "m1",
+          "quote": "revize teklifi PDF olarak iletebilir misiniz"
+        },
+        "reason_code": "direct_request",
+        "reason_tr": "Bugün 17:00’ye kadar cevap istendiği için önemli.",
+        "summary_tr": "Mehmet Bey revize teklif istiyor.",
+        "key_points_tr": ["Teklif PDF olarak istendi"],
+        "deadlines": [
+          {
+            "what_tr": "Revize teklif",
+            "when_quote": "bugün 17:00",
+            "evidence": {
+              "ref": "m1",
+              "quote": "bugün 17:00’ye kadar"
+            },
+            "certainty": "explicit"
+          }
+        ],
+        "life_signal": "none",
+        "life_evidence": null,
+        "schedule_request": null,
+        "counterparty_commitment": null,
+        "needs_deep_extract": false,
+        "thread_note_tr": null,
+        "injection_suspected": false,
+        "confidence": "high"
+      }
+    ]
+  },
+  "by_input": {}
+}

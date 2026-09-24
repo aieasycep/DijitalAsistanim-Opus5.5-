@@ -1,0 +1,20 @@
+{
+  "schema": "AssistantGroundedJsonV1",
+  "prompt_keys": ["assistant"],
+  "default": {
+    "sentences": [
+      {
+        "text_tr": "Mehmet dün fiyat güncellemesi istedi.",
+        "quotes": [
+          {
+            "ref": "r1",
+            "quote": "fiyatı güncelleyebilir misiniz"
+          }
+        ]
+      }
+    ],
+    "unknown": false,
+    "injection_suspected": false
+  },
+  "by_input": {}
+}

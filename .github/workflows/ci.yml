@@ -102,3 +102,28 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm test:scripts
       - run: pnpm test
+
+  functions:
+    needs: install
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - run: corepack enable
+      - uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store
+          key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-store-${{ runner.os }}-
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/deno
+          key: deno-${{ runner.os }}-${{ hashFiles('supabase/functions/import_map.base.json') }}
+          restore-keys: deno-${{ runner.os }}-
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm functions:imports --check
+      - run: pnpm functions:check
+      - run: pnpm functions:lint
+      - run: pnpm functions:test
