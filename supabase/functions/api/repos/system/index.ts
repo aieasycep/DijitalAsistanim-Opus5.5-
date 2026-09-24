@@ -64,6 +64,7 @@ import {
 } from '../../../_shared/services/intel/supabase-store.ts';
 import { integrationMailBodySource } from '../../../_shared/services/intel/mail-bodies.ts';
 import { supabaseAssistApi } from '../../routes/assist-api.ts';
+import { supabaseAniSignalsRepo } from '../../../_shared/services/android-ni/ingest.ts';
 
 export function createApiDeps(input: {
   readonly env: FunctionEnv;
@@ -193,5 +194,6 @@ export function createApiDeps(input: {
       bodies: integrationMailBodySource(integrations.runtime, input.log),
     }),
     assist: supabaseAssistApi(system),
+    androidSignals: supabaseAniSignalsRepo(system),
   };
 }

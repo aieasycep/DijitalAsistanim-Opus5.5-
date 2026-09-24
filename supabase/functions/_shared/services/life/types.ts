@@ -8,7 +8,8 @@ import type { StoredEvidence } from '@da/domain';
 
 export type LifeKind =
   'shipment' | 'flight' | 'reservation' | 'payment' | 'subscription' | 'security';
-export type LifeOrigin = 'jsonld' | 'template' | 'llm' | 'security';
+/** `android`: structured fields of an on-device-extracted Android notification signal (§13.8). */
+export type LifeOrigin = 'jsonld' | 'template' | 'llm' | 'security' | 'android';
 
 export interface LifeAmount {
   readonly minor: number;

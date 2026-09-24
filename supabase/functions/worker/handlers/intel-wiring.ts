@@ -20,6 +20,7 @@ import {
   supabaseStatsStore,
 } from '../../_shared/services/intel/supabase-store.ts';
 import type { IntelDeps } from './intel.ts';
+import { supabaseAndroidLifeStore } from '../../_shared/services/life/android.ts';
 
 export function createIntelDeps(
   system: DbClient,
@@ -48,5 +49,6 @@ export function createIntelDeps(
       },
       audit: supabaseAuditWriter(system),
     },
+    android: supabaseAndroidLifeStore(system),
   };
 }

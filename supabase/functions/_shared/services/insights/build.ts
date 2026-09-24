@@ -82,6 +82,8 @@ export interface NotificationBuild {
   readonly urgency: Urgency;
   readonly time_sensitive: boolean;
   readonly vip: boolean;
+  /** `life_intel` from an Android notification signal: channel `phone_digest` (R-12). */
+  readonly from_android_signal?: boolean;
 }
 
 export interface BuildResult {
@@ -856,11 +858,13 @@ function lifeCandidates(snap: InsightSnapshot, ctx: BuildContext): Candidate[] {
     const when = e.due_at ?? e.event_at;
     const status = typeof e.payload.status === 'string' ? e.payload.status : 'confirmed';
     const recent = now - Date.parse(e.updated_at) < 2 * 86_400_000;
+    // Undated shipments and flights (tracking or gate updates, e.g. from Android signals) stay
+    // relevant while recently updated.
     const relevant =
       e.type === 'security'
         ? recent
         : when === null
-          ? e.type === 'shipment' && recent
+          ? (e.type === 'shipment' || e.type === 'flight') && recent
           : Date.parse(when) > now - 12 * 3_600_000 && Date.parse(when) < now + 3 * 86_400_000;
     if (!relevant) continue;
     const security = e.type === 'security';
@@ -937,6 +941,7 @@ function lifeNotification(
     time_sensitive: type === 'flight' || type === 'security',
     vip: false,
     localDate: localDate(ctx.now, tz),
+    ...(e.source_type === 'android_notification' ? { from_android_signal: true } : {}),
   };
   const when = e.event_at ?? e.due_at;
   const today = when !== null && dayDiff(ctx, when) === 0;
@@ -973,6 +978,8 @@ function lifeNotification(
     case 'shipment':
       if (!(status === 'delivered' || status === 'delayed' || status === 'out_for_delivery'))
         return null;
+      // No estimated delivery time in the source → no "Tahmini teslimat" push with empty times.
+      if (status !== 'delivered' && e.event_at === null) return null;
       return {
         ...base,
         template_key: 'life_intel.shipment',

@@ -20,6 +20,7 @@ import type {
   StatsStore,
 } from '../../_shared/services/intel/store.ts';
 import type { BriefingJobStore } from '../../_shared/services/intel/supabase-store.ts';
+import type { AndroidLifeStore } from '../../_shared/services/life/android.ts';
 
 export interface ReconciliationPorts {
   readonly env: RawEnv;
@@ -39,6 +40,8 @@ export interface IntelDeps {
   /** Transient provider bodies (integration runtime); null → metadata-only triage. */
   readonly bodies: MailBodySource | null;
   readonly reconciliation: ReconciliationPorts;
+  /** Android notification signals → life events in `insight_refresh` (API-ANI-01, JOB-12). */
+  readonly android?: AndroidLifeStore;
 }
 
 export function pipelineFor(

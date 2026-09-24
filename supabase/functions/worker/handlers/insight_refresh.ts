@@ -6,13 +6,16 @@
  *
  * The job key is coalesced per user (`insight_refresh:{user}:pending`), so a pending refresh may
  * stand for several producers with different scopes; the handler therefore always rebuilds every
- * source (`scope` is kept as the trigger hint).
+ * source (`scope` is kept as the trigger hint). Before the snapshot, the user's Android
+ * notification signals not yet linked to an event become (or merge into) `life_events`
+ * (API-ANI-01; `_shared/services/life/android.ts`).
  */
 import { Uuid } from '@da/validation';
 import { z } from 'zod';
 import { defineJob } from '../../_shared/jobs/registry.ts';
 import type { JobContext } from '../../_shared/jobs/types.ts';
 import { buildInsights } from '../../_shared/services/insights/build.ts';
+import { refreshAndroidLifeEvents } from '../../_shared/services/life/android.ts';
 import { enqueueNotification, type IntelDeps } from './intel.ts';
 
 export const InsightRefreshPayload = z.object({
@@ -31,6 +34,15 @@ export async function runInsightRefresh(
   const userId = ctx.payload.user_id;
   const now = ctx.now();
   const user = await deps.ai.users.load(userId);
+  const android =
+    deps.android === undefined
+      ? null
+      : await refreshAndroidLifeEvents(deps.android, {
+          userId,
+          locale: user.locale,
+          timeZone: user.timeZone,
+          now,
+        });
   const snapshot = await deps.insights.snapshot(userId, now);
   const result = buildInsights(snapshot, {
     userId,
@@ -52,6 +64,9 @@ export async function runInsightRefresh(
     expired: result.expire.length,
     threads: result.threadPatches.length,
     notifications: result.notifications.length,
+    ...(android === null
+      ? {}
+      : { android_signals: android.signals, android_linked: android.linked }),
   };
 }
 

@@ -42,6 +42,7 @@ import { registerCaptureRoutes } from './routes/captures.ts';
 import { registerPlanRoutes } from './routes/plan.ts';
 import { registerOnboardingRoutes } from './routes/onboarding.ts';
 import { registerBriefingAudioRoutes } from './routes/briefing-audio.ts';
+import { androidNotificationRoutes } from './routes/android-notifications.ts';
 
 /** `extra` registrars mount after the built-in routes (tests use it for the Pro-gate matrix). */
 export function createApiApp(deps: ApiDeps, extra: readonly RouteRegistrar[] = []): Hono<AppEnv> {
@@ -98,5 +99,7 @@ export function createApiApp(deps: ApiDeps, extra: readonly RouteRegistrar[] = [
   registerPlanRoutes(app, kit);
   registerOnboardingRoutes(app, kit);
   registerBriefingAudioRoutes(app, kit);
+  // Android Notification Intelligence (API-ANI-01).
+  if (deps.androidSignals !== undefined) androidNotificationRoutes(deps.androidSignals)(app, kit);
   return app;
 }

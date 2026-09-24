@@ -82,6 +82,8 @@ export const RATE_LIMITS = {
   thread_summary: { limit: 20, windowSeconds: 60, subject: 'user' },
   /** API-BRF-04: 1 per 10 min per briefing (enforced with the briefing id as the subject). */
   briefing_retry: { limit: 1, windowSeconds: 600, subject: 'user' },
+  /** API-ANI-01: Android NI signal batches, 30 per 60 s per installation (§2.9). */
+  android_ni_signals: { limit: 30, windowSeconds: 60, subject: 'installation' },
 } as const satisfies Record<string, RateLimitClass>;
 export type RateLimitClassName = keyof typeof RATE_LIMITS;
 
