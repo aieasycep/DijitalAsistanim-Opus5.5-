@@ -18,7 +18,7 @@ import { deviceRegisterBody } from '../../lib/device';
 import { track } from '../../lib/events';
 import { updateUiPrefs, useUiPrefs } from '../../lib/ui-prefs';
 import { deviceLocale } from '../../i18n/I18nProvider';
-import { ensureAndroidChannels } from '../onboarding/push';
+import { setupNotificationChannels } from '../../lib/notifications/channels';
 import { saveOwnRow } from './save';
 import { zoneLabel } from './timezones';
 import { Caption, SettingsGroup, SettingsPage } from './ui';
@@ -33,7 +33,8 @@ export async function changeLanguage(locale: Locale): Promise<void> {
     silent: true,
     onFailure: 'keep',
   });
-  await ensureAndroidChannels();
+  // Channel names and the iOS hidden-preview text follow the language (R-12, T-8.24).
+  await setupNotificationChannels(true);
   const install = installationId();
   if (install === null) return;
   try {

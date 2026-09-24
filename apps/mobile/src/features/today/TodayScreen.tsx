@@ -19,7 +19,6 @@ import {
   GroupedList,
   HeaderPill,
   ListRow,
-  OfflineBanner,
   PriorityCard,
   ReconnectCard,
   RootHeader,
@@ -48,6 +47,7 @@ import { isScreenAvailable, resolveIncomingLink, defaultLinkOptions } from '../.
 import { track } from '../../lib/events';
 import { patchBootstrapCache, rpc } from '../../lib/postgrest';
 import { useOnline } from '../../lib/query/online-manager';
+import { AppOfflineBanner } from '../common/OfflineBanner';
 import { sheets } from '../../providers/SheetHost';
 import { ContextualGate, isGateDismissed, isPro, openProGate } from '../pro-gate/ProGate';
 import { useAccounts } from '../integrations/accounts';
@@ -977,16 +977,12 @@ export function TodayScreen() {
             setSyncPhase('idle');
           }}
         />
-        {online ? null : (
-          <OfflineBanner
-            message={states('offline.blockedReason')}
-            refreshLabel={states('offline.refresh')}
-            onRefresh={() => {
-              void today.refetch();
-            }}
-            testID="today.offline"
-          />
-        )}
+        <AppOfflineBanner
+          screen="M-TD-01"
+          updatedAt={today.dataUpdatedAt}
+          onRefresh={() => today.refetch()}
+          testID="today.offline"
+        />
         {body}
       </View>
     </ScrollView>

@@ -257,4 +257,8 @@ export const mk = {
   ani: {
     uploadSignals: ['ani', 'upload-signals'] as const,
   },
+  // T-8.28 analytics delivery.
+  analytics: {
+    events: ['analytics', 'events'] as const,
+  },
 } as const;

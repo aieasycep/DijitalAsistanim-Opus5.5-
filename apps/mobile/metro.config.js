@@ -9,9 +9,11 @@
  *   because pnpm puts each package's own dependencies next to it inside `.pnpm`.
  * - Package `exports` are honoured, which the `@da/*` subpath exports need.
  * - Agent worktrees, other apps' build output and native projects never enter the file map.
+ * - `getSentryExpoConfig` (T-8.28) is Expo's default config plus Sentry's serializer, which writes
+ *   debug ids into the bundle and its source maps; the maps are uploaded by CI only (ADR-39).
  */
 const path = require('node:path');
-const { getDefaultConfig } = require('expo/metro-config');
+const { getSentryExpoConfig } = require('@sentry/react-native/metro');
 const { demoRouteBlockList } = require('./demo-routes');
 
 const projectRoot = __dirname;
@@ -21,7 +23,7 @@ const escape = (/** @type {string} */ value) => value.replace(/[.*+?^${}()|[\]\\
 const under = (/** @type {string} */ ...segments) =>
   new RegExp(`^${escape(path.join(workspaceRoot, ...segments))}(/.*)?$`);
 
-const config = getDefaultConfig(projectRoot);
+const config = getSentryExpoConfig(projectRoot);
 const defaultBlockList = config.resolver.blockList ?? [];
 
 config.watchFolders = [workspaceRoot];

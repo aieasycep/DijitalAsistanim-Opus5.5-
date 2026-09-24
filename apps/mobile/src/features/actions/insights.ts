@@ -3,17 +3,20 @@
  * button "Tamamlandı", "Kapat", "Ertele", "Önemli değil", "Takip etme". Each one removes the item
  * from the cached lists optimistically, runs its RPC (RPC-01 `set_insight_status`, RPC-21
  * `apply_insight_feedback`, RPC-06 `set_commitment_status`) and shows a 5 s undo toast. Offline,
- * TanStack pauses the mutation and replays it on reconnect (queued, never an approval); a failure
- * rolls the cache back with "İşlem tamamlanamadı · Tekrar dene". Undo restores the previous
- * status through the same RPC (RPC-22 `revert_insight_feedback` for feedback).
+ * the write goes to the persisted offline mutation queue (T-8.23) and replays on reconnect
+ * (queued, never an approval); a terminal failure rolls the cache back with "İşlem tamamlanamadı ·
+ * Tekrar dene". Undo restores the previous status through the same queue (last write wins), or
+ * RPC-22 `revert_insight_feedback` for delivered feedback (a queued one is simply removed).
  */
 import type { ItemStatus } from '@da/domain';
 import { useToast } from '@da/ui';
-import { useMutation, useQueryClient, type QueryKey } from '@tanstack/react-query';
+import { useQueryClient, type QueryKey } from '@tanstack/react-query';
 import * as Crypto from 'expo-crypto';
+import { useState } from 'react';
 import { useTranslations } from 'use-intl';
 
 import { callRpc } from '../../lib/data/rpc';
+import { cancelQueuedMutation, runOrQueue } from '../../lib/offline/mutations';
 import { track } from '../../lib/events';
 
 type Snapshot = readonly (readonly [QueryKey, unknown])[];
@@ -88,24 +91,6 @@ export function useInsightActions(roots: readonly QueryKey[]) {
     for (const root of roots) void queryClient.invalidateQueries({ queryKey: root });
   };
 
-  const status = useMutation({
-    mutationFn: (v: { id: string; status: ItemStatus; until?: string }) =>
-      callRpc('set_insight_status', {
-        p_insight_id: v.id,
-        p_status: v.status,
-        ...(v.until === undefined ? {} : { p_snoozed_until: v.until }),
-      }),
-  });
-
-  const feedback = useMutation({
-    mutationFn: (v: { id: string; kind: FeedbackKind; clientId: string }) =>
-      callRpc('apply_insight_feedback', {
-        p_insight_id: v.id,
-        p_kind: v.kind,
-        p_client_mutation_id: v.clientId,
-      }),
-  });
-
   const failed = (restore: () => void) => {
     restore();
     toast.show({ message: t('failed'), kind: 'error' });
@@ -114,18 +99,13 @@ export function useInsightActions(roots: readonly QueryKey[]) {
   const setStatus = (change: StatusChange) => {
     const restore = removeFromCaches(queryClient, roots, change.id);
     track('insight_status_change', { from: 'open', to: change.to, via: change.via });
-    status.mutate(
-      {
-        id: change.id,
-        status: change.to,
-        ...(change.snoozedUntil === undefined ? {} : { until: change.snoozedUntil }),
-      },
-      {
-        onError: () => {
-          failed(restore);
-        },
-      },
-    );
+    void runOrQueue('insight_status', {
+      insightId: change.id,
+      status: change.to,
+      ...(change.snoozedUntil === undefined ? {} : { snoozedUntil: change.snoozedUntil }),
+    }).then((result) => {
+      if (result.status === 'failed') failed(restore);
+    });
     toast.show({
       message: change.message,
       kind: 'success',
@@ -134,11 +114,12 @@ export function useInsightActions(roots: readonly QueryKey[]) {
         onPress: () => {
           track('toast_action_tapped', { action: 'undo', origin: 'flow' });
           restore();
-          void callRpc('set_insight_status', { p_insight_id: change.id, p_status: 'open' })
-            .then(refresh)
-            .catch(() => {
-              toast.show({ message: t('failed'), kind: 'error' });
-            });
+          void runOrQueue('insight_status', { insightId: change.id, status: 'open' }).then(
+            (result) => {
+              if (result.status === 'failed') toast.show({ message: t('failed'), kind: 'error' });
+              else refresh();
+            },
+          );
           change.onUndone?.();
         },
       },
@@ -154,13 +135,13 @@ export function useInsightActions(roots: readonly QueryKey[]) {
     const restore =
       change.keep === true ? () => undefined : removeFromCaches(queryClient, roots, change.id);
     track('insight_feedback', { kind: change.kind });
-    const result = feedback.mutateAsync({
-      id: change.id,
+    const result = runOrQueue('insight_feedback', {
+      insightId: change.id,
       kind: change.kind,
-      clientId: Crypto.randomUUID(),
+      clientMutationId: Crypto.randomUUID(),
     });
-    result.catch(() => {
-      failed(restore);
+    void result.then((outcome) => {
+      if (outcome.status === 'failed') failed(restore);
     });
     toast.show({
       message: change.message,
@@ -171,8 +152,13 @@ export function useInsightActions(roots: readonly QueryKey[]) {
           track('correction_undo', { kind: change.kind });
           restore();
           void result
-            .then(async (data) => {
-              const id = (data as { feedback_id?: unknown } | null)?.feedback_id;
+            .then(async (outcome) => {
+              if (outcome.status === 'queued') {
+                cancelQueuedMutation(outcome.entryId);
+                return;
+              }
+              if (outcome.status !== 'saved') return;
+              const id = (outcome.result as { feedback_id?: unknown } | null)?.feedback_id;
               if (typeof id === 'string')
                 await callRpc('revert_insight_feedback', { p_feedback_id: id });
               refresh();
@@ -192,18 +178,7 @@ export function useCommitmentActions(roots: readonly QueryKey[]) {
   const toast = useToast();
   const t = useTranslations('flow.actions');
   const tc = useTranslations('common.actions');
-  const mutation = useMutation({
-    mutationFn: (v: {
-      id: string;
-      status: 'open' | 'done' | 'snoozed' | 'cancelled';
-      due?: string;
-    }) =>
-      callRpc('set_commitment_status', {
-        p_commitment_id: v.id,
-        p_status: v.status,
-        ...(v.due === undefined ? {} : { p_due_at: v.due }),
-      }),
-  });
+  const [pending, setPending] = useState(false);
   const refresh = () => {
     for (const root of roots) void queryClient.invalidateQueries({ queryKey: root });
   };
@@ -217,20 +192,21 @@ export function useCommitmentActions(roots: readonly QueryKey[]) {
   }) => {
     const restore =
       input.remove === false ? () => undefined : removeFromCaches(queryClient, roots, input.id);
-    mutation.mutate(
-      {
-        id: input.id,
-        status: input.status,
-        ...(input.due === undefined ? {} : { due: input.due }),
-      },
-      {
-        onSuccess: refresh,
-        onError: () => {
-          restore();
-          toast.show({ message: t('failed'), kind: 'error' });
-        },
-      },
-    );
+    setPending(true);
+    void runOrQueue('commitment_status', {
+      commitmentId: input.id,
+      status: input.status,
+      ...(input.due === undefined ? {} : { dueAt: input.due }),
+    })
+      .then((result) => {
+        if (result.status === 'saved') refresh();
+        if (result.status !== 'failed') return;
+        restore();
+        toast.show({ message: t('failed'), kind: 'error' });
+      })
+      .finally(() => {
+        setPending(false);
+      });
     toast.show({
       message: input.message,
       kind: 'success',
@@ -238,17 +214,16 @@ export function useCommitmentActions(roots: readonly QueryKey[]) {
         label: tc('undo'),
         onPress: () => {
           restore();
-          void callRpc('set_commitment_status', {
-            p_commitment_id: input.id,
-            p_status: input.undoTo ?? 'open',
-          })
-            .then(refresh)
-            .catch(() => {
-              toast.show({ message: t('failed'), kind: 'error' });
-            });
+          void runOrQueue('commitment_status', {
+            commitmentId: input.id,
+            status: input.undoTo ?? 'open',
+          }).then((result) => {
+            if (result.status === 'failed') toast.show({ message: t('failed'), kind: 'error' });
+            else refresh();
+          });
         },
       },
     });
   };
-  return { change, refresh, pending: mutation.isPending };
+  return { change, refresh, pending };
 }

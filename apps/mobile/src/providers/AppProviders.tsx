@@ -6,7 +6,8 @@
  * session), plus the `SheetHost` and `ToastHost` overlays.
  *
  * Before anything renders, `bootApp()` runs the first-run keychain purge, opens the encrypted
- * stores, loads the UI preferences and wires NetInfo; the native splash stays up meanwhile.
+ * stores, loads the UI preferences and wires NetInfo, the offline mutation queue, analytics delivery
+ * and the notification channels; the native splash stays up meanwhile.
  */
 import { DaUiProvider, ErrorState, type HapticKind } from '@da/ui';
 import * as Haptics from 'expo-haptics';
@@ -21,7 +22,10 @@ import { useTranslations } from 'use-intl';
 import { I18nProvider } from '../i18n/I18nProvider';
 import { prepareSecureStorage } from '../lib/auth/first-run-purge';
 import { getSupabase } from '../lib/auth/supabase';
+import { startAnalytics } from '../lib/analytics';
 import { flushPendingLinks } from '../lib/deeplinks';
+import { setupNotificationChannels } from '../lib/notifications/channels';
+import { bindMutationQueue } from '../lib/offline/mutations';
 import { bindFocusManager, bindOnlineManager } from '../lib/query/online-manager';
 import { isEncryptedStorageOpen } from '../lib/storage';
 import { loadUiPrefs, updateUiPrefs, useUiPrefs } from '../lib/ui-prefs';
@@ -58,6 +62,10 @@ export async function bootApp(): Promise<void> {
   loadUiPrefs();
   flushPendingLinks();
   bindOnlineManager();
+  // T-8.23 offline queue replay, T-8.28 analytics delivery, T-8.24 channels before any prompt.
+  bindMutationQueue();
+  startAnalytics();
+  void setupNotificationChannels();
   booted = true;
 }
 

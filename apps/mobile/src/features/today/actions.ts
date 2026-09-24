@@ -3,8 +3,9 @@
  * `set_insight_status` with the R-06 client undo — the card leaves at once, the toast offers
  * "Geri al" for 5 seconds, and only then is the write sent (undo cancels it; nothing reaches the
  * server). "Önemli değil" and the correction options go through RPC-21 `apply_insight_feedback`
- * right away; their "Geri al" calls RPC-22 `revert_insight_feedback`. Offline writes wait for the
- * connection (RPC-01 is idempotent, RPC-21 dedupes on `p_client_mutation_id`).
+ * right away; their "Geri al" calls RPC-22 `revert_insight_feedback`. Offline, both go to the
+ * persisted offline mutation queue (T-8.23) and replay on reconnect (RPC-01 is idempotent, RPC-21
+ * dedupes on `p_client_mutation_id`); "Geri al" on a queued write removes it from the queue.
  */
 import { qk } from '@da/api-client';
 import { onlineManager, type QueryClient } from '@tanstack/react-query';
@@ -12,6 +13,7 @@ import * as Crypto from 'expo-crypto';
 
 import { translator } from '../../i18n/translate';
 import { track } from '../../lib/events';
+import { cancelQueuedMutation, queueMutation, runOrQueue } from '../../lib/offline/mutations';
 import { entitlementFeatureOf, rpc } from '../../lib/postgrest';
 import { getQueryClient } from '../../lib/query/client';
 import { showToast } from '../../providers/ToastHost';
@@ -22,18 +24,6 @@ import type { TodayData, TodayPriority } from './data';
 export const UNDO_WINDOW_MS = 5_000;
 
 export type FeedbackKind = 'not_important' | 'show_more' | 'make_vip' | 'stop_tracking';
-
-function whenOnline(run: () => void): void {
-  if (onlineManager.isOnline()) {
-    run();
-    return;
-  }
-  const unsubscribe = onlineManager.subscribe((online) => {
-    if (!online) return;
-    unsubscribe();
-    run();
-  });
-}
 
 function hide(client: QueryClient, localDate: string, id: string): TodayData | undefined {
   const key = qk.today.day(localDate);
@@ -72,17 +62,14 @@ function delayedStatus(change: DelayedStatus, client: QueryClient = getQueryClie
   let undone = false;
   const commit = () => {
     if (undone) return;
-    whenOnline(() => {
-      void rpc('set_insight_status', {
-        p_insight_id: change.item.id,
-        p_status: change.status,
-        ...(change.snoozedUntil === undefined ? {} : { p_snoozed_until: change.snoozedUntil }),
-      })
-        .then(() => client.invalidateQueries({ queryKey: qk.today.all }))
-        .catch(() => {
-          restore(client, change.localDate, snapshot);
-          showToast({ message: t('common.toast.saveFailed'), kind: 'error' });
-        });
+    void runOrQueue('insight_status', {
+      insightId: change.item.id,
+      status: change.status,
+      ...(change.snoozedUntil === undefined ? {} : { snoozedUntil: change.snoozedUntil }),
+    }).then((result) => {
+      if (result.status !== 'failed') return;
+      restore(client, change.localDate, snapshot);
+      showToast({ message: t('common.toast.saveFailed'), kind: 'error' });
     });
   };
   const timer = setTimeout(commit, UNDO_WINDOW_MS);
@@ -147,6 +134,28 @@ export async function applyFeedback(
   const t = translator();
   const dismisses = kind === 'not_important' || kind === 'stop_tracking';
   const snapshot = dismisses ? hide(client, localDate, item.id) : undefined;
+  if (!onlineManager.isOnline()) {
+    // Queued (RPC-21 dedupes on the client mutation id); "Geri al" drops it from the queue.
+    const entry = queueMutation('insight_feedback', {
+      insightId: item.id,
+      kind,
+      clientMutationId: Crypto.randomUUID(),
+    });
+    track('priority_feedback', { kind: item.kind, feedback: kind, learning_on: learningOn });
+    showToast({
+      message: t('today.toasts.offlineQueued'),
+      kind: 'offline',
+      durationMs: UNDO_WINDOW_MS,
+      action: {
+        label: t('common.actions.undo'),
+        onPress: () => {
+          track('priority_undo', { action: 'feedback' });
+          if (cancelQueuedMutation(entry.id)) restore(client, localDate, snapshot);
+        },
+      },
+    });
+    return true;
+  }
   let feedbackId: string | null = null;
   try {
     const result = (await rpc('apply_insight_feedback', {

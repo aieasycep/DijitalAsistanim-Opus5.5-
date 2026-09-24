@@ -176,3 +176,5 @@ export * from './actions.ts';
 export * from './assist.ts';
 // T-8.26 Android Notification Intelligence (signal upload).
 export * from './android-ni.ts';
+// T-8.23…T-8.28 platform services (analytics delivery).
+export * from './platform.ts';

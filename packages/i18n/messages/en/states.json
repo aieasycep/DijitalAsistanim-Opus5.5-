@@ -69,7 +69,9 @@
     "blockedToast": "This can't be done while offline.",
     "serverUnreachable": "We can't reach the server right now. Showing your last analysis from {time}.",
     "reconnected": "Up to date · {time}",
-    "stillOffline": "Still offline."
+    "stillOffline": "Still offline.",
+    "replayDropped": "{count, plural, one {# change} other {# changes}} couldn't be saved; the latest version is shown.",
+    "sinceNoTime": "You're offline. Showing saved content."
   },
   "error": {
     "loadFailed": {

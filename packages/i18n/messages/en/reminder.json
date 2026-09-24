@@ -41,10 +41,9 @@
   "cancelled": "Reminder cancelled",
   "snoozeTitle": "Snooze until when?",
   "notificationsOff": "Notifications are off, so the reminder won't arrive.",
-  "local": {
-    "generic": "You have a reminder.",
-    "titleOnly": "Reminder",
-    "full": "Reminder · {time}"
+  "notificationActions": {
+    "snooze": "Snooze 1 hour",
+    "done": "Done"
   },
   "toasts": {
     "pendingSync": "Saved · Waiting to sync",

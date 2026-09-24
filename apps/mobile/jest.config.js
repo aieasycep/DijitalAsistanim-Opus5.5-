@@ -12,6 +12,8 @@ const TEST_ENV = {
   EXPO_PUBLIC_SUPABASE_URL: 'https://project-ref.supabase.test',
   EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_jest0000',
   EXPO_PUBLIC_APP_ENV: 'development',
+  // Analytics delivery is exercised by its own unit tests; app tests read the in-memory buffer.
+  EXPO_PUBLIC_ANALYTICS_ENABLED: 'false',
 };
 for (const [key, value] of Object.entries(TEST_ENV)) process.env[key] = value;
 
