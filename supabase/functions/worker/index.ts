@@ -69,6 +69,7 @@ const app = createWorkerApp({
     },
     integrations: { runtime: integrations.runtime, webhooks: integrations.webhooks },
     intel: createIntelDeps(system, raw, workerLog),
+    email: { system, raw, keyring: () => (keyring ??= loadKeyring(env)) },
   }),
   log: workerLog,
   sentry: createSentry({ dsn: env.SENTRY_DSN, environment: env.APP_ENV }),

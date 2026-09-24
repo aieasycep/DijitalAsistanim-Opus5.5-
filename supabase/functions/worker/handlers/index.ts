@@ -9,6 +9,10 @@ import {
   credentialReencryptJob,
   type CredentialsRepo,
 } from '../../_shared/services/credentials.ts';
+import {
+  type TransactionalEmailDeps,
+  transactionalEmailJob,
+} from '../../_shared/email/transactional.ts';
 import { type ApprovalExecuteDeps, approvalExecuteJob } from './approval_execute.ts';
 import { notificationJob } from './notification.ts';
 import { pushReceiptsJob } from './push_receipts.ts';
@@ -35,6 +39,8 @@ export interface HandlerDeps {
   readonly integrations?: IntegrationJobDeps;
   /** AI pipeline (T-5.01…T-5.08, T-5.17). */
   readonly intel?: IntelDeps;
+  /** JOB-31 `transactional_email` (admin invites, support replies, security notices). */
+  readonly email?: TransactionalEmailDeps;
 }
 
 export function jobDefinitions(deps: HandlerDeps): JobDefinition<never>[] {
@@ -56,6 +62,9 @@ export function jobDefinitions(deps: HandlerDeps): JobDefinition<never>[] {
     referralEvaluateJob(deps.business.referrals) as unknown as JobDefinition<never>,
     ...(deps.integrations === undefined ? [] : integrationJobDefinitions(deps.integrations)),
     ...(deps.intel === undefined ? [] : intelJobDefinitions(deps.intel)),
+    ...(deps.email === undefined
+      ? []
+      : [transactionalEmailJob(deps.email) as unknown as JobDefinition<never>]),
   ];
 }
 
