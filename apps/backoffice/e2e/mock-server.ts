@@ -91,6 +91,7 @@ const state = {
   calls: [] as {
     method: string;
     path: string;
+    query: Record<string, string>;
     headers: Record<string, string | undefined>;
     body: unknown;
   }[],
@@ -429,6 +430,7 @@ async function handleAdmin(
   state.calls.push({
     method,
     path,
+    query: Object.fromEntries(url.searchParams),
     headers: {
       'idempotency-key': req.headers['idempotency-key'] as string | undefined,
       'x-da-activity': req.headers['x-da-activity'] as string | undefined,

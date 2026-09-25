@@ -16,10 +16,14 @@ test.describe('dashboard', () => {
     await page.getByRole('radio', { name: '30 gün' }).click();
     await expect(page).toHaveURL(/range=30d/);
     await expect(page.getByTestId('kpi-total_users').first()).toBeVisible();
-    const ranges = (await mockCalls(request))
-      .filter((c) => c.path === '/dashboard/metrics')
-      .map((c) => c.method);
-    expect(ranges.length).toBeGreaterThan(1);
+    // The URL changes before the server render has re-read the metrics: wait for that read.
+    await expect
+      .poll(async () =>
+        (await mockCalls(request))
+          .filter((c) => c.path === '/dashboard/metrics')
+          .map((c) => c.query.range ?? null),
+      )
+      .toContain('30d');
     expect(await csp()).toEqual([]);
   });
 });
