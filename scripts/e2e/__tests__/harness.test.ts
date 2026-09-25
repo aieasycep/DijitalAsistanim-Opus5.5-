@@ -26,7 +26,7 @@ test('demo ids equal the seed formula md5(da-demo:entity:slug)::uuid', () => {
   const hex = createHash('md5').update('da-demo:message:revize-teklif').digest('hex');
   assert.equal(demoId('message', 'revize-teklif').replace(/-/g, ''), hex);
   assert.match(
-    canonIds().meetingEvent,
+    canonIds().meetingEvent ?? '',
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
   );
 });
