@@ -181,7 +181,10 @@ export function candidateFromNode(node: Node, html: string): LifeCandidate | nul
       const airline = str(obj(flight?.airline)?.iataCode) ?? str(obj(flight?.provider)?.iataCode);
       const number = str(flight?.flightNumber);
       if (number === null) return null;
-      const flightNo = /^[A-Z0-9]{2}\d/.test(number) ? number : `${airline ?? ''}${number}`;
+      // An IATA designator has at least one letter: a bare `2124` gets the airline prefix.
+      const flightNo = /^(?:[A-Z]{2}|[A-Z]\d|\d[A-Z])\d/.test(number)
+        ? number
+        : `${airline ?? ''}${number}`;
       const departRaw = str(flight?.departureTime);
       const depart = instant(departRaw);
       const pnrRaw = str(node.reservationNumber);

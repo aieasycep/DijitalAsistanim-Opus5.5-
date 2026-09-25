@@ -189,6 +189,7 @@ export function parseSearchQuery(q: string, now: Date, timeZone: string): Parsed
     from: date?.range.from ?? null,
     to: date?.range.to ?? null,
     types: [...types],
-    personHints: personHints(original),
+    // Names are found by capitalisation, which `normalizeTR` lower-cases away: use the raw query.
+    personHints: personHints(q.normalize('NFKC').trim()),
   };
 }

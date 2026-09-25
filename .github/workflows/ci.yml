@@ -69,7 +69,7 @@ jobs:
         run: pnpm --filter @da/mobile ni:test
 
   functions:
-    name: functions (import maps, deno check, lint, test)
+    name: functions (import maps, deno check, lint, test + coverage gate)
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -84,7 +84,8 @@ jobs:
       - run: pnpm functions:imports --check
       - run: pnpm functions:check
       - run: pnpm functions:lint
-      - run: pnpm functions:test
+      # The whole Deno suite with the T-12.04 gate: `_shared` line coverage ≥ 80 %.
+      - run: pnpm functions:coverage
 
   db:
     name: db (tier A — supabase start, reset, pgTAP, lint, type drift)
