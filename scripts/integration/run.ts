@@ -54,7 +54,8 @@ const MOCK_SERVER = join(
 const SUITES_DIR = join(ROOT, 'supabase', 'tests', 'integration');
 const POSTGREST_VERSION = 'v12.2.3';
 const POSTGREST_URL = `https://github.com/PostgREST/postgrest/releases/download/${POSTGREST_VERSION}/postgrest-${POSTGREST_VERSION}-linux-static-x64.tar.xz`;
-const MOCK_PORT = 8788;
+// Ports are overridable so two runs (e.g. parallel worktrees) do not collide.
+const MOCK_PORT = Number(process.env.DA_IT_MOCK_PORT ?? 8788);
 const POSTGREST_PORT = Number(process.env.DA_IT_POSTGREST_PORT ?? 54330);
 const GATEWAY_PORT = Number(process.env.DA_IT_GATEWAY_PORT ?? 54331);
 
@@ -110,8 +111,10 @@ function background(name: string, cmd: string, args: string[], env: NodeJS.Proce
     stdio: ['ignore', 'pipe', 'pipe'],
     detached: true,
   });
-  child.stdout.pipe(out);
-  child.stderr.pipe(out);
+  // Both streams feed one log: neither may end it (the second would write after end), the exit does.
+  child.stdout.pipe(out, { end: false });
+  child.stderr.pipe(out, { end: false });
+  child.on('close', () => out.end());
   children.push(child);
 }
 
@@ -198,6 +201,7 @@ function baseEnv(supabaseUrl: string, mockUrl: string): Record<string, string> {
     VOYAGE_API_KEY: `pa-${randomSecret(18)}`,
     VOYAGE_API_BASE_URL: `${mockUrl}/voyage/v1`,
     DA_IT_MOCK_URL: mockUrl,
+    MOCK_PROVIDERS_PORT: String(MOCK_PORT),
   };
 }
 
