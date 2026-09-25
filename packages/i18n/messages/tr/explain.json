@@ -15,5 +15,12 @@
     "deviceStale": "Cihaz takvimi en son {time} eşitlendi",
     "quoted": "“{quote}”"
   },
+  "unverified": {
+    "due_at": "Son tarih kaynakta kesinleşmiyor.",
+    "amount": "Tutar kaynakta belirtilmemiş.",
+    "time": "Saat kaynakta kesinleşmiyor.",
+    "person": "Kişi kaynakta kesinleşmiyor.",
+    "generic": "Kaynakta kesinleşmiyor."
+  },
   "confidence": "%{percent} güven"
 }

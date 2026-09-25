@@ -15,5 +15,12 @@
     "deviceStale": "Device calendar last synced at {time}",
     "quoted": "“{quote}”"
   },
+  "unverified": {
+    "due_at": "The due date is not confirmed in the source.",
+    "amount": "The amount is not stated in the source.",
+    "time": "The time is not confirmed in the source.",
+    "person": "The person is not confirmed in the source.",
+    "generic": "Not confirmed in the source."
+  },
   "confidence": "{percent}% confidence"
 }
