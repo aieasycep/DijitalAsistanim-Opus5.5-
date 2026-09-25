@@ -27,13 +27,23 @@ export interface RevenueCatConfig {
   readonly secretKey: string;
   /** Entitlement lookup key of Pro (`REVENUECAT_ENTITLEMENT_PRO_ID`). */
   readonly entitlementLookupKey: string;
+  /** Test-only `REVENUECAT_API_BASE_URL` (mock provider server); never set in preview/production. */
+  readonly apiBaseUrl?: string;
 }
 
 /** The v2 configuration, or null while the credential is missing (names in `missing`). */
 export function revenueCatConfig(env: Readonly<Record<string, unknown>>): RevenueCatConfig | null {
   if (credentialStatus('revenuecat', env).status !== 'configured') return null;
   const lookup = env.REVENUECAT_ENTITLEMENT_PRO_ID;
+  const appEnv = typeof env.APP_ENV === 'string' ? env.APP_ENV.trim() : '';
+  const override =
+    appEnv === 'production' ||
+    appEnv === 'preview' ||
+    typeof env.REVENUECAT_API_BASE_URL !== 'string'
+      ? ''
+      : env.REVENUECAT_API_BASE_URL.trim().replace(/\/+$/, '');
   return {
+    ...(override === '' ? {} : { apiBaseUrl: override }),
     projectId: String(env.REVENUECAT_PROJECT_ID).trim(),
     secretKey: String(env.REVENUECAT_API_V2_SECRET_KEY).trim(),
     entitlementLookupKey:
@@ -120,7 +130,7 @@ function retryAfterSeconds(response: Response): string {
 
 export function createRevenueCatClient(options: RevenueCatClientOptions): RevenueCatClient {
   const doFetch = options.fetch ?? fetch;
-  const base = `${(options.baseUrl ?? REVENUECAT_API_BASE).replace(/\/+$/, '')}/projects/${encodeURIComponent(options.config.projectId)}`;
+  const base = `${(options.baseUrl ?? options.config.apiBaseUrl ?? REVENUECAT_API_BASE).replace(/\/+$/, '')}/projects/${encodeURIComponent(options.config.projectId)}`;
   const timeoutMs = options.timeoutMs ?? OUTBOUND.providerTimeoutMs;
   let entitlementId: Promise<string> | null = null;
   const products = new Map<string, string>();
@@ -429,7 +439,7 @@ export async function deleteRevenueCatCustomer(
   appUserId: string,
   signal?: AbortSignal,
 ): Promise<'deleted' | 'not_found'> {
-  const base = `${(options.baseUrl ?? REVENUECAT_API_BASE).replace(/\/+$/, '')}/projects/${encodeURIComponent(options.config.projectId)}`;
+  const base = `${(options.baseUrl ?? options.config.apiBaseUrl ?? REVENUECAT_API_BASE).replace(/\/+$/, '')}/projects/${encodeURIComponent(options.config.projectId)}`;
   const timeout = AbortSignal.timeout(options.timeoutMs ?? OUTBOUND.providerTimeoutMs);
   let response: Response;
   try {

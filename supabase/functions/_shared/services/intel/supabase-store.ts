@@ -337,6 +337,10 @@ export function supabaseInsightStore(db: DbClient): InsightStore {
             .eq('user_id', userId)
             .gte('last_message_at', since)
             .or('reply_state.neq.none,deadline_at.not.is.null')
+            // Threads deleted or archived at the provider leave the Flow (INTEGRATION_PLAN §3.13):
+            // their open insights are expired by the rebuild.
+            .gt('message_count', 0)
+            .overlaps('labels', ['INBOX', 'SENT'])
             .order('last_message_at', { ascending: false })
             .limit(300),
           db
@@ -1049,7 +1053,12 @@ export function supabaseMemoryStore(db: DbClient): MemoryStore {
     },
     async upsertChunks(rows) {
       if (rows.length === 0) return [];
-      const payload = rows.map((r) => ({ ...r, content_hash: `\\x${r.content_hash}` }));
+      // `memory_chunks` carries ⟨PROV⟩ only (DATABASE_AND_RLS_PLAN §memory_chunks): the verified
+      // evidence stays with the in-memory chunk and is not a column.
+      const payload = rows.map(({ evidence: _evidence, ...r }) => ({
+        ...r,
+        content_hash: `\\x${r.content_hash}`,
+      }));
       const data = check(
         await db
           .from('memory_chunks')

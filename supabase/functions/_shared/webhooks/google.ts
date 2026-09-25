@@ -61,6 +61,8 @@ export interface GoogleWebhookDeps {
   readonly runtime: IntegrationRuntime;
   readonly webhooks: WebhookLedger;
   readonly log: Logger;
+  /** The request's correlation id, threaded into the enqueued jobs (TEST_PLAN IT-JOB-05). */
+  readonly correlationId?: string;
 }
 
 /** WH-01 after authentication. */
@@ -99,6 +101,7 @@ export async function ingestGmailPush(
   let lastJob: string | null = null;
   for (const account of accounts) {
     lastJob = await deps.runtime.enqueue({
+      ...(deps.correlationId === undefined ? {} : { correlationId: deps.correlationId }),
       type: 'provider_webhook',
       idempotencyKey: `gmail_push:${account.id}:${historyId}`,
       payload: {
@@ -171,6 +174,7 @@ export async function ingestCalendarNotification(
   });
   if (recorded.duplicate) return { status: 200, enqueued: 0, reason: 'duplicate' };
   const jobId = await deps.runtime.enqueue({
+    ...(deps.correlationId === undefined ? {} : { correlationId: deps.correlationId }),
     type: 'provider_webhook',
     idempotencyKey: `gcal_push:${state.connected_account_id}:${state.calendar_id ?? 'all'}:pending`,
     payload: {

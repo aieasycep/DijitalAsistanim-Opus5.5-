@@ -46,7 +46,12 @@ export function createMicrosoftWebhookApp(deps: MicrosoftWebhookAppDeps): Hono<A
     const echo = validationEcho(c);
     if (echo !== null) return echo;
     const outcome = await ingestGraphNotifications(
-      { runtime: deps.runtime, webhooks: deps.webhooks, log: c.get('log') },
+      {
+        runtime: deps.runtime,
+        webhooks: deps.webhooks,
+        log: c.get('log'),
+        correlationId: c.get('correlationId'),
+      },
       await c.req.text(),
     );
     c.get('log').info('webhook_graph', { outcome: outcome.reason, enqueued: outcome.enqueued });
@@ -61,7 +66,12 @@ export function createMicrosoftWebhookApp(deps: MicrosoftWebhookAppDeps): Hono<A
     const echo = validationEcho(c);
     if (echo !== null) return echo;
     const outcome = await ingestGraphLifecycle(
-      { runtime: deps.runtime, webhooks: deps.webhooks, log: c.get('log') },
+      {
+        runtime: deps.runtime,
+        webhooks: deps.webhooks,
+        log: c.get('log'),
+        correlationId: c.get('correlationId'),
+      },
       await c.req.text(),
     );
     c.get('log').info('webhook_graph_lifecycle', {

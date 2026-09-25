@@ -109,6 +109,8 @@ async function afterExecuted(
   if (payload.action_type === 'email_send') {
     await deps.repo.markReplyDraftSent(approval.user_id, payload.reply_draft_id);
     await deps.repo.markThreadAwaitingReply(approval.user_id, payload.thread.email_thread_id);
+    // The reply answers the thread: its reply_needed card is done (IT-APR-01), not left to expire.
+    await deps.repo.markReplyInsightsDone?.(approval.user_id, payload.thread.email_thread_id);
   }
   if (approval.origin === 'insight' && approval.origin_ref_id !== null) {
     await deps.repo.markInsightDone(approval.user_id, approval.origin_ref_id);

@@ -87,6 +87,14 @@ export interface TriggerRepo {
   briefing(userId: string, id: string): Promise<BriefingInfo | null>;
   markBriefingDelivered(userId: string, id: string, at: Date): Promise<void>;
   subscription(userId: string): Promise<SubscriptionInfo | null>;
+  /** The connected account of an `account_reauth` notification (absent → the job is skipped). */
+  connectedAccount?(userId: string, id: string): Promise<AccountInfo | null>;
+}
+
+export interface AccountInfo {
+  readonly provider: string;
+  readonly demo_flavor: string | null;
+  readonly status: string;
 }
 
 export interface TriggerContext {

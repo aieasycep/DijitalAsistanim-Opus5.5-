@@ -16,6 +16,8 @@
     "format:check": "prettier --check .",
     "quality-gate": "node scripts/quality-gate/run.ts",
     "test:scripts": "node --test \"scripts/**/*.test.ts\"",
+    "test:integration": "node scripts/integration/run.ts --tier a",
+    "test:integration:c": "node scripts/integration/run.ts --tier c",
     "admin:bootstrap": "node scripts/admin-bootstrap.ts",
     "scan:bundles": "node scripts/security/check-env-split.ts && node scripts/security/scan-bundles.ts",
     "check:env-split": "node scripts/security/check-env-split.ts",

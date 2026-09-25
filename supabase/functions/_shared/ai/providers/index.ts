@@ -53,7 +53,19 @@ export function createAiProviders(
     }
     const voyageKey = raw.VOYAGE_API_KEY?.trim();
     if (voyageKey !== undefined && voyageKey !== '') {
-      adapters.set('voyage', createVoyageProvider({ apiKey: voyageKey, ...fetchOpt }));
+      const appEnv = raw.APP_ENV?.trim();
+      const voyageBase =
+        appEnv === 'production' || appEnv === 'preview'
+          ? ''
+          : (raw.VOYAGE_API_BASE_URL?.trim() ?? '');
+      adapters.set(
+        'voyage',
+        createVoyageProvider({
+          apiKey: voyageKey,
+          ...fetchOpt,
+          ...(voyageBase === '' ? {} : { baseUrl: voyageBase }),
+        }),
+      );
     }
     const sttKey = raw.STT_API_KEY?.trim();
     if (raw.STT_SERVER_PROVIDER?.trim() === 'deepgram' && sttKey !== undefined && sttKey !== '') {

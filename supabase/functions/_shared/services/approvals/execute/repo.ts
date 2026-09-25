@@ -163,6 +163,17 @@ export function supabaseExecuteRepo(system: DbClient): ExecuteRepo {
         .eq('user_id', userId);
       if (error !== null) throw mapDbError(error);
     },
+    async markReplyInsightsDone(userId, threadId) {
+      const { error } = await system
+        .from('insights')
+        .update({ status: 'done', done_at: new Date().toISOString() })
+        .eq('user_id', userId)
+        .eq('entity_type', 'email_thread')
+        .eq('entity_id', threadId)
+        .eq('kind', 'reply_needed')
+        .eq('status', 'open');
+      if (error !== null) throw mapDbError(error);
+    },
     async markInsightDone(userId, insightId) {
       const { error } = await system
         .from('insights')

@@ -1,0 +1,47 @@
+{
+  "value": [
+    {
+      "id": "AAMkAGI2THVSAAB1",
+      "conversationId": "AAQkTHVSAAB1",
+      "internetMessageId": "<AGI2THVSAAB1@kuzeylojistik.example>",
+      "subject": "Toplantı notları",
+      "bodyPreview": "Dünkü toplantının notları ekte.",
+      "from": {
+        "emailAddress": {
+          "name": "Burak Tan",
+          "address": "burak.tan@example.com"
+        }
+      },
+      "sender": {
+        "emailAddress": {
+          "name": "Burak Tan",
+          "address": "burak.tan@example.com"
+        }
+      },
+      "toRecipients": [
+        {
+          "emailAddress": {
+            "name": "Yunus Demir",
+            "address": "yunus.demir@kuzeylojistik.example"
+          }
+        }
+      ],
+      "ccRecipients": [],
+      "replyTo": [],
+      "receivedDateTime": "__minus_10m__",
+      "sentDateTime": "__minus_10m__",
+      "hasAttachments": false,
+      "importance": "normal",
+      "isRead": false,
+      "isDraft": false,
+      "inferenceClassification": "focused",
+      "parentFolderId": "AAMkInbox",
+      "categories": [],
+      "flag": {
+        "flagStatus": "notFlagged"
+      },
+      "webLink": "https://outlook.office365.com/owa/?ItemID=AAMkAGI2THVSAAB1",
+      "internetMessageHeaders": []
+    }
+  ]
+}

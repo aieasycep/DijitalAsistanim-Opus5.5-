@@ -197,6 +197,11 @@ export const serverEnvShape = {
   // Demo mode
   DEMO_MODE: BoolFlag.default(false),
   ALLOW_DEMO_IN_PRODUCTION: BoolFlag.default(false),
+  // Test-only provider base-URL overrides (mock provider servers, TEST_PLAN §6.1); refused in
+  // preview and production by `TEST_ONLY_KEY` below and ignored by the adapters there.
+  APPLE_ID_BASE_URL: HttpUrl.optional(),
+  REVENUECAT_API_BASE_URL: HttpUrl.optional(),
+  VOYAGE_API_BASE_URL: HttpUrl.optional(),
 };
 
 const SERVER_HTTPS_KEYS = [

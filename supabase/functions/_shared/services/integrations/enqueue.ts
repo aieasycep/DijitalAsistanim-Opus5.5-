@@ -218,6 +218,7 @@ export async function enqueueTriage(
   account: Pick<AccountRecord, 'id' | 'user_id'>,
   messageIds: readonly string[],
   origin: 'initial' | 'incremental' | 'resync',
+  correlationId?: string | null,
 ): Promise<string[]> {
   const ids: string[] = [];
   for (let i = 0; i < messageIds.length; i += 50) {
@@ -232,6 +233,7 @@ export async function enqueueTriage(
         accountId: account.id,
         priority: origin === 'incremental' ? 40 : 60,
         maxAttempts: 5,
+        ...(correlationId === undefined || correlationId === null ? {} : { correlationId }),
       }),
     );
   }

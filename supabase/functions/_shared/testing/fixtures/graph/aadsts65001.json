@@ -1,0 +1,9 @@
+{
+  "error": "invalid_grant",
+  "error_description": "AADSTS65001: The user or administrator has not consented to use the application with ID '00000000-0000-0000-0000-000000000000' named 'Dijital Asistan'. Send an interactive authorization request for this user and resource.",
+  "error_codes": [65001],
+  "timestamp": "2026-09-25 09:00:00Z",
+  "trace_id": "4f1c6a0e-0000-4000-8000-000000000001",
+  "correlation_id": "4f1c6a0e-0000-4000-8000-000000000002",
+  "suberror": "consent_required"
+}

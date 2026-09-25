@@ -247,6 +247,8 @@ export async function generateStructured<T>(
   for (let index = 0; index < chain.length; index++) {
     const target = chain[index] as ModelTarget;
     const adapter = runtime.provider(target.provider);
+    // `ai_requests.provider` names the adapter that served the call (`fixture` in tests / demo).
+    const servedBy: ProviderId = adapter?.id ?? target.provider;
     const fallbackFields =
       index === 0 ? {} : { fallbackUsed: true, fallbackFromModel: primary.model };
     const generate = adapter?.generateStructured?.bind(adapter);
@@ -284,7 +286,7 @@ export async function generateStructured<T>(
               (await recordAttempt(runtime.telemetry, {
                 ...withPrompt,
                 ...fallbackFields,
-                provider: target.provider,
+                provider: servedBy,
                 model: target.model,
                 status: telemetryStatus(error),
                 errorCode: error.code,
@@ -309,7 +311,7 @@ export async function generateStructured<T>(
           (await recordAttempt(runtime.telemetry, {
             ...withPrompt,
             ...fallbackFields,
-            provider: target.provider,
+            provider: servedBy,
             model: target.model,
             status: telemetryStatus(error),
             errorCode: error.code,
@@ -331,7 +333,7 @@ export async function generateStructured<T>(
       const requestId = await recordAttempt(runtime.telemetry, {
         ...withPrompt,
         ...fallbackFields,
-        provider: target.provider,
+        provider: servedBy,
         model: target.model,
         status,
         errorCode: validated.ok ? null : validated.reason,

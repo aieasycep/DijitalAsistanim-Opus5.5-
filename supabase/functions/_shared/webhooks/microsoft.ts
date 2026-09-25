@@ -28,6 +28,8 @@ export interface MicrosoftWebhookDeps {
   readonly runtime: IntegrationRuntime;
   readonly webhooks: WebhookLedger;
   readonly log: Logger;
+  /** The request's correlation id, threaded into the enqueued jobs (TEST_PLAN IT-JOB-05). */
+  readonly correlationId?: string;
 }
 
 const LIFECYCLE_BUCKET_MS = 10 * 60_000;
@@ -106,6 +108,7 @@ export async function ingestGraphNotifications(
   let lastJob: string | null = null;
   for (const { state, kind } of groups.values()) {
     lastJob = await deps.runtime.enqueue({
+      ...(deps.correlationId === undefined ? {} : { correlationId: deps.correlationId }),
       type: 'provider_webhook',
       idempotencyKey: `graph_push:${state.connected_account_id}:${kind === 'calendar' ? `calendar:${state.calendar_id ?? 'all'}` : kind}:pending`,
       payload: {
@@ -174,6 +177,7 @@ export async function ingestGraphLifecycle(
       lifecycle_last_at: now.toISOString(),
     });
     lastJob = await deps.runtime.enqueue({
+      ...(deps.correlationId === undefined ? {} : { correlationId: deps.correlationId }),
       type: 'provider_webhook',
       idempotencyKey: `graph_lifecycle:${item.subscriptionId}:${item.lifecycleEvent}:${bucket}`,
       payload: {

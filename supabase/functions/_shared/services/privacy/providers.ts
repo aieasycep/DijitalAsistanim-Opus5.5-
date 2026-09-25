@@ -8,6 +8,7 @@
  *   (which cascades every user-data table).
  */
 import { signAppleClientSecret } from '../../crypto/jwt-sign.ts';
+import { appleIdBase } from '../apple.ts';
 import type { DbClient } from '../../db/clients.ts';
 import { credentialStatus, type RawEnv } from '../../env.ts';
 import { AppError } from '../../errors.ts';
@@ -38,7 +39,7 @@ export function appleRevokerFromEnv(
       const timeout = AbortSignal.timeout(options.timeoutMs ?? 10_000);
       let response: Response;
       try {
-        response = await (options.fetch ?? fetch)(APPLE_REVOKE_ENDPOINT, {
+        response = await (options.fetch ?? fetch)(`${appleIdBase(env)}/auth/revoke`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',

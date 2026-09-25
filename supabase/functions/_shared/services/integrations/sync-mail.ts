@@ -24,6 +24,7 @@ import type { JobResult } from '../../jobs/types.ts';
 import { providerContextFor } from './context.ts';
 import {
   enqueueInitialSync,
+  enqueueInsightRefresh,
   enqueueTriage,
   enqueueWatch,
   type InitialSyncPayload,
@@ -234,6 +235,7 @@ async function listPass(
           account,
           inserted,
           payload.phase === 'resync' ? 'resync' : 'initial',
+          run.correlationId,
         );
       pageToken = page.nextPageToken;
       if (pageToken === null) break;
@@ -282,6 +284,7 @@ async function deltaPass(
         account,
         inserted,
         payload.phase === 'resync' ? 'resync' : 'initial',
+        run.correlationId,
       );
     if (set.deleted.length > 0) await run.rt.store.applyMailChanges(account.id, [], set.deleted);
     pageToken = set.pageToken;
@@ -419,7 +422,8 @@ export async function runMailSync(run: SyncRun, payload: MailSyncPayload): Promi
               : await fetchMetadata(ctx, adapter, set.needsMetadata);
           const messages = [...set.upserts, ...metadata];
           const inserted = await storeMessages(run, ctx, adapter, account, messages);
-          if (inserted.length > 0) await enqueueTriage(run.rt, account, inserted, 'incremental');
+          if (inserted.length > 0)
+            await enqueueTriage(run.rt, account, inserted, 'incremental', run.correlationId);
           if (set.labelChanges.length > 0 || set.deleted.length > 0) {
             const applied = await run.rt.store.applyMailChanges(
               account.id,
@@ -432,6 +436,9 @@ export async function runMailSync(run: SyncRun, payload: MailSyncPayload): Promi
             );
             result.deleted = Number(result.deleted) + applied.deleted;
             result.label_changes = Number(result.label_changes) + applied.label_changes;
+            // Derived rows follow the mailbox (§3.13): insights of deleted / archived threads expire.
+            if (applied.deleted > 0 || applied.label_changes > 0)
+              await enqueueInsightRefresh(run.rt, account, 'mail', 'mail_changes');
           }
           result.upserts = Number(result.upserts) + messages.length;
           pageToken = set.pageToken;

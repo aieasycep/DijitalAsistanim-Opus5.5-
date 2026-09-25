@@ -1,0 +1,65 @@
+{
+  "customer": {
+    "object": "customer",
+    "id": "__customer__",
+    "project_id": "projintegration",
+    "first_seen_at": 1788220800000,
+    "last_seen_at": 1788220800000,
+    "last_seen_platform": "iOS",
+    "last_seen_country": "TR",
+    "active_entitlements": {
+      "object": "list",
+      "items": [
+        {
+          "object": "customer.active_entitlement",
+          "entitlement_id": "entla1b2c3d4e5",
+          "expires_at": 1819756800000
+        }
+      ],
+      "next_page": null
+    },
+    "experiment": null
+  },
+  "subscriptions": [
+    {
+      "object": "subscription",
+      "id": "sub1a2b3c4d5e",
+      "customer_id": "__customer__",
+      "original_customer_id": "__customer__",
+      "product_id": "prod1a2b3c4d5e",
+      "starts_at": 1788220800000,
+      "current_period_starts_at": 1788220800000,
+      "current_period_ends_at": 1819756800000,
+      "gives_access": true,
+      "pending_payment": false,
+      "auto_renewal_status": "will_renew",
+      "status": "active",
+      "total_revenue_in_usd": {
+        "currency": "USD",
+        "gross": 29.99,
+        "commission": 4.5,
+        "tax": 0,
+        "proceeds": 25.49
+      },
+      "presented_offering_id": "default",
+      "entitlements": {
+        "object": "list",
+        "items": [
+          {
+            "object": "entitlement",
+            "id": "entla1b2c3d4e5",
+            "lookup_key": "pro",
+            "display_name": "Pro"
+          }
+        ],
+        "next_page": null
+      },
+      "environment": "production",
+      "store": "app_store",
+      "store_subscription_identifier": "2000000123456789",
+      "ownership": "purchased",
+      "country": "TR",
+      "management_url": "https://apps.apple.com/account/subscriptions"
+    }
+  ]
+}

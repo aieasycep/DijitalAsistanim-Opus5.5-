@@ -55,6 +55,8 @@ export interface ExecuteRepo {
   markReplyDraftSent(userId: string, draftId: string): Promise<void>;
   markThreadAwaitingReply(userId: string, threadId: string): Promise<void>;
   markInsightDone(userId: string, insightId: string): Promise<void>;
+  /** The thread's open `reply_needed` insights after a sent reply (absent in older fakes). */
+  markReplyInsightsDone?(userId: string, threadId: string): Promise<void>;
 }
 
 export interface ExecEnv {
