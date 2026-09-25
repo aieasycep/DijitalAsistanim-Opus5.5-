@@ -1,6 +1,9 @@
 appId: com.dijitalasistan.app.e2e
-name: 'Subflow · demo consent (GET /oauth/demo/authorize grants the requested scopes implicitly)'
+name: 'Subflow · demo consent (GET /oauth/demo/authorize page → İzin Ver with every scope ticked)'
 ---
-# The demo authorize route answers 302 → /oauth/demo/callback → the app scheme, so the Custom Tab /
-# ASWebAuthenticationSession closes on its own; the app then calls POST /integrations/oauth/complete.
+# OAUTH-03 renders the demo consent page in the Custom Tab / ASWebAuthenticationSession. "İzin Ver"
+# posts the ticked scopes → /oauth/demo/callback → the app scheme, so the session closes on its own;
+# the app then calls POST /integrations/oauth/complete.
+- extendedWaitUntil: { visible: '${output.t.web.demoConsent.allow}', timeout: 60000 }
+- tapOn: '${output.t.web.demoConsent.allow}'
 - extendedWaitUntil: { visible: '${output.t.onboarding.connect.connected}', timeout: 60000 }

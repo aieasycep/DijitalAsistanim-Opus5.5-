@@ -12,7 +12,7 @@ import { sha256Hex } from '../../_shared/crypto/hmac.ts';
 import { decryptToken, encryptToken, TokenCipherError } from '../../_shared/crypto/token-cipher.ts';
 import { createLogger, memorySink } from '../../_shared/logging/logger.ts';
 import { createTokenSource } from '../../_shared/providers/token-source.ts';
-import { integrationHarness } from '../../_shared/testing/integrations.ts';
+import { demoConsent, integrationHarness } from '../../_shared/testing/integrations.ts';
 import { USER_A, USER_B } from '../../_shared/testing/jwt.ts';
 import { createApiApp } from '../../api/app.ts';
 import { call, createHarness } from '../../api/testing.ts';
@@ -50,7 +50,7 @@ async function connectThroughApi(userId = USER_A) {
   const authUrl = new URL(JSON.parse(startText).data.auth_url);
 
   const oauth = createOAuthApp({ runtime: ih.runtime, demoEnabled: true, log: ih.runtime.log });
-  const authorize = await oauth.request(`/oauth/demo/authorize${authUrl.search}`);
+  const authorize = await demoConsent(oauth, authUrl);
   assertEquals(authorize.status, 302);
   const callbackUrl = new URL(authorize.headers.get('Location') ?? '');
   const callback = await oauth.request(`/oauth/demo/callback${callbackUrl.search}`);

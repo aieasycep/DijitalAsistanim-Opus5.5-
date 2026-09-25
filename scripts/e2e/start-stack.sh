@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# Tier-A stack for the Maestro run (TEST_PLAN §9.1; T-12.02): `supabase start`, the E2E preparation
-# SQL, the demo seed, `supabase functions serve` (APP_ENV=e2e, DEMO_MODE, fixture AI, fixed clock)
-# and the harness on 127.0.0.1:8790. Writes the values later steps need to "$GITHUB_ENV" when set
+# Tier-A stack for the Maestro run (TEST_PLAN §9.1, §12.2; T-12.02): `supabase start`, the E2E
+# preparation SQL, the demo seed, the E2E scenario seed functions (supabase/seed/e2e/functions.sql),
+# `supabase functions serve` (APP_ENV=e2e, DEMO_MODE, fixture AI, fixed clock) and the harness on
+# 127.0.0.1:8790. Writes the values later steps need to "$GITHUB_ENV" when set
 # (else to stdout). Loopback only; CI-generated secrets never leave the runner.
 set -euo pipefail
 
@@ -23,6 +24,14 @@ PUBLISHABLE_KEY="${SB_PUBLISHABLE_KEY:-${SB_ANON_KEY:-}}"
 
 psql "$DB_URL" -v ON_ERROR_STOP=1 -q -f scripts/e2e/prepare-stack.sql
 DEMO_MODE=true DEMO_DB_URL="$DB_URL" bash scripts/db/seed-demo.sh
+# E2E scenario seeds (TEST_PLAN §12.2): e2e.seed_user / e2e.reset_user for the harness. The file and
+# its functions refuse unless the session carries app.env (set only here, on the loopback stack).
+SEED_APP_ENV=local
+[[ "${CI:-}" == "true" ]] && SEED_APP_ENV=ci
+{
+  printf "set app.env = '%s';\n" "$SEED_APP_ENV"
+  cat supabase/seed/e2e/functions.sql
+} | psql "$DB_URL" -X -v ON_ERROR_STOP=1 -q --single-transaction -f -
 
 CRON_SECRET_VALUE="$(openssl rand -hex 24)"
 ENV_FILE="$OUT/functions.env"

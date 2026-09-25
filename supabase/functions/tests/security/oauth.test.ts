@@ -17,7 +17,11 @@ import { sha256, sha256Hex } from '../../_shared/crypto/hmac.ts';
 import { toBase64Url } from '../../_shared/crypto/encoding.ts';
 import { AppError } from '../../_shared/errors.ts';
 import { jsonResponse, type RecordedCall } from '../../_shared/testing/fetch.ts';
-import { integrationHarness, type IntegrationHarness } from '../../_shared/testing/integrations.ts';
+import {
+  demoConsent,
+  integrationHarness,
+  type IntegrationHarness,
+} from '../../_shared/testing/integrations.ts';
 import { USER_A, USER_B } from '../../_shared/testing/jwt.ts';
 import { completeOAuth, startConnect } from '../../_shared/services/integrations/connect.ts';
 import { DemoOAuth } from '../../_shared/providers/demo/auth.ts';
@@ -94,7 +98,7 @@ async function demoFlow(h: IntegrationHarness, userId = USER_A) {
   });
   const app = createOAuthApp({ runtime: h.runtime, demoEnabled: true, log: h.runtime.log });
   const authUrl = new URL(start.data.auth_url);
-  const authorize = await app.request(`/oauth/demo/authorize${authUrl.search}`);
+  const authorize = await demoConsent(app, authUrl);
   const callbackUrl = new URL(authorize.headers.get('Location') ?? '');
   return { app, deviceNonce, callbackUrl, authUrl };
 }

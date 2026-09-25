@@ -14,9 +14,12 @@
  *
  * Seeding: the canon users are the demo dataset's (`pnpm db:seed:demo`, idempotent: re-running
  * resets their content for the anchor day); other keys get a confirmed Auth user through the GoTrue
- * Admin API. Scenarios other than `canon` / `canon_send_granted` need `e2e.seed_user` from
- * `supabase/seed/e2e/functions.sql` (TEST_PLAN §12.2); without it `/seed` answers 501 so the flow
- * fails visibly instead of running against the wrong data.
+ * Admin API. Every other scenario runs `e2e.seed_user(user, scenario, anchor)` from
+ * `supabase/seed/e2e/functions.sql` (TEST_PLAN §12.2; loaded by start-stack.sh, or here on first
+ * use) in a session carrying `app.env` (`ci` on CI, else `local`): a layer on the canon for the demo
+ * users, a reset + fresh scenario for everyone else. Its `ids` are merged into the response. An
+ * unknown scenario answers 400 `unknown_scenario`; the staging target serves the canon users only
+ * (422 `staging_canon_only`), since it has no database access.
  *
  * Env: SUPABASE_URL, SUPABASE_SECRET_KEY, DA_E2E_DB_URL (psql), CRON_SECRET, DA_FIXED_NOW,
  * E2E_RUN_ID, INBUCKET_URL (default http://127.0.0.1:54324), HARNESS_PORT (default 8790),
@@ -24,7 +27,7 @@
  */
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -50,7 +53,25 @@ export function assertSafeEnv(env: Env): { staging: boolean } {
   }
   if ((env.SUPABASE_SECRET_KEY ?? '') === '')
     throw new Error('harness: SUPABASE_SECRET_KEY is required');
+  if (env.DA_E2E_DB_URL !== undefined && env.DA_E2E_DB_URL !== '') {
+    const db = new URL(env.DA_E2E_DB_URL.replace(/^postgres(ql)?:/, 'http:')).hostname;
+    if (!['127.0.0.1', 'localhost', '::1', '[::1]'].includes(db))
+      throw new Error('harness: DA_E2E_DB_URL must be a loopback address');
+  }
   return { staging };
+}
+
+/** The `app.env` session value the E2E seed requires (TEST_PLAN §12.2): `ci` on CI, else `local`. */
+export function seedAppEnv(env: Env): 'ci' | 'local' {
+  return env.CI === 'true' ? 'ci' : 'local';
+}
+
+/** The response `ids`: the canon ids, overridden by the scenario's own (`e2e.seed_user`). */
+export function mergeIds(scenarioIds: Readonly<Record<string, unknown>>): Record<string, string> {
+  const ids = canonIds();
+  for (const [key, value] of Object.entries(scenarioIds))
+    if (typeof value === 'string') ids[key] = value;
+  return ids;
 }
 
 /** md5('da-demo:' || entity || ':' || slug)::uuid — the demo dataset's deterministic ids. */
@@ -140,7 +161,50 @@ function psql(env: Env, sql: string, params: readonly string[] = []): string {
   const url = env.DA_E2E_DB_URL ?? 'postgresql://postgres:postgres@127.0.0.1:54322/postgres';
   const args = [url, '-v', 'ON_ERROR_STOP=1', '-q', '-At', '-f', '-'];
   params.forEach((value, index) => args.push('-v', `p${String(index + 1)}=${value}`));
-  return execFileSync('psql', args, { encoding: 'utf8', input: `${sql};\n` }).trim();
+  return execFileSync('psql', args, {
+    encoding: 'utf8',
+    input: `${sql};\n`,
+    stdio: ['pipe', 'pipe', 'pipe'],
+  }).trim();
+}
+
+const SEED_FUNCTIONS = join(ROOT, 'supabase', 'seed', 'e2e', 'functions.sql');
+
+/** SQL run as the E2E seed session (`app.env` set, TEST_PLAN §12.2). */
+function seedSql(env: Env, sql: string, params: readonly string[] = []): string {
+  return psql(env, `set app.env = '${seedAppEnv(env)}';\n${sql}`, params);
+}
+
+/** Loads `supabase/seed/e2e/functions.sql` unless start-stack.sh already did. */
+function ensureSeedFunctions(env: Env): void {
+  const present = psql(
+    env,
+    "select to_regprocedure('e2e.seed_user(uuid,text,timestamptz)') is not null",
+  );
+  if (present !== 't') seedSql(env, readFileSync(SEED_FUNCTIONS, 'utf8'));
+}
+
+/** `e2e.seed_user` → the scenario ids, or null for an unknown scenario. */
+function seedScenario(
+  env: Env,
+  userId: string,
+  scenario: string,
+  anchor: string,
+): Record<string, unknown> | null {
+  ensureSeedFunctions(env);
+  try {
+    const out = seedSql(env, "select e2e.seed_user(:'p1'::uuid, :'p2', :'p3'::timestamptz)", [
+      userId,
+      scenario,
+      anchor,
+    ]);
+    return (JSON.parse(out) as { ids?: Record<string, unknown> }).ids ?? {};
+  } catch (error) {
+    const raw = (error as { stderr?: unknown }).stderr;
+    const stderr = typeof raw === 'string' ? raw : Buffer.isBuffer(raw) ? raw.toString('utf8') : '';
+    if (stderr.includes('VALIDATION_FAILED:scenario')) return null;
+    throw error;
+  }
 }
 
 async function admin(env: Env, path: string, init: RequestInit = {}): Promise<Response> {
@@ -177,11 +241,10 @@ async function seed(env: Env, body: { userKey?: string; scenario?: string }, sta
   const runId = env.E2E_RUN_ID ?? 'local';
   const email = emailFor(userKey, runId);
   const anchor = env.DA_FIXED_NOW ?? DEFAULT_ANCHOR;
+  const canonUser = CANON_USERS[userKey] !== undefined;
   if (staging) {
     // The staging E2E project carries the demo canon already (real clock); nothing is reset.
-    if (CANON_USERS[userKey] === undefined) {
-      return { status: 501, body: { error: 'scenario_unavailable', scenario } };
-    }
+    if (!canonUser) return { status: 422, body: { error: 'staging_canon_only', scenario } };
     return {
       status: 200,
       body: {
@@ -192,35 +255,25 @@ async function seed(env: Env, body: { userKey?: string; scenario?: string }, sta
       },
     };
   }
-  if (
-    CANON_USERS[userKey] !== undefined &&
-    (scenario === 'canon' || scenario === 'canon_send_granted')
-  ) {
+  if (canonUser) {
+    // Every canon scenario starts from the freshly re-seeded canon; layers go on top of it.
     execFileSync('bash', [join(ROOT, 'scripts', 'db', 'seed-demo.sh')], {
       env: { ...process.env, DEMO_MODE: 'true', DEMO_DB_URL: env.DA_E2E_DB_URL ?? '' },
       stdio: 'inherit',
     });
   }
   const id = await ensureUser(env, email);
-  if (!(CANON_USERS[userKey] !== undefined && scenario.startsWith('canon'))) {
-    const functions = join(ROOT, 'supabase', 'seed', 'e2e', 'functions.sql');
-    if (!existsSync(functions) && scenario !== 'none') {
-      return { status: 501, body: { error: 'scenario_unavailable', scenario } };
-    }
-    if (existsSync(functions)) {
-      psql(env, readFileSync(functions, 'utf8'));
-      psql(env, "select e2e.seed_user(:'p1'::uuid, :'p2', :'p3'::timestamptz)", [
-        id,
-        scenario,
-        anchor,
-      ]);
-    }
+  let scenarioIds: Record<string, unknown> = {};
+  if (!(canonUser && (scenario === 'canon' || scenario === 'canon_send_granted'))) {
+    const seeded = seedScenario(env, id, scenario, anchor);
+    if (seeded === null) return { status: 400, body: { error: 'unknown_scenario', scenario } };
+    scenarioIds = seeded;
   }
   return {
     status: 200,
     body: {
       user: { key: userKey, email, id },
-      ids: canonIds(),
+      ids: mergeIds(scenarioIds),
       expect: await canonExpect(anchor),
       t: trCatalog(),
     },
@@ -353,8 +406,21 @@ async function handle(
       return { status: 200, body: { rounds: await drain(env, types) } };
     }
     case 'POST /revenuecat/activate': {
+      // The RevenueCat app user id is the Supabase user id (API-BIZ-03); the mock makes the next
+      // REST v2 customer read an active `pro` purchase of `product` (mock-providers/services.ts).
+      const appUserId = psql(env, "select id from auth.users where lower(email) = lower(:'p1')", [
+        emailFor(text(body.userKey) || 'u_free', env.E2E_RUN_ID ?? 'local'),
+      ]);
+      if (appUserId === '') return { status: 404, body: { error: 'unknown_user' } };
       const mock = env.REVENUECAT_MOCK_URL ?? 'http://127.0.0.1:8788/revenuecat';
-      const r = await fetch(`${mock}/__activate`, { method: 'POST', body: JSON.stringify(body) });
+      const r = await fetch(`${mock}/__activate`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          app_user_id: appUserId,
+          product: text(body.product) || 'da_pro_annual',
+        }),
+      });
       return { status: r.status, body: { ok: r.ok } };
     }
     case 'POST /android/share-pdf': {

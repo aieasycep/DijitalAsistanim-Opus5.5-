@@ -116,6 +116,7 @@ export const mock = {
       delay_ms?: number;
       times?: number;
       passthrough?: boolean;
+      match?: string;
     }[],
   ) => mockPost('/__script', { route, responses }),
   async requests(prefix = ''): Promise<MockRequest[]> {

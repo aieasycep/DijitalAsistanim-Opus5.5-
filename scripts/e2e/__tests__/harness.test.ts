@@ -9,6 +9,8 @@ import {
   canonIds,
   demoId,
   emailFor,
+  mergeIds,
+  seedAppEnv,
   trCatalog,
 } from '../harness-server.ts';
 import { PROBES } from '../probes.ts';
@@ -20,6 +22,31 @@ test('the harness refuses anything but a local / CI stack on loopback', () => {
   assert.throws(() => assertSafeEnv({ ...ok, SUPABASE_URL: 'https://x.supabase.co' }), /loopback/);
   assert.throws(() => assertSafeEnv({ ...ok, SUPABASE_SECRET_KEY: '' }), /SECRET_KEY/);
   assert.deepEqual(assertSafeEnv({ E2E_TARGET: 'staging' }), { staging: true });
+});
+
+test('the seed session targets a loopback database with app.env ci | local (TEST_PLAN §12.2)', () => {
+  const ok = { APP_ENV: 'e2e', SUPABASE_URL: 'http://127.0.0.1:54321', SUPABASE_SECRET_KEY: 'k' };
+  const db = 'postgresql://postgres:postgres@127.0.0.1:54322/postgres';
+  assert.deepEqual(assertSafeEnv({ ...ok, DA_E2E_DB_URL: db }), { staging: false });
+  assert.throws(
+    () =>
+      assertSafeEnv({
+        ...ok,
+        DA_E2E_DB_URL: 'postgresql://u:p@db.example.supabase.co:5432/postgres',
+      }),
+    /DA_E2E_DB_URL/,
+  );
+  assert.equal(seedAppEnv({ CI: 'true' }), 'ci');
+  assert.equal(seedAppEnv({}), 'local');
+});
+
+test('scenario ids from e2e.seed_user override the canon ids', () => {
+  const canon = canonIds();
+  const ids = mergeIds({ messageAhmet: 'e2e-ahmet', referralCode: 'ABCDEFG', ignored: 3 });
+  assert.equal(ids.messageAhmet, 'e2e-ahmet');
+  assert.equal(ids.referralCode, 'ABCDEFG');
+  assert.equal(ids.approvalCalendar, canon.approvalCalendar);
+  assert.equal('ignored' in ids, false);
 });
 
 test('demo ids equal the seed formula md5(da-demo:entity:slug)::uuid', () => {
