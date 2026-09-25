@@ -5,7 +5,7 @@ import { KeyValueList, Panel, ReadError, SegmentedLinks, withParam } from '@/com
 import { PageHeader } from '@/components/page-header';
 import { EnumLabel, StatusBadge } from '@/components/status-badge';
 import { Card } from '@/components/ui/card';
-import { AI_ROLES, retiresSoon, roleOf, slotSummary } from '@/lib/ai-features';
+import { retiresSoon, slotRoles, slotSummary } from '@/lib/ai-features';
 import { parseRange } from '@/lib/ranges';
 import { requestTime } from '@/server/clock';
 import { getFormatters } from '@/server/formatters';
@@ -53,7 +53,12 @@ export default async function ModelsPage({
       </>
     );
   }
-  const { configs, plan_profiles: planProfiles, credentials } = result.data;
+  const {
+    configs,
+    plan_profiles: planProfiles,
+    credentials,
+    profile_costs: profileCosts,
+  } = result.data;
   const rows = configs.filter((row) => row.profile === profile);
   const now = requestTime();
   return (
@@ -62,11 +67,18 @@ export default async function ModelsPage({
       <AiTabs active="models" />
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <Panel title={t('routing')} description={t('routingHint')}>
-          <RoutingProfileControl free={planProfiles.free} pro={planProfiles.pro} />
+          <RoutingProfileControl
+            free={planProfiles.free}
+            pro={planProfiles.pro}
+            costs={{
+              balanced: profileCosts.balanced.monthly_usd,
+              lean: profileCosts.lean.monthly_usd,
+            }}
+          />
         </Panel>
         <Panel title={t('providers')}>
           <ul className="flex flex-col gap-2" data-testid="provider-credentials">
-            {(['anthropic', 'openai', 'voyage'] as const).map((provider) => {
+            {(['anthropic', 'openai', 'voyage', 'stt', 'tts'] as const).map((provider) => {
               const state = credentials[provider];
               return (
                 <li key={provider} className="flex items-center justify-between gap-2">
@@ -101,8 +113,8 @@ export default async function ModelsPage({
       >
         <KeyValueList
           columns={3}
-          items={AI_ROLES.map((role) => {
-            const summary = slotSummary(rows.filter((row) => roleOf(row.feature) === role));
+          items={slotRoles(rows).map((role) => {
+            const summary = slotSummary(rows.filter((row) => row.role === role));
             return {
               label: t(`roles.${role}`),
               value: (
@@ -160,7 +172,7 @@ export default async function ModelsPage({
                   <td className="py-1.5 pr-3 text-ink">
                     <EnumLabel group="aiFeature" value={row.feature} />
                   </td>
-                  <td className="py-1.5 pr-3 text-ink">{t(`roles.${roleOf(row.feature)}`)}</td>
+                  <td className="py-1.5 pr-3 text-ink">{t(`roles.${row.role}`)}</td>
                   <td className="py-1.5 pr-3 font-mono text-ink uppercase">{row.tier}</td>
                   <td className="py-1.5 pr-3 font-mono text-ink">
                     {row.primary_target.provider}/{row.primary_target.model}

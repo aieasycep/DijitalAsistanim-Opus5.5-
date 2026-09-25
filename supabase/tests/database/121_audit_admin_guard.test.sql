@@ -76,8 +76,8 @@ select throws_ok(format($$ select admin_api.support_access_authorize(%L, 'pii', 
 select tests.clear_authentication();
 select is((select reveal_count from public.support_access_grants where id = (select id from sa where k = 'grant')), 1,
           'reveal_count counts the reveal');
-select ok(exists (select 1 from public.audit_logs where action = 'pii.reveal' and target_user_id = tests.user_id('audit@guard.test')),
-          'the reveal is audited as pii.reveal');
+select ok(exists (select 1 from public.audit_logs where action = 'support_access.content_viewed' and target_user_id = tests.user_id('audit@guard.test')),
+          'the reveal is audited as support_access.content_viewed (§10)');
 select tests.authenticate_as(md5('da-test-admin:money@guard.test')::uuid, 'aal2');
 select throws_ok(format($$ select admin_api.support_access_grant(%L, '{insights}', 'finance should not have this', 15) $$,
                         tests.user_id('audit@guard.test')),

@@ -56,6 +56,10 @@ const sqlConfig = (extra: Record<string, unknown> = {}) => ({
 const configList = (rowsList: unknown[]) => ({
   rows: rowsList,
   routing_profiles: { free: 'lean', pro: 'balanced' },
+  profile_costs: {
+    balanced: { monthly_usd: 2.2412, coverage: 0.97, pro_users: 40, window_days: 30 },
+    lean: { monthly_usd: null, coverage: null, pro_users: 40, window_days: 30 },
+  },
   provider_health: {},
 });
 
@@ -206,17 +210,30 @@ export const AI_CASES: Cases = {
           sqlConfig(),
           sqlConfig({
             id: uuid(121),
-            feature: 'voice_stt',
+            feature: 'stt',
             role: 'stt',
-            primary_target: { provider: 'deepgram', model: 'nova-3' },
-            fallback_targets: [],
+            primary_target: { provider: 'openai', model: 'stt-model-a', language: 'tr' },
+            fallback_targets: [{ provider: 'deepgram', model: 'nova-3', params: {} }],
           }),
+          sqlConfig({ id: uuid(122), feature: 'tts', role: 'unknown_role' }),
         ]),
     },
     expect(_h, body) {
       const d = data(body);
       const configs = d.configs as Record<string, unknown>[];
-      assertEquals(configs.length, 1, 'targets the contract cannot express are left out');
+      assertEquals(configs.length, 2, 'the seeded voice rows are listed; unknown roles are not');
+      assertEquals(
+        configs.map((c) => [c.role, c.feature]),
+        [
+          ['classifier', 'email_triage'],
+          ['stt', 'stt'],
+        ],
+      );
+      assertEquals(configs[1]?.fallback_targets, [{ provider: 'deepgram', model: 'nova-3' }]);
+      assertEquals(d.profile_costs, {
+        balanced: { monthly_usd: 2.2412, coverage: 0.97, pro_users: 40, window_days: 30 },
+        lean: { monthly_usd: null, coverage: null, pro_users: 40, window_days: 30 },
+      });
       assertEquals(configs[0]?.batch_policy, 'micro_batch');
       assertEquals(configs[0]?.eval_status, 'pending');
       assertEquals(configs[0]?.retires_not_before, '2026-10-15T00:00:00Z');
@@ -229,6 +246,8 @@ export const AI_CASES: Cases = {
         anthropic: 'configured',
         openai: 'external_credential_required',
         voyage: 'configured',
+        stt: 'external_credential_required',
+        tts: 'external_credential_required',
       });
     },
   },
@@ -284,7 +303,7 @@ export const AI_CASES: Cases = {
       assertEquals(argsOf(h, 'authorize'), { p_permission: 'ai.models.write' });
       assertEquals(argsOf(h, 'prompt_version_get'), { p_key: 'reply_draft', p_version: 2 });
       const audit = argsOf(h, 'audit_write') ?? {};
-      assertEquals([audit.p_action, audit.p_target_id], ['admin.ai.model_probed', uuid(120)]);
+      assertEquals([audit.p_action, audit.p_target_id], ['ai_model_config.tested', uuid(120)]);
       const names = h.rpcNames();
       assert(names.indexOf('authorize') < names.indexOf('audit_write'));
       const d = data(body);
@@ -345,7 +364,8 @@ export const AI_CASES: Cases = {
       assertEquals(argsOf(h, 'ai_feedback_list')?.p_filter, { prompt_version_id: uuid(107) });
       const row = rows(body)[0] ?? {};
       assertEquals(row.prompt_version, '3');
-      assert(!('has_comment' in row) && !('comment' in row));
+      assertEquals(row.has_comment, true, '"Yorum var · gizli"');
+      assert(!('comment' in row), 'the text only through the audited reveal');
     },
   },
   'POST /ai/feedback/:id/reveal': {
@@ -516,7 +536,7 @@ export const AI_CASES: Cases = {
       assertEquals(d.cases, 2);
       assert(Number(d.schema_pass_rate) >= 0 && Number(d.schema_pass_rate) <= 1);
       const audit = argsOf(h, 'audit_write') ?? {};
-      assertEquals([audit.p_action, audit.p_target_id], ['admin.prompt.tested', uuid(203)]);
+      assertEquals([audit.p_action, audit.p_target_id], ['prompt.tested', uuid(203)]);
     },
   },
   'POST /ai/prompts/:key/versions/:v/activate': {

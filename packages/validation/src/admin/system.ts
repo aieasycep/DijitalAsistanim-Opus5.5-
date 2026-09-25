@@ -97,8 +97,19 @@ export const AppVersionsResponse = Success(
         installations: z.int().min(0),
         sync_error_rate: z.number().min(0).max(1),
         below_minimum: z.boolean(),
+        /** Sentry crash-free rates for the release (0–1); `null` when crash data is unavailable. */
+        crash_free_sessions: z.number().min(0).max(1).nullable(),
+        crash_free_users: z.number().min(0).max(1).nullable(),
       }),
     ),
+    /**
+     * Crash data source (BACKOFFICE_PLAN §6.22): `external_credential_required` without the Sentry
+     * API credentials (names only), `unavailable` when the Sentry API call failed.
+     */
+    crash_reporting: z.object({
+      status: z.enum(['configured', 'external_credential_required', 'unavailable']),
+      credential_keys: z.array(z.string()),
+    }),
   }),
 );
 export const CronHealthResponse = Success(

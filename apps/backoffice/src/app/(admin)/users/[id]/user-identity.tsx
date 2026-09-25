@@ -9,10 +9,19 @@ import { MaskedValue } from '@/components/masked-value';
 import { Button } from '@/components/ui/button';
 
 /**
- * Header identity (§6.3): the full user id with a copy button and the account email, hidden until
- * an audited reveal (`POST /users/:id/reveal {field:'email'}`, `users.pii.reveal`, reason, 60 s).
+ * Header identity (§6.3, §5.5): the full user id with a copy button, the SQL-masked display name
+ * (`Y*** K.`) and account email (`yu***@gmail.com`), each revealed only through its own audited
+ * reveal (`POST /users/:id/reveal {field:'display_name'|'email'}`, `users.pii.reveal`, reason, 60 s).
  */
-export function UserIdentity({ userId }: { userId: string }) {
+export function UserIdentity({
+  userId,
+  emailMasked,
+  nameMasked,
+}: {
+  userId: string;
+  emailMasked: string | null;
+  nameMasked: string | null;
+}) {
   const t = useTranslations('backoffice.userDetail');
   const [copied, setCopied] = useState(false);
   return (
@@ -45,10 +54,27 @@ export function UserIdentity({ userId }: { userId: string }) {
           </span>
         ) : null}
       </span>
-      <span className="flex items-center gap-1">
+      {nameMasked === null ? null : (
+        <span className="flex items-center gap-1" data-testid="user-name">
+          <span className="text-bo-meta text-ink-3">{t('name')}</span>
+          <MaskedValue
+            masked={nameMasked}
+            label={t('name')}
+            reveal={{
+              permission: 'users.pii.reveal',
+              reveal: (envelope) =>
+                revealAction(
+                  { route: 'POST /users/:id/reveal', id: userId, field: 'display_name' },
+                  envelope,
+                ),
+            }}
+          />
+        </span>
+      )}
+      <span className="flex items-center gap-1" data-testid="user-email">
         <span className="text-bo-meta text-ink-3">{t('email')}</span>
         <MaskedValue
-          masked={t('emailHidden')}
+          masked={emailMasked ?? t('emailHidden')}
           label={t('email')}
           reveal={{
             permission: 'users.pii.reveal',

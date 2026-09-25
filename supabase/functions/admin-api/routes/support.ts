@@ -25,6 +25,7 @@ function ticketRow(t: Json) {
     assignee: str(t.assignee),
     created_at: t.created_at,
     contact_email_masked: str(t.contact_email_masked),
+    user_id: str(t.user_id),
   };
 }
 

@@ -9,6 +9,7 @@ import { getFormatters } from '@/server/formatters';
 import { readAdmin } from '@/server/read';
 import { userIdFrom } from '../data';
 import { AccountActions } from '@/components/account-actions';
+import { UserPiiValue } from '../user-pii-value';
 
 /*
  * User › Entegrasyonlar (BACKOFFICE_PLAN §6.3b, M§52): per connected account the provider, masked
@@ -61,6 +62,20 @@ export default async function UserIntegrationsPage({
           <KeyValueList
             columns={3}
             items={[
+              {
+                label: t('mailbox'),
+                value:
+                  account.email_masked === null ? (
+                    '—'
+                  ) : (
+                    <UserPiiValue
+                      userId={id}
+                      field={`integration_email:${account.account_id}`}
+                      masked={account.email_masked}
+                      label={t('mailbox')}
+                    />
+                  ),
+              },
               {
                 label: t('provider'),
                 value: <EnumLabel group="provider" value={account.provider} />,

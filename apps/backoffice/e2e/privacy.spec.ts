@@ -12,11 +12,11 @@ test.describe('privacy operations', () => {
   }) => {
     await signInAs(page, request, 'operations');
     await page.goto('/audit');
-    await expect(page.getByRole('table').first()).toContainText('admin.flag.updated');
+    await expect(page.getByRole('table').first()).toContainText('flag.updated');
 
     await page.goto('/audit?f.result=denied');
     await expect(page.getByRole('table').first()).toContainText('admin.permission_denied');
-    await expect(page.getByRole('table').first()).not.toContainText('admin.flag.updated');
+    await expect(page.getByRole('table').first()).not.toContainText('flag.updated');
 
     await page.getByRole('link', { name: '24 saat' }).click();
     await expect(page.getByTestId('audit-verified').first()).toContainText(
@@ -25,7 +25,7 @@ test.describe('privacy operations', () => {
 
     await page.goto(`/audit?id=${uid('eeee', 2)}`);
     const detail = page.locator('#main').getByTestId('audit-detail');
-    await expect(detail).toContainText('admin.user.force_sync');
+    await expect(detail).toContainText('user.force_sync');
     await expect(detail).toContainText('Kullanıcı senkron sorunu bildirdi');
     await expect(page.getByRole('button', { name: /Sil|Düzenle/ })).toHaveCount(0);
   });
@@ -49,7 +49,7 @@ test.describe('privacy operations', () => {
       (await mockCalls(request)).some((c) => c.path === `/data-requests/export/${EXPORT_ID}/retry`),
     ).toBe(true);
     expect((await mockAudit(request)).at(-1)).toMatchObject({
-      action: 'admin.data_request.retried',
+      action: 'data_request.retried',
     });
   });
 });

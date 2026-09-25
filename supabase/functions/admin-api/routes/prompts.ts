@@ -140,7 +140,7 @@ async function dryRun(ctx: RouteCtx) {
     grounding_pass_rate: total === 0 ? 0 : outcomes.filter((o) => o.groundingPass).length / total,
   };
   await auditWrite(ctx.db, {
-    action: 'admin.prompt.tested',
+    action: 'prompt.tested',
     targetType: 'prompt_version',
     targetId: str(v.id),
     reason: `prompt dry run on synthetic fixtures (${body.fixture_set})`,

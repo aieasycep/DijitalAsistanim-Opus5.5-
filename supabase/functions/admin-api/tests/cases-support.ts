@@ -40,7 +40,8 @@ export const SUPPORT_CASES: Cases = {
     expect(h, body) {
       assertEquals(argsOf(h, 'tickets_list')?.p_filter, { source: 'web', q: 'DA-7K3M9Q' });
       const row = rows(body)[0] ?? {};
-      assert(!('user_id' in row) && !('priority' in row));
+      assertEquals(row.user_id, uuid(2), 'the matched user links to the user detail');
+      assert(!('priority' in row));
       assertEquals(row.reference, 'DA-7K3M9Q');
     },
   },

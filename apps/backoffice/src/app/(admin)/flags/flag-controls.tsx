@@ -240,6 +240,7 @@ export function FlagActions({ flag }: { flag: Flag }) {
         <ActionButton
           route="POST /flags/:key/kill"
           params={{ key: flag.key }}
+          body={{ on: true }}
           label={t('kill')}
           variant="destructive"
           tone="destructive"
@@ -251,10 +252,12 @@ export function FlagActions({ flag }: { flag: Flag }) {
           testId="flag-kill"
         />
       ) : (
+        // Kill switch off (§6.17, L2 with a reason): `enabled` back to true, targeting kept,
+        // audited as flag.kill_switch_off.
         <ActionButton
-          route="PATCH /flags/:key"
+          route="POST /flags/:key/kill"
           params={{ key: flag.key }}
-          body={{ enabled: true }}
+          body={{ on: false }}
           label={t('enable')}
           disabled={archived}
           disabledReason={t('archivedHint')}

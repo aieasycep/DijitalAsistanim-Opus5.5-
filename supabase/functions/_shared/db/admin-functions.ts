@@ -141,7 +141,10 @@ export const ADMIN_API_FN = {
   command_search: fn('command_search', '(p_q text) returns jsonb'),
   correlation_trace: fn('correlation_trace', '(p_correlation_id uuid) returns jsonb'),
   cron_status: fn('cron_status', '() returns jsonb'),
-  dashboard_metrics: fn('dashboard_metrics', '(p_range text) returns jsonb'),
+  dashboard_metrics: fn(
+    'dashboard_metrics',
+    "(p_range text, p_platform text default 'all') returns jsonb",
+  ),
   dashboard_series: fn('dashboard_series', '(p_metric text, p_range text) returns jsonb'),
   data_request_cancel: fn(
     'data_request_cancel',
@@ -236,6 +239,7 @@ export const ADMIN_API_FN = {
     'job_retry_bulk',
     '(p_type public.job_type, p_status public.job_status, p_reason text, p_max integer default 100, p_from timestamptz default null, p_to timestamptz default null) returns jsonb',
   ),
+  job_retry_selected: fn('job_retry_selected', '(p_job_ids uuid[], p_reason text) returns jsonb'),
   jobs_list: fn(
     'jobs_list',
     "(p_page integer default 1, p_page_size integer default 25, p_sort text default null, p_filter jsonb default '{}'::jsonb) returns jsonb",
@@ -254,6 +258,10 @@ export const ADMIN_API_FN = {
   notification_send_test: fn(
     'notification_send_test',
     '(p_user uuid, p_reason text, p_installation uuid default null) returns jsonb',
+  ),
+  notification_test_preview: fn(
+    'notification_test_preview',
+    '(p_user uuid, p_installation uuid default null) returns jsonb',
   ),
   notifications_metrics: fn(
     'notifications_metrics',

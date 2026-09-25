@@ -65,10 +65,22 @@ export default async function UserLayout({
       <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex min-w-0 flex-col gap-2">
           <h1 className="text-bo-page-title text-ink">{t('title')}</h1>
-          <UserIdentity userId={id} />
+          <UserIdentity
+            userId={id}
+            emailMasked={overview.data.email_masked}
+            nameMasked={overview.data.display_name_masked}
+          />
           <div className="flex flex-wrap items-center gap-2" aria-label={t('badges')}>
             <StatusBadge group="plan" value={overview.data.plan} />
             <StatusBadge group="userState" value={overview.data.account_status} />
+            {overview.data.is_internal ? (
+              <span
+                data-testid="badge-internal"
+                className="rounded-pill bg-surface-sunken px-2 py-0.5 text-badge text-ink-2 uppercase"
+              >
+                {t('internal')}
+              </span>
+            ) : null}
             {anyActiveGrant ? (
               <span className="rounded-pill bg-tone-warning-soft px-2 py-0.5 text-badge text-tone-warning-text uppercase">
                 {t('supportAccessActive')}

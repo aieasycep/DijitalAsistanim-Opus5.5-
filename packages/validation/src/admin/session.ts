@@ -14,6 +14,7 @@ import {
   Confirm,
   EmptyAdminBody,
   MetricsRange,
+  SensitiveBody,
   Success,
 } from './common.ts';
 
@@ -162,3 +163,17 @@ export const RecoveryCodesResponse = Success(
 );
 export const StepUpBody = EmptyAdminBody;
 export const StepUpResponse = Success(z.object({ step_up_valid_until: IsoDateTime }));
+
+/**
+ * Backup MFA factor (BACKOFFICE_PLAN §3.3 "Yedek cihaz ekle"): at most two verified TOTP factors.
+ * The backoffice enrols and verifies the factor with the admin's own Auth session; admin-api then
+ * confirms it server-side (verified, within the limit) and audits `admin.mfa_factor_added`.
+ * Removing one needs step-up and at least one other verified factor (`admin.mfa_factor_removed`).
+ */
+export const MAX_ADMIN_MFA_FACTORS = 2;
+export const MfaFactorConfirmBody = z.strictObject({ factor_id: Uuid });
+export const MfaFactorParams = z.strictObject({ factorId: Uuid });
+export const MfaFactorRemoveBody = SensitiveBody;
+export const MfaFactorResponse = Success(
+  z.object({ factor_id: Uuid, verified_factors: z.int().min(0).max(MAX_ADMIN_MFA_FACTORS) }),
+);

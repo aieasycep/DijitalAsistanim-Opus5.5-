@@ -357,6 +357,16 @@
       "permission_denials": "Yetki reddi",
       "webhook_signature_failures": "Webhook imza hatası",
       "byAdmin": "Yöneticiye göre olaylar"
+    },
+    "platform": {
+      "label": "Platform",
+      "all": "Tümü",
+      "ios": "iOS",
+      "android": "Android"
+    },
+    "rollup": {
+      "stale": "Son güncelleme {relative}.",
+      "never": "Özet metrikler henüz hesaplanmadı."
     }
   },
   "charts": {
@@ -434,7 +444,11 @@
     "workerLag": "İşçi gecikmesi: {lag}",
     "ran": "Yoklamalar çalıştırıldı",
     "running": "Çalışıyor…",
-    "runNow": "Şimdi yokla"
+    "runNow": "Şimdi yokla",
+    "crashNotConfigured": "Sentry yapılandırılmadı — Harici kimlik bilgisi gerekli",
+    "crashUnavailable": "Çökme verisi alınamadı",
+    "crashFreeSessions": "Çökmesiz oturum",
+    "crashFreeUsers": "Çökmesiz kullanıcı"
   },
   "enums": {
     "jobStatus": {
@@ -752,7 +766,12 @@
       "openai": "OpenAI",
       "voyage": "Voyage",
       "fixture": "Fixture",
-      "native": "Cihaz üzerinde"
+      "native": "Cihaz üzerinde",
+      "stt": "STT (ses → metin)",
+      "tts": "TTS (metin → ses)",
+      "deepgram": "Deepgram",
+      "azure_speech": "Azure Speech",
+      "elevenlabs": "ElevenLabs"
     },
     "credential": {
       "configured": "Yapılandırıldı",
@@ -1030,7 +1049,11 @@
         "deviceLabel": "{platform} · {version} · {token}",
         "confirm": "Test bildirimi gönder",
         "queued": "Test bildirimi kuyruğa alındı. Makbuz bekleniyor.",
-        "deferred": "Kullanıcı sessiz saatlerde. Test bildirimi {time} itibarıyla gönderilecek."
+        "deferred": "Kullanıcı sessiz saatlerde. Test bildirimi {time} itibarıyla gönderilecek.",
+        "previewLoading": "Kullanıcının yerel saati kontrol ediliyor…",
+        "previewFailed": "Sessiz saat önizlemesi yüklenemedi; test bildirimi yine de sessiz saatlere uyar.",
+        "quietHours": "Kullanıcının yerel saati {time}, sessiz saatler içinde. Test bildirimi sessiz saatler bittiğinde ({end}) gönderilecek.",
+        "localTime": "Kullanıcının yerel saati {time} ({zone}). Test bildirimi hemen gönderilir."
       },
       "supportAccess": {
         "menu": "Destek erişimi iste…",
@@ -1113,7 +1136,8 @@
       "off": "kapalı",
       "recentJobs": "Son senkron işleri",
       "noJobs": "Senkron işi yok.",
-      "viewJobs": "Bu hesabın işlerini gör"
+      "viewJobs": "Bu hesabın işlerini gör",
+      "mailbox": "Posta kutusu"
     },
     "usage": {
       "ai": "AI kullanımı",
@@ -1216,7 +1240,9 @@
       "span": "{start} – {end}",
       "views": "{count} görüntüleme",
       "revokedAt": "sonlandırıldı {time}"
-    }
+    },
+    "name": "Ad",
+    "internal": "Dahili"
   },
   "accountActions": {
     "forceSync": "Senkronu başlat",
@@ -1453,7 +1479,8 @@
       "platform": "Platform / sürüm",
       "contact": "İletişim e-postası",
       "assignee": "Atanan",
-      "created": "Oluşturulma"
+      "created": "Oluşturulma",
+      "user": "Kullanıcı"
     },
     "filters": {
       "status": "Durum",
@@ -1610,6 +1637,21 @@
       "chainHint": "Korelasyon kimliği {id}",
       "noChain": "Bu korelasyon için kayıt yok.",
       "open": "Aç"
+    },
+    "live": {
+      "toggle": "Canlı (10 sn)",
+      "on": "Liste her 10 saniyede yenileniyor.",
+      "failed": "Canlı güncelleme başarısız; 10 saniye sonra tekrar denenecek."
+    },
+    "selection": {
+      "count": "{count} seçildi",
+      "retry": "Seçilenleri tekrar dene…",
+      "title": "Seçilen {count} işi tekrar dene",
+      "effects": "Seçilen {count} işten başarısız ve ölü mektup olanlar kuyruğa alınır; her biri tek tek yeniden deneme kurallarından geçer, uygun olmayanlar atlanır.",
+      "done": "{retried} iş kuyruğa alındı, {skipped} iş atlandı.",
+      "clear": "Seçimi temizle",
+      "row": "{id} işini seç",
+      "page": "Bu sayfadaki işleri seç"
     }
   },
   "notifications": {
@@ -1740,7 +1782,9 @@
       "reasoning": "Akıl yürütme modeli",
       "embedding": "Embedding modeli",
       "stt": "STT",
-      "tts": "TTS"
+      "tts": "TTS",
+      "assistant": "Asistan modeli",
+      "probe": "Test modeli"
     },
     "exceptions": "{count} özellik farklı model kullanıyor",
     "routingTable": "Özellik yönlendirmesi",
@@ -1793,7 +1837,10 @@
     "testEffects": "Sabit, kullanıcı verisi içermeyen bir test istemi birincil modelle çalıştırılır ve yönetici testi olarak kaydedilir.",
     "testResult": "Test tamamlandı: {latency} ms, şema {schema}.",
     "schemaPass": "geçerli",
-    "schemaFail": "geçersiz"
+    "schemaFail": "geçersiz",
+    "costFor": "Tipik Pro kullanıcı · {profile}",
+    "costUnknown": "Yeterli veri yok",
+    "switchCost": "Tipik bir Pro kullanıcının son 30 güne göre tahmini aylık AI maliyeti: Dengeli {balanced}, Tasarruflu {lean}."
   },
   "prompts": {
     "title": "Prompt Yönetimi",
@@ -1886,13 +1933,14 @@
     "negative": "Olumsuz",
     "rate": "Olumlu oranı",
     "caption": "AI geri bildirimleri",
-    "hidden": "Gizli",
+    "hidden": "Yorum var · gizli",
     "columns": {
       "time": "Zaman",
       "rating": "Değerlendirme",
       "reason": "Neden",
       "comment": "Yorum"
-    }
+    },
+    "noComment": "Yorum yok"
   },
   "subscriptions": {
     "title": "Abonelikler",
@@ -2321,7 +2369,32 @@
       "othersDone": "{count} oturum kapatıldı",
       "all": "Her yerden çıkış yap",
       "newCodes": "Yeni kurtarma kodları",
-      "newCodesHint": "Kodları güvenli bir yere kaydedin; bu sayfadan ayrıldığınızda tekrar gösterilmez."
+      "newCodesHint": "Kodları güvenli bir yere kaydedin; bu sayfadan ayrıldığınızda tekrar gösterilmez.",
+      "backup": {
+        "title": "Kimlik doğrulayıcılar",
+        "hint": "En fazla iki cihaz. Yedek cihaz, birincil cihaz kaybolduğunda giriş yapmanı sağlar.",
+        "unnamed": "Cihaz {index}",
+        "since": "Eklendi: {date}",
+        "remove": "Kaldır",
+        "lastFactor": "Son kimlik doğrulayıcı kaldırılamaz.",
+        "removeTitle": "Kimlik doğrulayıcıyı kaldır",
+        "removeEffects": "Bu cihazdaki kodlar artık kabul edilmez. Diğer kimlik doğrulayıcın çalışmaya devam eder.",
+        "removed": "Kimlik doğrulayıcı kaldırıldı.",
+        "add": "Yedek cihaz ekle",
+        "limit": "En fazla {max} kimlik doğrulayıcı eklenebilir.",
+        "enrolTitle": "Yedek cihaz ekle",
+        "enrolHint": "Google Authenticator, 1Password veya benzeri bir uygulamayla QR kodu tara, ardından 6 haneli kodu gir.",
+        "qrAlt": "Yedek cihaz için QR kodu",
+        "manual": "Kodu elle gir: {secret}",
+        "code": "Doğrulama kodu",
+        "cancel": "Vazgeç",
+        "verify": "Doğrula",
+        "added": "Yedek cihaz eklendi.",
+        "codeFormat": "Kod 6 haneli olmalı.",
+        "codeInvalid": "Kod doğrulanamadı. Tekrar dene.",
+        "max": "En fazla iki kimlik doğrulayıcı eklenebilir.",
+        "unavailable": "Kimlik doğrulayıcılar şu anda yüklenemedi."
+      }
     },
     "system": {
       "config": "Uygulama ayarları",

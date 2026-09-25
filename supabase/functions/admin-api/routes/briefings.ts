@@ -93,6 +93,27 @@ async function testPush(ctx: RouteCtx) {
   };
 }
 
+/** The push-test dialog's quiet-hours preview (R-13: a test never bypasses quiet hours). */
+async function testPushPreview(ctx: RouteCtx) {
+  const query = ctx.query as z.infer<typeof A.AdminTestPushPreviewQuery>;
+  const out = obj(
+    await ctx.db.call('notification_test_preview', {
+      p_user: query.user_id,
+      p_installation: query.installation_id ?? null,
+    }),
+  );
+  return {
+    data: {
+      timezone: str(out.timezone) ?? 'Europe/Istanbul',
+      local_time: str(out.local_time) ?? '00:00',
+      in_quiet_hours: out.in_quiet_hours === true,
+      quiet_hours_end_local: str(out.quiet_hours_end_local),
+      deferred_until: str(out.deferred_until),
+      active_devices: count(out.active_devices),
+    },
+  };
+}
+
 export const briefingsRoutes = defineRoutes({
   'GET /briefings/metrics': {
     rate: 'R',
@@ -157,4 +178,5 @@ export const briefingsRoutes = defineRoutes({
   },
   'GET /notifications': { rate: 'R', handle: notificationsList },
   'POST /notifications/test-push': { rate: 'X', handle: testPush },
+  'GET /notifications/test-push/preview': { rate: 'R', handle: testPushPreview },
 });

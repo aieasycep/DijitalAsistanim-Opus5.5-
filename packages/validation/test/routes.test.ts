@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { z } from 'zod';
 import { ADMIN_PERMISSION_VALUES, type AdminRouteContract } from '../src/admin/common.ts';
+import {
+  AUDIT_ACTIONS,
+  isCatalogueAction,
+  isKnownAuditAction,
+} from '../src/admin/audit-actions.ts';
 import { adminRoutes } from '../src/admin/routes.ts';
 import { routes } from '../src/api/routes.ts';
 import { publicRoutes } from '../src/public/routes.ts';
@@ -187,9 +192,19 @@ describe('admin-api route access rules', () => {
       const key = `${route.method} ${route.path}`;
       const permissionGated = permissions.has(route.access.require);
       if (route.method === 'GET' || !permissionGated || readLike.has(key)) continue;
-      expect(route.audit, key).toMatch(/^admin\./);
+      expect(route.audit, key).toBeDefined();
       expect(route.idempotency, key).toBe('header');
     }
+  });
+
+  it('declares only BACKOFFICE_PLAN §10 catalogue actions (audit names match the catalogue)', () => {
+    const outside = list
+      .filter((route) => route.audit !== undefined && !isCatalogueAction(route.audit))
+      .map((route) => `${route.method} ${route.path}: ${String(route.audit)}`);
+    expect(outside).toEqual([]);
+    expect(new Set(AUDIT_ACTIONS).size).toBe(AUDIT_ACTIONS.length);
+    expect(isKnownAuditAction('system.referral.flagged')).toBe(true);
+    expect(isKnownAuditAction('admin.user.disabled')).toBe(false);
   });
 
   it('protects the step-up permissions (§12.2)', () => {

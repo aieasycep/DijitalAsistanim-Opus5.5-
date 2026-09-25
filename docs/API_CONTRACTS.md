@@ -4211,6 +4211,7 @@ NotificationPayload = z.object({ user_id: Uuid, notification_id: Uuid.optional()
   - a permission denial on a sensitive mutation is audited as `denied`
 - **Rate limits:** §2.9.
 - **Common errors:** `AUTH_REQUIRED`, `AAL2_REQUIRED`, `FORBIDDEN {permission}`, `VALIDATION_FAILED`, `NOT_FOUND`, `STATE_CONFLICT`, `IDEMPOTENCY_REPLAY`, `RATE_LIMITED`, `INTERNAL_ERROR`.
+- **Missing credentials and partial outcomes (decision, R-20: this document owns status codes):** a missing server credential is `503 EXTERNAL_CREDENTIAL_REQUIRED {feature, credential_keys}` (§2 error table), never `424`; an operation whose SQL step succeeded but whose follow-up external step failed (Auth ban/unban, factor deletion) is `503 SERVICE_UNAVAILABLE {partial: true, step}`, retryable with the same key (the retry resumes the external step), never `207`. The audit row is a `failure` with `details.partial = true` (BACKOFFICE_PLAN §2.5, §10).
 - **Retry:** the backoffice retries reads twice. Mutations are never retried automatically; the user retries with the same key.
 - **Tests:** Playwright M§103 flows against local Supabase, a Deno RBAC matrix test (every route × every role → allow/deny exactly per §12.2), pgTAP proving `admin_api.*` rejects `aal1` and non-admins, and an audit-immutability test.
 
@@ -4282,20 +4283,22 @@ Each module block states its capability, routes, input and output schemas, DB ef
 #### ADM-00 · Session and preferences (M§48, M§72)
 | Route | Perm | Input | Output / effects | Audit |
 |---|---|---|---|---|
-| `POST /session/start` | any active admin at `aal2` | `{}` | Creates or refreshes the `admin_sessions` row for the JWT `session_id` (absolute expiry = now + 12 h); returns `{admin:{id,email,role,mfa_enrolled}, permissions[], idle_expires_at, absolute_expires_at}` | `admin.session.started` |
+| `POST /session/start` | any active admin at `aal2` | `{}` | Creates or refreshes the `admin_sessions` row for the JWT `session_id` (absolute expiry = now + 12 h); returns `{admin:{id,email,role,mfa_enrolled}, permissions[], idle_expires_at, absolute_expires_at}` | `admin.login` |
 | `POST /session/heartbeat` | any | `{}` | Updates `last_seen_at` (throttled to once per 60 s) → `{idle_expires_at}`; an expired session → 401 `admin_session_expired` plus revoke | – |
 | `GET /me` | any (own) | Header `x-da-activity: user\|background`; background polling never extends the idle window | `admin_api.admin_me(p_activity)` → `{admin:{id, email, display_name, role, status, mfa_enrolled, mfa_factor_count, recovery_codes_remaining}, permissions[], session:{id, idle_expires_at, absolute_expires_at, step_up_valid_until\|null}, preferences}`. The BO SessionWatcher and the cosmetic UI gating read it; every route still re-checks its permission | – |
 | `GET /me/sessions` | any (own) | – | `admin_api.sessions_list_own` (BACKOFFICE_PLAN §16 #41): only the caller's `admin_sessions`, newest first, at most 20, as `{id, current: boolean, aal, created_at, last_activity_at, idle_expires_at, absolute_expires_at, ended_at\|null, end_reason\|null, browser_family}`. `browser_family` is derived from `user_agent` (e.g. "Chrome 153 · macOS"). `ip_hash`, the raw user agent and other admins' rows are never returned | – |
-| `POST /session/logout` | any (own) | `{}` | `admin_api.admin_session_end` with scope `current` ends the current row (`end_reason='logout'`), then `auth.signOut({scope:'local'})`; the BO clears its cookies | `admin.session.logout` |
-| `POST /session/logout-all` | any (own) | `{confirm:true, scope?: 'all'\|'others'}` (default `all`) | `all`: revokes all of this admin's `admin_sessions` (`end_reason='revoked_all'`) and calls `auth.admin.signOut(jwt,'global')`. `others`: ends every row except the current one (`end_reason='logout_others'`) and calls `signOut(jwt,'others')` | `admin.session.logout_all {scope}` |
+| `POST /session/logout` | any (own) | `{}` | `admin_api.admin_session_end` with scope `current` ends the current row (`end_reason='logout'`), then `auth.signOut({scope:'local'})`; the BO clears its cookies | `admin.logout` |
+| `POST /session/logout-all` | any (own) | `{confirm:true, scope?: 'all'\|'others'}` (default `all`) | `all`: revokes all of this admin's `admin_sessions` (`end_reason='revoked_all'`) and calls `auth.admin.signOut(jwt,'global')`. `others`: ends every row except the current one (`end_reason='logout_others'`) and calls `signOut(jwt,'others')` | `admin.logout_all {scope}` |
 | `GET /preferences` / `PATCH /preferences` | any (own) | `{theme?:'light'\|'dark', locale?:'tr'\|'en', timezone?: IANA zone name, density?:'comfortable'\|'compact', table_prefs?:record, dashboard_range?:'24h'\|'7d'\|'30d'\|'90d', recent_items?: ≤ 10 × {type, id, label (masked)}, sidebar_collapsed?: boolean}`; every field optional, unknown keys → 422 | `admin_preferences` upsert through `admin_api.admin_preferences_get` / `admin_preferences_set` (light is the default; the columns beyond `theme`, `locale`, `table_prefs` are BACKOFFICE_PLAN §16 #4). The Dashboard range control persists `dashboard_range` here (not audited) | – |
 | `POST /auth/preflight` | BFF only (server-to-server, `ADMIN_BFF_SECRET`) | `{email_hash, ip_hash}` with `email_hash = HMAC(PII_LOOKUP_PEPPER, lower(email))` | `{allowed, retry_after?, locked?}`. When allowed, the BO calls `signInWithOtp({email, options:{shouldCreateUser:false}})` server-side to send the 6-digit code (R-08). Lockout after repeated failures | – |
 | `POST /auth/attempt` | BFF only | `{email_hash, ip_hash, kind:'email_otp'\|'mfa', success}` | Records the attempt for throttling and lockout; the response is the same for unknown emails | `admin.login_failed` (failures only) |
 | `GET /auth/status` | `aal1` admin JWT | – | `{is_admin, status, mfa_verified_factors}`. For a non-admin or disabled identity the BO signs out ("Bu hesapla yönetim paneline giriş yapılamaz.") | – |
-| `POST /auth/invite/redeem` | BFF only | `{token}` | Verifies `invite_token_hash`, expiry and `status='invited'`, and marks the invite accepted. The BO then sends the regular email one-time code to that address, then runs TOTP enrolment. No password is ever set | `admin.invite_accepted` |
+| `POST /auth/invite/redeem` | BFF only | `{token}` | Verifies `invite_token_hash`, expiry and `status='invited'`, and marks the invite accepted. The BO then sends the regular email one-time code to that address, then runs TOTP enrolment. No password is ever set | `admin.invite_redeemed` |
 | `POST /auth/recovery-code/redeem` | `aal1` admin JWT | `{code}` | Consumes one recovery code (HMAC with `RECOVERY_CODE_PEPPER`), deletes the TOTP factors, ends other sessions and emails active super_admins (JOB-31). Re-enrolment follows | `admin.mfa_recovery_used` |
 | `POST /me/recovery-codes` | own, SU | `{}` | Regenerates 10 codes, returned once; earlier unused codes are invalidated | `admin.recovery_codes_regenerated` |
-| `POST /session/step-up` | own | `{}`, sent after `mfa.challengeAndVerify` in the BO | `admin_sessions.step_up_at = now()` (valid 10 min for SU routes) | `admin.session.step_up` |
+| `POST /me/mfa-factors` | own | `{factor_id}` (a TOTP factor the BO just enrolled and verified with the admin's own Auth session, BACKOFFICE_PLAN §3.3 "Yedek cihaz ekle") | Confirms through the Auth admin API that the factor is a verified TOTP factor of this admin; at most two verified factors (a third is deleted again → `STATE_CONFLICT {reason:'max_factors'}`) → `{factor_id, verified_factors}` | `admin.mfa_factor_added` |
+| `DELETE /me/mfa-factors/:factorId` | own, SU | `{reason, confirm}` | Deletes the factor (Auth admin API) while another verified factor remains (`STATE_CONFLICT {reason:'last_factor'}` otherwise) → `{factor_id, verified_factors}` | `admin.mfa_factor_removed` |
+| `POST /session/step-up` | own | `{}`, sent after `mfa.challengeAndVerify` in the BO | `admin_sessions.step_up_at = now()` (valid 10 min for SU routes) | `admin.step_up` |
 
 - **DB effects:** `admin_sessions`, `admin_preferences`.
 - **External provider effects:** Supabase Auth sign-out.
@@ -4312,7 +4315,7 @@ Each module block states its capability, routes, input and output schemas, DB ef
 #### ADM-01 · Dashboard (M§50, REQ-BO-DASH-01..03, M§119)
 | Route | Perm | Input | Output |
 |---|---|---|---|
-| `GET /dashboard/metrics` | `dashboard.read` | `range ∈ 24h\|7d\|30d\|90d` | `{total_users, active_users, new_users, pro_users, trials, connected_emails, connected_calendars, ai_requests, ai_cost_usd, briefings_generated, push_sent, ai_cost_per_active_user, classification_rate, briefing_success_rate, suppression_rate, approval_conversion, sync_success_rate, reconnect_rate}` plus deltas against the previous range |
+| `GET /dashboard/metrics` | `dashboard.read` | `range ∈ 24h\|7d\|30d\|90d`, `platform ∈ all\|ios\|android` (default `all`; scopes `total_users`, `new_users`, `active_users`, `push_sent`, BACKOFFICE_PLAN §6.1) | `{total_users, active_users, new_users, pro_users, trials, connected_emails, connected_calendars, ai_requests, ai_cost_usd, briefings_generated, push_sent, ai_cost_per_active_user, classification_rate, briefing_success_rate, suppression_rate, approval_conversion, sync_success_rate, reconnect_rate}` plus deltas against the previous range, `platform`, and `rollup: {last_computed_at, stale}` (`metrics_daily` freshness: stale when older than 30 min or never computed, BACKOFFICE_PLAN §5.6) |
 | `GET /dashboard/charts` | `dashboard.read` | `range`, `series ∈ user_growth\|active_usage\|ai_costs\|subscriptions\|sync_failures` | `{points:[{t, value, breakdown?}]}` |
 | `GET /metrics/ops` | `metrics.ops.read` | `range` | Sync, jobs, briefings and notifications aggregates (M§119) |
 | `GET /metrics/product` | `metrics.product.read` | `range` | Feature usage, approval conversion, referral funnel (content-free) |
@@ -4326,7 +4329,7 @@ Each module block states its capability, routes, input and output schemas, DB ef
 | Route | Perm | Input | Output / DB effects | Audit |
 |---|---|---|---|---|
 | `GET /users` | `users.read` | `q` (exact email lookup by `hashId(lower(email))`, or a user id), `filter[plan]=free\|pro\|trial`, `filter[state]=inactive\|sync_error\|connection_error\|disabled`, sort by `created_at\|last_active_at\|last_sync_at` | Rows `{id, email_masked, plan, created_at, last_active_at, platform, connected_accounts:int, last_sync_at, status}` | – |
-| `GET /users/:id` | `users.read` | – | `admin_api.user_overview`, the M§49 safe view: `{user_id, account_status, plan, integrations[{provider,status,last_sync_at,last_error_code,watch_expires_at}], job_errors[last 20 codes], briefing_status[last 7], push_status{tokens_enabled, last_receipt_error}, app_version, platform}` | – |
+| `GET /users/:id` | `users.read` | – | `admin_api.user_overview`, the M§49 safe view: `{user_id, email_masked, display_name_masked, is_internal, account_status, plan, integrations[{provider,status,last_sync_at,last_error_code,watch_expires_at}], job_errors[last 20 codes], briefing_status[last 7], push_status{tokens_enabled, last_receipt_error}, app_version, platform}` | – |
 | `GET /users/:id/integrations` | `users.read` + `integrations.read` | – | `admin_api.user_integrations`: one entry per `connected_accounts` row (≤ 10): `{account_id, provider, email_masked, capabilities_granted[], status: account_status, error_class, resources:[{resource:'mail'\|'calendar'\|'tasks', last_success_at, last_error_code, consecutive_failures, watch_expires_at, watch_status}], data_sources (read-only toggle state, §4.5), recent_jobs:[≤ 5 {id, type, status, last_error_code, created_at}]}`. No `oauth_credentials` column is reachable | – |
 | `GET /users/:id/briefings` | `users.read` + `briefings.read` | `filter[kind]` (`briefing_kind`), `filter[status]` (`briefing_status`), `filter[from/to]` (local dates; default the last 30 local days), `sort=local_date\|scheduled_for` | `admin_api.user_briefings`: rows `{id, kind, local_date, status, scheduled_for, generated_at, delivered_at, latency_ms, item_count, ai_cost_usd, notification_decision, skip_reason, error_code}`. Never narrative, sections or item text (text only through the Support Access scope `insights`, R-09) | – |
 | `GET /users/:id/usage` | `users.read` | `range=7d\|30d\|90d` | `admin_api.user_usage`, counts only (M§42, M§119): `{ai:{days:[{date, feature, requests, input_tokens, output_tokens, cost_usd, units}], daily_budget_units, budget_hit_days}, feature_usage:{briefing_opened, assistant_query_sent, capture_created, meeting_prep_opened, follow_up_actioned, search_performed, approval_decided}, approvals:{created, approved, executed}, reminders_created, captures:{count, bytes}, content_volumes:{email_threads, calendar_events, insights, memory_chunks}, notifications_by_decision:{…}}`; `daily_budget_units` is the user's `plan_limits` value `ai_daily_budget_units` | – |
@@ -4335,15 +4338,15 @@ Each module block states its capability, routes, input and output schemas, DB ef
 | `GET /users/:id/support` | `users.read` + `support.read` | `filter[status]` (ticket status) | `admin_api.user_support`: `{tickets:[{id, reference, category, status, subject, assignee, created_at}], access_grants:[{id, admin:{id, display_name}, scopes: support_access_scope[], reason, starts_at, expires_at, revoked_at, reveal_count, active}]}` (active grants and history) | – |
 | `GET /users/:id/audit` | `users.read` + `audit.read` | `filter[action/actor_id/result/from/to]`; sort fixed to `ts desc` | `admin_api.user_audit`: `audit_logs` rows whose `target_user_id` is this user, with the ADM-17 `GET /audit` row shape | – |
 | `GET /users/:id/devices` | `users.read` + `notifications.read` | – | `admin_api.user_devices` (BACKOFFICE_PLAN §16 #41): the user's `app_installations` that are not signed out, as `{installation_id, platform, app_version, build_number, os_version, push_enabled, token_masked, last_seen_at, last_receipt_status, last_receipt_error}` (`token_masked` looks like `ExponentPushToken[ab…yz]`). Never the raw push token. It feeds the device picker of ADM-07 `POST /notifications/test-push` | – |
-| `POST /users/:id/reveal` | `users.pii.reveal` | `{field:'email', reason, confirm}` | `{value, expires_in_s:60}` | `admin.pii.revealed` |
-| `POST /users/:id/force-sync` | `users.force_sync` | `{reason, confirm, resources?}` | Enqueues sync jobs, key `admin_force_sync:{account}:{minute}` | `admin.user.force_sync` |
-| `POST /users/:id/disable` | `users.disable` | `{reason, confirm}` | `profiles.disabled_at/disabled_reason`, Auth ban, push disabled, schedules skip the user | `admin.user.disabled` |
-| `POST /users/:id/restore` | `users.disable` (SU) | `{reason, confirm}` | Unban and clear `disabled_at` | `admin.user.restored` |
-| `POST /users/:id/entitlement-grants` | `entitlements.grant` (1/7/14/30 days, any source) or `entitlements.grant_limited` (1/7 days, source `support` only) | `{duration_days: 1\|7\|14\|30, source:'admin'\|'support'\|'compensation', reason, confirm}` | `entitlement_grants` stacked (`starts_at` = end of the latest active grant, or now), `granted_by_admin_id`, `idempotency_key` = header | `admin.entitlement.granted` |
-| `POST /users/:id/entitlement-grants/:grantId/revoke` | `entitlements.revoke` | `{reason, confirm}` | `revoked_at`, `revoked_by` | `admin.entitlement.revoked` |
-| `POST /users/:id/integrations/:accountId/disconnect` | `integrations.disconnect` (SU) | `{reason, confirm, purge_content:boolean}` | Same logic as API-INT-03 with an admin actor | `admin.integration.disconnected` |
+| `POST /users/:id/reveal` | `users.pii.reveal` | `{field: 'email'\|'display_name'\|'integration_email:{account_id}'\|'ticket_contact_email:{ticket_id}', reason, confirm}` (the §5.5 PII fields; the account or ticket must belong to the user) | `{value, expires_in_s:60}` | `user.pii_revealed` |
+| `POST /users/:id/force-sync` | `users.force_sync` | `{reason, confirm, resources?}` | Enqueues sync jobs, key `admin_force_sync:{account}:{minute}` | `user.force_sync` |
+| `POST /users/:id/disable` | `users.disable` | `{reason, confirm}` | `profiles.disabled_at/disabled_reason`, Auth ban, push disabled, schedules skip the user | `user.disabled` |
+| `POST /users/:id/restore` | `users.disable` (SU) | `{reason, confirm}` | Unban and clear `disabled_at` | `user.restored` |
+| `POST /users/:id/entitlement-grants` | `entitlements.grant` (1/7/14/30 days, any source) or `entitlements.grant_limited` (1/7 days, source `support` only) | `{duration_days: 1\|7\|14\|30, source:'admin'\|'support'\|'compensation', reason, confirm}` | `entitlement_grants` stacked (`starts_at` = end of the latest active grant, or now), `granted_by_admin_id`, `idempotency_key` = header | `entitlement.granted` |
+| `POST /users/:id/entitlement-grants/:grantId/revoke` | `entitlements.revoke` | `{reason, confirm}` | `revoked_at`, `revoked_by` | `entitlement.revoked` |
+| `POST /users/:id/integrations/:accountId/disconnect` | `integrations.disconnect` (SU) | `{reason, confirm, purge_content:boolean}` | Same logic as API-INT-03 with an admin actor | `integration.disconnected` |
 | `POST /users/lookup` | `users.read` | `{email}` (exact match by `HMAC(PII_LOOKUP_PEPPER, lower(email))`; never a partial search) | `{user_id}` or 404 | – |
-| `POST /users/:id/internal` | `users.mark_internal` | `{internal: boolean, reason}` | Flags a test or internal account so that metrics exclude it | `admin.user.marked_internal` |
+| `POST /users/:id/internal` | `users.mark_internal` | `{internal: boolean, reason}` | Flags a test or internal account so that metrics exclude it | `user.marked_internal` |
 
 - **Tab reads (`GET /users/:id/*`):** read-only `stable` SQL functions with no audit row; lists page per §2.8; `:id` must be a uuid (`BAD_REQUEST` otherwise). An unknown user id, or one whose account deletion has completed, → `NOT_FOUND`. A missing module permission → `FORBIDDEN {permission}`. Retry and the other errors follow §12.1.
 - **External provider effects:** Auth admin (ban/unban), provider revoke on disconnect.
@@ -4362,14 +4365,14 @@ Each module block states its capability, routes, input and output schemas, DB ef
 #### ADM-03 · Support and Support Access (M§49, M§62, REQ-BO-SUPP-01..03, REQ-BO-TICKET-01/02)
 | Route | Perm | Input | Output / effects | Audit |
 |---|---|---|---|---|
-| `GET /support/tickets` | `support.read` | `filter[status]`, `filter[category]`, `filter[assignee]`, `filter[source]=app\|web`, `q` = reference | Rows `{id, reference, category, status, subject, platform, app_version, assignee, created_at, contact_email_masked}` | – |
+| `GET /support/tickets` | `support.read` | `filter[status]`, `filter[category]`, `filter[assignee]`, `filter[source]=app\|web`, `q` = reference | Rows `{id, reference, category, status, subject, platform, app_version, assignee, created_at, contact_email_masked, user_id}` (`user_id` = the matched app user or `null` for an unmatched web form; full uuid, not PII by itself, BACKOFFICE_PLAN §5.5) | – |
 | `GET /support/tickets/:id` | `support.read` | – | Ticket, notes and diagnostics (content-free) | – |
-| `PATCH /support/tickets/:id` | `support.write` | `{status?: ticket_status, assignee_admin_id?, category?}` | Update | `admin.ticket.updated` |
-| `POST /support/tickets/:id/notes` | `support.write` | `{body ≤ 5000}` | `support_notes` insert (internal) | `admin.ticket.note_added` |
-| `POST /support/tickets/:id/reply` | `support.write` | `{body ≤ 5000}` | Sends an email to `contact_email` through the transactional email API (sent through JOB-31; External credential required: `EMAIL_API_KEY`; otherwise `EXTERNAL_CREDENTIAL_REQUIRED`) and records a note | `admin.ticket.replied` |
-| `POST /support-access/grants` | `support.access` (SU) | `{user_id, scopes: support_access_scope[], reason, duration_minutes: 15\|30\|60, ticket_id?}`. `support_access_scope` (R-09) = `pii` (unmask identifiers) \| `email_metadata` (subjects, senders, snippets) \| `insights` (insight titles, AI summaries, briefing text) \| `notifications` \| `captures` (extracted data only, never files) \| `assistant_transcript` \| `ai_feedback` | `support_access_grants` (active until `expires_at`, at most 60 min) | `admin.support_access.granted` |
-| `POST /support-access/grants/:id/revoke` | `support.access` (own grant) or SA | `{reason}` | `revoked_at` | `admin.support_access.revoked` |
-| `GET /support-access/grants/:id/content/:scope` | `support.access` + an active grant covering the scope | `entity_type`, `entity_id` | The unmasked content for that scope → `{value, expires_in_s:60}`. Never returned (R-09): tokens, secrets, passwords, original mail fetched from the provider, attachments or files | `admin.support_access.content_viewed` (every call; also counted in `support_access_grants.reveal_count`) |
+| `PATCH /support/tickets/:id` | `support.write` | `{status?: ticket_status, assignee_admin_id?, category?}` | Update | `ticket.updated` |
+| `POST /support/tickets/:id/notes` | `support.write` | `{body ≤ 5000}` | `support_notes` insert (internal) | `ticket.note_added` |
+| `POST /support/tickets/:id/reply` | `support.write` | `{body ≤ 5000}` | Sends an email to `contact_email` through the transactional email API (sent through JOB-31; External credential required: `EMAIL_API_KEY`; otherwise `EXTERNAL_CREDENTIAL_REQUIRED`) and records a note | `ticket.reply_sent` |
+| `POST /support-access/grants` | `support.access` (SU) | `{user_id, scopes: support_access_scope[], reason, duration_minutes: 15\|30\|60, ticket_id?}`. `support_access_scope` (R-09) = `pii` (unmask identifiers) \| `email_metadata` (subjects, senders, snippets) \| `insights` (insight titles, AI summaries, briefing text) \| `notifications` \| `captures` (extracted data only, never files) \| `assistant_transcript` \| `ai_feedback` | `support_access_grants` (active until `expires_at`, at most 60 min) | `support_access.granted` |
+| `POST /support-access/grants/:id/revoke` | `support.access` (own grant) or SA | `{reason}` | `revoked_at` | `support_access.revoked` |
+| `GET /support-access/grants/:id/content/:scope` | `support.access` + an active grant covering the scope | `entity_type`, `entity_id` | The unmasked content for that scope → `{value, expires_in_s:60}`. Never returned (R-09): tokens, secrets, passwords, original mail fetched from the provider, attachments or files | `support_access.content_viewed` (every call; also counted in `support_access_grants.reveal_count`) |
 
 - **External provider effects:** the email API for replies only.
 - **Idempotency:** header key.
@@ -4387,8 +4390,8 @@ Each module block states its capability, routes, input and output schemas, DB ef
 | `GET /integrations` | `integrations.read` | `filter[provider]=google\|microsoft\|apple_device\|android_device`, `filter[status]=account_status`, `filter[issue]=needs_reconnect\|oauth_error\|refresh_error\|watch_issue` | Rows `{account_id, user_id, provider, email_masked, status, last_sync_at, last_error_code, watch_expires_at, key_version}`; never tokens | – |
 | `GET /integrations/summary` | `integrations.read` or `metrics.ops.read` | `range ∈ 24h\|7d\|30d\|90d` | `admin_api.integrations_summary` (BACKOFFICE_PLAN §16 #41), counts only: `{by_provider_status:[{provider, status: account_status, count}], reconnect_rate (BACKOFFICE_PLAN §7.4), watches_expiring_24h, watch_renewals_failed_24h, oldest_healthy_last_sync_at}`; internal and demo users are excluded | – |
 | `GET /integrations/:accountId` | `integrations.read` | – | Detail: granted scopes (names), `sync_states` summary, last 20 jobs, webhook stats | – |
-| `POST /integrations/:accountId/force-sync` | `users.force_sync` | `{reason, confirm}` | Enqueue syncs | `admin.integration.force_sync` |
-| `POST /integrations/:accountId/renew-watch` | `integrations.renew_watch` | `{reason, confirm}` | Enqueue `watch_renewal {mode:'recreate'}` | `admin.integration.watch_renewed` |
+| `POST /integrations/:accountId/force-sync` | `users.force_sync` | `{reason, confirm}` | Enqueue syncs | `user.force_sync` |
+| `POST /integrations/:accountId/renew-watch` | `integrations.renew_watch` | `{reason, confirm}` | Enqueue `watch_renewal {mode:'recreate'}` | `integration.watch_renew_requested` |
 
 - **External provider effects:** none inline. **Idempotency:** header key.
 - **Tests:** no token or ciphertext field exists in the schema (schema snapshot test); `GET /integrations/summary` counts match the fixture and the route is reachable with `metrics.ops.read` alone (analyst), while `GET /integrations` stays 403 for analyst.
@@ -4400,9 +4403,9 @@ Each module block states its capability, routes, input and output schemas, DB ef
 | `GET /jobs/stats` | `jobs.read` | `range` | Counts by type and status, plus a dead-letter count | – |
 | `GET /jobs/:id` | `jobs.read` | – | Job with the payload redacted to ids, `job_attempts[]` (outcome, error code, duration) and linked child jobs | – |
 | `GET /correlation/:id` | `jobs.read` | – | `admin_api.correlation_trace`: at most 500 timeline rows `(kind, id, ts, status, label_key, link)` across webhooks, billing events, jobs, attempts, AI requests, briefings, notifications, push tickets, approvals and audit rows; no content | – |
-| `POST /jobs/:id/retry` | `jobs.retry` | `{reason, confirm, reset_attempts: boolean}` | Only from `failed`/`dead_letter` → `queued` (same idempotency key, `attempts` reset if asked); guarded: non-idempotent types are impossible by design | `admin.job.retried` |
-| `POST /jobs/:id/cancel` | `jobs.cancel` | `{reason, confirm}` | `queued`/`retrying` → `failed` (`CANCELLED_ADMIN`) | `admin.job.cancelled` |
-| `POST /jobs/retry-bulk` | `jobs.retry` | `{filter:{type, status:'dead_letter'\|'failed', from, to}, max: ≤ 500, reason, confirm}` | Count retried | `admin.job.bulk_retried` |
+| `POST /jobs/:id/retry` | `jobs.retry` | `{reason, confirm, reset_attempts: boolean}` | Only from `failed`/`dead_letter` → `queued` (same idempotency key, `attempts` reset if asked); guarded: non-idempotent types are impossible by design | `job.retried` |
+| `POST /jobs/:id/cancel` | `jobs.cancel` | `{reason, confirm}` | `queued`/`retrying` → `failed` (`CANCELLED_ADMIN`) | `job.cancelled` |
+| `POST /jobs/retry-bulk` | `jobs.retry` | `{job_ids: uuid[1..100], reason, confirm}` (the selected rows, each through the single-retry guards) **or** `{filter:{type, status:'dead_letter'\|'failed', from, to}, max: ≤ 500, reason, confirm}` | `{retried}` count; selection mode adds `retried_ids[]` and `skipped[{id, reason_key: invalid_state\|max_manual_retries\|not_found}]` | `job.bulk_retried` |
 
 - **Idempotency:** header key; a retry of an already-queued job returns `STATE_CONFLICT`.
 - **Tests:** retrying `approval_execute` never double-sends (the §6.4 check); Playwright "sync job retry".
@@ -4412,7 +4415,7 @@ Each module block states its capability, routes, input and output schemas, DB ef
 |---|---|---|---|---|
 | `GET /briefings/metrics` | `briefings.read` | `range`, `kind` | `{scheduled, generated, delivered, failed, skipped, p50_latency_ms, p95_latency_ms, ai_cost_usd, template_fallback_rate}` | – |
 | `GET /briefings` | `briefings.read` | `filter[user_id]`, `kind`, `status`, `local_date` | Rows without narrative text: `{id, user_id, kind, local_date, status, generated_at, delivered_at, latency_ms, narrative_mode}` | – |
-| `POST /briefings/:id/regenerate` | `briefings.regenerate` | `{reason, confirm}` | JOB-14 `origin='admin_regenerate'` | `admin.briefing.regenerated` |
+| `POST /briefings/:id/regenerate` | `briefings.regenerate` | `{reason, confirm}` | JOB-14 `origin='admin_regenerate'` | `briefing.regenerated` |
 
 - **Tests:** list rows never include narrative or sections.
 
@@ -4421,7 +4424,8 @@ Each module block states its capability, routes, input and output schemas, DB ef
 |---|---|---|---|---|
 | `GET /notifications/metrics` | `notifications.read` | `range`, `category` | `{scheduled, sent, failed, suppressed, deduplicated, suppression_reasons:{…}, receipt_errors:{…}}` | – |
 | `GET /notifications` | `notifications.read` | `filter[user_id]` (required for user-level debugging), `category`, `decision` | Rows `{id, category, decision, decision_reason, detail_mode, sent_at, receipt_status}` with no rendered text | – |
-| `POST /notifications/test-push` | `push.test` | `{user_id, installation_id?, reason, confirm}` | Sends the generic "Dijital Asistan" / "Test bildirimi" (no user content) through JOB-18, bypassing caps but not quiet hours | `admin.notification.test_sent` |
+| `POST /notifications/test-push` | `push.test` | `{user_id, installation_id?, reason, confirm}` | Sends the generic "Dijital Asistan" / "Test bildirimi" (no user content) through JOB-18, bypassing caps but not quiet hours | `push.test_sent` |
+| `GET /notifications/test-push/preview` | `push.test` | `user_id`, `installation_id?` | `admin_api.notification_test_preview`: `{timezone, local_time (HH:mm), in_quiet_hours, quiet_hours_end_local (HH:mm)\|null, deferred_until\|null, active_devices}` for the push-test dialog (BACKOFFICE_PLAN §6.8). Read-only: nothing is sent | – |
 
 - **Tests:**
   - support, finance, ai_ops, analyst and readonly get 403 on test-push (`push.test` is SA and OP only, BACKOFFICE_PLAN §4.2);
@@ -4434,10 +4438,10 @@ Each module block states its capability, routes, input and output schemas, DB ef
 | `GET /ai/metrics` | `ai.read` or `metrics.ai.read` | `range`, `group_by=feature\|model\|day\|prompt_version\|profile` | `{requests, input_tokens, output_tokens, cache_read_tokens, cost_usd, error_rate, p50_ms, p95_ms}` per group; the features are the canonical `ai_feature` values (§4.4) | – |
 | `GET /ai/metrics/series` | `ai.read` or `metrics.ai.read` | `range`, `split=feature\|model` | `admin_api.ai_cost_series`: the stacked cost series `{points:[{t, key, requests, cost_usd}]}`, bucketed per day in the reporting timezone (per hour for `24h`); `key` is a canonical `ai_feature` value (§4.4) or a model id. 24h/7d read raw `ai_requests`; 30d/90d read `ai_metrics_daily` (BACKOFFICE_PLAN §7.6). No user ids | – |
 | `GET /ai/requests` | `ai.read` | `filter[feature/model/status/user_id]` | `ai_requests` telemetry rows; no content | – |
-| `GET /ai/models` | `ai.read` | – | `ai_model_config` rows `{profile, feature, tier, enabled, primary_target, fallback_targets, escalation_target, batch_policy, cache_ttl, max_input_tokens, eval_status, retires_not_before, version}` (AI_PIPELINE_PLAN §3.6); the active `ai_routing_profile` per plan; provider credential state `configured \| external_credential_required` (never values) | – |
-| `PATCH /ai/models/:profile/:feature` | `ai.models.write` | `{primary_target?: {provider:'anthropic'\|'openai'\|'voyage'\|'fixture'\|'native', model: string ≤ 120, …}, fallback_targets?, escalation_target?, batch_policy?, cache_ttl?, max_input_tokens?, enabled?, expected_version, reason, confirm}` | Validates the targets against the adapter allow-list. Rejects `claude-fable-*` (R-02). `embedding_doc`/`embedding_query` accept only 1024-d models (`voyage-4`, `voyage-4-lite`; `text-embedding-3-small` at `dimensions:1024` only for disaster recovery, R-01). `fixture` is rejected in production. Then update and cache bust | `admin.ai.model_config_changed {before, after}` |
-| `POST /ai/models/:profile/:feature/test` | `ai.models.write` | `{fixture_set}` | Probe call on synthetic fixtures only (feature `admin_probe`): latency, schema pass, cost | `admin.ai.model_probed` |
-| `PATCH /ai/routing-profile` | `ai.models.write` | `{plan:'free'\|'pro', profile:'balanced'\|'lean', reason, confirm}` | Updates `plan_limits.ai_routing_profile`; cache bust | `admin.ai.routing_profile_changed {before, after}` |
+| `GET /ai/models` | `ai.read` | – | `ai_model_config` rows `{profile, role, feature, tier, enabled, primary_target, fallback_targets, escalation_target, batch_policy, cache_ttl, max_input_tokens, eval_status, retires_not_before, version}` (AI_PIPELINE_PLAN §3.6); the active `ai_routing_profile` per plan; provider credential state `configured \| external_credential_required` for `anthropic`, `openai`, `voyage`, `stt` (`STT_API_KEY`), `tts` (`TTS_PREMIUM_PROVIDER` + `TTS_API_KEY`) (never values); `profile_costs: {balanced\|lean: {monthly_usd\|null, coverage, pro_users, window_days}}` = the monthly AI cost of a typical Pro user per routing profile from the last 30 days of `ai_metrics_daily` (BACKOFFICE_PLAN §6.10). Voice targets (`deepgram`, `azure_speech`, `elevenlabs`) appear on `stt`/`tts` rows only | – |
+| `PATCH /ai/models/:profile/:feature` | `ai.models.write` | `{primary_target?: {provider:'anthropic'\|'openai'\|'voyage'\|'fixture'\|'native', model: string ≤ 120, …}, fallback_targets?, escalation_target?, batch_policy?, cache_ttl?, max_input_tokens?, enabled?, expected_version, reason, confirm}` | Validates the targets against the adapter allow-list. Rejects `claude-fable-*` (R-02). `embedding_doc`/`embedding_query` accept only 1024-d models (`voyage-4`, `voyage-4-lite`; `text-embedding-3-small` at `dimensions:1024` only for disaster recovery, R-01). `fixture` is rejected in production. Then update and cache bust | `ai_model_config.updated {before, after}` |
+| `POST /ai/models/:profile/:feature/test` | `ai.models.write` | `{fixture_set}` | Probe call on synthetic fixtures only (feature `admin_probe`): latency, schema pass, cost | `ai_model_config.tested` |
+| `PATCH /ai/routing-profile` | `ai.models.write` | `{plan:'free'\|'pro', profile:'balanced'\|'lean', reason, confirm}` | Updates `plan_limits.ai_routing_profile`; cache bust | `ai_routing_profile.changed {before, after}` |
 
 - **Tests:**
   - The secret value never appears in any response (a response scan).
@@ -4454,12 +4458,12 @@ Each module block states its capability, routes, input and output schemas, DB ef
 | `GET /ai/prompts/:key` | `prompts.read` | – | Versions `{version, status: prompt_status, created_by, created_at, activated_at, telemetry:{requests, error_rate, feedback_positive_rate}}` | – |
 | `GET /ai/prompts/:key/versions/:v` | `prompts.read` | – | Full template (system and user templates, output schema name) | – |
 | `GET /ai/prompts/:key/diff?from=&to=` | `prompts.read` | – | Unified diff | – |
-| `POST /ai/prompts/:key/versions` | `prompts.write` | `{template_system, template_user, output_schema: enum of registered schemas, notes}` | New `draft` (`version` = max + 1) | `admin.prompt.draft_created` |
-| `PATCH /ai/prompts/:key/versions/:v` | `prompts.write` | same fields | Allowed only while `draft` | `admin.prompt.draft_edited` |
+| `POST /ai/prompts/:key/versions` | `prompts.write` | `{template_system, template_user, output_schema: enum of registered schemas, notes}` | New `draft` (`version` = max + 1) | `prompt.draft_created` |
+| `PATCH /ai/prompts/:key/versions/:v` | `prompts.write` | same fields | Allowed only while `draft` | `prompt.draft_updated` |
 | `POST /ai/prompts/:key/versions/:v/test` | `prompts.write` | `{fixture_set: enum}` | A dry run against **synthetic fixtures only** (never user data) → schema pass rate and grounding pass rate | – |
-| `POST /ai/prompts/:key/versions/:v/activate` | `prompts.activate` | `{reason, confirm}` | The partial unique index allows one `active` per key; the previous version is `archived`; cache bust | `admin.prompt.activated` |
-| `POST /ai/prompts/:key/rollback` | `prompts.activate` | `{to_version, reason, confirm}` | Reactivates an archived version | `admin.prompt.rolled_back` |
-| `POST /ai/prompts/:key/versions/:v/archive` | `prompts.activate` | `{reason}` | `archived` (not allowed for the active version) | `admin.prompt.archived` |
+| `POST /ai/prompts/:key/versions/:v/activate` | `prompts.activate` | `{reason, confirm}` | The partial unique index allows one `active` per key; the previous version is `archived`; cache bust | `prompt.activated` |
+| `POST /ai/prompts/:key/rollback` | `prompts.activate` | `{to_version, reason, confirm}` | Reactivates an archived version | `prompt.rolled_back` |
+| `POST /ai/prompts/:key/versions/:v/archive` | `prompts.activate` | `{reason}` | `archived` (not allowed for the active version) | `prompt.archived` |
 
 - **Tests:** activation atomicity (a concurrent activate → 409); rollback; `ai_requests.prompt_version_id` is linked (telemetry).
 
@@ -4467,8 +4471,8 @@ Each module block states its capability, routes, input and output schemas, DB ef
 | Route | Perm | Input | Output |
 |---|---|---|---|
 | `GET /ai/feedback/aggregates` | `ai_feedback.read` | `range`, `group_by=feature\|model\|prompt_version` | `{positive, negative, rate}` per group |
-| `GET /ai/feedback` | `ai_feedback.read` | filters | Rows `{id, feature, model, prompt_version, rating, reason_code, created_at}`. Comment text is hidden by default; it is visible through the reveal below or the Support Access scope `ai_feedback` |
-| `POST /ai/feedback/:id/reveal` | `ai_feedback.reveal` | `{reason}` | The comment text → `{value, expires_in_s:60}`; audited as `admin.ai_feedback.revealed` |
+| `GET /ai/feedback` | `ai_feedback.read` | filters | Rows `{id, feature, model, prompt_version, rating, reason_code, has_comment, created_at}`. Comment text is hidden by default; it is visible through the reveal below or the Support Access scope `ai_feedback` |
+| `POST /ai/feedback/:id/reveal` | `ai_feedback.reveal` | `{reason}` | The comment text → `{value, expires_in_s:60}`; audited as `ai_feedback.comment_revealed` |
 
 - **Tests:** no content fields in the rows.
 
@@ -4481,7 +4485,7 @@ Each module block states its capability, routes, input and output schemas, DB ef
 | `GET /subscriptions/events/:id` | `billing_events.read` | – | `admin_api.billing_event_get` (BACKOFFICE_PLAN §16 #41), the sanitised projection `{event_id, type, store, environment, product_id, period_type, purchased_at, expiration_at, event_at, price_usd, price_local, currency, cancel_reason, expiration_reason, is_trial_conversion, received_at, processed_at, processing_error_code, job_id, user_id}`. Never `subscriber_attributes`, `aliases` or the raw payload | – |
 | `GET /subscriptions/trial-stream` | `subscriptions.read` | `range`, `filter[store/product/environment]` (environment defaults to `PRODUCTION`) | `admin_api.trial_stream` (BACKOFFICE_PLAN §7.5 "Denemeden ücretliye akış"): `billing_events` rows as `{event_id, kind:'trial_started'\|'trial_converted'\|'trial_cancelled'\|'trial_expired', email_masked, product_id, store, event_at}` (INITIAL_PURCHASE with period type TRIAL, RENEWAL with `is_trial_conversion`, CANCELLATION during a trial, EXPIRATION of a trial), plus `summary:{conversions, trial_expirations, conversion_rate}` for the trials ending in the range. No prices | – |
 | `GET /entitlement-grants` | `subscriptions.read` | `filter[source]` (`grant_source`), `filter[state]=active\|scheduled\|ended\|revoked`, `filter[granted_by_admin_id]`, `filter[user_id]`; sort `starts_at` desc | `admin_api.entitlement_grants_list` (BACKOFFICE_PLAN §16 #41): rows `{id, user_id, email_masked, source, duration_days, starts_at, ends_at, state, granted_by, reason, revoked_at, revoked_by}`. Referral grants are listed read-only; only ADM-02 revokes, and only admin/support/compensation grants | – |
-| `POST /subscriptions/:userId/sync` | `subscriptions.resync` | `{reason}` | JOB-24 `reason='admin'` | `admin.subscription.synced` |
+| `POST /subscriptions/:userId/sync` | `subscriptions.resync` | `{reason}` | JOB-24 `reason='admin'` | `subscription.resync_requested` |
 
 - **Tests:**
   - MRR computed from annual ÷ 12; admin grants are excluded from MRR.
@@ -4494,8 +4498,8 @@ Each module block states its capability, routes, input and output schemas, DB ef
 |---|---|---|---|---|
 | `GET /referrals/metrics` | `referrals.read` | `range` | `{invites (codes shared via analytics), signups, qualified, rewarded, conversion, bonus_days_granted, flagged}` | – |
 | `GET /referrals` | `referrals.read` | `filter[status]` (for example `flagged`), `q` = code | Rows `{id, code, referrer_id, referee_id, status, risk_score, signals_summary, created_at}` | – |
-| `POST /referrals/:id/approve` | `referrals.review` | `{reason, confirm}` | `flagged` → reward path (JOB-25 reward step, idempotent) | `admin.referral.approved` |
-| `POST /referrals/:id/reject` | `referrals.review` | `{reason, confirm}` | `rejected` | `admin.referral.rejected` |
+| `POST /referrals/:id/approve` | `referrals.review` | `{reason, confirm}` | `flagged` → reward path (JOB-25 reward step, idempotent) | `referral.approved` |
+| `POST /referrals/:id/reject` | `referrals.review` | `{reason, confirm}` | `rejected` | `referral.rejected` |
 
 - **Tests:** approving twice grants once.
 
@@ -4504,8 +4508,8 @@ Each module block states its capability, routes, input and output schemas, DB ef
 |---|---|---|---|---|
 | `GET /feedback` | `feedback.read` | `filter[type/status/platform/app_version/assignee]` | Rows including the message (user-submitted feedback, shown by design) | – |
 | `GET /feedback/summary` | `feedback.read` | `range`, `filter[platform/app_version]` | `admin_api.feedback_summary` (BACKOFFICE_PLAN §16 #41), counts only over `user_feedback`: `{by_type:{bug, feature, general, ai_quality}, rating_distribution:{1, 2, 3, 4, 5, unrated}, by_app_version:[{app_version, count}], by_status:{new, triaged, planned, closed}}` | – |
-| `PATCH /feedback/:id` | `feedback.write` | `{status?:'new'\|'triaged'\|'planned'\|'closed', assignee_admin_id?}` (the DB `user_feedback.status` check; `assignee_admin_id` writes `assigned_admin_id`) | Update | `admin.feedback.updated` |
-| `POST /feedback/:id/reveal` | `users.pii.reveal` | `{reason}` | The raw message with identifiers unmasked → `{value, expires_in_s:60}` | `admin.feedback.revealed` |
+| `PATCH /feedback/:id` | `feedback.write` | `{status?:'new'\|'triaged'\|'planned'\|'closed', assignee_admin_id?}` (the DB `user_feedback.status` check; `assignee_admin_id` writes `assigned_admin_id`) | Update | `feedback.updated` |
+| `POST /feedback/:id/reveal` | `users.pii.reveal` | `{reason}` | The raw message with identifiers unmasked → `{value, expires_in_s:60}` | `feedback.revealed` |
 
 - **Tests:** summary counts equal the fixture; `GET /feedback/summary` has no message or email field (schema snapshot); a status outside the DB check → 422.
 
@@ -4515,11 +4519,11 @@ Each module block states its capability, routes, input and output schemas, DB ef
 | `GET /flags` | `flags.read` | `filter[archived]=true` also lists archived flags | Flags `{key, enabled, rollout_percent, platforms[], plans[], min_version, max_version, payload, updated_by, updated_at}` | – |
 | `GET /flags/:key` | `flags.read` | – | `admin_api.flag_get` (BACKOFFICE_PLAN §16 #41): the `GET /flags` fields plus `{description, is_kill_switch, archived_at, overrides:[{user_id, email_masked, enabled, expires_at, created_at}], history:[{ts, actor (masked), action, reason, before, after}]}`; `history` is the latest 50 audit rows of the `admin.flag.*` actions for this key | – |
 | `GET /flags/:key/evaluate` | `flags.read` | `user_id` (required uuid), `platform?: 'ios'\|'android'`, `app_version?: semver` (both default to the user's latest `app_installations` row) | `admin_api.flag_evaluate_preview` (BACKOFFICE_PLAN §16 #41) → `{key, user_id, value: boolean, matched_rule:'disabled'\|'archived'\|'override'\|'platform'\|'plan'\|'version'\|'percentage'\|'default', bucket: 0–99}`, computed by `private.evaluate_flags`, the same evaluator `GET /me/bootstrap` and the server gates use. Read-only; it never writes an override | – |
-| `POST /flags` | `flags.write`, or `flags.write_ai` for `ai.*` / `voice.*` keys | `{key: /^[a-z0-9_.]+$/, description, enabled:false, …}` | Insert | `admin.flag.created` |
-| `PATCH /flags/:key` | `flags.write`, or `flags.write_ai` for `ai.*` / `voice.*` keys | Targeting fields plus `payload` (zod per known key) and `reason` | Update | `admin.flag.updated {before, after}` |
-| `POST /flags/:key/kill` | `flags.write`, or `flags.write_ai` for `ai.*` / `voice.*` keys | `{reason, confirm}` | `enabled=false` immediately (the kill switch); evaluation cache TTL is 30 s | `admin.flag.killed` |
-| `POST /flags/:key/archive` | `flags.write`, or `flags.write_ai` for `ai.*` / `voice.*` keys | `{reason, confirm}` | `admin_api.flag_archive` (BACKOFFICE_PLAN §16 #41). Allowed only when `enabled=false` and `is_kill_switch=false`; the R-10 kill switches are never archived. Otherwise `STATE_CONFLICT`. Sets `archived_at` (BACKOFFICE_PLAN §16 #20) and deletes nothing; an archived flag evaluates to `false` and is hidden from `GET /flags` unless `filter[archived]=true` | `admin.flag.archived` |
-| `POST /flags/:key/overrides` / `DELETE /flags/:key/overrides/:userId` | `flags.write`, or `flags.write_ai` for `ai.*` / `voice.*` keys | `{user_id, enabled, reason}` | `feature_flag_overrides` | `admin.flag.override_set/removed` |
+| `POST /flags` | `flags.write`, or `flags.write_ai` for `ai.*` / `voice.*` keys | `{key: /^[a-z0-9_.]+$/, description, enabled:false, …}` | Insert | `flag.created` |
+| `PATCH /flags/:key` | `flags.write`, or `flags.write_ai` for `ai.*` / `voice.*` keys | Targeting fields plus `payload` (zod per known key) and `reason` | Update | `flag.updated {before, after}` |
+| `POST /flags/:key/kill` | `flags.write`, or `flags.write_ai` for `ai.*` / `voice.*` keys | `{on?: boolean (default true), reason, confirm}` — `on=false` re-enables (`enabled=true`, targeting kept) | `enabled=false` immediately (the kill switch); evaluation cache TTL is 30 s | `flag.kill_switch_on` |
+| `POST /flags/:key/archive` | `flags.write`, or `flags.write_ai` for `ai.*` / `voice.*` keys | `{reason, confirm}` | `admin_api.flag_archive` (BACKOFFICE_PLAN §16 #41). Allowed only when `enabled=false` and `is_kill_switch=false`; the R-10 kill switches are never archived. Otherwise `STATE_CONFLICT`. Sets `archived_at` (BACKOFFICE_PLAN §16 #20) and deletes nothing; an archived flag evaluates to `false` and is hidden from `GET /flags` unless `filter[archived]=true` | `flag.archived` |
+| `POST /flags/:key/overrides` / `DELETE /flags/:key/overrides/:userId` | `flags.write`, or `flags.write_ai` for `ai.*` / `voice.*` keys | `{user_id, enabled, reason}` | `feature_flag_overrides` | `flag.override_added` / `flag.override_removed` |
 
 - **Tests:**
   - percentage bucketing is stable per user (hash);
@@ -4532,12 +4536,12 @@ Each module block states its capability, routes, input and output schemas, DB ef
 |---|---|---|---|---|
 | `GET /announcements` | `announcements.read` | `filter[status]` | Rows | – |
 | `GET /announcements/:id` | `announcements.read` | – | `admin_api.announcement_get` (BACKOFFICE_PLAN §16 #41): the `POST /announcements` fields plus `{id, status: draft\|scheduled\|live\|ended\|cancelled (derived from published_at, starts_at, ends_at, cancelled_at), published_at, cancelled_at, dismissal_count, created_by, updated_at}`, for the editor sheet | – |
-| `POST /announcements` | `announcements.write` | `{title_tr, title_en, body_tr, body_en, audience:'all'\|'free'\|'pro', platforms[], min_version?, max_version?, cta_route?, starts_at, ends_at?}` | A `draft` | `admin.announcement.created` |
-| `PATCH /announcements/:id` | `announcements.write` | Same fields | Allowed in draft or scheduled | `admin.announcement.updated` |
+| `POST /announcements` | `announcements.write` | `{title_tr, title_en, body_tr, body_en, audience:'all'\|'free'\|'pro', platforms[], min_version?, max_version?, cta_route?, starts_at, ends_at?}` | A `draft` | `announcement.created` |
+| `PATCH /announcements/:id` | `announcements.write` | Same fields | Allowed in draft or scheduled | `announcement.updated` |
 | `POST /announcements/:id/preview` | `announcements.read` | `{locale, platform}` | The rendered card model the app would receive | – |
 | `POST /announcements/audience-estimate` | `announcements.read` | `{audience, platforms[], min_version?, max_version?}` | `{estimated_users}` (a count only, from `app_installations` and entitlements) | – |
-| `POST /announcements/:id/schedule` | `announcements.write` | `{reason}` | `scheduled` (live during `starts_at`–`ends_at`) | `admin.announcement.scheduled` |
-| `POST /announcements/:id/cancel` | `announcements.write` | `{reason}` | `cancelled` | `admin.announcement.cancelled` |
+| `POST /announcements/:id/schedule` | `announcements.write` | `{reason}` | `scheduled` (live during `starts_at`–`ends_at`) | `announcement.scheduled` |
+| `POST /announcements/:id/cancel` | `announcements.write` | `{reason}` | `cancelled` | `announcement.cancelled` |
 
 - **Tests:** targeting via API-BOOT-01; a `cta_route` outside the app route allow-list → 422; `GET /announcements/:id` derives each status correctly from fixture timestamps.
 
@@ -4546,8 +4550,8 @@ Each module block states its capability, routes, input and output schemas, DB ef
 |---|---|---|---|---|
 | `GET /data-requests` | `data_requests.read` | `tab=exports\|history_deletion\|account_deletion`, `filter[status]` (`export_status` or `deletion_status`) | Rows `{id, kind, status, origin, requested_at, completed_at, steps_summary, user_ref (id, or subject_hash after completion)}` | – |
 | `GET /data-requests/:kind/:id` | `data_requests.read` | – | Detail with the job progress and `data_deletion_requests.steps` (warnings such as a failed revoke) | – |
-| `POST /data-requests/:kind/:id/retry` | `data_requests.manage` | `{reason, confirm}` | Re-queues the failed JOB-21/22/23 (resumable) | `admin.data_request.retried` |
-| `POST /data-requests/export/:id/regenerate` | `data_requests.manage` | `{reason, confirm}` | `admin_api.export_regenerate` (BACKOFFICE_PLAN §16 #41). Allowed only for an export in `expired` or `failed` whose user still exists and has no other export in `requested`/`processing`; otherwise `STATE_CONFLICT {active_request_id?}`. Inserts a new `data_export_requests` row (`requested_via='admin'`), enqueues JOB-21 `export` and pokes `worker` → `{export_request_id, job_id}`. The user is notified when it is ready (JOB-21 notify step). The admin never receives the file, its storage path or a signed URL | `admin.data_request.export_regenerated` |
+| `POST /data-requests/:kind/:id/retry` | `data_requests.manage` | `{reason, confirm}` | Re-queues the failed JOB-21/22/23 (resumable) | `data_request.retried` |
+| `POST /data-requests/export/:id/regenerate` | `data_requests.manage` | `{reason, confirm}` | `admin_api.export_regenerate` (BACKOFFICE_PLAN §16 #41). Allowed only for an export in `expired` or `failed` whose user still exists and has no other export in `requested`/`processing`; otherwise `STATE_CONFLICT {active_request_id?}`. Inserts a new `data_export_requests` row (`requested_via='admin'`), enqueues JOB-21 `export` and pokes `worker` → `{export_request_id, job_id}`. The user is notified when it is ready (JOB-21 notify step). The admin never receives the file, its storage path or a signed URL | `data_request.export_regenerated` |
 
 - Statuses are the DB enums:
   - `export_status`: `requested | processing | ready | expired | failed | cancelled`;
@@ -4570,8 +4574,8 @@ Each module block states its capability, routes, input and output schemas, DB ef
 |---|---|---|---|---|
 | `GET /health/summary` | `health.read` | – | The latest `system_health_checks` per component `{component, status: healthy\|degraded\|down\|external_credential_required\|unknown, latency_ms, checked_at, detail_code}`, plus credential-expiry cards (the Microsoft certificate `not_after`; the Apple web client-secret rotation date, if used) | – |
 | `GET /health/history` | `health.read` | `component` (required; a `system_health_checks.component` value), `range=24h\|7d\|30d` | `admin_api.health_history(p_component, p_range)`: rows newest first `{checked_at, component, status, latency_ms, detail_code, checked_by:'cron'\|'admin'}` (rows are kept 30 days); never secrets or URLs | – |
-| `POST /health/run` | `health.run` | `{probes?}` | Calls HLT-02 synchronously (≤ 30 s) | `admin.health.run` |
-| `GET /health/app-versions` | `health.read` | `range` | Version and platform distribution, old-version usage, sync-error rate by version | – |
+| `POST /health/run` | `health.run` | `{probes?}` | Calls HLT-02 synchronously (≤ 30 s) | `health.run_requested` |
+| `GET /health/app-versions` | `health.read` | `range` | Rows add `crash_free_sessions`, `crash_free_users` (Sentry sessions API per release; `null` without data) and `crash_reporting: {status: configured\|external_credential_required\|unavailable, credential_keys[]}` (`SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT`; names only).  Version and platform distribution, old-version usage, sync-error rate by version | – |
 | `GET /health/cron` | `health.read` | – | A `cron.job_run_details` summary per schedule (last run, duration, status) and the worker lag | – |
 
 - **Tests:** a missing credential shows `external_credential_required`, never `healthy`; `GET /health/history` with an unknown component or `range=90d` → 422.
@@ -4580,13 +4584,13 @@ Each module block states its capability, routes, input and output schemas, DB ef
 | Route | Perm | Input | Output / effects | Audit |
 |---|---|---|---|---|
 | `GET /admins` | `admins.read` | – | `{id, email, role, status: invited\|active\|disabled, last_login_at, mfa_enrolled}` | – |
-| `POST /admins/invite` | `admins.manage` (SU) | `{email, full_name, role: admin_role, reason}` | Checks `ADMIN_ALLOWED_EMAIL_DOMAINS` and that no app user owns the email (R-08). Calls `auth.admin.createUser({email, email_confirm:true, app_metadata:{da_kind:'admin'}})` and inserts an `admin_users` row (`invited`, `invite_token_hash`, 72 h). The invite email (JOB-31) links to `${ADMIN_ORIGIN}/invite?token=…`. First sign-in is an email one-time code followed by mandatory TOTP enrolment; no password exists | `admin.admin.invited` |
-| `PATCH /admins/:id` | `admins.manage` (SU) | `{role, reason, confirm}` | Role change; the last-super_admin guard applies | `admin.admin.role_changed` |
-| `POST /admins/:id/disable` / `/enable` | `admins.manage` (SU) | `{reason, confirm}` | Status change and session revoke | `admin.admin.disabled/enabled` |
-| `POST /admins/:id/revoke-sessions` | `admins.manage` (SU) | `{reason}` | Revokes that admin's `admin_sessions` | `admin.admin.sessions_revoked` |
-| `POST /admins/:id/resend-invite` | `admins.manage` (SU) | `{reason}` | Only for `status='invited'`; otherwise `STATE_CONFLICT`. The email credential is checked first: when it is missing → 503 `EXTERNAL_CREDENTIAL_REQUIRED` and nothing changes. `admin_api.admin_invite_rotate` (BACKOFFICE_PLAN §16 #41) stores a new `invite_token_hash` with `invite_expires_at = now() + 72 h`, which invalidates the previous link, and the invite email (JOB-31) is enqueued with the new `${ADMIN_ORIGIN}/invite?token=…` | `admin.admin.invite_resent` |
-| `POST /admins/:id/reset-mfa` | `admins.manage` (SU) | `{reason, confirm}` | Not allowed on the caller's own account (`STATE_CONFLICT`, `details.reason='self_action'`). `admin_api.admin_mfa_reset` invalidates the target's unused recovery codes and ends all of its `admin_sessions` (`end_reason='mfa_reset'`) in one transaction; the service client then deletes every TOTP factor (`auth.admin.mfa.deleteFactor`). The next sign-in requires TOTP enrolment (R-08). If a factor deletion fails → 503 `SERVICE_UNAVAILABLE` (retryable; the audit row is `failure` with `details.partial=true`); a retry completes it because the SQL step is idempotent | `admin.admin.mfa_reset` |
-| `POST /admins/:id/unlock` | `admins.manage` (SU) | `{reason}` | Only when `locked_until > now()`; otherwise `STATE_CONFLICT`. `admin_api.admin_unlock` (BACKOFFICE_PLAN §16 #41) sets `locked_until = null` and clears the sign-in failure counters for that admin's email hash (BACKOFFICE_PLAN §3.9) | `admin.admin.unlocked` |
+| `POST /admins/invite` | `admins.manage` (SU) | `{email, full_name, role: admin_role, reason}` | Checks `ADMIN_ALLOWED_EMAIL_DOMAINS` and that no app user owns the email (R-08). Calls `auth.admin.createUser({email, email_confirm:true, app_metadata:{da_kind:'admin'}})` and inserts an `admin_users` row (`invited`, `invite_token_hash`, 72 h). The invite email (JOB-31) links to `${ADMIN_ORIGIN}/invite?token=…`. First sign-in is an email one-time code followed by mandatory TOTP enrolment; no password exists | `admin.invited` |
+| `PATCH /admins/:id` | `admins.manage` (SU) | `{role, reason, confirm}` | Role change; the last-super_admin guard applies | `admin.role_changed` |
+| `POST /admins/:id/disable` / `/enable` | `admins.manage` (SU) | `{reason, confirm}` | Status change and session revoke | `admin.disabled` / `admin.enabled` |
+| `POST /admins/:id/revoke-sessions` | `admins.manage` (SU) | `{reason}` | Revokes that admin's `admin_sessions` | `admin.sessions_revoked` |
+| `POST /admins/:id/resend-invite` | `admins.manage` (SU) | `{reason}` | Only for `status='invited'`; otherwise `STATE_CONFLICT`. The email credential is checked first: when it is missing → 503 `EXTERNAL_CREDENTIAL_REQUIRED` and nothing changes. `admin_api.admin_invite_rotate` (BACKOFFICE_PLAN §16 #41) stores a new `invite_token_hash` with `invite_expires_at = now() + 72 h`, which invalidates the previous link, and the invite email (JOB-31) is enqueued with the new `${ADMIN_ORIGIN}/invite?token=…` | `admin.invite_resent` |
+| `POST /admins/:id/reset-mfa` | `admins.manage` (SU) | `{reason, confirm}` | Not allowed on the caller's own account (`STATE_CONFLICT`, `details.reason='self_action'`). `admin_api.admin_mfa_reset` invalidates the target's unused recovery codes and ends all of its `admin_sessions` (`end_reason='mfa_reset'`) in one transaction; the service client then deletes every TOTP factor (`auth.admin.mfa.deleteFactor`). The next sign-in requires TOTP enrolment (R-08). If a factor deletion fails → 503 `SERVICE_UNAVAILABLE` (retryable; the audit row is `failure` with `details.partial=true`); a retry completes it because the SQL step is idempotent | `admin.mfa_reset` |
+| `POST /admins/:id/unlock` | `admins.manage` (SU) | `{reason}` | Only when `locked_until > now()`; otherwise `STATE_CONFLICT`. `admin_api.admin_unlock` (BACKOFFICE_PLAN §16 #41) sets `locked_until = null` and clears the sign-in failure counters for that admin's email hash (BACKOFFICE_PLAN §3.9) | `admin.unlocked` |
 
 - **External provider effects:**
   - Supabase Auth user creation; Auth MFA factor deletion (`reset-mfa`).
@@ -4604,9 +4608,9 @@ Each module block states its capability, routes, input and output schemas, DB ef
 #### ADM-20 · Settings (M§46 System/Settings)
 | Route | Perm | Input | Output / effects | Audit |
 |---|---|---|---|---|
-| `GET /settings` | any admin | – | `{plan_limits: {free:{…}, pro:{…}}` (§4.2 keys), `app_settings: {app.min_supported_version, referral.reward_days, referral.max_rewards_per_year, referral.risk_threshold, referral.apply_window_days, google.calendar_write_scope, session.idle_minutes, session.absolute_hours, …}}`. Flag payloads such as `ai.budget.org_daily_usd` stay in ADM-14 | – |
-| `PATCH /settings/plan-limits` | `settings.system.write` (SU) | `{plan, key, value, reason, confirm}` (keys from §4.2, validated ranges) | `plan_limits` update | `admin.settings.plan_limit_changed` |
-| `PATCH /settings/config/:key` | `settings.system.write` (SU) | `{value, reason, confirm}` (zod per key) | `app_settings` update | `admin.settings.config_changed` |
+| `GET /settings` | any admin | – | `{plan_limits: {free:{…}, pro:{…}}` (§4.2 keys), `app_settings: {app.min_supported_version, referral.reward_days, referral.max_rewards_per_year, referral.risk_threshold, referral.apply_window_days, google.calendar_write_scope, session.idle_minutes, session.absolute_hours, …}}`. Flag payloads such as `ai.budget.org_daily_usd` stay in ADM-14. **Unit decision:** `referral.risk_threshold` is 0–1 here (and in `PATCH /settings/config/referral.risk_threshold`) and 0–100 in `app_settings` (the unit of `referrals.risk_score`, DATABASE_AND_RLS_PLAN); admin-api converts at the boundary (read ÷ 100, write × 100) | – |
+| `PATCH /settings/plan-limits` | `settings.system.write` (SU) | `{plan, key, value, reason, confirm}` (keys from §4.2, validated ranges) | `plan_limits` update | `plan_limits.updated` |
+| `PATCH /settings/config/:key` | `settings.system.write` (SU) | `{value, reason, confirm}` (zod per key) | `app_settings` update | `settings.system_updated` |
 
 - **Tests:** out-of-range values → 422; changes take effect for the next quota check.
 
@@ -4805,7 +4809,7 @@ PublicSupportBody = z.strictObject({ name: z.string().max(120).optional(), email
 - **Idempotency:** safe; a new run gives new rows.
 - **Error codes:** 401 or 403.
 - **Retry:** JOB-26 schedule.
-- **Audit event:** `admin.health.run` when an admin triggers it.
+- **Audit event:** `health.run_requested` when an admin triggers it.
 - **Tests:** every probe returns `external_credential_required` in an empty environment; mocked failures map to `down`.
 
 ---
@@ -4939,7 +4943,7 @@ Every row carries: `ts`, `actor_type` (`user` | `admin` | `system`), `actor_id`,
 | User: privacy | `user.privacy.export_requested`, `.export_downloaded`, `.history_deletion_requested`, `.account_deletion_requested` |
 | User: referral | `user.referral.applied` |
 | System | `system.privacy.export_completed/_failed`, `.history_deletion_completed`, `.account_deletion_completed`; `system.subscription.synced`; `system.referral.rewarded/.flagged`; `system.integration.reauth_required`; `system.retention.run` |
-| Admin | `admin.login`, `admin.login_failed`; `admin.session.started/.logout/.logout_all/.step_up`; `admin.mfa_recovery_used`; `admin.recovery_codes_regenerated`; `admin.invite_accepted`; `admin.pii.revealed`; `admin.user.force_sync/.disabled/.restored/.marked_internal`; `admin.entitlement.granted/.revoked`; `admin.integration.disconnected/.force_sync/.watch_renewed`; `admin.ticket.*`; `admin.support_access.granted/.revoked/.content_viewed`; `admin.job.retried/.cancelled/.bulk_retried`; `admin.briefing.regenerated`; `admin.notification.test_sent`; `admin.ai.model_config_changed/.model_probed/.routing_profile_changed`; `admin.ai_feedback.revealed`; `admin.prompt.*`; `admin.subscription.synced`; `admin.referral.approved/.rejected`; `admin.feedback.updated/.revealed`; `admin.flag.*`; `admin.announcement.*`; `admin.data_request.retried/.export_regenerated`; `admin.health.run`; `admin.admin.*`; `admin.settings.*` |
+| Admin | Exactly the BACKOFFICE_PLAN §10 catalogue (`private.audit_action_catalogue`, `@da/validation` `AUDIT_ACTIONS`): `admin.login`, `admin.logout`, `admin.logout_all`, `admin.step_up`, `admin.mfa_factor_added/_removed`, `user.pii_revealed`, `user.force_sync`, `user.disabled`, `job.retried`, `push.test_sent`, `ai_model_config.updated`, `flag.kill_switch_on/_off`, `ticket.reply_sent`, … The per-route "Audit" columns above use these names. `private.audit_log_append` stores the catalogue name for older emitter spellings, and tests assert that every emitted admin action is in the catalogue (pgTAP scan of the SQL emitters, Deno scan of the admin-api emitters, the registry test) |
 
 ### 17.1 Backend analytics events (server-emitted; part of the R-21 catalogue)
 

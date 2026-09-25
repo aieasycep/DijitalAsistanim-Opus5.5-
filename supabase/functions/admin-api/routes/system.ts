@@ -30,6 +30,7 @@ import {
   setAuthBan,
   sha256Bytea,
 } from '../lib/ops.ts';
+import { crashFreeByVersion } from '../services/sentry-releases.ts';
 import { defineRoutes, type RouteCtx } from '../lib/route.ts';
 
 const PROBES = new Set<string>(A.HEALTH_PROBE_VALUES);
@@ -127,7 +128,7 @@ async function healthRun(ctx: RouteCtx) {
   const byStatus: Record<string, number> = {};
   for (const r of results) byStatus[String(r.status)] = (byStatus[String(r.status)] ?? 0) + 1;
   await auditWrite(ctx.db, {
-    action: 'admin.health.run',
+    action: 'health.run_requested',
     targetType: 'system_health',
     targetId: null,
     reason: 'manual health probe run',
@@ -248,7 +249,7 @@ async function setAdminBan(ctx: RouteCtx, id: string, banned: boolean, reason: s
     await setAuthBan(ctx.rt, id, banned);
   } catch (error) {
     await auditWrite(ctx.db, {
-      action: banned ? 'admin.admin.disabled' : 'admin.admin.enabled',
+      action: banned ? 'admin.disabled' : 'admin.enabled',
       targetType: 'admin_user',
       targetId: id,
       reason,
@@ -270,7 +271,7 @@ async function resetMfa(ctx: RouteCtx) {
     await deleteMfaFactors(ctx.rt, id);
   } catch (error) {
     await auditWrite(ctx.db, {
-      action: 'admin.admin.mfa_reset',
+      action: 'admin.mfa_reset',
       targetType: 'admin_user',
       targetId: id,
       reason: body.reason,
@@ -313,15 +314,17 @@ async function unlock(ctx: RouteCtx) {
 /**
  * Contract setting keys whose storage differs (API_CONTRACTS §4.2 vs DATABASE_AND_RLS_PLAN):
  * `referral.risk_threshold` is 0–1 in the contract and 0–100 in `app_settings` (the unit of
- * `referrals.risk_score`); `referral.max_rewards_per_year` is the plan limit
+ * `referrals.risk_score`, checked `between 0 and 100` in SQL). Decision (R-20: API_CONTRACTS owns
+ * shapes, the DB plan owns columns): both stay, and admin-api converts at the boundary in both
+ * directions (read ÷ 100, write × 100). `referral.max_rewards_per_year` is the plan limit
  * `referral_rewards_per_year` the referral reward step reads (both plans).
  */
 const RISK_THRESHOLD = 'referral.risk_threshold';
 const REWARDS_PER_YEAR = 'referral.max_rewards_per_year';
 
-function riskToContract(value: unknown): unknown {
+export function riskToContract(value: unknown): unknown {
   const n = num(value);
-  return n === null ? (value ?? null) : Math.round((n > 1 ? n / 100 : n) * 10000) / 10000;
+  return n === null ? (value ?? null) : Math.round((n / 100) * 10000) / 10000;
 }
 
 async function settingsSnapshot(ctx: RouteCtx) {
@@ -423,15 +426,34 @@ export const systemRoutes = defineRoutes({
     async handle(ctx) {
       const query = ctx.query as z.infer<typeof A.AppVersionsQuery>;
       const out = obj(await ctx.db.call('app_versions_breakdown', { p_range: query.range }));
+      const crash = await crashFreeByVersion(
+        ctx.rt.env.raw,
+        query.range,
+        ctx.rt.fetch,
+        ctx.rt.now(),
+      );
       return {
         data: {
-          versions: arr(out.versions).map((v) => ({
-            platform: v.platform,
-            app_version: v.app_version,
-            installations: count(v.installations ?? v.active_installs),
-            sync_error_rate: Math.min(1, Math.max(0, num(v.sync_error_rate) ?? 0)),
-            below_minimum: v.below_minimum === true,
-          })),
+          versions: arr(out.versions).map((v) => {
+            const rates =
+              crash.status === 'configured'
+                ? crash.byVersion.get(String(v.app_version))
+                : undefined;
+            return {
+              platform: v.platform,
+              app_version: v.app_version,
+              installations: count(v.installations ?? v.active_installs),
+              sync_error_rate: Math.min(1, Math.max(0, num(v.sync_error_rate) ?? 0)),
+              below_minimum: v.below_minimum === true,
+              crash_free_sessions: rates?.sessions ?? null,
+              crash_free_users: rates?.users ?? null,
+            };
+          }),
+          crash_reporting: {
+            status: crash.status,
+            credential_keys:
+              crash.status === 'external_credential_required' ? [...crash.missing] : [],
+          },
         },
       };
     },

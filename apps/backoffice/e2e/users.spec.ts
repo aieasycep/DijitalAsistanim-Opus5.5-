@@ -82,7 +82,7 @@ test.describe('users', () => {
     expect(call?.body).toMatchObject({ user_id: USER_ID, reason: REASON, confirm: true });
     expect(call?.headers['idempotency-key']).toMatch(/^[0-9a-f-]{36}$/);
     const audit = await mockAudit(request);
-    expect(audit.at(-1)).toMatchObject({ action: 'admin.notification.test_sent', reason: REASON });
+    expect(audit.at(-1)).toMatchObject({ action: 'push.test_sent', reason: REASON });
   });
 
   test('support reveals the email for 60 seconds with an audited reason', async ({
@@ -95,7 +95,7 @@ test.describe('users', () => {
     await confirmDialog(page, 'Bilgiyi göster', { reason: REASON });
     await expect(page.getByText('yusuf.demir@gmail.com').first()).toBeVisible();
     expect((await mockAudit(request)).at(-1)).toMatchObject({
-      action: 'admin.pii.revealed',
+      action: 'user.pii_revealed',
       reason: REASON,
     });
   });

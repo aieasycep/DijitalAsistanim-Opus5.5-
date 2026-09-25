@@ -317,12 +317,15 @@ export async function adminApi<K extends TypedRouteKey>(
   input: AdminApiInput = {},
   options: AdminApiCallOptions = {},
 ): Promise<AdminApiResult<K>> {
+  // Request headers first: during `next build` prerendering this opts the page into dynamic
+  // rendering before any server-only environment value is read, so a build without runtime
+  // secrets stays quiet; at request time the environment is validated as before.
+  const requestHeaders = await headers();
   const env = serverEnv();
   const client = createAdminApiClient({
     baseUrl: env.adminApiBaseUrl,
     bffSecret: env.ADMIN_BFF_SECRET,
   });
-  const requestHeaders = await headers();
   const token =
     adminRoutes[key].access.require === 'bff'
       ? null

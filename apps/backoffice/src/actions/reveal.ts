@@ -1,5 +1,6 @@
 'use server';
 
+import { UserRevealField } from '@da/validation/admin/users';
 import { z } from 'zod';
 
 import { failure, runAdminMutation, type ActionResult } from '@/server/action';
@@ -8,8 +9,11 @@ import { REVEAL_ROUTES } from '@/server/admin-contracts';
 const RevealRequest = z.strictObject({
   route: z.enum(REVEAL_ROUTES),
   id: z.uuid(),
-  /** Only `POST /users/:id/reveal` takes a field (`email`, API_CONTRACTS ADM-02). */
-  field: z.literal('email').optional(),
+  /**
+   * Only `POST /users/:id/reveal` takes a field (BACKOFFICE_PLAN §5.5): `email`, `display_name`,
+   * `integration_email:{account_id}` or `ticket_contact_email:{ticket_id}`.
+   */
+  field: UserRevealField.optional(),
 });
 
 export type RevealRequest = z.infer<typeof RevealRequest>;

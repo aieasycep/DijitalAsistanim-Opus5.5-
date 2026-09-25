@@ -55,7 +55,7 @@ test.describe('AI operations', () => {
     await confirmDialog(page, 'v3 sürümünü aktifleştir', { reason: REASON });
     await expect(page.getByText('v3 aktif.').first()).toBeVisible();
     expect((await mockAudit(request)).at(-1)).toMatchObject({
-      action: 'admin.prompt.activated',
+      action: 'prompt.activated',
       reason: REASON,
     });
     await expect(page.getByTestId('prompt-activate')).toHaveCount(0);

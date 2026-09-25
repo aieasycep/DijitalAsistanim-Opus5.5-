@@ -54,9 +54,7 @@ test.describe('entitlements', () => {
     });
     await expect(page.getByText('Erişim geri alındı.').first()).toBeVisible();
     const actions = (await mockAudit(request)).map((a) => a.action);
-    expect(actions).toEqual(
-      expect.arrayContaining(['admin.entitlement.granted', 'admin.entitlement.revoked']),
-    );
+    expect(actions).toEqual(expect.arrayContaining(['entitlement.granted', 'entitlement.revoked']));
   });
 });
 
@@ -85,7 +83,7 @@ test.describe('admin users', () => {
     });
     await expect(page.getByText('Davet gönderildi').first()).toBeVisible();
     await expect(page.getByRole('table').first()).toContainText('yeni.analist@dijitalasistan.app');
-    expect((await mockAudit(request)).at(-1)).toMatchObject({ action: 'admin.admin.invited' });
+    expect((await mockAudit(request)).at(-1)).toMatchObject({ action: 'admin.invited' });
   });
 
   test('operations sees the admin list read-only', async ({ page, request }) => {

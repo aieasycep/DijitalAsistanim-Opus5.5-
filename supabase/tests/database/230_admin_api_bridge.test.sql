@@ -75,7 +75,7 @@ select is((select assigned_admin_id from public.support_tickets where id = (sele
           md5('da-test-admin:help@bridge.test')::uuid, 'ticket_patch assigns');
 select isnt((select first_response_at from public.support_tickets where id = (select id from bx where k = 'ticket')), null,
             'leaving open marks the first response');
-select ok(exists (select 1 from public.audit_logs a where a.action = 'support.ticket_updated'
+select ok(exists (select 1 from public.audit_logs a where a.action = 'ticket.updated'
                   and a.target_id = (select id from bx where k = 'ticket')::text
                   and a.details -> 'after' ->> 'status' = 'in_progress'), 'the patch is audited with before/after');
 select tests.authenticate_as(md5('da-test-admin:root@bridge.test')::uuid, 'aal2');

@@ -240,7 +240,10 @@ export type Database = {
       command_search: { Args: { p_q: string }; Returns: Json };
       correlation_trace: { Args: { p_correlation_id: string }; Returns: Json };
       cron_status: { Args: Record<PropertyKey, never>; Returns: Json };
-      dashboard_metrics: { Args: { p_range: string }; Returns: Json };
+      dashboard_metrics: {
+        Args: { p_platform?: string; p_range: string };
+        Returns: Json;
+      };
       dashboard_series: {
         Args: { p_metric: string; p_range: string };
         Returns: Json;
@@ -417,6 +420,10 @@ export type Database = {
         };
         Returns: Json;
       };
+      job_retry_selected: {
+        Args: { p_job_ids: string[]; p_reason: string };
+        Returns: Json;
+      };
       jobs_list: {
         Args: {
           p_filter?: Json;
@@ -445,6 +452,10 @@ export type Database = {
       metrics_product: { Args: { p_range: string }; Returns: Json };
       notification_send_test: {
         Args: { p_installation?: string; p_reason: string; p_user: string };
+        Returns: Json;
+      };
+      notification_test_preview: {
+        Args: { p_installation?: string; p_user: string };
         Returns: Json;
       };
       notifications_metrics: {

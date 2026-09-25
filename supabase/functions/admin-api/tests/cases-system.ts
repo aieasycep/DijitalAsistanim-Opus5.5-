@@ -160,7 +160,7 @@ export const SYSTEM_CASES: Cases = {
       assertMatch(run?.headers.get('authorization') ?? '', /^Bearer ey/);
       assert(run?.headers.get('x-da-bff') !== null);
       const audit = argsOf(h, 'audit_write') ?? {};
-      assertEquals([audit.p_action, audit.p_result], ['admin.health.run', 'success']);
+      assertEquals([audit.p_action, audit.p_result], ['health.run_requested', 'success']);
       assertEquals(audit.p_details, { probes: 2, healthy: 1, degraded: 1 });
       const order = h.rpcNames().filter((n) => n === 'authorize' || n === 'audit_write');
       assertEquals(order, ['authorize', 'audit_write'], 'authorize first, audit after');
@@ -200,8 +200,14 @@ export const SYSTEM_CASES: Cases = {
           installations: 100,
           sync_error_rate: 0.0123,
           below_minimum: true,
+          crash_free_sessions: null,
+          crash_free_users: null,
         },
       ]);
+      assertEquals(data(body).crash_reporting, {
+        status: 'external_credential_required',
+        credential_keys: ['SENTRY_AUTH_TOKEN', 'SENTRY_ORG', 'SENTRY_PROJECT'],
+      });
     },
   },
   'GET /health/cron': {

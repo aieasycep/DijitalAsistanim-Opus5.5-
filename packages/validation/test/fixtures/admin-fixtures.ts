@@ -91,6 +91,11 @@ const dashboardMetrics = Object.fromEntries(
     'reconnect_rate',
   ].map((k) => [k, metric]),
 );
+const dashboardResponse = {
+  ...dashboardMetrics,
+  platform: 'ios',
+  rollup: { last_computed_at: TS, stale: false },
+};
 const userRow = {
   id: uuid(2),
   email_masked: 'yu***@gmail.com',
@@ -214,6 +219,7 @@ const ticketRow = {
   assignee: null,
   created_at: TS,
   contact_email_masked: 'yu***@gmail.com',
+  user_id: uuid(2),
 };
 const accessGrant = {
   id: uuid(102),
@@ -251,6 +257,7 @@ const jobRow = {
 const modelTarget = { provider: 'anthropic', model: 'claude-haiku-4-5-20251001' };
 const modelConfig = {
   profile: 'balanced',
+  role: 'classifier',
   feature: 'email_triage',
   tier: 't1',
   enabled: true,
@@ -320,7 +327,7 @@ const auditRow = {
   ts: TS,
   actor: 'op***@dijitalasistan.app',
   role: 'operations',
-  action: 'admin.job.retried',
+  action: 'job.retried',
   target: `job:${uuid(70)}`,
   reason: REASON,
   result: 'success',
@@ -488,16 +495,39 @@ export const adminFixtures = {
     },
     invalid: [response(ok({ codes: ['A'], generated_at: TS }), 'exactly 10 codes')],
   },
+  'POST /me/mfa-factors': {
+    valid: {
+      body: { factor_id: uuid(120) },
+      response: ok({ factor_id: uuid(120), verified_factors: 2 }),
+    },
+    invalid: [
+      { part: 'body', why: 'factor id must be a uuid', value: { factor_id: 'totp' } },
+      response(ok({ factor_id: uuid(120), verified_factors: 3 }), 'at most two factors'),
+    ],
+  },
+  'DELETE /me/mfa-factors/:factorId': {
+    valid: {
+      params: { factorId: uuid(120) },
+      body: { reason: REASON, confirm: true },
+      response: ok({ factor_id: uuid(120), verified_factors: 1 }),
+    },
+    invalid: [
+      { part: 'params', why: 'factor id must be a uuid', value: { factorId: 'x' } },
+      { part: 'body', why: 'reason required', value: { confirm: true } },
+    ],
+  },
   'POST /session/step-up': {
     valid: { body: {}, response: ok({ step_up_valid_until: TS_LATER }) },
     invalid: [response(ok({ step_up_valid_until: 'soon' }), 'not a timestamp')],
   },
   // ADM-01
   'GET /dashboard/metrics': {
-    valid: { query: { range: '30d' }, response: ok(dashboardMetrics) },
+    valid: { query: { range: '30d', platform: 'ios' }, response: ok(dashboardResponse) },
     invalid: [
       badRange,
-      response(ok({ ...dashboardMetrics, total_users: 10 }), 'metric needs value and delta'),
+      { part: 'query', why: 'unknown platform', value: { platform: 'web' } },
+      response(ok({ ...dashboardResponse, total_users: 10 }), 'metric needs value and delta'),
+      response(ok(dashboardMetrics), 'rollup freshness missing'),
     ],
   },
   'GET /dashboard/charts': {
@@ -561,6 +591,9 @@ export const adminFixtures = {
       params: idParams,
       response: ok({
         user_id: uuid(2),
+        email_masked: 'yu***@gmail.com',
+        display_name_masked: 'Y*** K.',
+        is_internal: false,
         account_status: 'active',
         plan: 'pro',
         integrations: [
@@ -579,7 +612,27 @@ export const adminFixtures = {
         platform: 'ios',
       }),
     },
-    invalid: [badId, response(ok({ user_id: uuid(2) }), 'overview incomplete')],
+    invalid: [
+      badId,
+      response(ok({ user_id: uuid(2) }), 'overview incomplete'),
+      response(
+        ok({
+          user_id: uuid(2),
+          email_masked: 'yunus@gmail.com',
+          display_name_masked: null,
+          is_internal: false,
+          account_status: 'active',
+          plan: 'free',
+          integrations: [],
+          job_errors: [],
+          briefing_status: [],
+          push_status: { tokens_enabled: 0, last_receipt_error: null },
+          app_version: null,
+          platform: null,
+        }),
+        'email must be masked',
+      ),
+    ],
   },
   'GET /users/:id/integrations': {
     valid: { params: idParams, response: ok([userIntegration]) },
@@ -776,8 +829,13 @@ export const adminFixtures = {
     invalid: [
       {
         part: 'body',
-        why: 'only email can be revealed',
+        why: 'only the §5.5 PII fields can be revealed',
         value: { field: 'phone', reason: REASON, confirm: true },
+      },
+      {
+        part: 'body',
+        why: 'an integration email names its account id',
+        value: { field: 'integration_email:x', reason: REASON, confirm: true },
       },
       response(ok({ value: 'x', expires_in_s: 3600 }), 'reveal expires in 60 s'),
     ],
@@ -1342,6 +1400,33 @@ export const adminFixtures = {
       response(ok({ notification_id: uuid(105) }), 'job missing'),
     ],
   },
+  'GET /notifications/test-push/preview': {
+    valid: {
+      query: { user_id: uuid(2) },
+      response: ok({
+        timezone: 'Europe/Istanbul',
+        local_time: '23:40',
+        in_quiet_hours: true,
+        quiet_hours_end_local: '08:00',
+        deferred_until: TS_LATER,
+        active_devices: 1,
+      }),
+    },
+    invalid: [
+      { part: 'query', why: 'user id required', value: {} },
+      response(
+        ok({
+          timezone: 'Europe/Istanbul',
+          local_time: '11pm',
+          in_quiet_hours: false,
+          quiet_hours_end_local: null,
+          deferred_until: null,
+          active_devices: 1,
+        }),
+        'local time is HH:mm',
+      ),
+    ],
+  },
   // ADM-08
   'GET /ai/metrics': {
     valid: {
@@ -1429,6 +1514,12 @@ export const adminFixtures = {
           anthropic: 'configured',
           openai: 'external_credential_required',
           voyage: 'configured',
+          stt: 'external_credential_required',
+          tts: 'external_credential_required',
+        },
+        profile_costs: {
+          balanced: { monthly_usd: 2.24, coverage: 1, pro_users: 40, window_days: 30 },
+          lean: { monthly_usd: null, coverage: null, pro_users: 40, window_days: 30 },
         },
       }),
     },
@@ -1651,6 +1742,7 @@ export const adminFixtures = {
         prompt_version: '3',
         rating: -1,
         reason_code: 'tone',
+        has_comment: true,
         created_at: TS,
       }),
     },
@@ -2068,7 +2160,7 @@ export const adminFixtures = {
           {
             ts: TS,
             actor: 'op***@x.app',
-            action: 'admin.flag.updated',
+            action: 'flag.updated',
             reason: REASON,
             before: {},
             after: {},
@@ -2361,7 +2453,7 @@ export const adminFixtures = {
   // ADM-17
   'GET /audit': {
     valid: {
-      query: { 'filter[action]': 'admin.pii.revealed', 'filter[from]': TS },
+      query: { 'filter[action]': 'user.pii_revealed', 'filter[from]': TS },
       response: paged(auditRow),
     },
     invalid: [
@@ -2389,7 +2481,7 @@ export const adminFixtures = {
         actor_type: 'admin',
         actor: 'op***@dijitalasistan.app',
         role: 'operations',
-        action: 'admin.job.retried',
+        action: 'job.retried',
         target_type: 'job',
         target_id: uuid(70),
         target_user: 'deleted:ab12',
@@ -2518,8 +2610,14 @@ export const adminFixtures = {
             installations: 100,
             sync_error_rate: 0.01,
             below_minimum: false,
+            crash_free_sessions: null,
+            crash_free_users: null,
           },
         ],
+        crash_reporting: {
+          status: 'external_credential_required',
+          credential_keys: ['SENTRY_AUTH_TOKEN', 'SENTRY_ORG', 'SENTRY_PROJECT'],
+        },
       }),
     },
     invalid: [

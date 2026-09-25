@@ -12,6 +12,8 @@ import { getFormatters } from '@/server/formatters';
 import { THEME_COOKIE, parseTheme } from '@/server/preference-cookies';
 import { readAdmin } from '@/server/read';
 import { loadAdminContext } from '@/server/session';
+import { serverSupabase } from '@/server/supabase';
+import { BackupFactorControls, type MfaFactorItem } from './backup-factor';
 import { PreferenceControls, SecurityControls } from './settings-controls';
 import { SystemSettings } from './system-settings';
 
@@ -78,12 +80,25 @@ export default async function SettingsPage({
   );
 }
 
+/** The admin's verified TOTP factors from their own Auth session (names and dates only). */
+async function ownFactors(): Promise<MfaFactorItem[] | null> {
+  const supabase = await serverSupabase();
+  const listed = await supabase.auth.mfa.listFactors();
+  if (listed.error !== null) return null;
+  return listed.data.totp.map((factor) => ({
+    id: factor.id,
+    name: factor.friendly_name ?? null,
+    createdAt: factor.created_at,
+  }));
+}
+
 async function Security() {
-  const [t, f, context, sessions] = await Promise.all([
+  const [t, f, context, sessions, factors] = await Promise.all([
     getTranslations('backoffice.settings.security'),
     getFormatters(),
     loadAdminContext(),
     readAdmin('GET /me/sessions'),
+    ownFactors(),
   ]);
   return (
     <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
@@ -100,6 +115,11 @@ async function Security() {
           ]}
         />
         <SecurityControls />
+        {factors === null ? (
+          <p className="text-bo-meta text-ink-2">{t('backup.unavailable')}</p>
+        ) : (
+          <BackupFactorControls factors={factors} />
+        )}
       </Panel>
       <Panel title={t('sessions')}>
         {!sessions.ok ? (

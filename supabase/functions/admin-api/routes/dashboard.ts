@@ -4,7 +4,9 @@
  * `dashboard_metrics`, `dashboard_series`, `metrics_ops`, `metrics_product` and `security_events`.
  * Each KPI carries its delta against the previous equal window ("+12% önceki döneme göre"):
  * `(current − previous) / previous`, `null` when there is no previous value. Ratios with a zero
- * denominator are `null` in SQL and render as `0` in the non-nullable contract fields.
+ * denominator are `null` in SQL and render as `0` in the non-nullable contract fields. The platform
+ * filter (ios | android | all) scopes the user, active-user and push KPIs; `rollup` reports the
+ * `metrics_daily` freshness for the stale-data banner (§5.6).
  */
 import { admin as A } from '@da/validation';
 import type { z } from 'zod';
@@ -34,15 +36,23 @@ function costPerActive(block: Json): number | null {
 
 async function metrics(ctx: RouteCtx) {
   const query = ctx.query as z.infer<typeof A.DashboardMetricsQuery>;
-  const out = obj(await ctx.db.call('dashboard_metrics', { p_range: query.range }));
+  const out = obj(
+    await ctx.db.call('dashboard_metrics', { p_range: query.range, p_platform: query.platform }),
+  );
   const current = obj(out.value);
   const previous = obj(out.prev_value);
   const cur = kpiValues(current, { ai_cost_per_active_user: out.ai_cost_per_active_user });
   const prev = kpiValues(previous, { ai_cost_per_active_user: costPerActive(previous) });
-  const data: Record<string, { value: number; delta: number | null }> = {};
+  const data: Record<string, unknown> = {};
   for (const key of A.DASHBOARD_METRIC_KEYS) {
     data[key] = { value: cur[key] ?? 0, delta: delta(cur[key] ?? null, prev[key] ?? null) };
   }
+  const rollup = obj(out.rollup);
+  data.platform = str(out.platform) ?? query.platform;
+  data.rollup = {
+    last_computed_at: str(rollup.last_computed_at),
+    stale: rollup.stale !== false,
+  };
   return { data };
 }
 

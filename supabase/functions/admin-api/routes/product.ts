@@ -358,7 +358,7 @@ export const productRoutes = defineRoutes({
       assertFlagWriter(ctx, key);
       return {
         data: flagRow(
-          obj(await ctx.db.call('flag_kill', { p_key: key, p_reason: body.reason, p_on: true })),
+          obj(await ctx.db.call('flag_kill', { p_key: key, p_reason: body.reason, p_on: body.on })),
         ),
       };
     },

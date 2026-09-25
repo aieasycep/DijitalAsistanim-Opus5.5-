@@ -56,6 +56,8 @@ const READS: Partial<Record<RouteKey, Sample>> = {
   'GET /users/:id/support': { params: { id: MAIN_USER_ID } },
   'GET /users/:id/audit': { params: { id: MAIN_USER_ID } },
   'GET /users/:id/devices': { params: { id: MAIN_USER_ID } },
+  'GET /notifications/test-push/preview': { query: { user_id: MAIN_USER_ID } },
+  'GET /dashboard/metrics': { query: { platform: 'ios' } },
   'GET /support/tickets/:id': { params: { id: TICKET_ID } },
   'GET /integrations/:accountId': { params: { accountId: uid('3333', 1) } },
   'GET /jobs/:id': { params: { id: DEAD_JOB_ID } },
@@ -87,6 +89,13 @@ const WRITES: [RouteKey, Sample][] = [
   [
     'POST /users/:id/reveal',
     { params: { id: MAIN_USER_ID }, body: { field: 'email', reason: REASON, confirm: true } },
+  ],
+  [
+    'POST /users/:id/reveal',
+    {
+      params: { id: MAIN_USER_ID },
+      body: { field: 'display_name', reason: REASON, confirm: true },
+    },
   ],
   [
     'POST /users/:id/force-sync',
@@ -188,6 +197,10 @@ const WRITES: [RouteKey, Sample][] = [
     },
   ],
   [
+    'POST /jobs/retry-bulk',
+    { body: { job_ids: [uid('4444', 1), uid('4444', 2)], reason: REASON, confirm: true } },
+  ],
+  [
     'POST /briefings/:id/regenerate',
     { params: { id: FAILED_BRIEFING_ID }, body: { reason: REASON, confirm: true } },
   ],
@@ -274,6 +287,10 @@ const WRITES: [RouteKey, Sample][] = [
   [
     'POST /flags/:key/kill',
     { params: { key: 'feature.voice' }, body: { reason: REASON, confirm: true } },
+  ],
+  [
+    'POST /flags/:key/kill',
+    { params: { key: 'feature.voice' }, body: { on: false, reason: REASON, confirm: true } },
   ],
   [
     'POST /flags/:key/overrides',
@@ -406,6 +423,11 @@ function context(
   };
 }
 
+/** The first mutation sample of a route. */
+function sampleOf(key: RouteKey): Sample | undefined {
+  return WRITES.find(([route]) => route === key)?.[1];
+}
+
 function expectContract(key: RouteKey, sample: Sample): void {
   const outcome = handleModule(context(key, sample));
   expect(outcome, key).not.toBeNull();
@@ -442,7 +464,11 @@ describe('mock admin-api contract', () => {
   });
 
   it('applies the registry access rules per role', () => {
-    const grant = context('POST /users/:id/entitlement-grants', WRITES[3]?.[1] ?? {}, 'support');
+    const grant = context(
+      'POST /users/:id/entitlement-grants',
+      sampleOf('POST /users/:id/entitlement-grants') ?? {},
+      'support',
+    );
     expect(accessDenied(grant)).toBeNull();
     const longGrant = context(
       'POST /users/:id/entitlement-grants',
@@ -454,7 +480,13 @@ describe('mock admin-api contract', () => {
     );
     expect(accessDenied(longGrant)).toBe('entitlements.grant');
     expect(
-      accessDenied(context('POST /notifications/test-push', WRITES[20]?.[1] ?? {}, 'operations')),
+      accessDenied(
+        context(
+          'POST /notifications/test-push',
+          sampleOf('POST /notifications/test-push') ?? {},
+          'operations',
+        ),
+      ),
     ).toBeNull();
     expect(accessDenied(context('GET /admins', {}, 'support'))).toBe('admins.read');
     const aiFlag = context(

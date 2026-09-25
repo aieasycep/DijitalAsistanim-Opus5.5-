@@ -18,6 +18,7 @@ import {
   type TypedMutationKey,
 } from './admin-contracts';
 import { checkSameOrigin, type OriginCheck } from './csrf';
+import { verifyTotpCode } from './mfa';
 import { serverSupabase } from './supabase';
 
 /*
@@ -166,12 +167,9 @@ export async function verifyStepUp(
   code: string,
 ): Promise<{ ok: true } | { ok: false; error: ActionFailure }> {
   const supabase = await serverSupabase();
-  const factors = await supabase.auth.mfa.listFactors();
-  const factor = factors.data?.totp[0];
-  if (factor === undefined)
-    return failure('STEP_UP_FAILED', 'confirm.stepUpInvalid', 403, { stepUpRequired: true });
-  const verified = await supabase.auth.mfa.challengeAndVerify({ factorId: factor.id, code });
-  if (verified.error !== null) {
+  // Either authenticator (primary or backup device, §3.3) passes the step-up.
+  const verified = await verifyTotpCode(supabase, code);
+  if (!verified.ok) {
     return failure('STEP_UP_FAILED', 'confirm.stepUpInvalid', 403, { stepUpRequired: true });
   }
   const recorded = await adminApi('POST /session/step-up', { body: {} });

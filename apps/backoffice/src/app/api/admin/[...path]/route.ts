@@ -7,10 +7,15 @@ import { checkFetchSite } from '@/server/csrf';
 
 /*
  * GET-only read proxy for client components (BACKOFFICE_PLAN §2.3 "Client reads"): the command
- * palette search and the SessionWatcher's session probe. Allow-listed paths only; requests are
- * forwarded with `x-da-activity: background`, so polling never extends the idle window. Route
- * handlers never mutate anything.
+ * palette search, the SessionWatcher's session probe, the Jobs live view ("Canlı (10 sn)", R-19:
+ * polling, no Realtime) and the push-test dialog's quiet-hours preview. Allow-listed paths only;
+ * background reads are forwarded with `x-da-activity: background`, so polling never extends the
+ * idle window. Route handlers never mutate anything.
  */
+
+/** Query keys the Jobs list accepts (`GET /jobs`); anything else is dropped. */
+const JOBS_QUERY_KEY =
+  /^(page|page_size|sort|order|q|filter\[(type|status|user_id|account_id|from|to)\])$/;
 
 export const dynamic = 'force-dynamic';
 
@@ -86,6 +91,41 @@ export async function GET(
         },
         { headers: { 'Cache-Control': 'no-store' } },
       );
+    }
+    case 'jobs': {
+      const query: Record<string, string> = {};
+      for (const [key, value] of request.nextUrl.searchParams) {
+        if (JOBS_QUERY_KEY.test(key)) query[key] = value;
+      }
+      const result = await adminApi('GET /jobs', { query }, { activity: 'background' });
+      if (!result.ok) return failureResponse(result.error);
+      return NextResponse.json(
+        {
+          rows: result.data,
+          total: result.meta.total,
+          total_is_estimate: result.meta.total_is_estimate,
+          server_time: result.meta.server_time,
+        },
+        { headers: { 'Cache-Control': 'no-store' } },
+      );
+    }
+    case 'notifications/test-push/preview': {
+      // Opening the push-test dialog is admin activity (not background polling).
+      const installation = request.nextUrl.searchParams.get('installation_id');
+      const result = await adminApi(
+        'GET /notifications/test-push/preview',
+        {
+          query: {
+            user_id: request.nextUrl.searchParams.get('user_id') ?? '',
+            ...(installation === null || installation === ''
+              ? {}
+              : { installation_id: installation }),
+          },
+        },
+        { activity: 'user' },
+      );
+      if (!result.ok) return failureResponse(result.error);
+      return NextResponse.json(result.data, { headers: { 'Cache-Control': 'no-store' } });
     }
     default:
       return NextResponse.json({ error: { code: 'NOT_FOUND' } }, { status: 404 });

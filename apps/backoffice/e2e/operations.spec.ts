@@ -23,7 +23,7 @@ test.describe('operations', () => {
     await confirmDialog(page, 'Hesap senkronunu başlat', { reason: REASON });
     await expect(page.getByText('1 iş kuyruğa alındı.').first()).toBeVisible();
     expect((await mockAudit(request)).at(-1)).toMatchObject({
-      action: 'admin.integration.force_sync',
+      action: 'user.force_sync',
       target_id: ACCOUNT_ID,
     });
   });
@@ -65,6 +65,6 @@ test.describe('operations', () => {
     const state = (await (await request.get(`${MOCK_ORIGIN}/__mock/state`)).json()) as {
       audit: { action: string }[];
     };
-    expect(state.audit.at(-1)?.action).toBe('admin.briefing.regenerated');
+    expect(state.audit.at(-1)?.action).toBe('briefing.regenerated');
   });
 });

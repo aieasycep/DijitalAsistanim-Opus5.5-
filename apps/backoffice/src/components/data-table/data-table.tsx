@@ -22,6 +22,7 @@ import { useMemo, useState, useTransition, type ReactNode } from 'react';
 import { EmptyState } from '@/components/states/empty-state';
 import { ErrorState } from '@/components/states/error-state';
 import { ForbiddenState } from '@/components/states/forbidden-state';
+import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/cn';
 import { ColumnHeader } from './column-header';
 import { Pagination } from './pagination';
@@ -88,6 +89,22 @@ export interface DataTableProps<Row> {
   readonly prefs?: DataTablePrefs;
   /** Persists `table_prefs[tableId]` (e.g. `saveTablePrefsAction`). */
   readonly onPrefsChange?: (tableId: string, prefs: DataTablePrefs) => unknown;
+  /**
+   * Row selection (§5.3: only where bulk actions exist, i.e. Jobs): a leading checkbox column; the
+   * header checkbox selects the selectable rows of the current page.
+   */
+  readonly selection?: DataTableSelection<Row>;
+}
+
+export interface DataTableSelection<Row> {
+  readonly selected: ReadonlySet<string>;
+  readonly onChange: (next: ReadonlySet<string>) => void;
+  /** Rows that cannot be selected render a disabled checkbox (e.g. a running job). */
+  readonly isSelectable?: (row: Row) => boolean;
+  /** Accessible name of a row's checkbox ("{id} seç"). */
+  readonly rowLabel: (row: Row) => string;
+  /** Accessible name of the header checkbox ("Bu sayfadakileri seç"). */
+  readonly pageLabel: string;
 }
 
 function visibilityFrom(hidden: readonly string[] | undefined): ColumnVisibilityState {
@@ -117,6 +134,7 @@ export function DataTable<Row extends RowData>({
   density = 'comfortable',
   prefs,
   onPrefsChange,
+  selection,
 }: DataTableProps<Row>) {
   const t = useTranslations('backoffice.table');
   const router = useRouter();
@@ -206,6 +224,26 @@ export function DataTable<Row extends RowData>({
     void setUrl(cleared);
   };
   const cellPadding = density === 'compact' ? 'px-2 py-1.5' : 'px-3 py-2.5';
+  const selectableIds =
+    selection === undefined
+      ? []
+      : rows.filter((row) => selection.isSelectable?.(row) ?? true).map((row) => getRowId(row));
+  const selectedOnPage = selectableIds.filter((id) => selection?.selected.has(id) === true);
+  const pageChecked: boolean | 'indeterminate' =
+    selectableIds.length > 0 && selectedOnPage.length === selectableIds.length
+      ? true
+      : selectedOnPage.length > 0
+        ? 'indeterminate'
+        : false;
+  const toggle = (ids: readonly string[], on: boolean) => {
+    if (selection === undefined) return;
+    const next = new Set(selection.selected);
+    for (const id of ids) {
+      if (on) next.add(id);
+      else next.delete(id);
+    }
+    selection.onChange(next);
+  };
 
   let body: ReactNode;
   if (status === 'error') {
@@ -279,6 +317,18 @@ export function DataTable<Row extends RowData>({
               <thead className="bg-surface-sunken">
                 {table.getHeaderGroups().map((group) => (
                   <tr key={group.id}>
+                    {selection === undefined ? null : (
+                      <th scope="col" className={cn(cellPadding, 'w-10')}>
+                        <Checkbox
+                          aria-label={selection.pageLabel}
+                          checked={pageChecked}
+                          disabled={selectableIds.length === 0}
+                          onCheckedChange={(value) => {
+                            toggle(selectableIds, value === true);
+                          }}
+                        />
+                      </th>
+                    )}
                     {group.headers.map((header) => (
                       <ColumnHeader
                         key={header.id}
@@ -314,6 +364,18 @@ export function DataTable<Row extends RowData>({
                         selectedRowId === row.id && 'bg-primary-soft hover:bg-primary-soft',
                       )}
                     >
+                      {selection === undefined ? null : (
+                        <td className={cn(cellPadding, 'w-10')}>
+                          <Checkbox
+                            aria-label={selection.rowLabel(row.original)}
+                            checked={selection.selected.has(row.id)}
+                            disabled={!(selection.isSelectable?.(row.original) ?? true)}
+                            onCheckedChange={(value) => {
+                              toggle([row.id], value === true);
+                            }}
+                          />
+                        </td>
+                      )}
                       {row.getVisibleCells().map((cell, index) => {
                         const align = columns.find((c) => c.id === cell.column.id)?.align;
                         const content = <table.FlexRender cell={cell} />;
