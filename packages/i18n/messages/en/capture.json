@@ -21,7 +21,12 @@
   "text": {
     "hint": "Type or paste text here",
     "label": "Note or text",
-    "counter": "{count, plural, one {# character} other {# characters}}"
+    "counter": "{count, plural, one {# character} other {# characters}}",
+    "dictate": "Dictate",
+    "stopDictation": "Stop listening",
+    "paste": "Paste",
+    "pasteEmpty": "There is no text to paste.",
+    "micDenied": "Microphone access was not granted; you can keep typing."
   },
   "statuses": {
     "pending_upload": "Uploading…",

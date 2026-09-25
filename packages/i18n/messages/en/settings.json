@@ -68,7 +68,8 @@
     "everywhereConfirmTitle": "Sign out of all devices?",
     "everywhereConfirmBody": "You'll be signed out everywhere, including this device.",
     "unsentSettings": "Some setting changes are not sent yet; they are lost if you sign out.",
-    "globalFailed": "Could not close the sessions. Try again."
+    "globalFailed": "Could not close the sessions. Try again.",
+    "offline": "You're offline. This device's notifications stop once it's back online."
   },
   "profile": {
     "title": "Profile",
@@ -252,7 +253,14 @@
     "light": "Light",
     "dark": "Dark",
     "textSize": "Text size",
-    "textSizeSystem": "Uses your system setting"
+    "textSizeSystem": "Uses your system setting",
+    "textSizes": {
+      "system": "Same as system",
+      "sm": "Smaller",
+      "lg": "Larger",
+      "xl": "Largest"
+    },
+    "textSizeSample": "There are 5 things you should know today."
   },
   "language": {
     "title": "Language",

@@ -21,6 +21,7 @@ import { useTranslations } from 'use-intl';
 
 import { I18nProvider } from '../i18n/I18nProvider';
 import { prepareSecureStorage } from '../lib/auth/first-run-purge';
+import { bindPendingSessionCleanup } from '../lib/auth/pending-cleanup';
 import { getSupabase } from '../lib/auth/supabase';
 import { startAnalytics } from '../lib/analytics';
 import { flushPendingLinks } from '../lib/deeplinks';
@@ -28,7 +29,7 @@ import { setupNotificationChannels } from '../lib/notifications/channels';
 import { bindMutationQueue } from '../lib/offline/mutations';
 import { bindFocusManager, bindOnlineManager } from '../lib/query/online-manager';
 import { isEncryptedStorageOpen } from '../lib/storage';
-import { loadUiPrefs, updateUiPrefs, useUiPrefs } from '../lib/ui-prefs';
+import { TEXT_SCALE_FACTORS, loadUiPrefs, updateUiPrefs, useUiPrefs } from '../lib/ui-prefs';
 import { AuthProvider } from './AuthProvider';
 import { QueryProvider } from './QueryProvider';
 import { SheetHost } from './SheetHost';
@@ -64,12 +65,14 @@ export async function bootApp(): Promise<void> {
   bindOnlineManager();
   // T-8.23 offline queue replay, T-8.28 analytics delivery, T-8.24 channels before any prompt.
   bindMutationQueue();
+  // M-SET-02: finishes a sign-out done offline (session revoke + device unregister).
+  bindPendingSessionCleanup();
   startAnalytics();
   void setupNotificationChannels();
   booted = true;
 }
 
-/** Theme, motion, haptics and language from the preference store. */
+/** Theme, motion, haptics, text size and language from the preference store. */
 export function UiShell({ children }: { readonly children: ReactNode }) {
   const prefs = useUiPrefs();
   const toastBottomOffset = useToastBottomOffset();
@@ -79,6 +82,7 @@ export function UiShell({ children }: { readonly children: ReactNode }) {
       onThemePreferenceChange={(theme) => updateUiPrefs({ theme })}
       reduceMotion={prefs.reduceMotion}
       hapticsEnabled={prefs.hapticsEnabled}
+      textScale={TEXT_SCALE_FACTORS[prefs.textScale]}
       onHaptic={playHaptic}
       {...(prefs.locale === null ? {} : { locale: prefs.locale })}
       {...(toastBottomOffset === undefined ? {} : { toastBottomOffset })}

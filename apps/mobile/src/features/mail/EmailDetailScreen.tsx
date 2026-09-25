@@ -51,7 +51,7 @@ import { CopyableText } from '../actions/CopyableText';
 import { vipListQueryOptions, type VipRow } from '../person/data';
 import { openLink, openMenu, openReminder, openSource } from '../actions/sheets';
 import { DetailScreen, QueryFailure, useBack, useOfflineGuard } from '../actions/ui';
-import { openApprovalSheet } from '../approvals/InlineApprovalSheet';
+import { openApprovalViewSheet } from '../approvals/ApprovalSheet';
 import { emailDetailOptions, type EmailDetail } from './data';
 
 /** "ahmet@example.com" → "a***@example.com" (source lines never show full foreign addresses). */
@@ -250,7 +250,7 @@ export function EmailDetailScreen() {
   const blocked = useOfflineGuard();
   const openPaywall = useOpenPaywall();
   const back = useBack('/flow');
-  const proposals = useProposals('email_detail');
+  const proposals = useProposals();
   const { id } = useLocalSearchParams<{ id: string }>();
   const query = useQuery(emailDetailOptions(id));
   const queryClient = useQueryClient();
@@ -389,9 +389,7 @@ export function EmailDetailScreen() {
           },
         },
       });
-      openApprovalSheet({
-        approval: proposal.approval,
-        origin: 'email_detail',
+      openApprovalViewSheet(proposal.approval, {
         invalidate: [qk.mail.message(message.id), qk.plan.all],
       });
     } catch (error) {

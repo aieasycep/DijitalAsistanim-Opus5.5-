@@ -4,12 +4,18 @@
  */
 import { useTheme } from '@da/ui';
 import { Stack } from 'expo-router';
+import { useStackMotion } from '../../src/lib/motion';
 
 export default function AuthLayout() {
   const theme = useTheme();
+  const stackMotion = useStackMotion();
   return (
     <Stack
-      screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.color.bg } }}
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: theme.color.bg },
+        ...stackMotion,
+      }}
     />
   );
 }

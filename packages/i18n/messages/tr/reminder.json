@@ -34,7 +34,8 @@
     "microsoftWith": "Microsoft To Do · {email}",
     "microsoftMeta": "Microsoft To Do listene eklenir",
     "connect": "Hesap bağla",
-    "notConnected": "Bağlı değil"
+    "notConnected": "Bağlı değil",
+    "makeDefault": "Varsayılan yap"
   },
   "confirm": "Hatırlatıcıyı Kur",
   "set": "Hatırlatıcı kuruldu · {when}",

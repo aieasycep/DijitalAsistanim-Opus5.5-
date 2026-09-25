@@ -8,7 +8,7 @@ import { typography, type TypographyName } from '@da/design-tokens';
 import { Children, type JSX, type ReactNode } from 'react';
 import { Text as RNText, type TextProps as RNTextProps, type TextStyle } from 'react-native';
 import { textStyleFor } from '../theme/fonts.ts';
-import { useUpper } from '../theme/preferences.tsx';
+import { MAX_TOTAL_FONT_SCALE, useTextScale, useUpper } from '../theme/preferences.tsx';
 import { useTheme } from '../theme/ThemeProvider.tsx';
 import type { Theme } from '../theme/theme.ts';
 
@@ -41,6 +41,19 @@ export const TEXT_TONES = [
   'inverse',
 ] as const;
 export type TextTone = (typeof TEXT_TONES)[number];
+
+/**
+ * The app multiplier applied to a token and the OS cap left for it, so that the total scale
+ * (multiplier × Dynamic Type) never exceeds the token's `maxScale` (itself ≤ 2).
+ */
+export function scaledType(
+  maxScale: number,
+  appScale: number,
+): { readonly factor: number; readonly maxFontSizeMultiplier: number } {
+  const cap = Math.min(maxScale, MAX_TOTAL_FONT_SCALE);
+  const factor = Math.min(appScale, cap);
+  return { factor, maxFontSizeMultiplier: Math.max(1, cap / factor) };
+}
 
 /** Resolves a text tone in a theme. */
 export function textColor(theme: Theme, tone: TextTone): string {
@@ -109,7 +122,20 @@ export function Text({
   const theme = useTheme();
   const upper = useUpper();
   const token = typography[variant];
-  const base = textStyleFor(weight === undefined ? token : { ...token, weight });
+  const appScale = useTextScale();
+  const scaled = scaledType(token.maxScale, appScale);
+  const unscaled = textStyleFor(weight === undefined ? token : { ...token, weight });
+  const base: TextStyle =
+    scaled.factor === 1
+      ? unscaled
+      : {
+          ...unscaled,
+          fontSize: token.size * scaled.factor,
+          lineHeight: token.lineHeight * scaled.factor,
+          ...(typeof unscaled.letterSpacing === 'number'
+            ? { letterSpacing: unscaled.letterSpacing * scaled.factor }
+            : {}),
+        };
   const resolvedTone: TextTone = tone ?? (variant === 'secondary' ? 'secondary' : 'primary');
   const dynamic: TextStyle = { color: textColor(theme, resolvedTone) };
   if (numeric === true) dynamic.fontVariant = ['tabular-nums'];
@@ -119,7 +145,7 @@ export function Text({
   return (
     <RNText
       allowFontScaling
-      maxFontSizeMultiplier={token.maxScale}
+      maxFontSizeMultiplier={scaled.factor === 1 ? token.maxScale : scaled.maxFontSizeMultiplier}
       accessibilityRole={heading ? 'header' : accessibilityRole}
       {...rest}
       style={[base, dynamic, style]}

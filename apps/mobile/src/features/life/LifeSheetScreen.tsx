@@ -143,7 +143,7 @@ export function LifeSheetScreen() {
   const toast = useToast();
   const formats = useFormats();
   const queryClient = useQueryClient();
-  const proposals = useProposals('life');
+  const proposals = useProposals();
   const insights = useInsightActions([qk.flow.all, qk.life.all]);
   const { id } = useLocalSearchParams<{ id: string }>();
   const [visible, setVisible] = useState(true);

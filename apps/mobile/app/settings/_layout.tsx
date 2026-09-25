@@ -11,6 +11,7 @@ import { useEffect } from 'react';
 import { bindSettingsReplay } from '../../src/features/settings/save';
 import { useShell } from '../../src/features/shell/useShell';
 import { DELETION_STATUS_SCREEN, SETTINGS_SCREENS } from '../../src/lib/router-guards';
+import { useStackMotion } from '../../src/lib/motion';
 
 export { RouteErrorBoundary as ErrorBoundary } from '../../src/features/shell/ShellErrorBoundary';
 
@@ -18,13 +19,18 @@ export const unstable_settings = { initialRouteName: 'index' };
 
 export default function SettingsLayout() {
   const theme = useTheme();
+  const stackMotion = useStackMotion();
   const { flags } = useShell();
   useEffect(() => {
     bindSettingsReplay();
   }, []);
   return (
     <Stack
-      screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.color.bg } }}
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: theme.color.bg },
+        ...stackMotion,
+      }}
     >
       <Stack.Protected guard={flags.app}>
         {SETTINGS_SCREENS.filter((name) => name !== DELETION_STATUS_SCREEN).map((name) => (

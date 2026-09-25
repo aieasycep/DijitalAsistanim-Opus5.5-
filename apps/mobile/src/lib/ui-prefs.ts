@@ -3,7 +3,9 @@
  * reduce motion and haptics. Persisted in the encrypted `da-prefs` store for an instant first
  * frame, and overwritten by the server values from `GET /me/bootstrap` (`preferences.theme`,
  * `locale`, `preferences.timezone`, …), which are the cross-device truth. The Appearance and
- * Language settings screens write here and mirror to `user_preferences` / `profiles`.
+ * Language settings screens write here and mirror to `user_preferences` / `profiles`. The text size
+ * (M-SET-61 `textScale`) is device-local: it is never mirrored, because the right size depends on
+ * the screen.
  */
 import type { Locale } from '@da/i18n';
 import type { ThemePreference } from '@da/ui';
@@ -13,6 +15,18 @@ import { useSyncExternalStore } from 'react';
 import { isDemoBuild } from './env';
 import { encryptedStorage, isEncryptedStorageOpen } from './storage';
 
+/** M-SET-61 text-size choice: follow the OS, or an app multiplier on top of it. */
+export type TextScale = 'system' | 'sm' | 'lg' | 'xl';
+export const TEXT_SCALES: readonly TextScale[] = ['system', 'sm', 'lg', 'xl'];
+
+/** Typography multiplier per choice (SCREEN_AND_FLOW_MAP M-SET-61). */
+export const TEXT_SCALE_FACTORS: Readonly<Record<TextScale, number>> = {
+  system: 1,
+  sm: 0.9,
+  lg: 1.15,
+  xl: 1.3,
+};
+
 export interface UiPrefs {
   readonly theme: ThemePreference;
   /** Explicit language (`profiles.locale` or the demo setup); `null` follows the device. */
@@ -21,6 +35,8 @@ export interface UiPrefs {
   readonly timeZone: string | null;
   readonly reduceMotion: boolean;
   readonly hapticsEnabled: boolean;
+  /** Device-local (never from bootstrap). */
+  readonly textScale: TextScale;
 }
 
 export const DEFAULT_UI_PREFS: UiPrefs = {
@@ -29,6 +45,7 @@ export const DEFAULT_UI_PREFS: UiPrefs = {
   timeZone: null,
   reduceMotion: false,
   hapticsEnabled: true,
+  textScale: 'system',
 };
 
 const STORAGE_KEY = 'ui.prefs';
@@ -49,6 +66,9 @@ function sanitize(value: unknown): UiPrefs {
     timeZone: typeof v.timeZone === 'string' && v.timeZone !== '' ? v.timeZone : null,
     reduceMotion: v.reduceMotion === true,
     hapticsEnabled: v.hapticsEnabled !== false,
+    textScale: TEXT_SCALES.includes(v.textScale as TextScale)
+      ? (v.textScale as TextScale)
+      : DEFAULT_UI_PREFS.textScale,
   };
 }
 

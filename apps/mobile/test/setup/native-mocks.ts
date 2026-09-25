@@ -343,6 +343,8 @@ jest.mock('react-native-view-shot', () => ({
 // T-8.19…T-8.22: clipboard, store review and RevenueCat doubles (tests override per case).
 jest.mock('expo-clipboard', () => ({
   setStringAsync: jest.fn(() => Promise.resolve(true)),
+  // T-8.29 capture "Yapıştır" (read only after the tap).
+  getStringAsync: jest.fn(() => Promise.resolve('')),
 }));
 
 jest.mock('expo-store-review', () => ({

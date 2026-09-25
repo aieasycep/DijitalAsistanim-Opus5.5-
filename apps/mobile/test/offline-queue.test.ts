@@ -317,6 +317,8 @@ describe('the app queue', () => {
       briefing_opened: 'queued_idempotent',
       notification_opened: 'queued_idempotent',
       vip_set: 'queued_lww',
+      // T-8.29 completion pass: meeting notes are queueable (API_CONTRACTS §2.16).
+      meeting_note: 'queued_idempotent',
     });
     for (const kind of Object.keys(MUTATION_CLASSES)) {
       expect(kind).not.toMatch(/approv|send|reply|purchase|export|delete|integration|connect/);

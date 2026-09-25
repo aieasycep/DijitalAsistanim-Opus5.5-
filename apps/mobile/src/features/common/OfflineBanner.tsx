@@ -8,6 +8,7 @@
  * - `offline_banner_shown {screen}` once per appearance, `offline_refresh_tapped {result}`.
  * The banner is a polite live region announced once; content under it stays accessible.
  */
+import { hold } from '@da/design-tokens';
 import { useBootstrap } from '@da/api-client/react';
 import { withTrCases } from '@da/i18n';
 import { OfflineBanner, SyncLine, useTheme, type SyncPhase } from '@da/ui';
@@ -20,7 +21,7 @@ import { useFormats } from '../../lib/data/session';
 import { track } from '../../lib/events';
 import { lastAnalysisAt, recheckConnection, useConnectivity } from '../../lib/offline/connectivity';
 
-export const STILL_OFFLINE_MS = 1_500;
+export const STILL_OFFLINE_MS = hold.syncMessage;
 
 export interface AppOfflineBannerProps {
   /** Screen ID for `offline_banner_shown` (e.g. `M-TD-01`). */

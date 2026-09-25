@@ -8,6 +8,9 @@
  *   strings the kit takes from the `common` namespace of `@da/i18n`.
  * - **Screen reader / reduce transparency**: read from `AccessibilityInfo` (undo toasts stay 10 s
  *   with a screen reader; the tab bar turns opaque with Reduce Transparency).
+ * - **Text scale** (M-SET-61): the app's text-size multiplier on top of the OS Dynamic Type
+ *   (`system` 1.0, `sm` 0.9, `lg` 1.15, `xl` 1.3); `Text` keeps every token's total scale within
+ *   its `maxScale` cap (≤ {@link MAX_TOTAL_FONT_SCALE}).
  */
 import { loadMessages, toUpper, type Locale, type Messages } from '@da/i18n';
 import {
@@ -32,6 +35,9 @@ import {
 
 export type CommonStrings = Messages['common'];
 
+/** The largest total font scale (app multiplier × OS Dynamic Type) any text reaches. */
+export const MAX_TOTAL_FONT_SCALE = 2;
+
 interface PreferencesValue {
   readonly reduceMotion: boolean;
   readonly screenReaderEnabled: boolean;
@@ -40,6 +46,7 @@ interface PreferencesValue {
   readonly onHaptic: HapticsHandler | undefined;
   readonly locale: Locale;
   readonly strings: CommonStrings;
+  readonly textScale: number;
 }
 
 const DEFAULT_LOCALE: Locale = 'tr';
@@ -52,6 +59,7 @@ const PreferencesContext = createContext<PreferencesValue>({
   onHaptic: undefined,
   locale: DEFAULT_LOCALE,
   strings: loadMessages(DEFAULT_LOCALE).common,
+  textScale: 1,
 });
 
 export interface UiPreferencesProviderProps {
@@ -65,6 +73,8 @@ export interface UiPreferencesProviderProps {
   readonly onHaptic?: HapticsHandler;
   /** UI locale (default `tr`). */
   readonly locale?: Locale;
+  /** App text-size multiplier on top of the OS setting (M-SET-61; default 1). */
+  readonly textScale?: number;
   /** Test/preview overrides of the `AccessibilityInfo` reads. */
   readonly screenReaderEnabled?: boolean;
   readonly reduceTransparency?: boolean;
@@ -110,6 +120,7 @@ export function UiPreferencesProvider({
   hapticsEnabled = true,
   onHaptic,
   locale = DEFAULT_LOCALE,
+  textScale = 1,
   screenReaderEnabled,
   reduceTransparency,
   children,
@@ -138,6 +149,7 @@ export function UiPreferencesProvider({
       onHaptic,
       locale,
       strings: loadMessages(locale).common,
+      textScale: Number.isFinite(textScale) && textScale > 0 ? textScale : 1,
     }),
     [
       reduceMotion,
@@ -149,6 +161,7 @@ export function UiPreferencesProvider({
       hapticsEnabled,
       onHaptic,
       locale,
+      textScale,
     ],
   );
   return <PreferencesContext value={value}>{children}</PreferencesContext>;
@@ -171,6 +184,11 @@ export function useUiPreferences(): UiPreferences {
     hapticsEnabled: p.hapticsEnabled,
     locale: p.locale,
   };
+}
+
+/** The app's text-size multiplier (1 = follow the OS size only). */
+export function useTextScale(): number {
+  return use(PreferencesContext).textScale;
 }
 
 /** The `common` namespace of the active locale (default accessibility strings). */

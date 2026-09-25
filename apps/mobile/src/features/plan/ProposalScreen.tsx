@@ -19,7 +19,7 @@ import { useTranslations } from 'use-intl';
 import { now } from '../../lib/clock';
 import { useFormats } from '../../lib/data/session';
 import { track } from '../../lib/events';
-import { ApprovalCardView } from '../approvals/InlineApprovalSheet';
+import { ApprovalCardView } from '../approvals/ApprovalRunnerCard';
 import { useApprovalRunner } from '../approvals/runner';
 import { approvalDetailOptions, type ApprovalDetail } from '../approvals/view';
 import { DetailScreen, QueryFailure, useBack, useOfflineGuard } from '../actions/ui';

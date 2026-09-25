@@ -21,7 +21,7 @@ import { getSupabase } from '../../lib/auth/supabase';
 import { unwrapMaybe } from '../../lib/data/rpc';
 import { useSessionContext } from '../../lib/data/session';
 import { isScreenAvailable } from '../../lib/deeplinks';
-import { openApprovalSheet, type ApprovalSheetParams } from '../approvals/InlineApprovalSheet';
+import { openApprovalViewSheet } from '../approvals/ApprovalSheet';
 import { useOfflineGuard } from './ui';
 
 export interface ProposalSource {
@@ -61,7 +61,7 @@ async function writableCalendar(preferred: string | null): Promise<WritableCalen
 }
 
 /** Proposal writes that open the inline approval sheet. */
-export function useProposals(sheetOrigin: ApprovalSheetParams['origin']) {
+export function useProposals() {
   const client = useApiClient();
   const toast = useToast();
   const router = useRouter();
@@ -101,11 +101,7 @@ export function useProposals(sheetOrigin: ApprovalSheetParams['origin']) {
   };
 
   const open = (approval: ApprovalView, invalidate: readonly QueryKey[] | undefined) => {
-    openApprovalSheet({
-      approval,
-      origin: sheetOrigin,
-      ...(invalidate === undefined ? {} : { invalidate }),
-    });
+    openApprovalViewSheet(approval, invalidate === undefined ? {} : { invalidate });
   };
 
   /** "Takvime Ekle": a timed event (default 30 min ending at a deadline, or 60 min at a start). */

@@ -21,7 +21,12 @@
   "text": {
     "hint": "Metni buraya yaz ya da yapıştır",
     "label": "Not veya metin",
-    "counter": "{count} karakter"
+    "counter": "{count} karakter",
+    "dictate": "Sesle yaz",
+    "stopDictation": "Dinlemeyi durdur",
+    "paste": "Yapıştır",
+    "pasteEmpty": "Panoda yapıştırılacak metin yok.",
+    "micDenied": "Mikrofon izni verilmedi; yazarak devam edebilirsin."
   },
   "statuses": {
     "pending_upload": "Yükleniyor…",

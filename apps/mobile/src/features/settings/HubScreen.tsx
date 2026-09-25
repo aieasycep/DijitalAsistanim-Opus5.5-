@@ -36,6 +36,7 @@ import { isPro, openProGate } from '../pro-gate/ProGate';
 import { daysUntil, heroKindOf, latestGrant, periodOf } from '../subscription/state';
 import { useSettingsCounts } from './data';
 import { useQueuedCount } from '../../lib/offline/mutations';
+import { useOnline } from '../../lib/query/online-manager';
 import { SettingsGroup, SettingsPage } from './ui';
 
 type SettingsRow =
@@ -86,6 +87,7 @@ export function SignOutSheet({
   const t = useTranslations();
   // M-SET-02: the paused (queued) writes this sign-out would discard.
   const unsent = useQueuedCount();
+  const online = useOnline();
   const [busy, setBusy] = useState(false);
   return (
     <BottomSheet
@@ -128,6 +130,11 @@ export function SignOutSheet({
           {t('settings.signOut.unsent', { count: unsent })}
         </Text>
       ) : null}
+      {online ? null : (
+        <Text variant="bodySm" tone="secondary" testID="signOut.offline">
+          {t('settings.signOut.offline')}
+        </Text>
+      )}
     </BottomSheet>
   );
 }

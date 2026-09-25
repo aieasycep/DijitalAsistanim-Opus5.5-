@@ -14,6 +14,7 @@
  *   "İşlem sürüyor. Bitince bildireceğim." Success is rendered only from `executed`.
  * Approvals are never queued offline (§0.4): the tap is blocked with a toast.
  */
+import { hold } from '@da/design-tokens';
 import { isApiError, qk } from '@da/api-client';
 import { apiMutationOptions, useApiClient } from '@da/api-client/react';
 import { approvalFailurePolicy, type ApprovalFailurePolicy } from '@da/domain';
@@ -31,7 +32,7 @@ import { track } from '../../lib/events';
 import { openScopeUpgrade } from '../actions/scope';
 import { useOfflineGuard } from '../actions/ui';
 
-export const UNDO_DELAY_MS = 5_000;
+export const UNDO_DELAY_MS = hold.undoToast;
 export const SLOW_AFTER_MS = 60_000;
 
 export type ApprovalPhase =
