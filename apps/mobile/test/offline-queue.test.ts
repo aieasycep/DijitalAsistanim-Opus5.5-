@@ -5,12 +5,13 @@
  * persistence across restarts, the queue class map (approvals never queued) and the app wiring
  * (reconnect replay, persisted-key refresh, legacy queue migration).
  */
-import { ApiError } from '@da/api-client';
+import { ApiError, qk } from '@da/api-client';
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { onlineManager } from '@tanstack/react-query';
 
 import { logout } from '../src/lib/auth/logout';
 import { DataError } from '../src/lib/postgrest';
+import { getQueryClient } from '../src/lib/query/client';
 import {
   QUEUE_MAX_AGE_MS,
   QUEUE_MAX_ENTRIES,
@@ -26,13 +27,14 @@ import {
   bindMutationQueue,
   flushMutationQueue,
   migrateLegacyQueues,
+  onOwnRowReplayed,
   queuedMutations,
   resetMutationQueueForTests,
   runOrQueue,
 } from '../src/lib/offline/mutations';
 import { encryptedStorage } from '../src/lib/storage';
 import { installFakeSupabase, resetAppState } from './helpers/app';
-import { session, uuid } from './helpers/fixtures';
+import { bootstrap, session, uuid } from './helpers/fixtures';
 
 interface Args {
   readonly note: { readonly id: string; readonly value: string };
@@ -339,6 +341,27 @@ describe('the app queue', () => {
       { name: 'set_insight_status', args: { p_insight_id: uuid(5), p_status: 'done' } },
     ]);
     expect(queuedMutations()).toHaveLength(0);
+  });
+
+  it('tells own-row listeners which table a replay wrote (widget refresh, T-8.25)', async () => {
+    installFakeSupabase(session());
+    // The replayed write needs the signed-in profile (the queue's current user).
+    getQueryClient().setQueryData(qk.me.bootstrap(), bootstrap());
+    bindMutationQueue();
+    const tables: string[] = [];
+    const stop = onOwnRowReplayed((table) => tables.push(table));
+    onlineManager.setOnline(false);
+    await runOrQueue('own_row', { table: 'profiles', patch: { locale: 'en-US' } });
+    expect(tables).toEqual([]);
+    onlineManager.setOnline(true);
+    await flushMutationQueue();
+    expect(tables).toEqual(['profiles']);
+    stop();
+    onlineManager.setOnline(false);
+    await runOrQueue('own_row', { table: 'notification_preferences', patch: { daily_cap: 4 } });
+    onlineManager.setOnline(true);
+    await flushMutationQueue();
+    expect(tables).toEqual(['profiles']);
   });
 
   it('adopts the pre-T-8.23 settings patches and feedback outbox', () => {

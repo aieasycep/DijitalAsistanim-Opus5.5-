@@ -3,7 +3,8 @@
     "kicker": "Next important item"
   },
   "medium": {
-    "kicker": "Today · {count, plural, one {# priority} other {# priorities}}"
+    "kicker": "Today · {count, plural, one {# priority} other {# priorities}}",
+    "emptyBody": "Nothing new needs your attention today."
   },
   "large": {
     "briefing": "Morning briefing",
@@ -11,15 +12,39 @@
     "nextMeeting": "Next meeting",
     "prepReady": "Prep ready · {count, plural, one {# topic} other {# topics}}",
     "followUp": "Follow-up",
-    "noReplyDays": "No reply for {count, plural, one {# day} other {# days}}"
+    "noReplyDays": "No reply for {count, plural, one {# day} other {# days}}",
+    "briefingMidday": "Midday pulse",
+    "briefingEvening": "Evening wrap-up",
+    "listen": "Listen · {minutes} min",
+    "scheduled": "Briefing ready at {time}",
+    "generating": "Preparing your briefing…",
+    "meetingCount": "{count, plural, one {# meeting} other {# meetings}}",
+    "noMeeting": "No more meetings today.",
+    "followUpPrivate": "A conversation awaiting a reply",
+    "followUpAction": "Follow up",
+    "openFollowUps": "Open follow-ups: {count}",
+    "noFollowUp": "No pending follow-ups."
   },
   "lock": {
     "inline": "{count, plural, one {# important item} other {# important items}} · first at {time}",
     "next": "Next · {time}",
-    "important": "Important"
+    "important": "Important",
+    "empty": "Everything is under control",
+    "signedOut": "Dijital Asistan · Sign in",
+    "noSources": "Dijital Asistan · Connect your account",
+    "meeting": "Meeting",
+    "prepReady": "Prep ready",
+    "importantCount": "Important · {count}",
+    "first": "First at {time}",
+    "summary": "{count} important · {meetings, plural, one {# meeting} other {# meetings}}",
+    "calm": "Your calendar is clear today"
   },
   "android": {
-    "itemsReady": "{count, plural, one {# item} other {# items}} ready"
+    "itemsReady": "{count, plural, one {# item} other {# items}} ready",
+    "more": "+{count}",
+    "importantChip": "{count} important",
+    "meetingChip": "{count, plural, one {# meeting} other {# meetings}}",
+    "followUpChip": "{count, plural, one {# follow-up} other {# follow-ups}}"
   },
   "generic": "{count, plural, one {# important item} other {# important items}}",
   "empty": "Everything's under control.",
@@ -29,7 +54,12 @@
     "name": "Dijital Asistan",
     "smallDescription": "Your next important item",
     "mediumDescription": "Today's priorities",
-    "largeDescription": "Briefing, next meeting and follow-up"
+    "largeDescription": "Briefing, next meeting and follow-up",
+    "lockDescription": "Your important items on the Lock Screen",
+    "nextName": "Up next",
+    "nextDescription": "Your next meeting or top priority",
+    "todayName": "Today",
+    "todayDescription": "Briefing and today’s priorities"
   },
   "private": {
     "urgent": "Urgent item",
@@ -38,5 +68,31 @@
     "followUp": "Follow-up · {days, plural, one {# day} other {# days}}",
     "personal": "Personal update",
     "security": "Security alert"
+  },
+  "firstRun": "Open the app to get started.",
+  "signIn": "Sign in",
+  "connect": "Connect your account",
+  "staleMeta": "Last updated {time}",
+  "staleBody": "Open the app to update.",
+  "lastAnalysis": "Last analysis {time}",
+  "today": "Today",
+  "badge": {
+    "urgent": "Urgent",
+    "deadline": "Deadline",
+    "meeting": "Meeting",
+    "followUp": "Follow-up",
+    "personal": "Personal",
+    "security": "Security"
+  },
+  "counts": {
+    "important": "Important",
+    "meetings": "Meetings",
+    "followUps": "Follow-ups"
+  },
+  "a11y": {
+    "noImportant": "No important items",
+    "nextMeeting": "Next meeting {time}, {minutes, plural, one {# minute} other {# minutes}}",
+    "prepReady": "Prep ready",
+    "listen": "Listen to the briefing, {minutes, plural, one {# minute} other {# minutes}}"
   }
 }

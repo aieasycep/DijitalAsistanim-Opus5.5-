@@ -17,13 +17,16 @@
  * The `da-share` local module (T-8.17) enforces App Group parity and the Android `singleTask`
  * launch mode, and the share extension is declared in `appExtensions` for EAS credentials. The
  * `notification-intelligence` local module (T-8.26) adds the Android notification listener service
- * and the launcher `<queries>`. The widget target and the `da-widgets` plugin arrive with T-8.25.
+ * and the launcher `<queries>`. The WidgetKit target lives in `targets/widget`
+ * (`@bacons/apple-targets` adds it and its EAS credentials); the `da-widgets` plugin (T-8.25)
+ * publishes the App Group to the widget extension and declares the Android Glance receivers.
  */
 import type { ConfigContext, ExpoConfig } from 'expo/config';
 import {
   AndroidConfig,
   withAndroidManifest,
   withEntitlementsPlist,
+  withInfoPlist,
   type ConfigPlugin,
 } from 'expo/config-plugins';
 
@@ -32,6 +35,7 @@ import captureTr from '@da/i18n/messages/tr/capture.json';
 import { CLIENT_SECRET_SHAPES, ENV_KEYS, parseBuildEnv, type AppEnv } from '@da/validation/env';
 
 import { createWithDaShare } from './modules/da-share/plugin/withDaShare.ts';
+import { createWithDaWidgets } from './modules/da-widgets/plugin/withDaWidgets.ts';
 import { createWithNotificationIntelligence } from './modules/notification-intelligence/plugin/withNotificationIntelligence.ts';
 import { IOS_PERMISSION_STRINGS } from './src/i18n/native-strings.ts';
 import { DEFAULT_WEB_URL, variantIdentifier, variantScheme } from './src/lib/variant.ts';
@@ -43,6 +47,8 @@ const withDaShare = createWithDaShare({
   withAndroidManifest,
   withEntitlementsPlist,
 });
+
+const withDaWidgets = createWithDaWidgets({ AndroidConfig, withAndroidManifest, withInfoPlist });
 
 /** T-8.26: the notification listener service and the launcher `<queries>` (Android only). */
 const withNotificationIntelligence = createWithNotificationIntelligence({ withAndroidManifest });
@@ -362,81 +368,84 @@ export function buildAppConfig(base: Partial<ExpoConfig>, env: Env): ExpoConfig 
 
   const withShare = (config: ExpoConfig) =>
     withNotificationIntelligence(withDaShare(config, { appGroup: variant.appGroup }));
-  return withShare(
-    withUniqueAppGroups({
-      ...base,
-      name: variant.name,
-      slug: 'dijital-asistan',
-      ...(isSet(env.EXPO_OWNER) ? { owner: env.EXPO_OWNER } : {}),
-      version: '1.0.0',
-      scheme: variant.scheme,
-      orientation: 'portrait',
-      userInterfaceStyle: 'automatic',
-      icon: './assets/icon.png',
-      platforms: ['ios', 'android'],
-      runtimeVersion: { policy: 'fingerprint' },
-      ...(projectId === undefined ? {} : { updates: { url: `https://u.expo.dev/${projectId}` } }),
-      locales: {
-        tr: { ios: IOS_PERMISSION_STRINGS.tr },
-        en: { ios: IOS_PERMISSION_STRINGS.en },
-      },
-      ios: {
-        bundleIdentifier: variant.iosBundleId,
-        ...(isSet(env.APPLE_TEAM_ID) ? { appleTeamId: env.APPLE_TEAM_ID.trim() } : {}),
-        deploymentTarget: '16.4',
-        supportsTablet: false,
-        usesAppleSignIn: true,
-        associatedDomains: [`applinks:${variant.webHost}`, `webcredentials:${variant.webHost}`],
-        entitlements: {
-          [APP_GROUPS_ENTITLEMENT]: [variant.appGroup],
-          'com.apple.developer.usernotifications.time-sensitive': true,
+  const withWidgets = (config: ExpoConfig) => withDaWidgets(config, { appGroup: variant.appGroup });
+  return withWidgets(
+    withShare(
+      withUniqueAppGroups({
+        ...base,
+        name: variant.name,
+        slug: 'dijital-asistan',
+        ...(isSet(env.EXPO_OWNER) ? { owner: env.EXPO_OWNER } : {}),
+        version: '1.0.0',
+        scheme: variant.scheme,
+        orientation: 'portrait',
+        userInterfaceStyle: 'automatic',
+        icon: './assets/icon.png',
+        platforms: ['ios', 'android'],
+        runtimeVersion: { policy: 'fingerprint' },
+        ...(projectId === undefined ? {} : { updates: { url: `https://u.expo.dev/${projectId}` } }),
+        locales: {
+          tr: { ios: IOS_PERMISSION_STRINGS.tr },
+          en: { ios: IOS_PERMISSION_STRINGS.en },
         },
-        infoPlist: {
-          CFBundleDevelopmentRegion: 'tr',
-          UIBackgroundModes: ['remote-notification', 'processing', 'audio'],
-          BGTaskSchedulerPermittedIdentifiers: ['com.expo.modules.backgroundtask.processing'],
-          ITSAppUsesNonExemptEncryption: false,
-          ...IOS_PERMISSION_STRINGS.tr,
-        },
-        privacyManifests: {
-          NSPrivacyTracking: false,
-          NSPrivacyAccessedAPITypes: PRIVACY_API_REASONS,
-        },
-      },
-      android: {
-        package: variant.androidPackage,
-        allowBackup: false,
-        ...(isSet(env.GOOGLE_SERVICES_JSON)
-          ? { googleServicesFile: env.GOOGLE_SERVICES_JSON }
-          : {}),
-        adaptiveIcon: {
-          foregroundImage: './assets/adaptive-icon.png',
-          monochromeImage: './assets/adaptive-icon.png',
-          backgroundColor: color.brand,
-        },
-        permissions: ANDROID_PERMISSIONS,
-        blockedPermissions: ANDROID_BLOCKED_PERMISSIONS,
-        intentFilters: [
-          {
-            action: 'VIEW',
-            autoVerify: true,
-            category: ['BROWSABLE', 'DEFAULT'],
-            data: [
-              { scheme: 'https', host: variant.webHost, pathPrefix: '/app' },
-              { scheme: 'https', host: variant.webHost, pathPrefix: '/r' },
-            ],
+        ios: {
+          bundleIdentifier: variant.iosBundleId,
+          ...(isSet(env.APPLE_TEAM_ID) ? { appleTeamId: env.APPLE_TEAM_ID.trim() } : {}),
+          deploymentTarget: '16.4',
+          supportsTablet: false,
+          usesAppleSignIn: true,
+          associatedDomains: [`applinks:${variant.webHost}`, `webcredentials:${variant.webHost}`],
+          entitlements: {
+            [APP_GROUPS_ENTITLEMENT]: [variant.appGroup],
+            'com.apple.developer.usernotifications.time-sensitive': true,
           },
-        ],
-      },
-      plugins: plugins(variant, env),
-      experiments: { reactCompiler: true },
-      extra: {
-        eas: {
-          ...(projectId === undefined ? {} : { projectId }),
-          build: { experimental: { ios: { appExtensions: [shareAppExtension(variant)] } } },
+          infoPlist: {
+            CFBundleDevelopmentRegion: 'tr',
+            UIBackgroundModes: ['remote-notification', 'processing', 'audio'],
+            BGTaskSchedulerPermittedIdentifiers: ['com.expo.modules.backgroundtask.processing'],
+            ITSAppUsesNonExemptEncryption: false,
+            ...IOS_PERMISSION_STRINGS.tr,
+          },
+          privacyManifests: {
+            NSPrivacyTracking: false,
+            NSPrivacyAccessedAPITypes: PRIVACY_API_REASONS,
+          },
         },
-      },
-    }),
+        android: {
+          package: variant.androidPackage,
+          allowBackup: false,
+          ...(isSet(env.GOOGLE_SERVICES_JSON)
+            ? { googleServicesFile: env.GOOGLE_SERVICES_JSON }
+            : {}),
+          adaptiveIcon: {
+            foregroundImage: './assets/adaptive-icon.png',
+            monochromeImage: './assets/adaptive-icon.png',
+            backgroundColor: color.brand,
+          },
+          permissions: ANDROID_PERMISSIONS,
+          blockedPermissions: ANDROID_BLOCKED_PERMISSIONS,
+          intentFilters: [
+            {
+              action: 'VIEW',
+              autoVerify: true,
+              category: ['BROWSABLE', 'DEFAULT'],
+              data: [
+                { scheme: 'https', host: variant.webHost, pathPrefix: '/app' },
+                { scheme: 'https', host: variant.webHost, pathPrefix: '/r' },
+              ],
+            },
+          ],
+        },
+        plugins: plugins(variant, env),
+        experiments: { reactCompiler: true },
+        extra: {
+          eas: {
+            ...(projectId === undefined ? {} : { projectId }),
+            build: { experimental: { ios: { appExtensions: [shareAppExtension(variant)] } } },
+          },
+        },
+      }),
+    ),
   );
 }
 

@@ -178,3 +178,5 @@ export * from './assist.ts';
 export * from './android-ni.ts';
 // T-8.23…T-8.28 platform services (analytics delivery).
 export * from './platform.ts';
+// T-8.25 widget snapshot (API-WDG-01).
+export * from './widgets.ts';

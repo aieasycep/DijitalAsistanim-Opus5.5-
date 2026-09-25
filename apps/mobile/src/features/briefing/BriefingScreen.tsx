@@ -563,7 +563,7 @@ export function BriefingScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const params = useLocalSearchParams<{ id: string; via?: string }>();
+  const params = useLocalSearchParams<{ id: string; via?: string; src?: string }>();
   const id = params.id;
   const query = useBriefing(id);
   const detail = query.data;
@@ -574,9 +574,9 @@ export function BriefingScreen() {
     if (detail === undefined || detail === null || opened.current) return;
     if (detail.briefing.status !== 'ready' && detail.briefing.status !== 'delivered') return;
     opened.current = true;
-    track('briefing_opened', { kind: detail.briefing.kind, via: viaOf(params.via) });
+    track('briefing_opened', { kind: detail.briefing.kind, via: viaOf(params.via ?? params.src) });
     void markOpened(detail.briefing.id).catch(() => undefined);
-  }, [detail, params.via]);
+  }, [detail, params.via, params.src]);
 
   const goToday = () => {
     router.replace('/today');

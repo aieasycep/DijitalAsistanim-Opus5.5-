@@ -2,10 +2,12 @@
  * Briefing audio files (M-BR-02 premium mode): the signed file is downloaded once per briefing
  * version to `cacheDirectory/briefing-audio/{briefing}/{version}.mp3` so a briefing can be
  * replayed offline; the last file per briefing is remembered in the encrypted preferences. Logout
- * deletes the directory (`LOGOUT_HOOKS.audioCache`, CTL-3.13 step 7).
+ * deletes the directory and the on-device synthesized chapters of `da-tts` (T-8.27)
+ * (`LOGOUT_HOOKS.audioCache`, CTL-3.13 step 7).
  */
 import * as FileSystem from 'expo-file-system/legacy';
 
+import { clearTtsCache } from '../../../modules/da-tts/src';
 import { LOGOUT_HOOKS, registerLogoutCleanup } from '../../lib/auth/logout';
 import { encryptedStorage, isEncryptedStorageOpen } from '../../lib/storage';
 
@@ -46,6 +48,7 @@ export async function downloadAudio(briefingId: string, url: string): Promise<st
 export async function clearAudioCache(): Promise<void> {
   const base = root();
   if (base !== null) await FileSystem.deleteAsync(base, { idempotent: true });
+  await clearTtsCache();
 }
 
 registerLogoutCleanup(LOGOUT_HOOKS.audioCache, clearAudioCache);

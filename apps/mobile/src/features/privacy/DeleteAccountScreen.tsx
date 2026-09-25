@@ -23,6 +23,7 @@ import { getSupabase } from '../../lib/auth/supabase';
 import { getApiClient } from '../../lib/bootstrap';
 import { track } from '../../lib/events';
 import { logOutPurchases, showManageSubscriptions } from '../../lib/purchases';
+import { clearWidgetSnapshot } from '../widgets/snapshot';
 import { useOnline } from '../../lib/query/online-manager';
 import { useUiPrefs } from '../../lib/ui-prefs';
 import { deviceLocale } from '../../i18n/I18nProvider';
@@ -131,6 +132,7 @@ export function DeleteAccountScreen() {
           // Nothing on this device may keep acting for the account being deleted.
           void logOutPurchases();
           void Notifications.cancelAllScheduledNotificationsAsync().catch(() => undefined);
+          void clearWidgetSnapshot();
           setStep('status');
         },
         onError: (failure) => {

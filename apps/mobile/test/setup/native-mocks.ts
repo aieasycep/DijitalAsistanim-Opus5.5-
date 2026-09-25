@@ -234,9 +234,30 @@ jest.mock('expo-audio', () => {
     isLoaded: true,
     didJustFinish: false,
   };
+  // T-8.27 synthesized chapter files play as a playlist.
+  const playlist = {
+    play: jest.fn(),
+    pause: jest.fn(),
+    skipTo: jest.fn(),
+    seekTo: jest.fn(() => Promise.resolve()),
+    playbackRate: 1,
+  };
+  const playlistStatus = {
+    currentIndex: 0,
+    trackCount: 0,
+    currentTime: 0,
+    duration: 0,
+    playing: false,
+    isLoaded: true,
+    didJustFinish: false,
+  };
   return {
     __player: player,
     __status: status,
+    __playlist: playlist,
+    __playlistStatus: playlistStatus,
+    useAudioPlaylist: jest.fn(() => playlist),
+    useAudioPlaylistStatus: jest.fn(() => ({ ...playlistStatus })),
     setAudioModeAsync: jest.fn(() => Promise.resolve()),
     useAudioPlayer: jest.fn(() => player),
     useAudioPlayerStatus: jest.fn(() => ({ ...status })),
@@ -294,6 +315,9 @@ jest.mock('expo-file-system/legacy', () => ({
   EncodingType: { Base64: 'base64', UTF8: 'utf8' },
   readAsStringAsync: jest.fn(() => Promise.resolve('aGVsbG8=')),
   copyAsync: jest.fn(() => Promise.resolve()),
+  // T-8.27 synthesized-audio manifest and cache pruning.
+  writeAsStringAsync: jest.fn(() => Promise.resolve()),
+  readDirectoryAsync: jest.fn(() => Promise.resolve([])),
   uploadAsync: jest.fn(() =>
     Promise.resolve({ status: 200, body: '{}', headers: {}, mimeType: 'application/json' }),
   ),
@@ -401,3 +425,42 @@ jest.mock('expo-image-picker', () => ({
   launchCameraAsync: jest.fn(() => Promise.resolve({ canceled: true, assets: null })),
   launchImageLibraryAsync: jest.fn(() => Promise.resolve({ canceled: true, assets: null })),
 }));
+
+// T-8.25 `da-widgets`: an in-memory App Group / SharedPreferences store (`__module.__store`).
+// Not linked by default, so other suites see no widget calls; widget tests install it with
+// `nativeWidgets.mockReturnValue(__module)`.
+jest.mock('../../modules/da-widgets/src/native', () => {
+  const store: { snapshot: string | null; scheme: string | null } = {
+    snapshot: null,
+    scheme: null,
+  };
+  const double = {
+    __store: store,
+    setSnapshot: jest.fn((json: string, scheme: string) => {
+      store.snapshot = json;
+      store.scheme = scheme;
+      return Promise.resolve();
+    }),
+    getSnapshot: jest.fn(() => Promise.resolve(store.snapshot)),
+    reload: jest.fn(() => Promise.resolve()),
+    getInventory: jest.fn(() => Promise.resolve({ ios_families: 0, android_kinds: 0 })),
+  };
+  return { __module: double, nativeWidgets: jest.fn(() => null) };
+});
+
+// T-8.25 `da-background-refresh`: the OS background task (defined at import, registered on sign-in).
+jest.mock('expo-task-manager', () => ({
+  defineTask: jest.fn(),
+  isTaskRegisteredAsync: jest.fn(() => Promise.resolve(false)),
+}));
+jest.mock('expo-background-task', () => ({
+  BackgroundTaskResult: { Success: 1, Failed: 2 },
+  BackgroundTaskStatus: { Restricted: 1, Available: 2 },
+  getStatusAsync: jest.fn(() => Promise.resolve(2)),
+  registerTaskAsync: jest.fn(() => Promise.resolve()),
+  unregisterTaskAsync: jest.fn(() => Promise.resolve()),
+}));
+
+// T-8.27 `da-tts`: not linked by default (the player falls back to expo-speech); tests install
+// a double with `nativeTts.mockReturnValue(...)`.
+jest.mock('../../modules/da-tts/src/native', () => ({ nativeTts: jest.fn(() => null) }));

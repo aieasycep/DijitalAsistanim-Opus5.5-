@@ -188,6 +188,11 @@ export const qk = {
     signals: () => ['ani', 'signals'] as const,
     apps: () => ['ani', 'apps'] as const,
   },
+  // T-8.25 widget snapshot (API-WDG-01).
+  widgets: {
+    all: ['widgets'] as const,
+    snapshot: () => ['widgets', 'snapshot'] as const,
+  },
 } as const;
 
 export const mk = {

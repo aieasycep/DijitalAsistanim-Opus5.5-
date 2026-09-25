@@ -15,6 +15,7 @@ import { translator } from '../../i18n/translate';
 import {
   bindMutationQueue,
   flushMutationQueue,
+  onOwnRowReplayed,
   queueMutation,
   resetMutationQueueForTests,
   runOrQueue,
@@ -25,6 +26,7 @@ import { cachedBootstrap, patchBootstrapCache } from '../../lib/postgrest';
 import { isOffline } from '../../lib/query/online-manager';
 import { getQueryClient } from '../../lib/query/client';
 import { showToast } from '../../providers/ToastHost';
+import { applyLocalWidgetPrivacy, refreshWidgetSnapshot } from '../widgets/snapshot';
 
 export type { OwnTable } from '../../lib/offline/mutations';
 
@@ -78,16 +80,29 @@ export function saveUserPreferences(
 export function saveNotificationPreferences(
   patch: Partial<BootstrapData['notification_preferences']>,
 ): Promise<SaveResult> {
-  return saveOwnRow('notification_preferences', patch, (data) => ({
+  const saving = saveOwnRow('notification_preferences', patch, (data) => ({
     ...data,
     notification_preferences: { ...data.notification_preferences, ...patch },
   }));
+  if (patch.detail_level === undefined && patch.lock_screen_private === undefined) return saving;
+  // Widgets follow the detail level (T-8.25, §11.2): the stored snapshot is re-filtered at once
+  // (offline too); once the server has the new level the snapshot is re-fetched.
+  void applyLocalWidgetPrivacy().catch(() => undefined);
+  return saving.then((result) => {
+    if (result === 'saved') void refreshWidgetSnapshot('settings', { force: true });
+    return result;
+  });
 }
 
 /** Replays the queued writes now (settings patches and every other queued kind). */
 export function flushPendingSettings(): Promise<void> {
   return flushMutationQueue();
 }
+
+// A replayed locale or detail level changes what the widget snapshot may show (T-8.25).
+onOwnRowReplayed((table) => {
+  if (table !== 'user_preferences') void refreshWidgetSnapshot('settings', { force: true });
+});
 
 /** Whether a settings change waits for the connection ("Bağlantı gelince kaydedilecek"). */
 export function usePendingSettings(): boolean {

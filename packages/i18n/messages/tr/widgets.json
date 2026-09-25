@@ -3,7 +3,8 @@
     "kicker": "Sıradaki önemli konu"
   },
   "medium": {
-    "kicker": "Bugün · {count} öncelik"
+    "kicker": "Bugün · {count} öncelik",
+    "emptyBody": "Bugün dikkat gerektiren yeni bir konu yok."
   },
   "large": {
     "briefing": "Sabah brifingi",
@@ -11,15 +12,39 @@
     "nextMeeting": "Sonraki toplantı",
     "prepReady": "Hazırlık hazır · {count} konu",
     "followUp": "Takip",
-    "noReplyDays": "{count} gündür yanıt yok"
+    "noReplyDays": "{count} gündür yanıt yok",
+    "briefingMidday": "Öğle nabzı",
+    "briefingEvening": "Akşam kapanışı",
+    "listen": "Dinle · {minutes} dk",
+    "scheduled": "Brifing {time_loc} hazır",
+    "generating": "Brifing hazırlanıyor…",
+    "meetingCount": "{count} toplantı",
+    "noMeeting": "Bugün başka toplantı yok.",
+    "followUpPrivate": "Yanıt beklediğin bir konuşma",
+    "followUpAction": "Takip Et",
+    "openFollowUps": "Açık takip: {count}",
+    "noFollowUp": "Bekleyen takip yok."
   },
   "lock": {
     "inline": "{count} önemli konu · ilki {time}",
     "next": "Sonraki · {time}",
-    "important": "Önemli"
+    "important": "Önemli",
+    "empty": "Her şey kontrol altında",
+    "signedOut": "Dijital Asistan · Giriş yap",
+    "noSources": "Dijital Asistan · Hesabını bağla",
+    "meeting": "Toplantı",
+    "prepReady": "Hazırlık hazır",
+    "importantCount": "Önemli · {count}",
+    "first": "İlki {time}",
+    "summary": "{count} önemli · {meetings} toplantı",
+    "calm": "Bugün takvimin sakin"
   },
   "android": {
-    "itemsReady": "{count} konu hazır"
+    "itemsReady": "{count} konu hazır",
+    "more": "+{count}",
+    "importantChip": "{count} önemli",
+    "meetingChip": "{count} toplantı",
+    "followUpChip": "{count} takip"
   },
   "generic": "{count} önemli konu",
   "empty": "Her şey kontrol altında.",
@@ -29,7 +54,12 @@
     "name": "Dijital Asistan",
     "smallDescription": "Sıradaki önemli konun",
     "mediumDescription": "Bugünün öncelikleri",
-    "largeDescription": "Brifing, sonraki toplantı ve takip"
+    "largeDescription": "Brifing, sonraki toplantı ve takip",
+    "lockDescription": "Kilit ekranında önemli konuların",
+    "nextName": "Sıradaki",
+    "nextDescription": "Sonraki toplantın ya da ilk önceliğin",
+    "todayName": "Bugün",
+    "todayDescription": "Brifing ve bugünün öncelikleri"
   },
   "private": {
     "urgent": "Acil konu",
@@ -38,5 +68,31 @@
     "followUp": "Takip · {days} gün",
     "personal": "Kişisel güncelleme",
     "security": "Güvenlik uyarısı"
+  },
+  "firstRun": "Uygulamayı açarak başla.",
+  "signIn": "Giriş yap",
+  "connect": "Hesabını bağla",
+  "staleMeta": "Son güncelleme {time}",
+  "staleBody": "Güncellemek için uygulamayı aç.",
+  "lastAnalysis": "Son analiz {time}",
+  "today": "Bugün",
+  "badge": {
+    "urgent": "Acil",
+    "deadline": "Son tarih",
+    "meeting": "Toplantı",
+    "followUp": "Takip",
+    "personal": "Kişisel",
+    "security": "Güvenlik"
+  },
+  "counts": {
+    "important": "Önemli",
+    "meetings": "Toplantı",
+    "followUps": "Takip"
+  },
+  "a11y": {
+    "noImportant": "Önemli konu yok",
+    "nextMeeting": "Sonraki toplantı {time}, {minutes} dakika",
+    "prepReady": "Hazırlık hazır",
+    "listen": "Brifingi dinle, {minutes} dakika"
   }
 }

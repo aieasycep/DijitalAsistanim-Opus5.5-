@@ -42,6 +42,8 @@ import { uuid } from './helpers/fixtures';
 
 type Body = Parameters<AnalyticsDeps['send']>[0];
 
+const OCCURRED_AT = '2026-09-24T08:00:00.000Z';
+
 function batcher(overrides: Partial<AnalyticsDeps> = {}) {
   const sent: Body[] = [];
   let stored: string | undefined;
@@ -60,6 +62,8 @@ function batcher(overrides: Partial<AnalyticsDeps> = {}) {
     isOnline: () => true,
     optedOut: () => false,
     isPro: () => false,
+    // The events below carry a fixed time; the 24 h buffer cut-off must not depend on today's date.
+    now: () => Date.parse(OCCURRED_AT) + 60_000,
     newId: () => {
       n += 1;
       return uuid(500 + n);
@@ -70,7 +74,7 @@ function batcher(overrides: Partial<AnalyticsDeps> = {}) {
 }
 
 const event = (name: string, props: Record<string, unknown> = {}): TrackedEvent =>
-  ({ event: name, props, occurredAt: '2026-09-24T08:00:00.000Z' }) as TrackedEvent;
+  ({ event: name, props, occurredAt: OCCURRED_AT }) as TrackedEvent;
 
 describe('analytics batcher (API-ANL-01)', () => {
   it('sends batches of at most 50 with the session id, after 20 events', async () => {

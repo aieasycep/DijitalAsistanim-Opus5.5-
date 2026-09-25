@@ -1,0 +1,79 @@
+{
+  "v": 1,
+  "etag": "preview",
+  "generated_at": "2026-09-24T04:58:00Z",
+  "locale": "tr",
+  "state": "ok",
+  "detail_mode": "full",
+  "lock_screen_private": false,
+  "entitlement": "pro",
+  "counts": { "important": 5, "events_today": 3, "follow_ups": 2, "deadlines": 1 },
+  "briefing": {
+    "id": "00000000-0000-4000-8000-000000000b01",
+    "kind": "morning",
+    "status": "ready",
+    "ready_at": "2026-09-24T04:30:00Z",
+    "scheduled_for": null,
+    "time_label": "07:30",
+    "item_count": 5,
+    "audio_minutes": 2,
+    "deeplink": "dijitalasistan://briefing/00000000-0000-4000-8000-000000000b01"
+  },
+  "priorities": [
+    {
+      "id": "00000000-0000-4000-8000-000000000a01",
+      "badge": "ACİL",
+      "urgency": "urgent",
+      "title_full": "Ahmet 17:00'ye kadar revize teklif bekliyor.",
+      "chip_full": "Ahmet · 17:00",
+      "title_private": "Yanıt bekleyen önemli mail",
+      "time_label": "17:00",
+      "source_label": "Gmail · 08:42",
+      "deeplink": "dijitalasistan://mail/00000000-0000-4000-8000-000000000a01"
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000a02",
+      "badge": "TOPLANTI",
+      "urgency": "today",
+      "title_full": "Mehmet ile müşteri toplantısı",
+      "chip_full": "Mehmet · 14:30",
+      "title_private": "Toplantı · 45 dk",
+      "time_label": "14:30",
+      "source_label": "Takvim · 14:30",
+      "deeplink": "dijitalasistan://meeting/00000000-0000-4000-8000-000000000e01/prep"
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000a03",
+      "badge": "SON TARİH",
+      "urgency": "today",
+      "title_full": "Başvuru kapanıyor",
+      "chip_full": "Başvuru · 17:00",
+      "title_private": "Son tarih",
+      "time_label": "17:00",
+      "source_label": "Gmail · 07:15",
+      "deeplink": "dijitalasistan://mail/00000000-0000-4000-8000-000000000a03"
+    }
+  ],
+  "next_meeting": {
+    "event_id": "00000000-0000-4000-8000-000000000e01",
+    "start_at": "2026-09-24T11:30:00Z",
+    "end_at": "2026-09-24T12:15:00Z",
+    "time_label": "14:30",
+    "duration_min": 45,
+    "title_full": "Mehmet ile müşteri toplantısı",
+    "title_private": "Toplantı · 45 dk",
+    "prep_ready": true,
+    "prep_topic_count": 3,
+    "deeplink": "dijitalasistan://meeting/00000000-0000-4000-8000-000000000e01/prep"
+  },
+  "later_meetings": [],
+  "follow_up": {
+    "thread_id": "00000000-0000-4000-8000-000000000c01",
+    "insight_id": "00000000-0000-4000-8000-000000000c02",
+    "title_full": "Zeynep · Sözleşme taslağı",
+    "title_private": "Yanıt beklediğin bir konuşma",
+    "waiting_days": 3,
+    "deeplink": "dijitalasistan://followups?focus=00000000-0000-4000-8000-000000000c02"
+  },
+  "last_analysis_at": "2026-09-24T04:55:00Z"
+}

@@ -135,6 +135,17 @@ async function setVip(contactId: string, on: boolean): Promise<void> {
   if (error !== null && error.code !== '23505') throw toDataError(error);
 }
 
+/** Listeners told which owner table a replay wrote (e.g. the widget snapshot, T-8.25). */
+const ownRowReplayListeners = new Set<(table: OwnTable) => void>();
+
+/** Calls `listener` after a queued `own_row` write of a table has been replayed. */
+export function onOwnRowReplayed(listener: (table: OwnTable) => void): () => void {
+  ownRowReplayListeners.add(listener);
+  return () => {
+    ownRowReplayListeners.delete(listener);
+  };
+}
+
 /** Server ids of reminders created by a replay, by `client_reminder_id` (for a late "Geri al"). */
 const replayedReminders = new Map<string, string>();
 
@@ -177,6 +188,9 @@ export const MUTATION_HANDLERS: HandlerMap<MutationArgs> = {
     merge: (queued, next) => ({ table: next.table, patch: { ...queued.patch, ...next.patch } }),
     run: (a) => updateOwn(a.table, a.patch),
     invalidate: () => [qk.me.bootstrap()],
+    onReplayed: (a) => {
+      for (const listener of ownRowReplayListeners) listener(a.table);
+    },
   },
   feedback: {
     scope: () => 'feedback',
