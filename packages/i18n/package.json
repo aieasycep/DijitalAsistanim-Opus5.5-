@@ -30,6 +30,7 @@
   "devDependencies": {
     "@da/config": "workspace:*",
     "@types/node": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",
     "intl-messageformat": "catalog:",
     "react": "catalog:",
