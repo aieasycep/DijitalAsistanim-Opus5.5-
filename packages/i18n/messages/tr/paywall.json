@@ -75,5 +75,6 @@
   "pendingActivation": "Satın alma tamamlandı ama Pro henüz etkin görünmüyor. Birazdan otomatik açılır.",
   "successTitle": "Pro etkin",
   "successBody": "Tüm Pro özellikleri açıldı.",
-  "activating": "Pro etkinleştiriliyor… Birkaç dakika içinde Abonelik ekranında görünür."
+  "activating": "Pro etkinleştiriliyor… Birkaç dakika içinde Abonelik ekranında görünür.",
+  "weeklySubline": "Bu hafta {mails} mailden {important}'sini öne çıkardık; tahminen {saved} kazandın."
 }

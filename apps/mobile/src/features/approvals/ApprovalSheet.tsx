@@ -1,6 +1,8 @@
 /**
  * M-APPR-04 inline approval sheet (single and batch), opened in place where the intent happened
- * (SREQ-43) — Today, capture results (batch), the reminder sheet, Plan/Assistant proposals.
+ * (SREQ-43) — Today, Flow, Email Detail, Life, Plan, the reply hash-mismatch path, capture results
+ * (batch), the reminder sheet, Plan/Assistant proposals. It is the only approval sheet (one
+ * component, one sheet key); the in-place card variant is `ApprovalRunnerCard`.
  *
  * R-06: "Onayla" starts a client-side 5 s delay with the toast "Onaylandı · {N} işlem" + "Geri al";
  * nothing is sent during it. "Geri al" reopens the sheet with every approval still `pending`;
@@ -8,9 +10,15 @@
  * Center). When the delay ends the selected approvals are approved one after another
  * (`approved_via` `inline_sheet`, or `capture_batch` for a capture) and deselected rows are
  * rejected with `user_cancel` (no learning). Offline, the buttons are disabled (never queued).
+ * "Düzenle" opens the typed editor of every action type (M-APPR-05; `email_send` → the reply
+ * screen). 402/409/424 answers map through `handleDecisionError` (Pro gate, refresh, scope
+ * upgrade). The invoking surface's queries (`invalidate`) are refreshed once every approval is
+ * terminal.
  */
+import { hold } from '@da/design-tokens';
 import { ApprovalRow, AssuranceNote, BottomSheet, Button, KeyValueGrid, Text } from '@da/ui';
-import { onlineManager } from '@tanstack/react-query';
+import type { ApprovalView } from '@da/validation/api/approvals';
+import { onlineManager, type QueryKey } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { AppState, StyleSheet, View } from 'react-native';
@@ -19,6 +27,7 @@ import { useTranslations } from 'use-intl';
 import { translator } from '../../i18n/translate';
 import { track } from '../../lib/events';
 import { isScreenAvailable } from '../../lib/deeplinks';
+import { getQueryClient } from '../../lib/query/client';
 import { useOnline } from '../../lib/query/online-manager';
 import { registerSheet, sheets, type SheetRenderProps } from '../../providers/SheetHost';
 import { showToast } from '../../providers/ToastHost';
@@ -26,11 +35,11 @@ import { approve, reject, type ApprovedVia } from './api';
 import { blockOffline, followUntilTerminal, handleDecisionError, toastOutcome } from './decide';
 import { APPROVAL_SHEET } from './editor-key';
 import { editApproval, openApprovalSource } from './ApprovalItem';
-import type { ApprovalModel } from './model';
+import { fromApprovalView, type ApprovalModel } from './model';
 import { useApprovalPresenter } from './present';
 
 /** R-06 client undo delay. */
-export const APPROVE_UNDO_MS = 5_000;
+export const APPROVE_UNDO_MS = hold.undoToast;
 
 export interface ApprovalSheetParams {
   readonly approvals: readonly ApprovalModel[];
@@ -41,6 +50,8 @@ export interface ApprovalSheetParams {
   readonly captureId?: string;
   /** Rows the user deselected before an undo (batch). */
   readonly deselected?: readonly string[];
+  /** Queries of the invoking surface, refreshed once every approval is terminal. */
+  readonly invalidate?: readonly QueryKey[];
 }
 
 let pendingTimer: ReturnType<typeof setTimeout> | null = null;
@@ -53,6 +64,11 @@ export function cancelPendingApprovals(): void {
 
 function viaOf(params: ApprovalSheetParams): ApprovedVia {
   return params.captureId === undefined ? 'inline_sheet' : 'capture_batch';
+}
+
+function refreshSurface(params: ApprovalSheetParams): void {
+  const client = getQueryClient();
+  for (const queryKey of params.invalidate ?? []) void client.invalidateQueries({ queryKey });
 }
 
 async function send(params: ApprovalSheetParams, selected: readonly ApprovalModel[]) {
@@ -80,9 +96,11 @@ async function send(params: ApprovalSheetParams, selected: readonly ApprovalMode
     const result = await reject(model, 'user_cancel');
     if (result.ok) rejected += 1;
   }
+  if (sent.length === 0 && rejected > 0) refreshSurface(params);
   if (params.captureId !== undefined) {
     const route = `/capture/${params.captureId}`;
     followUntilTerminal(sent, (models) => {
+      refreshSurface(params);
       track('approval_batch_result', {
         executed: models.filter((m) => m.status === 'executed').length,
         failed: models.filter((m) => m.status === 'failed').length,
@@ -94,6 +112,7 @@ async function send(params: ApprovalSheetParams, selected: readonly ApprovalMode
   }
   if (sent.length === 0) return;
   followUntilTerminal(sent, (models) => {
+    refreshSurface(params);
     if (params.mode === 'batch') {
       track('approval_batch_result', {
         executed: models.filter((m) => m.status === 'executed').length,
@@ -170,6 +189,22 @@ export function openApprovalSheet(params: ApprovalSheetParams): void {
   sheets.open(APPROVAL_SHEET, params);
 }
 
+/**
+ * Opens the sheet on one approval the API just returned (`POST /approvals`, `POST /plan/proposals`,
+ * a reply whose submitted payload differs from the Gönderim özeti).
+ */
+export function openApprovalViewSheet(
+  view: ApprovalView,
+  options: { readonly invalidate?: readonly QueryKey[] } = {},
+): void {
+  openApprovalSheet({
+    approvals: [fromApprovalView(view)],
+    mode: 'single',
+    origin: view.origin,
+    ...(options.invalidate === undefined ? {} : { invalidate: options.invalidate }),
+  });
+}
+
 function ApprovalSheet({
   params,
   visible,
@@ -239,6 +274,7 @@ function ApprovalSheet({
           });
         }
       }
+      refreshSurface(params);
       if (!batch) showToast({ message: t('toasts.rejected'), kind: 'neutral' });
     })();
   };

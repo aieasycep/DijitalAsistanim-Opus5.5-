@@ -132,7 +132,7 @@ export function FlowScreen() {
     enabled: filter === 'all' || filter === 'mail',
   });
   const insights = useInsightActions([qk.flow.all]);
-  const proposals = useProposals('flow');
+  const proposals = useProposals();
   const followupDraft = useMutation(apiMutationOptions(client, 'POST /followups/:threadId/draft'));
 
   useEffect(() => {

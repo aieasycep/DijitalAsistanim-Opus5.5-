@@ -97,6 +97,23 @@
     "to": "To",
     "toneA11y": "Reply tone",
     "toneApplied": "Tone updated.",
-    "toneOverwrite": "Rewrite the draft in a {tone} tone? Your edits will be lost."
+    "toneOverwrite": "Rewrite the draft in a {tone} tone? Your edits will be lost.",
+    "copyText": "Copy text",
+    "copied": "Draft copied"
+  },
+  "recipients": {
+    "title": "Recipients",
+    "edit": "Edit recipients",
+    "to": "To",
+    "cc": "Cc",
+    "addTo": "Add to To",
+    "addCc": "Add to Cc",
+    "address": "Email address",
+    "addressHint": "Type an address",
+    "addAddress": "Add {email}",
+    "invalid": "Enter a valid email address.",
+    "toRequired": "At least one recipient is required.",
+    "removeA11y": "{name}, recipient, double-tap to remove",
+    "noSuggestions": "No suggestions. Type an address."
   }
 }

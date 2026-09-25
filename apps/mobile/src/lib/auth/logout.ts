@@ -12,6 +12,9 @@
  *   9. push token invalidation and scheduled local notifications cancelled (the offline mutation
  *      queue, the stored push registration and the analytics buffer are `after_wipe` hooks);
  *   10. the auth state change routes to sign-in.
+ * Offline, the refresh token is kept as `pending_session_cleanup` (read before step 3, written
+ * after the wipe) so the session is revoked and the device unregistered once online
+ * (`pending-cleanup.ts`, M-SET-02).
  */
 import type { ApiClient } from '@da/api-client';
 import type { QueryClient } from '@tanstack/react-query';
@@ -23,6 +26,7 @@ import { getQueryClient } from '../query/client';
 import { isOffline } from '../query/online-manager';
 import { wipeAndRekeyStorage } from '../storage';
 import { installationId } from './first-run-purge';
+import { storePendingSessionCleanup } from './pending-cleanup';
 import { getSupabase, type AppSupabaseClient } from './supabase';
 
 export type LogoutScope = 'local' | 'global';
@@ -40,6 +44,8 @@ export const LOGOUT_HOOKS = {
   offlineQueue: 'offline.clear_queue',
   pushRegistration: 'push.forget_registration',
   analyticsBuffer: 'analytics.clear_buffer',
+  // T-8.07 background device-calendar upload (registered while a device calendar is connected)
+  deviceCalendarTask: 'device_calendar.unregister_task',
 } as const;
 
 const hooks = new Map<string, { readonly phase: LogoutHookPhase; readonly run: LogoutHook }>();
@@ -65,6 +71,7 @@ export interface LogoutDeps {
   readonly unregisterPush?: () => Promise<unknown>;
   readonly cancelLocalNotifications?: () => Promise<unknown>;
   readonly isOffline?: () => boolean;
+  readonly storePendingCleanup?: (refreshToken: string) => Promise<void>;
 }
 
 export interface LogoutOptions {
@@ -109,6 +116,13 @@ export async function logout(
     );
   });
   await runHooks('before_sign_out');
+  const pending: { token: string | null } = { token: null };
+  if (offline) {
+    await step('pending_cleanup_read', async () => {
+      const { data } = await (deps.supabase ?? getSupabase()).auth.getSession();
+      pending.token = data.session?.refresh_token ?? null;
+    });
+  }
   await step('sign_out', async () => {
     const { error } = await (deps.supabase ?? getSupabase()).auth.signOut({ scope });
     if (error !== null) throw error;
@@ -117,6 +131,12 @@ export async function logout(
     (deps.queryClient ?? getQueryClient()).clear();
   });
   await step('storage', deps.wipeStorage ?? wipeAndRekeyStorage);
+  const token = pending.token;
+  if (token !== null) {
+    await step('pending_cleanup_store', () =>
+      (deps.storePendingCleanup ?? storePendingSessionCleanup)(token),
+    );
+  }
   await runHooks('after_wipe');
   await step('push_token', deps.unregisterPush ?? Notifications.unregisterForNotificationsAsync);
   await step(

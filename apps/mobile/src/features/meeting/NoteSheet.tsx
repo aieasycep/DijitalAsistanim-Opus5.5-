@@ -1,12 +1,13 @@
 /**
  * M-MEET-02 · Not Al: a user-authored meeting note bound to the event (text or on-device
  * dictation) → `POST /meetings/:eventId/notes` (idempotent on `client_note_id`, so "Tekrar Dene"
- * never duplicates). No approval: an internal note with no external side effect. The draft stays
+ * never duplicates). No approval: an internal note with no external side effect. Offline, the note
+ * goes to the offline mutation queue (queueable, API_CONTRACTS §2.16) and is sent on reconnect
+ * ("Bağlantı gelince kaydedilecek."). The draft stays
  * in the sheet, is kept in the encrypted cache when the app backgrounds and is restored on reopen;
  * closing with text asks "Not silinsin mi?" first.
  */
 import { qk } from '@da/api-client';
-import { apiMutationOptions, useApiClient } from '@da/api-client/react';
 import {
   BottomSheet,
   Button,
@@ -17,16 +18,16 @@ import {
   TranscriptCard,
   useToast,
 } from '@da/ui';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import * as Crypto from 'expo-crypto';
 import { useEffect, useState } from 'react';
 import { AppState, Linking, View } from 'react-native';
 import { useTranslations } from 'use-intl';
 
 import { track } from '../../lib/events';
+import { runOrQueue } from '../../lib/offline/mutations';
 import { registerSheet, sheets, type SheetRenderProps } from '../../providers/SheetHost';
 import { mountSheet } from '../actions/mount';
-import { useOfflineGuard } from '../actions/ui';
 import { readDraft, useDictation, writeDraft } from './dictation';
 
 export interface NoteSheetParams {
@@ -45,17 +46,17 @@ export function noteDraftKey(eventId: string): string {
 function NoteSheet({ params, visible, onDismiss, onHidden }: SheetRenderProps<NoteSheetParams>) {
   const t = useTranslations('meeting.note');
   const tc = useTranslations('common');
-  const client = useApiClient();
+  const ts = useTranslations('states.offline');
   const queryClient = useQueryClient();
   const toast = useToast();
-  const blocked = useOfflineGuard();
   const draftKey = noteDraftKey(params.eventId);
   const [text, setText] = useState(() => readDraft(draftKey));
   const [clientNoteId] = useState(() => Crypto.randomUUID());
   const [usedVoice, setUsedVoice] = useState(false);
   const [confidence, setConfidence] = useState<number | undefined>(undefined);
   const [confirming, setConfirming] = useState(false);
-  const save = useMutation(apiMutationOptions(client, 'POST /meetings/:eventId/notes'));
+  const [saving, setSaving] = useState(false);
+  const [failed, setFailed] = useState(false);
   const dictation = useDictation((spoken, score) => {
     setUsedVoice(true);
     setConfidence(score);
@@ -78,33 +79,46 @@ function NoteSheet({ params, visible, onDismiss, onHidden }: SheetRenderProps<No
 
   const submit = () => {
     const body = text.trim();
-    if (body === '' || blocked('capture')) return;
+    if (body === '' || saving) return;
     dictation.stop();
-    save.mutate(
+    setSaving(true);
+    setFailed(false);
+    const finish = (queued: boolean) => {
+      writeDraft(draftKey, '');
+      track('meeting_note_saved', {
+        input_mode: usedVoice ? 'voice' : 'text',
+        origin: params.origin,
+      });
+      void queryClient.invalidateQueries({ queryKey: qk.meetings.notes(params.eventId) });
+      toast.show(
+        queued
+          ? { message: ts('queued'), kind: 'offline' }
+          : { message: t('saved'), kind: 'success' },
+      );
+      onDismiss();
+    };
+    void runOrQueue(
+      'meeting_note',
       {
-        input: {
-          params: { eventId: params.eventId },
-          body: {
-            client_note_id: clientNoteId,
-            body,
-            source: usedVoice ? 'voice' : 'text',
-            ...(usedVoice && confidence !== undefined ? { transcript_confidence: confidence } : {}),
-          },
+        eventId: params.eventId,
+        body: {
+          client_note_id: clientNoteId,
+          body,
+          source: usedVoice ? 'voice' : 'text',
+          ...(usedVoice && confidence !== undefined ? { transcript_confidence: confidence } : {}),
         },
       },
-      {
-        onSuccess: () => {
-          writeDraft(draftKey, '');
-          track('meeting_note_saved', {
-            input_mode: usedVoice ? 'voice' : 'text',
-            origin: params.origin,
-          });
-          void queryClient.invalidateQueries({ queryKey: qk.meetings.notes(params.eventId) });
-          toast.show({ message: t('saved'), kind: 'success' });
-          onDismiss();
-        },
-      },
-    );
+      { idempotencyKey: clientNoteId },
+    )
+      .then((result) => {
+        setSaving(false);
+        if (result.status === 'failed') setFailed(true);
+        else finish(result.status === 'queued');
+      })
+      .catch(() => {
+        setSaving(false);
+        setFailed(true);
+      });
   };
 
   const listening = dictation.state === 'listening' || dictation.state === 'requesting';
@@ -150,7 +164,7 @@ function NoteSheet({ params, visible, onDismiss, onHidden }: SheetRenderProps<No
               label={tc('actions.save')}
               onPress={submit}
               disabled={text.trim() === ''}
-              loading={save.isPending}
+              loading={saving}
               fullWidth
               testID="meeting.note.save"
             />
@@ -209,7 +223,7 @@ function NoteSheet({ params, visible, onDismiss, onHidden }: SheetRenderProps<No
         ) : dictation.state === 'error' ? (
           <HintRow text={t('sttFailed')} />
         ) : null}
-        {save.isError ? (
+        {failed ? (
           <View style={{ gap: 6 }} testID="meeting.note.error">
             <Text variant="secondary" tone="critical">
               {t('saveFailed')}

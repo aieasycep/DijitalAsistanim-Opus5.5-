@@ -62,6 +62,7 @@ import { SNOOZE_SHEET } from './sheets/SnoozeSheet';
 import { INSIGHT_WHY_SHEET } from './sheets/WhySheet';
 import { routeForEntity, routeForSource } from './sources';
 import { cardIntentActions } from './intents';
+import { useCardIntents } from './useCardIntents';
 
 export const MAX_PRIORITIES = 5;
 
@@ -457,8 +458,10 @@ function PriorityItem({
 }) {
   const t = useTranslations('today');
   const common = useTranslations('common');
+  const flow = useTranslations('flow');
   const format = useFormatter();
   const router = useRouter();
+  const runIntent = useCardIntents();
   const badge = badgeOf(item.kind, item.urgency);
   const at = item.due_at ?? item.event_at;
   const time =
@@ -488,10 +491,14 @@ function PriorityItem({
       remind: common('actions.remind'),
       remindTomorrow: common('actions.remindTomorrow'),
       prepare: common('actions.prepare'),
+      addToCalendar: common('actions.addToCalendar'),
+      followUpDraft: flow('card.followUpDraft'),
+      plan: common('actions.schedule'),
       push: (href, action) => {
         track('priority_action', { kind: item.kind, action });
         router.push(href);
       },
+      run: runIntent,
     }),
     {
       key: 'source',

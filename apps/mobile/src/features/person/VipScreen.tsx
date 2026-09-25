@@ -6,6 +6,7 @@
  * list up to `vip_max` under the "VIP önceliği Pro'da" banner; writes wait for the connection
  * offline (internal, idempotent).
  */
+import { hold } from '@da/design-tokens';
 import type { VipRelationship } from '@da/domain';
 import {
   Avatar,
@@ -101,7 +102,7 @@ export function VipScreen() {
         showToast({
           message: t('removed', { name: row.name }),
           kind: 'success',
-          durationMs: 5_000,
+          durationMs: hold.undoToast,
           action: {
             label: common('actions.undo'),
             onPress: () => {

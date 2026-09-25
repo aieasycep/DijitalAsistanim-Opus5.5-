@@ -6,6 +6,7 @@
  * either removes the still-queued POST (nothing reaches the server) or cancels the server row
  * (API-REM-03). Snooze uses the status RPCs.
  */
+import { hold } from '@da/design-tokens';
 import { qk } from '@da/api-client';
 import { onlineManager } from '@tanstack/react-query';
 import * as Crypto from 'expo-crypto';
@@ -27,7 +28,7 @@ import { rpc } from '../../lib/postgrest';
 import { getQueryClient } from '../../lib/query/client';
 import { showToast } from '../../providers/ToastHost';
 
-export const REMINDER_UNDO_MS = 5_000;
+export const REMINDER_UNDO_MS = hold.undoToast;
 
 export type ReminderPresetKey =
   'before_30m' | 'before_1h' | 'this_evening' | 'tomorrow_morning' | 'smart' | 'custom';

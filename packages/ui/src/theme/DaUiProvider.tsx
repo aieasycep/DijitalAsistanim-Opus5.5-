@@ -22,6 +22,8 @@ export interface DaUiProviderProps {
   /** The expo-haptics implementation. */
   readonly onHaptic?: HapticsHandler;
   readonly locale?: Locale;
+  /** App text-size multiplier (M-SET-61: 0.9 · 1 · 1.15 · 1.3). */
+  readonly textScale?: number;
   /** Toast distance from the bottom (tab bar height + 14 on tab screens). */
   readonly toastBottomOffset?: number;
   /** Overrides for tests, previews and store screenshots. */
@@ -39,6 +41,7 @@ export function DaUiProvider({
   hapticsEnabled,
   onHaptic,
   locale,
+  textScale,
   toastBottomOffset,
   systemScheme,
   screenReaderEnabled,
@@ -58,6 +61,7 @@ export function DaUiProvider({
         hapticsEnabled={hapticsEnabled}
         onHaptic={onHaptic}
         locale={locale}
+        textScale={textScale}
         screenReaderEnabled={screenReaderEnabled}
         reduceTransparency={reduceTransparency}
       >

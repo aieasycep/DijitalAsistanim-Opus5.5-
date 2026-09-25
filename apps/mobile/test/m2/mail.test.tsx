@@ -7,6 +7,7 @@
 import { qk } from '@da/api-client';
 import { beforeEach, describe, expect, it } from '@jest/globals';
 import { onlineManager } from '@tanstack/react-query';
+import * as Clipboard from 'expo-clipboard';
 import { fireEvent, screen, waitFor, within } from 'expo-router/testing-library';
 
 import { json, renderApp, resetAppState } from '../helpers/app';
@@ -237,5 +238,59 @@ describe('M-REPLY-01 · AI yanıt', () => {
     await fireEvent.press(screen.getByTestId('reply.approve'));
     expect(events('offline_blocked_action').at(-1)?.props).toEqual({ action: 'approve' });
     expect(api.calls.some((c) => c.url.includes('/submit'))).toBe(false);
+  });
+
+  it('edits To/Cc in the recipients sheet (M-REPLY-03) with PATCH {to, cc, expected_version}', async () => {
+    const { api } = setup({
+      bootstrap: { accounts: [sendAccount] },
+      data: { tables: { email_messages: [messageRow] } },
+      api: {
+        [`POST /mail/${MESSAGE}/reply-drafts`]: () => json(201, ok(draft)),
+        [`PATCH /reply-drafts/${DRAFT}`]: (call) =>
+          json(200, ok({ ...draft, ...(call.body as object), version: 2 })),
+      },
+    });
+    await renderApp(`/mail/${MESSAGE}/reply`);
+    expect(await screen.findByDisplayValue(draft.body_text)).toBeOnTheScreen();
+    await fireEvent.press(screen.getByTestId('reply.recipients'));
+    expect(await screen.findByTestId('sheet.recipients')).toBeOnTheScreen();
+    await fireEvent.press(screen.getByTestId('recipients.field.cc'));
+    await fireEvent.changeText(screen.getByTestId('recipients.input'), 'not-an-address');
+    await fireEvent.press(screen.getByTestId('recipients.add'));
+    expect(await screen.findByText('Geçerli bir e-posta adresi yaz.')).toBeOnTheScreen();
+    await fireEvent.changeText(screen.getByTestId('recipients.input'), 'ayse@demir.example');
+    await fireEvent.press(screen.getByTestId('recipients.add'));
+    await fireEvent.press(screen.getByTestId('recipients.save'));
+    await waitFor(() => {
+      expect(api.calls.some((c) => c.method === 'PATCH')).toBe(true);
+    });
+    expect(api.calls.find((c) => c.method === 'PATCH')?.body).toEqual({
+      to: draft.to,
+      cc: [{ email: 'ayse@demir.example' }],
+      expected_version: 1,
+    });
+    await waitFor(() => {
+      expect(events('reply_recipients_edit').at(-1)?.props).toEqual({
+        added: 1,
+        removed: 0,
+        reply_all: true,
+      });
+    });
+  });
+
+  it('copies the draft text from the "···" menu ("Metni kopyala")', async () => {
+    setup({
+      bootstrap: { accounts: [sendAccount] },
+      data: { tables: { email_messages: [messageRow] } },
+      api: { [`POST /mail/${MESSAGE}/reply-drafts`]: () => json(201, ok(draft)) },
+    });
+    await renderApp(`/mail/${MESSAGE}/reply`);
+    expect(await screen.findByDisplayValue(draft.body_text)).toBeOnTheScreen();
+    await fireEvent.press(screen.getByLabelText('Diğer seçenekler'));
+    await fireEvent.press(await screen.findByText('Metni kopyala'));
+    await waitFor(() => {
+      expect(Clipboard.setStringAsync).toHaveBeenCalledWith(draft.body_text);
+    });
+    expect(await screen.findByText('Taslak kopyalandı')).toBeOnTheScreen();
   });
 });

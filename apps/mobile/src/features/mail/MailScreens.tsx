@@ -43,7 +43,13 @@ import { isScreenAvailable } from '../../lib/deeplinks';
 import { track } from '../../lib/events';
 import { deadlineBlock, useProposals } from '../actions/proposals';
 import { openMenu } from '../actions/sheets';
-import { DetailScreen, QueryFailure, useBack, useOfflineGuard } from '../actions/ui';
+import {
+  DetailListScreen,
+  DetailScreen,
+  QueryFailure,
+  useBack,
+  useOfflineGuard,
+} from '../actions/ui';
 import { syncAccounts } from '../flow/data';
 import {
   DRILL_CATEGORIES,
@@ -134,7 +140,7 @@ export function MailCard({ row, action, correction, onOpened }: MailCardProps) {
   const toast = useToast();
   const formats = useFormats();
   const blocked = useOfflineGuard();
-  const proposals = useProposals('email_detail');
+  const proposals = useProposals();
   const feedback = useMailFeedback();
   const sender = senderOf(row);
   const summary = oneLiner(row.ai_summary) ?? row.subject ?? t('noSubject');
@@ -558,79 +564,102 @@ export function MailCategoryScreen() {
         ? 'calendar'
         : 'none';
 
+  const showRows = !query.isPending && !(query.isError && pages.length === 0) && total > 0;
+  const items: CategoryItem[] = showRows
+    ? pages
+        .filter((page) => page.rows.length > 0)
+        .flatMap((page) => [
+          { key: `day:${page.date}`, kind: 'day' as const, date: page.date },
+          ...page.rows.map((row) => ({ key: row.thread_id, kind: 'mail' as const, row })),
+        ])
+    : [];
+
   return (
-    <DetailScreen
+    <DetailListScreen
       kicker={label}
       onLeadingPress={back}
       onRefresh={() => query.refetch()}
       updatedAt={query.dataUpdatedAt}
       testID="mailCategory.screen"
-    >
-      <View style={{ gap: 4 }}>
-        <Text variant="h1" heading>
-          {label}
-        </Text>
-        <Text variant="secondary" tone="secondary">
-          {t('screen.categorySub', { count: total })}
-        </Text>
-      </View>
-      {query.isPending ? (
-        <IntelSkeleton />
-      ) : query.isError && pages.length === 0 ? (
-        <QueryFailure
-          screen={label}
-          error={query.error}
-          onRetry={() => {
-            void query.refetch();
-          }}
-          testID="mailCategory"
-        />
-      ) : total === 0 && !query.hasNextPage ? (
-        <EmptyState
-          icon="mark_email_read"
-          tone="success"
-          title={t(`screen.empty.${category}`)}
-          body={t('screen.emptyBody')}
-          testID="mailCategory.empty"
-        />
-      ) : (
-        <View style={{ gap: 12 }}>
-          {pages
-            .filter((page) => page.rows.length > 0)
-            .map((page) => (
-              <View key={page.date} style={{ gap: 12 }}>
-                <SectionHeader title={dayTitle(page.date)} />
-                {page.rows.map((row) => (
-                  <MailCard
-                    key={row.thread_id}
-                    row={row}
-                    action={action(row)}
-                    correction={category === 'important' ? 'not_important' : 'show_more'}
-                    onOpened={() => {
-                      track('mail_card_open', { category });
-                    }}
-                  />
-                ))}
-              </View>
-            ))}
-          {query.hasNextPage ? (
-            <Button
-              label={tc('actions.loadMore')}
-              variant="text"
-              onPress={() => {
-                void query.fetchNextPage();
+      header={
+        <>
+          <View style={{ gap: 4 }}>
+            <Text variant="h1" heading>
+              {label}
+            </Text>
+            <Text variant="secondary" tone="secondary">
+              {t('screen.categorySub', { count: total })}
+            </Text>
+          </View>
+          {query.isPending ? (
+            <IntelSkeleton />
+          ) : query.isError && pages.length === 0 ? (
+            <QueryFailure
+              screen={label}
+              error={query.error}
+              onRetry={() => {
+                void query.refetch();
               }}
-              loading={query.isFetchingNextPage}
-              testID="mailCategory.more"
+              testID="mailCategory"
+            />
+          ) : total === 0 && !query.hasNextPage ? (
+            <EmptyState
+              icon="mark_email_read"
+              tone="success"
+              title={t(`screen.empty.${category}`)}
+              body={t('screen.emptyBody')}
+              testID="mailCategory.empty"
             />
           ) : null}
-          {query.isError ? (
-            <Text variant="meta" tone="tertiaryStrong">
-              {ts('offline.blockedReason')}
-            </Text>
-          ) : null}
-        </View>
-      )}
-    </DetailScreen>
+        </>
+      }
+      items={items}
+      keyOf={(item) => item.key}
+      renderItem={(item) =>
+        item.kind === 'day' ? (
+          <SectionHeader title={dayTitle(item.date)} />
+        ) : (
+          <MailCard
+            row={item.row}
+            action={action(item.row)}
+            correction={category === 'important' ? 'not_important' : 'show_more'}
+            onOpened={() => {
+              track('mail_card_open', { category });
+            }}
+          />
+        )
+      }
+      onEndReached={() => {
+        if (query.hasNextPage && !query.isFetchingNextPage && !query.isError) {
+          void query.fetchNextPage();
+        }
+      }}
+      listFooter={
+        showRows ? (
+          <View style={{ gap: 12 }}>
+            {query.hasNextPage ? (
+              <Button
+                label={tc('actions.loadMore')}
+                variant="text"
+                onPress={() => {
+                  void query.fetchNextPage();
+                }}
+                loading={query.isFetchingNextPage}
+                testID="mailCategory.more"
+              />
+            ) : null}
+            {query.isError ? (
+              <Text variant="meta" tone="tertiaryStrong">
+                {ts('offline.blockedReason')}
+              </Text>
+            ) : null}
+          </View>
+        ) : undefined
+      }
+    />
   );
 }
+
+type CategoryItem =
+  | { readonly key: string; readonly kind: 'day'; readonly date: string }
+  | { readonly key: string; readonly kind: 'mail'; readonly row: MailRowData };

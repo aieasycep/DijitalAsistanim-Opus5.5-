@@ -8,10 +8,11 @@
 import { qk } from '@da/api-client';
 import { VIP_RELATIONSHIP_VALUES, type VipRelationship } from '@da/domain';
 import { foldForSearch } from '@da/i18n';
-import { onlineManager, queryOptions } from '@tanstack/react-query';
+import { queryOptions } from '@tanstack/react-query';
 
 import { getSupabase } from '../../lib/auth/supabase';
 import { DataError, rpc, toDataError } from '../../lib/postgrest';
+import { runOrQueue } from '../../lib/offline/mutations';
 import { getQueryClient } from '../../lib/query/client';
 
 type DbError = { message?: string; code?: string } | null;
@@ -184,17 +185,6 @@ export interface VipSettings {
   readonly bypassQuietHours: boolean;
 }
 
-function whenOnline<T>(run: () => Promise<T>): Promise<T> {
-  if (onlineManager.isOnline()) return run();
-  return new Promise<T>((resolve, reject) => {
-    const unsubscribe = onlineManager.subscribe((online) => {
-      if (!online) return;
-      unsubscribe();
-      run().then(resolve, reject);
-    });
-  });
-}
-
 export function invalidatePeople(contactId?: string): void {
   const client = getQueryClient();
   void client.invalidateQueries({ queryKey: qk.vip.all });
@@ -204,42 +194,36 @@ export function invalidatePeople(contactId?: string): void {
     void client.invalidateQueries({ queryKey: qk.person.detail(contactId) });
 }
 
-/** Insert or update the VIP row of a contact (upsert on `(user_id, contact_id)`). */
-export function saveVip(
+/**
+ * Insert or update the VIP row of a contact (unique on `(user_id, contact_id)`), through the
+ * offline mutation queue (`vip_set`, last write wins per contact): offline it is queued and sent on
+ * reconnect; online a failure (e.g. `PLAN_LIMIT:vip_max`) rejects.
+ */
+export async function saveVip(
   contactId: string,
   settings: VipSettings,
   origin: 'user' | 'suggestion' | 'onboarding' = 'user',
   existingId: string | null = null,
 ): Promise<void> {
-  return whenOnline(async () => {
-    const values = {
+  const result = await runOrQueue('vip_set', {
+    contactId,
+    on: true,
+    settings: {
       relationship: settings.relationship,
-      always_notify: settings.alwaysNotify,
-      bypass_quiet_hours: settings.bypassQuietHours,
-    };
-    const request =
-      existingId === null
-        ? getSupabase()
-            .from('vip_people')
-            .insert({ contact_id: contactId, origin, ...values } as never)
-        : getSupabase()
-            .from('vip_people')
-            .update(values as never)
-            .eq('id', existingId);
-    const { error } = (await request) as { error: DbError };
-    if (error !== null) throw toDataError(error);
-    invalidatePeople(contactId);
+      alwaysNotify: settings.alwaysNotify,
+      bypassQuietHours: settings.bypassQuietHours,
+    },
+    ...(existingId === null ? { origin } : {}),
   });
+  if (result.status === 'failed') throw result.error;
+  invalidatePeople(contactId);
 }
 
-export function removeVip(id: string, contactId: string): Promise<void> {
-  return whenOnline(async () => {
-    const { error } = (await getSupabase().from('vip_people').delete().eq('id', id)) as {
-      error: DbError;
-    };
-    if (error !== null) throw toDataError(error);
-    invalidatePeople(contactId);
-  });
+/** Removes a contact's VIP row (queued offline like {@link saveVip}). */
+export async function removeVip(_vipId: string, contactId: string): Promise<void> {
+  const result = await runOrQueue('vip_set', { contactId, on: false });
+  if (result.status === 'failed') throw result.error;
+  invalidatePeople(contactId);
 }
 
 /** RPC-23: the owner's contact for an e-mail (created when new). */

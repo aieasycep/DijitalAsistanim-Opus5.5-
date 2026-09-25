@@ -29,6 +29,7 @@ import {
   SegmentedControl,
   SuccessState,
   Text,
+  TextAction,
   useTheme,
   useToast,
 } from '@da/ui';
@@ -36,6 +37,7 @@ import type { ApprovalView } from '@da/validation/api/approvals';
 import type { ReplyDraft } from '@da/validation/api/common';
 import { MAX_REPLY_ATTACHMENTS_BYTES } from '@da/validation/api/approvals';
 import { useMutation } from '@tanstack/react-query';
+import * as Clipboard from 'expo-clipboard';
 import * as Crypto from 'expo-crypto';
 import * as DocumentPicker from 'expo-document-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -50,10 +52,11 @@ import { mailProviderUrl, openWithOs } from '../actions/handoff';
 import { openScopeUpgrade } from '../actions/scope';
 import { openMenu } from '../actions/sheets';
 import { DetailScreen, useBack, useOfflineGuard } from '../actions/ui';
-import { openApprovalSheet } from '../approvals/InlineApprovalSheet';
+import { openApprovalViewSheet } from '../approvals/ApprovalSheet';
 import { useApprovalRunner } from '../approvals/runner';
 import { threadIdOfMessage } from '../mail/data';
 import { fetchApprovalForEdit, fetchDraft } from './data';
+import { openRecipientsSheet, type RecipientValue } from './RecipientsSheet';
 
 export const TONES = ['short', 'professional', 'friendly', 'detailed'] as const;
 export type Tone = (typeof TONES)[number];
@@ -493,11 +496,7 @@ export function ReplyScreen() {
         !submitted.draft.warnings.includes('recipients_changed');
       if (!same) {
         setPhase('ready');
-        openApprovalSheet({
-          approval: submitted.approval,
-          origin: 'reply',
-          invalidate: [qk.mail.all],
-        });
+        openApprovalViewSheet(submitted.approval, { invalidate: [qk.mail.all] });
         return;
       }
       approveSubmitted(submitted.approval);
@@ -571,6 +570,44 @@ export function ReplyScreen() {
     }
   };
 
+  /** M-REPLY-03 "Kaydet": flushes the body, then `PATCH {to, cc, expected_version}`. */
+  const saveRecipients = async (lists: {
+    readonly to: readonly RecipientValue[];
+    readonly cc: readonly RecipientValue[];
+  }): Promise<boolean> => {
+    if (blocked('reply')) return false;
+    const latest = await flush().catch(() => null);
+    if (latest === null) return false;
+    try {
+      const next = await patch.mutateAsync({
+        input: {
+          params: { id: latest.id },
+          body: { to: [...lists.to], cc: [...lists.cc], expected_version: latest.version },
+        },
+      });
+      setDraft(next);
+      return true;
+    } catch (error) {
+      if (isApiError(error) && error.code === 'STATE_CONFLICT') setConflict(true);
+      else toast.show({ message: t('screen.saveFailed'), kind: 'error' });
+      return false;
+    }
+  };
+
+  const editRecipients = () => {
+    if (draft === null) return;
+    openRecipientsSheet({ to: draft.to, cc: draft.cc, onSave: saveRecipients });
+  };
+
+  const copyText = () => {
+    void Clipboard.setStringAsync(body).then(
+      () => {
+        toast.show({ message: t('screen.copied'), kind: 'success' });
+      },
+      () => undefined,
+    );
+  };
+
   const more = () => {
     const handoff =
       draft === null
@@ -583,6 +620,26 @@ export function ReplyScreen() {
           });
     openMenu({
       options: [
+        ...(body.trim() === ''
+          ? []
+          : [
+              {
+                key: 'copy',
+                label: t('screen.copyText'),
+                icon: 'content_copy' as const,
+                onPress: copyText,
+              },
+            ]),
+        ...(phase === 'ready'
+          ? [
+              {
+                key: 'recipients',
+                label: t('recipients.edit'),
+                icon: 'group' as const,
+                onPress: editRecipients,
+              },
+            ]
+          : []),
         ...(handoff === null
           ? []
           : [
@@ -695,9 +752,17 @@ export function ReplyScreen() {
     content = (
       <View style={{ gap: 16 }}>
         <View style={{ gap: 6 }}>
-          <Text variant="labelSm" tone="secondary">
-            {t('screen.to')}
-          </Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 8 }}>
+            <Text variant="labelSm" tone="secondary">
+              {t('screen.to')}
+            </Text>
+            <TextAction
+              label={t('recipients.edit')}
+              onPress={editRecipients}
+              disabled={busy || !online}
+              testID="reply.recipients"
+            />
+          </View>
           <ChipWrap>
             {draft.to.map((r) => (
               <RecipientChip key={r.email} name={r.name ?? r.email} id={r.email} />

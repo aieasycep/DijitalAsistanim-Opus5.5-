@@ -384,7 +384,8 @@ const styles = StyleSheet.create({
   content: { flexGrow: 1, paddingBottom: 32 },
   body: { gap: 14, paddingTop: 24 },
   cells: { flexDirection: 'row', gap: 8, marginVertical: 8 },
-  cell: { flex: 1, height: 52, alignItems: 'center', justifyContent: 'center' },
+  // minHeight: the digit grows with Dynamic Type instead of clipping (T-8.29).
+  cell: { flex: 1, minHeight: 52, alignItems: 'center', justifyContent: 'center' },
   hiddenInput: { position: 'absolute', width: 1, height: 1, opacity: 0 },
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
 });

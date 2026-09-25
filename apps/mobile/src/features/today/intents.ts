@@ -1,8 +1,11 @@
 /**
- * Card intent actions on Today (Annex M-TD-01-B), added with the screens they open: "Yanıtla" →
- * `mail/{messageId}/reply` (T-8.11, shown once that screen exists), "Hatırlat" / "Yarın Hatırlat"
- * → the Smart Reminder sheet (`reminders/new`, T-8.18) and "Hazırlan" → `meeting/{eventId}/prep`
- * (T-8.14, Pro). A control is rendered only when its screen exists in this build (R-24).
+ * Card intent actions on Today (Annex M-TD-01-B): "Yanıtla" → `mail/{messageId}/reply`,
+ * "Hatırlat" / "Yarın Hatırlat" → the Smart Reminder sheet (`reminders/new`), "Hazırlan" →
+ * `meeting/{eventId}/prep` (Pro), deadline "Takvime Ekle" → a `calendar_create` proposal
+ * (`POST /approvals`, approved in the inline sheet), follow-up "Takip Mesajı Hazırla" →
+ * `POST /followups/:threadId/draft` → the reply screen (Pro) and commitment "Planla" →
+ * `POST /plan/proposals` → `plan/proposal/{id}` (Pro). A control is rendered only when its screen
+ * exists in this build (R-24).
  */
 import type { CardAction } from '@da/ui';
 
@@ -14,7 +17,20 @@ export interface IntentLabels {
   readonly remind: string;
   readonly remindTomorrow: string;
   readonly prepare: string;
+  readonly addToCalendar: string;
+  readonly followUpDraft: string;
+  readonly plan: string;
   readonly push: (href: string, action: 'reply' | 'remind' | 'remind_tomorrow' | 'prepare') => void;
+  /** Network actions that propose or draft (the caller gates offline and Pro). */
+  readonly run: (action: CardIntent, item: TodayPriority) => void;
+}
+
+export type CardIntent = 'calendar' | 'followup_draft' | 'plan';
+
+function threadOrMessage(item: TodayPriority): boolean {
+  return (
+    (item.entity_type === 'email_thread' && item.entity_id !== null) || messageIdOf(item) !== null
+  );
 }
 
 function messageIdOf(item: TodayPriority): string | null {
@@ -76,6 +92,16 @@ export function cardIntentActions(item: TodayPriority, labels: IntentLabels): Ca
       }
       break;
     case 'follow_up':
+      if (threadOrMessage(item) && isScreenAvailable('/mail/:id/reply')) {
+        actions.push({
+          key: 'followup_draft',
+          label: labels.followUpDraft,
+          emphasis: 'primary',
+          onPress: () => {
+            labels.run('followup_draft', item);
+          },
+        });
+      }
       if (remindAvailable) {
         actions.push({
           key: 'remind_tomorrow',
@@ -100,8 +126,54 @@ export function cardIntentActions(item: TodayPriority, labels: IntentLabels): Ca
       }
       break;
     case 'deadline':
-    case 'life_event':
+      if (item.due_at !== null) {
+        actions.push({
+          key: 'calendar',
+          label: labels.addToCalendar,
+          emphasis: 'primary',
+          onPress: () => {
+            labels.run('calendar', item);
+          },
+        });
+      }
+      if (remindAvailable) {
+        actions.push({
+          key: 'remind',
+          label: labels.remind,
+          emphasis: 'secondary',
+          onPress: () => {
+            labels.push(reminderHref(item), 'remind');
+          },
+        });
+      }
+      break;
     case 'commitment':
+      if (
+        item.entity_type === 'commitment' &&
+        item.entity_id !== null &&
+        isScreenAvailable('/plan/proposal/:approvalId')
+      ) {
+        actions.push({
+          key: 'plan',
+          label: labels.plan,
+          emphasis: 'primary',
+          onPress: () => {
+            labels.run('plan', item);
+          },
+        });
+      }
+      if (remindAvailable) {
+        actions.push({
+          key: 'remind',
+          label: labels.remind,
+          emphasis: 'secondary',
+          onPress: () => {
+            labels.push(reminderHref(item), 'remind');
+          },
+        });
+      }
+      break;
+    case 'life_event':
       if (remindAvailable) {
         actions.push({
           key: 'remind',

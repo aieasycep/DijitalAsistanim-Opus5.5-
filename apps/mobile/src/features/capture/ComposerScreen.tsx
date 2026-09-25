@@ -29,6 +29,7 @@ import {
   AssistChip,
   useTheme,
 } from '@da/ui';
+import * as Clipboard from 'expo-clipboard';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -43,6 +44,7 @@ import { useOnline } from '../../lib/query/online-manager';
 import { showToast } from '../../providers/ToastHost';
 import { ContextualGate, isPro } from '../pro-gate/ProGate';
 import { useLang } from '../common/DateTimeFields';
+import { useDictation } from '../meeting/dictation';
 import {
   clearDraft,
   isDraftEmpty,
@@ -75,6 +77,14 @@ function entryOf(value: string | undefined): Entry {
   return value === 'share' || value === 'assistant' || value === 'today' ? value : 'in_app';
 }
 
+/** Appends dictated or pasted text on a new word boundary. */
+export function joinText(current: string, addition: string): string {
+  const next = addition.trim();
+  if (next === '') return current;
+  if (current.trim() === '') return next;
+  return /\s$/.test(current) ? `${current}${next}` : `${current} ${next}`;
+}
+
 function fileSizeLabel(bytes: number): string {
   if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1).replace('.', ',')} MB`;
   return `${String(Math.max(1, Math.round(bytes / 1024)))} KB`;
@@ -92,6 +102,19 @@ export function ComposerScreen() {
   const draft = useCaptureDraft();
   const pro = isPro();
   const entry = entryOf(params.entry);
+  // "Sesle yaz": on-device dictation into the field (not Voice mode, M§25).
+  const dictation = useDictation((text) => {
+    setDraft((d) => ({ ...d, text: joinText(d.text, text) }));
+  });
+  // "Yapıştır": the clipboard is read only after the tap (iOS shows its paste prompt).
+  const paste = async () => {
+    const text = await Clipboard.getStringAsync().catch(() => '');
+    if (text.trim() === '') {
+      showToast({ message: t('text.pasteEmpty'), kind: 'neutral' });
+      return;
+    }
+    setDraft((d) => ({ ...d, text: joinText(d.text, text) }));
+  };
   const [mode, setMode] = useState<Mode>(() =>
     params.kind === 'link'
       ? 'link'
@@ -424,17 +447,46 @@ export function ComposerScreen() {
             ) : null}
           </View>
         ) : (
-          <CaptureTextField
-            value={draft.text}
-            onChangeText={(text) => {
-              setDraft((d) => ({ ...d, text }));
-            }}
-            accessibilityLabel={t('text.label')}
-            placeholder={t('text.hint')}
-            maxLength={isSharedDraft(draft) ? 20_000 : MAX_TEXT + 1}
-            counterText={t('text.counter', { count: draft.text.length })}
-            testID="capture.text"
-          />
+          <View style={styles.section}>
+            <CaptureTextField
+              value={
+                dictation.partial === '' ? draft.text : joinText(draft.text, dictation.partial)
+              }
+              onChangeText={(text) => {
+                setDraft((d) => ({ ...d, text }));
+              }}
+              accessibilityLabel={t('text.label')}
+              placeholder={t('text.hint')}
+              maxLength={isSharedDraft(draft) ? 20_000 : MAX_TEXT + 1}
+              counterText={t('text.counter', { count: draft.text.length })}
+              testID="capture.text"
+            />
+            <ChipWrap>
+              {dictation.available ? (
+                <AssistChip
+                  label={
+                    dictation.state === 'listening' ? t('text.stopDictation') : t('text.dictate')
+                  }
+                  icon="mic"
+                  onPress={dictation.toggle}
+                  testID="capture.dictate"
+                />
+              ) : null}
+              <AssistChip
+                label={t('text.paste')}
+                icon="content_paste"
+                onPress={() => {
+                  void paste();
+                }}
+                testID="capture.paste"
+              />
+            </ChipWrap>
+            {dictation.state === 'denied' ? (
+              <Text variant="bodyXs" tone="tertiaryStrong" accessibilityRole="alert">
+                {t('text.micDenied')}
+              </Text>
+            ) : null}
+          </View>
         )}
         {textTooLong ? (
           <Text variant="bodyXs" tone="warning" accessibilityRole="alert">

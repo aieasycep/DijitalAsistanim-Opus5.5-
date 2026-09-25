@@ -75,5 +75,6 @@
   "pendingActivation": "The purchase finished but Pro is not active yet. It turns on automatically shortly.",
   "successTitle": "Pro is active",
   "successBody": "All Pro features are unlocked.",
-  "activating": "Activating Pro… It shows on the Subscription screen within a few minutes."
+  "activating": "Activating Pro… It shows on the Subscription screen within a few minutes.",
+  "weeklySubline": "This week we surfaced {important} of {mails} emails; you saved about {saved}."
 }

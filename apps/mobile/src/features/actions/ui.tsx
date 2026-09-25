@@ -16,6 +16,7 @@ import {
   useToast,
   type DetailLeading,
 } from '@da/ui';
+import { FlashList } from '@shopify/flash-list';
 import { onlineManager } from '@tanstack/react-query';
 import { useRouter, type Href } from 'expo-router';
 import { useState, type ReactNode } from 'react';
@@ -127,6 +128,97 @@ export function DetailScreen({
         {children}
       </ScrollView>
       {footer === undefined ? null : <StickyCTABar>{footer}</StickyCTABar>}
+    </View>
+  );
+}
+
+export interface DetailListScreenProps<T> extends Omit<DetailScreenProps, 'children' | 'footer'> {
+  /** Rendered above the rows (title, states); scrolls with the list. */
+  readonly header: ReactNode;
+  readonly items: readonly T[];
+  readonly keyOf: (item: T) => string;
+  readonly renderItem: (item: T) => ReactNode;
+  /** Rendered below the rows ("Daha fazla yükle", notes). */
+  readonly listFooter?: ReactNode;
+  readonly onEndReached?: () => void;
+}
+
+/**
+ * `DetailScreen` for long lists (T-8.28 performance): the same header, offline notice and
+ * pull-to-refresh around a FlashList, so only the visible rows are mounted.
+ */
+export function DetailListScreen<T>({
+  kicker,
+  leading = 'back',
+  onLeadingPress,
+  trailing,
+  onRefresh,
+  updatedAt,
+  testID,
+  header,
+  items,
+  keyOf,
+  renderItem,
+  listFooter,
+  onEndReached,
+}: DetailListScreenProps<T>) {
+  const theme = useTheme();
+  const online = useOnline();
+  const [refreshing, setRefreshing] = useState(false);
+  const refresh = async () => {
+    if (onRefresh === undefined) return;
+    setRefreshing(true);
+    try {
+      await onRefresh();
+    } finally {
+      setRefreshing(false);
+    }
+  };
+  const inset = { paddingHorizontal: theme.layout.screenX, opacity: online ? 1 : 0.75 };
+  return (
+    <View style={[styles.flex, { backgroundColor: theme.color.bg }]} testID={testID}>
+      <DetailHeader
+        {...(kicker === undefined ? {} : { kicker })}
+        leading={leading}
+        onLeadingPress={onLeadingPress}
+        trailing={trailing}
+      />
+      {online ? null : (
+        <OfflineNotice
+          {...(updatedAt === undefined ? {} : { updatedAt })}
+          {...(onRefresh === undefined ? {} : { onRefresh: refresh })}
+        />
+      )}
+      <FlashList
+        data={items}
+        keyExtractor={keyOf}
+        renderItem={({ item }) => (
+          <View style={[inset, { paddingBottom: 12 }]}>{renderItem(item)}</View>
+        )}
+        ListHeaderComponent={
+          <View style={[styles.content, inset, { paddingBottom: 12 }]}>{header}</View>
+        }
+        {...(listFooter === undefined
+          ? {}
+          : { ListFooterComponent: <View style={inset}>{listFooter}</View> })}
+        {...(onEndReached === undefined ? {} : { onEndReached, onEndReachedThreshold: 0.3 })}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ paddingBottom: 24 }}
+        {...(onRefresh === undefined
+          ? {}
+          : {
+              refreshControl: (
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={() => {
+                    void refresh();
+                  }}
+                  tintColor={theme.color.brand.primary}
+                  colors={[theme.color.brand.primary]}
+                />
+              ),
+            })}
+      />
     </View>
   );
 }

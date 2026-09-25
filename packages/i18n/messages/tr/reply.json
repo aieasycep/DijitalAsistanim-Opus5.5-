@@ -97,6 +97,23 @@
     "to": "Kime",
     "toneA11y": "Yanıt tonu",
     "toneApplied": "Ton güncellendi.",
-    "toneOverwrite": "Taslak {tone} tonla yeniden yazılsın mı? Yaptığın değişiklikler kaybolur."
+    "toneOverwrite": "Taslak {tone} tonla yeniden yazılsın mı? Yaptığın değişiklikler kaybolur.",
+    "copyText": "Metni kopyala",
+    "copied": "Taslak kopyalandı"
+  },
+  "recipients": {
+    "title": "Alıcılar",
+    "edit": "Alıcıları düzenle",
+    "to": "Kime",
+    "cc": "Bilgi (Cc)",
+    "addTo": "Kime’ye ekle",
+    "addCc": "Cc’ye ekle",
+    "address": "E-posta adresi",
+    "addressHint": "Adres yaz",
+    "addAddress": "{email} ekle",
+    "invalid": "Geçerli bir e-posta adresi yaz.",
+    "toRequired": "En az bir alıcı gerekli.",
+    "removeA11y": "{name}, alıcı, kaldırmak için iki kez dokun",
+    "noSuggestions": "Öneri yok. Adres yaz."
   }
 }

@@ -1,28 +1,19 @@
 /**
- * Inline approval sheet (M-APPR-04, single approval) for approvals proposed from Flow, Email
- * Detail, Life, Plan and Meeting surfaces: the six-row card contract (Ne · Neden · Kaynak ·
- * Değişim · Hesap · Etkisi), "Onayla" with the R-06 5 s undo, "İptal" (`user_cancel`, no learning
- * signal), honest `executing` → `executed` / `failed` states from polling, "Tekrar dene" with the
- * same key for retryable failures. Dismissing the sheet never rejects: the approval stays pending
- * for the Approval Center (T-8.18), which also owns the typed editors ("Düzenle", M-APPR-05);
- * `email_send` edits open the reply editor. `approvals/[id]` is linked only once that route
- * exists in this build.
+ * The approval card driven by an approval runner, rendered in place (M-APPR-04 "inline card
+ * variant uses the same component"): the plan proposal (M-PLAN-03) and conflict sheets. The
+ * six-row card contract (Ne · Neden · Kaynak · Değişim · Hesap · Etkisi), "Onayla" through the
+ * runner (R-03 tap, optional R-06 5 s undo), "İptal" (`user_cancel`, no learning signal), honest
+ * `executing` → `executed` / `failed` states from polling and "Tekrar dene" with the same key.
+ * The sheet form of every approval is the one `ApprovalSheet` (M-APPR-04).
  */
 import type { MessageKey } from '@da/i18n';
-import { ApprovalCard, BottomSheet, Button, HintRow, Text, type KeyValueItem } from '@da/ui';
+import { ApprovalCard, HintRow, type KeyValueItem } from '@da/ui';
 import type { ApprovalView } from '@da/validation/api/approvals';
-import type { QueryKey } from '@tanstack/react-query';
-import { useRouter, type Href } from 'expo-router';
 import { View } from 'react-native';
 import { useTranslations } from 'use-intl';
 
 import { makeFormats, useSessionContext, type Formats } from '../../lib/data/session';
-import { isScreenAvailable } from '../../lib/deeplinks';
-import { track } from '../../lib/events';
-import { registerSheet, sheets, type SheetRenderProps } from '../../providers/SheetHost';
-import { mountSheet } from '../actions/mount';
-import { inAppPath } from '../actions/sheets';
-import { useApprovalRunner, type ApprovalPhase, type ApprovalRunner } from './runner';
+import type { ApprovalPhase, ApprovalRunner } from './runner';
 
 /** The card status for a runner phase (the undo window shows the transient "approved"). */
 export function cardStatus(phase: ApprovalPhase, view: ApprovalView): ApprovalView['status'] {
@@ -134,7 +125,7 @@ export function approvalDetails(
 
 export interface ApprovalCardViewProps {
   readonly runner: ApprovalRunner;
-  /** "Düzenle" (email_send → reply editor); hidden otherwise until T-8.18's typed editors. */
+  /** "Düzenle" (the typed editor or the reply screen); hidden when the surface has its own. */
   readonly onEdit?: () => void;
   /** Neutral button label: "İptal" (sheet) or "Reddet". */
   readonly rejectReason?: 'user_cancel' | 'user_reject';
@@ -142,7 +133,7 @@ export interface ApprovalCardViewProps {
   readonly testID?: string;
 }
 
-/** The approval card driven by a runner (used by the sheet and in place). */
+/** The approval card driven by a runner (in place). */
 export function ApprovalCardView({
   runner,
   onEdit,
@@ -203,101 +194,4 @@ export function ApprovalCardView({
       {phase === 'device' ? <HintRow text={t('m2.device')} /> : null}
     </View>
   );
-}
-
-export interface ApprovalSheetParams {
-  readonly approval: ApprovalView;
-  readonly invalidate?: readonly QueryKey[];
-  readonly onExecuted?: (view: ApprovalView) => void;
-  /** Screen the approval came from (analytics `approval_sheet_view`). */
-  readonly origin: 'flow' | 'email_detail' | 'life' | 'plan' | 'meeting' | 'reply' | 'commitment';
-}
-
-function ApprovalSheet({
-  params,
-  visible,
-  onDismiss,
-  onHidden,
-}: SheetRenderProps<ApprovalSheetParams>) {
-  const t = useTranslations('approvals');
-  const router = useRouter();
-  const runner = useApprovalRunner(params.approval, {
-    via: 'inline_sheet',
-    undo: true,
-    ...(params.invalidate === undefined ? {} : { invalidate: params.invalidate }),
-    ...(params.onExecuted === undefined ? {} : { onExecuted: params.onExecuted }),
-    onRejected: onDismiss,
-  });
-  const view = runner.view;
-  const sourcePath = inAppPath(view.source?.open_route ?? null) ?? view.source?.open_route ?? null;
-  const detailPath = `/approvals/${view.id}`;
-  const busy = runner.phase === 'sending' || runner.phase === 'undo';
-  const editDraft =
-    view.action_type === 'email_send' &&
-    view.source?.source_id !== null &&
-    view.source?.source_id !== undefined
-      ? () => {
-          onDismiss();
-          track('approval_edit_open', { action_type: view.action_type });
-          router.push(`/mail/${view.source?.source_id ?? ''}/reply?approvalId=${view.id}` as Href);
-        }
-      : undefined;
-  return (
-    <BottomSheet
-      visible={visible}
-      onDismiss={onDismiss}
-      onHidden={onHidden}
-      title={t('m2.sheetTitle')}
-      dismissible={!busy}
-      {...(runner.phase === 'executed' || runner.phase === 'rejected'
-        ? {
-            footer: <Button label={t('m2.close')} variant="ink" onPress={onDismiss} fullWidth />,
-          }
-        : isScreenAvailable(detailPath)
-          ? {
-              footer: (
-                <Button
-                  label={t('m2.openCenter')}
-                  variant="text"
-                  onPress={() => {
-                    onDismiss();
-                    router.push(detailPath);
-                  }}
-                  fullWidth
-                />
-              ),
-            }
-          : {})}
-      testID="m2.approvalSheet"
-    >
-      <ApprovalCardView
-        runner={runner}
-        {...(editDraft === undefined ? {} : { onEdit: editDraft })}
-        {...(sourcePath !== null && isScreenAvailable(sourcePath)
-          ? {
-              onSource: () => {
-                onDismiss();
-                router.push(sourcePath);
-              },
-            }
-          : {})}
-      />
-      {runner.phase === 'executed' ? (
-        <Text variant="secondary" tone="secondary" accessibilityLiveRegion="polite">
-          {t(`results.${view.action_type}`)}
-        </Text>
-      ) : null}
-    </BottomSheet>
-  );
-}
-
-registerSheet('m2.approval', mountSheet(ApprovalSheet), { analyticsKey: 'approval' });
-
-/** Opens the inline approval sheet on a pending approval. */
-export function openApprovalSheet(params: ApprovalSheetParams): void {
-  track('approval_sheet_view', {
-    action_type: params.approval.action_type,
-    mode: 'single',
-  });
-  sheets.open('m2.approval', params);
 }

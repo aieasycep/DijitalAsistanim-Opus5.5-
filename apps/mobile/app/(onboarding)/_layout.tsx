@@ -9,6 +9,7 @@ import { Stack } from 'expo-router';
 import { Platform } from 'react-native';
 
 import { useAuth } from '../../src/providers/AuthProvider';
+import { useStackMotion } from '../../src/lib/motion';
 
 const INTRO_SCREENS = ['welcome', 'noise', 'proactive', 'control'] as const;
 const STEP_SCREENS = [
@@ -25,10 +26,15 @@ const STEP_SCREENS = [
 
 export default function OnboardingLayout() {
   const theme = useTheme();
+  const stackMotion = useStackMotion();
   const { status } = useAuth();
   return (
     <Stack
-      screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.color.bg } }}
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: theme.color.bg },
+        ...stackMotion,
+      }}
     >
       <Stack.Protected guard={status === 'signed_out'}>
         {INTRO_SCREENS.map((name) => (

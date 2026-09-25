@@ -64,6 +64,8 @@ export function DayChip({
       accessibilityState={{ selected }}
       haptic="select"
       onPress={onPress}
+      // 42 pt wide by design: the hit target still reaches the platform minimum (T-8.29).
+      visualSize={{ width: 42, height: 60 }}
       style={[
         {
           width: 42,

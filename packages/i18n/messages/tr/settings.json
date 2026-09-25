@@ -68,7 +68,8 @@
     "everywhereConfirmTitle": "Tüm cihazlardan çıkılsın mı?",
     "everywhereConfirmBody": "Bu cihaz dahil her yerde oturumun kapanır.",
     "unsentSettings": "Gönderilmemiş ayar değişiklikleri var; çıkış yaparsan kaybolur.",
-    "globalFailed": "Oturumlar kapatılamadı. Tekrar dene."
+    "globalFailed": "Oturumlar kapatılamadı. Tekrar dene.",
+    "offline": "Çevrimdışısın. Bu cihazın bildirimleri internete bağlandığında durdurulur."
   },
   "profile": {
     "title": "Profil",
@@ -252,7 +253,14 @@
     "light": "Açık",
     "dark": "Koyu",
     "textSize": "Yazı boyutu",
-    "textSizeSystem": "Sistem ayarını kullanır"
+    "textSizeSystem": "Sistem ayarını kullanır",
+    "textSizes": {
+      "system": "Sistem ile aynı",
+      "sm": "Daha küçük",
+      "lg": "Daha büyük",
+      "xl": "En büyük"
+    },
+    "textSizeSample": "Bugün bilmen gereken 5 şey var."
   },
   "language": {
     "title": "Dil",

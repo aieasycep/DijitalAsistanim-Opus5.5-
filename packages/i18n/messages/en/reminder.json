@@ -34,7 +34,8 @@
     "microsoftWith": "Microsoft To Do · {email}",
     "microsoftMeta": "Added to your Microsoft To Do list",
     "connect": "Connect an account",
-    "notConnected": "Not connected"
+    "notConnected": "Not connected",
+    "makeDefault": "Make default"
   },
   "confirm": "Set reminder",
   "set": "Reminder set · {when}",

@@ -42,14 +42,16 @@ import { WidgetBridge } from '../src/features/widgets/WidgetBridge';
 // Feature hooks that must exist before the first sign-in or OAuth return (T-8.06, T-8.07, T-8.09).
 import '../src/features/onboarding/post-sign-in';
 import '../src/features/integrations/callback-handler';
+// T-8.07 background device-calendar upload task (defined at bundle start).
+import '../src/features/integrations/device-calendar-task';
 import '../src/features/briefing/audio-cache';
 // T-8.22: RevenueCat log-in/log-out hooks and the pending referral code after sign-in.
 import '../src/lib/purchases';
 import '../src/features/referral/pending';
 // T-8.18 inline approval and editor sheets (registered with the sheet host at import).
 import '../src/features/approvals/ApprovalSheet';
-import '../src/features/approvals/InlineApprovalSheet';
 import '../src/features/approvals/ApprovalEditorSheet';
+import { useStackMotion } from '../src/lib/motion';
 
 export { RootErrorBoundary as ErrorBoundary } from '../src/features/shell/ShellErrorBoundary';
 
@@ -58,6 +60,7 @@ initSentry();
 
 function RootNavigator() {
   const theme = useTheme();
+  const stackMotion = useStackMotion();
   const { context, flags } = useShell();
   const demo = isDemoBuild();
 
@@ -75,7 +78,11 @@ function RootNavigator() {
       <NotificationBridge signedIn={flags.app} />
       <WidgetBridge signedIn={flags.app} />
       <Stack
-        screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.color.bg } }}
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: theme.color.bg },
+          ...stackMotion,
+        }}
       >
         <Stack.Screen name="index" />
         <Stack.Protected guard={flags.signedOut}>

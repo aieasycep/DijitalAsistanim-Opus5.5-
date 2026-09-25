@@ -7,6 +7,7 @@
  * authoritative) are awaited; without RevenueCat keys the screen says so (external credential).
  */
 import { qk } from '@da/api-client';
+import { formatDuration } from '@da/i18n';
 import { entitlementsQueryOptions, useBootstrap } from '@da/api-client/react';
 import {
   Button,
@@ -26,6 +27,7 @@ import { Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslations } from 'use-intl';
 
+import { getSupabase } from '../../lib/auth/supabase';
 import { getApiClient } from '../../lib/bootstrap';
 import { track } from '../../lib/events';
 import {
@@ -64,6 +66,34 @@ function wait(ms: number): Promise<void> {
   });
 }
 
+interface WeeklyStats {
+  readonly mails: number;
+  readonly important: number;
+  readonly savedMin: number;
+}
+
+/** The latest ready weekly review's aggregate (`briefings.weekly_stats`), for the sub-line. */
+export async function fetchWeeklyStats(): Promise<WeeklyStats | null> {
+  const { data } = (await getSupabase()
+    .from('briefings')
+    .select('weekly_stats')
+    .eq('kind', 'weekly')
+    .in('status', ['ready', 'delivered'])
+    .order('local_date', { ascending: false })
+    .limit(1)
+    .maybeSingle()) as { data: { weekly_stats?: Record<string, unknown> | null } | null };
+  const stats = data?.weekly_stats ?? null;
+  if (stats === null) return null;
+  const mails = stats.mails_analyzed;
+  const important = stats.important_count;
+  const saved = stats.time_saved_min;
+  if (typeof mails !== 'number' || typeof important !== 'number' || typeof saved !== 'number') {
+    return null;
+  }
+  if (mails <= 0 || important <= 0 || saved <= 0) return null;
+  return { mails, important, savedMin: saved };
+}
+
 export function PaywallScreen() {
   const t = useTranslations();
   const theme = useTheme();
@@ -96,6 +126,12 @@ export function PaywallScreen() {
     staleTime: 10 * 60_000,
   });
   const trialDays = trial.data ?? null;
+  const lang = bootstrap.data?.locale === 'en-US' ? 'en' : 'tr';
+  const weeklyStats = useQuery({
+    queryKey: [...qk.purchases.all, 'weekly-stats'] as const,
+    queryFn: fetchWeeklyStats,
+    staleTime: 10 * 60_000,
+  });
   const pro = bootstrap.data?.entitlement.is_active === true;
 
   useEffect(() => {
@@ -298,8 +334,14 @@ export function PaywallScreen() {
         <Text variant="h1" heading>
           {t('paywall.headline')}
         </Text>
-        <Text variant="body" tone="secondary">
-          {t('paywall.subline')}
+        <Text variant="body" tone="secondary" testID="paywall.subline">
+          {weeklyStats.data === null || weeklyStats.data === undefined
+            ? t('paywall.subline')
+            : t('paywall.weeklySubline', {
+                mails: weeklyStats.data.mails,
+                important: weeklyStats.data.important,
+                saved: formatDuration(weeklyStats.data.savedMin, lang),
+              })}
         </Text>
         <PlanComparisonTable
           freeLabel={t('common.plans.free')}

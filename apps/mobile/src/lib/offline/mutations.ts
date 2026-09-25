@@ -7,8 +7,9 @@
  * Queueable here: insight status (RPC-01), insight feedback (RPC-21, deduped by
  * `p_client_mutation_id`), commitment status (RPC-06), owner-row preference patches (last write
  * wins per table), `POST /feedback`, in-app reminders (`POST /reminders`, idempotent on
- * `client_reminder_id`) and their cancel, `mark_briefing_opened`, notification `opened_at`, and the
- * VIP toggle. Approvals, sends, provider writes, purchases, privacy and integrations are never
+ * `client_reminder_id`) and their cancel, `mark_briefing_opened`, notification `opened_at`, the
+ * VIP toggle and VIP settings, and meeting notes (`POST /meetings/:eventId/notes`, idempotent on
+ * `client_note_id`). Approvals, sends, provider writes, purchases, privacy and integrations are never
  * queued: they are blocked before the call (`OFFLINE_BLOCKED`).
  *
  * Replays run on reconnect (`onlineManager`) and on every foreground; after a reconnect replay the
@@ -51,6 +52,14 @@ export type InsightFeedbackKind = 'not_important' | 'show_more' | 'make_vip' | '
 export type CommitmentStatus = 'open' | 'done' | 'snoozed' | 'cancelled';
 export type FeedbackBody = NonNullable<ApiInput<'POST /feedback'>['body']>;
 export type ReminderCreateBody = NonNullable<ApiInput<'POST /reminders'>['body']>;
+export type MeetingNoteBody = NonNullable<ApiInput<'POST /meetings/:eventId/notes'>['body']>;
+
+/** VIP row settings written with a VIP (M-PER-02); omitted for a plain toggle. */
+export interface VipRowSettings {
+  readonly relationship: string;
+  readonly alwaysNotify: boolean;
+  readonly bypassQuietHours: boolean;
+}
 
 /** Arguments of every queueable kind (JSON-serialisable: they are persisted). */
 export interface MutationArgs {
@@ -82,7 +91,13 @@ export interface MutationArgs {
     readonly entityId: string;
     readonly openedAt: string;
   };
-  readonly vip_set: { readonly contactId: string; readonly on: boolean };
+  readonly vip_set: {
+    readonly contactId: string;
+    readonly on: boolean;
+    readonly settings?: VipRowSettings;
+    readonly origin?: 'user' | 'suggestion' | 'onboarding';
+  };
+  readonly meeting_note: { readonly eventId: string; readonly body: MeetingNoteBody };
 }
 
 export type MutationKind = keyof MutationArgs;
@@ -100,6 +115,7 @@ export const MUTATION_CLASSES: Readonly<Record<MutationKind, 'queued_lww' | 'que
     briefing_opened: 'queued_idempotent',
     notification_opened: 'queued_idempotent',
     vip_set: 'queued_lww',
+    meeting_note: 'queued_idempotent',
   };
 
 const INSIGHT_ROOTS: readonly QueryKey[] = [
@@ -126,12 +142,33 @@ interface DbError {
   readonly code?: string;
 }
 
-async function setVip(contactId: string, on: boolean): Promise<void> {
+async function setVip(
+  contactId: string,
+  on: boolean,
+  settings?: VipRowSettings,
+  origin: 'user' | 'suggestion' | 'onboarding' = 'user',
+): Promise<void> {
   const table = getSupabase().from('vip_people');
+  const values =
+    settings === undefined
+      ? { relationship: 'other' }
+      : {
+          relationship: settings.relationship,
+          always_notify: settings.alwaysNotify,
+          bypass_quiet_hours: settings.bypassQuietHours,
+        };
   const { error } = (await (on
-    ? table.insert({ contact_id: contactId, origin: 'user', relationship: 'other' } as never)
+    ? table.insert({ contact_id: contactId, origin, ...values } as never)
     : table.delete().eq('contact_id', contactId))) as { error: DbError | null };
-  // `23505`: the contact is already a VIP (a replay of the same toggle).
+  // `23505`: the contact is already a VIP (a replay, or a settings edit of an existing VIP).
+  if (error !== null && error.code === '23505' && settings !== undefined) {
+    const { error: updateError } = (await getSupabase()
+      .from('vip_people')
+      .update(values as never)
+      .eq('contact_id', contactId)) as { error: DbError | null };
+    if (updateError !== null) throw toDataError(updateError);
+    return;
+  }
   if (error !== null && error.code !== '23505') throw toDataError(error);
 }
 
@@ -253,8 +290,24 @@ export const MUTATION_HANDLERS: HandlerMap<MutationArgs> = {
   vip_set: {
     scope: (a) => `vip:${a.contactId}`,
     coalesceKey: (a) => `vip_set:${a.contactId}`,
-    run: (a) => setVip(a.contactId, a.on),
-    invalidate: (a) => [qk.vip.all, qk.person.detail(a.contactId), qk.today.all, qk.mail.all],
+    run: (a) => setVip(a.contactId, a.on, a.settings, a.origin),
+    invalidate: (a) => [
+      qk.vip.all,
+      qk.contacts.vipSuggestions(),
+      qk.person.detail(a.contactId),
+      qk.today.all,
+      qk.mail.all,
+    ],
+  },
+  meeting_note: {
+    scope: (a) => `meeting_note:${a.eventId}`,
+    run: (a, key) =>
+      getApiClient().call(
+        'POST /meetings/:eventId/notes',
+        { params: { eventId: a.eventId }, body: a.body },
+        { idempotencyKey: key },
+      ),
+    invalidate: (a) => [qk.meetings.notes(a.eventId)],
   },
 };
 

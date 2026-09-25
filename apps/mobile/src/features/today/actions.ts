@@ -7,6 +7,7 @@
  * persisted offline mutation queue (T-8.23) and replay on reconnect (RPC-01 is idempotent, RPC-21
  * dedupes on `p_client_mutation_id`); "Geri al" on a queued write removes it from the queue.
  */
+import { hold } from '@da/design-tokens';
 import { qk } from '@da/api-client';
 import { onlineManager, type QueryClient } from '@tanstack/react-query';
 import * as Crypto from 'expo-crypto';
@@ -21,7 +22,7 @@ import { openProGate } from '../pro-gate/ProGate';
 import type { TodayData, TodayPriority } from './data';
 
 /** R-06: the client undo window. */
-export const UNDO_WINDOW_MS = 5_000;
+export const UNDO_WINDOW_MS = hold.undoToast;
 
 export type FeedbackKind = 'not_important' | 'show_more' | 'make_vip' | 'stop_tracking';
 

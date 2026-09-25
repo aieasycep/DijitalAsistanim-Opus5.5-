@@ -41,7 +41,7 @@ import { CopyableText } from '../actions/CopyableText';
 import { ProGate } from '../actions/ProGate';
 import { openMenu, openReminder } from '../actions/sheets';
 import { DetailScreen, QueryFailure, useBack, useOfflineGuard } from '../actions/ui';
-import { openApprovalSheet } from '../approvals/InlineApprovalSheet';
+import { openApprovalViewSheet } from '../approvals/ApprovalSheet';
 import { conferenceProvider } from '../meeting/MeetingPrepScreen';
 import { eventOptions, isMeeting, notesOptions, type AttendeeData } from '../meeting/data';
 import { openNoteSheet } from '../meeting/NoteSheet';
@@ -205,9 +205,7 @@ export function EventDetailScreen() {
       {
         onSuccess: (approval) => {
           setChanging(false);
-          openApprovalSheet({
-            approval,
-            origin: 'plan',
+          openApprovalViewSheet(approval, {
             invalidate: [qk.events.detail(event.id), qk.plan.all],
           });
         },

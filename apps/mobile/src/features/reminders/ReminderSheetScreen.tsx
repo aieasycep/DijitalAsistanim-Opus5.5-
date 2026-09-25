@@ -32,6 +32,7 @@ import { DateTimeFields, useLang, userTimeZone } from '../common/DateTimeFields'
 import { propose, type ProposeBody } from '../approvals/api';
 import { handleDecisionError } from '../approvals/decide';
 import { openApprovalSheet } from '../approvals/ApprovalSheet';
+import { saveOwnRow } from '../settings/save';
 import { reminderListHash } from '../approvals/device-executor';
 import { createInAppReminder, snooze, type ReminderOrigin, type ReminderPresetKey } from './create';
 import {
@@ -54,6 +55,73 @@ const SNOOZE_PRESETS: readonly ReminderPresetKey[] = [
   'smart',
   'custom',
 ];
+/** `user_preferences.default_reminder_destination` (M-REM-03 "Varsayılan yap"). */
+export interface StoredDestination {
+  readonly kind: 'in_app' | 'apple_reminders' | 'google_tasks' | 'microsoft_todo';
+  readonly account_id?: string;
+  readonly list_id?: string;
+}
+
+export function storedDestination(destination: Destination): StoredDestination {
+  switch (destination.kind) {
+    case 'in_app':
+      return { kind: 'in_app' };
+    case 'apple_reminders':
+      return { kind: 'apple_reminders', list_id: destination.listId };
+    default:
+      return {
+        kind: destination.kind,
+        account_id: destination.accountId,
+        list_id: destination.listId,
+      };
+  }
+}
+
+function sameDestination(a: StoredDestination, b: StoredDestination): boolean {
+  return a.kind === b.kind && a.account_id === b.account_id && a.list_id === b.list_id;
+}
+
+async function fetchDefaultDestination(): Promise<StoredDestination> {
+  const { data } = (await getSupabase()
+    .from('user_preferences')
+    .select('default_reminder_destination')
+    .maybeSingle()) as { data: { default_reminder_destination?: unknown } | null };
+  const raw = data?.default_reminder_destination;
+  if (typeof raw !== 'object' || raw === null) return { kind: 'in_app' };
+  const v = raw as Record<string, unknown>;
+  const kind = v.kind;
+  if (kind !== 'apple_reminders' && kind !== 'google_tasks' && kind !== 'microsoft_todo') {
+    return { kind: 'in_app' };
+  }
+  return {
+    kind,
+    ...(typeof v.account_id === 'string' ? { account_id: v.account_id } : {}),
+    ...(typeof v.list_id === 'string' ? { list_id: v.list_id } : {}),
+  };
+}
+
+function destinationOf(
+  stored: StoredDestination | null,
+  bootstrap: ReturnType<typeof cachedBootstrap>,
+): Destination {
+  if (stored?.list_id === undefined) return { kind: 'in_app' };
+  if (stored.kind === 'apple_reminders') {
+    return Platform.OS === 'ios'
+      ? { kind: 'apple_reminders', listId: stored.list_id, listTitle: '' }
+      : { kind: 'in_app' };
+  }
+  if (stored.kind !== 'google_tasks' && stored.kind !== 'microsoft_todo') return { kind: 'in_app' };
+  const account = bootstrap?.accounts.find((a) => a.id === stored.account_id);
+  const provider = stored.kind === 'google_tasks' ? 'google' : 'microsoft';
+  if (account?.provider !== provider) return { kind: 'in_app' };
+  return {
+    kind: stored.kind,
+    accountId: account.id,
+    email: account.account_email ?? account.display_name ?? '',
+    listId: stored.list_id,
+  };
+}
+
 const YEAR_MS = 365 * 86_400_000;
 const MINUTE = 60_000;
 
@@ -186,7 +254,7 @@ export function ReminderSheetScreen() {
     const morning = resolvePreset('tomorrow_morning', { now: now(), timeZone: tz }).fireAt;
     return morning ?? new Date(now().getTime() + 60 * MINUTE);
   });
-  const [destination, setDestination] = useState<Destination>({ kind: 'in_app' });
+  const [pickedDestination, setDestination] = useState<Destination | null>(null);
   const [notify, setNotify] = useState(true);
   const [smart, setSmart] = useState<SmartState>(() => ({
     status: 'idle',
@@ -198,6 +266,16 @@ export function ReminderSheetScreen() {
   const [appleDenied, setAppleDenied] = useState(false);
   const opened = useRef(false);
   const existing = useExistingReminder(params.targetType, params.targetId);
+  const defaultDestination = useQuery({
+    queryKey: ['reminders', 'default-destination'],
+    queryFn: fetchDefaultDestination,
+    staleTime: 5 * 60_000,
+  });
+  const [storedDefault, setStoredDefault] = useState<StoredDestination | null>(null);
+  const currentDefault = storedDefault ?? defaultDestination.data ?? { kind: 'in_app' };
+  // Until the user picks, the stored default preselects a destination that still exists here.
+  const destination: Destination =
+    pickedDestination ?? destinationOf(defaultDestination.data ?? null, bootstrap);
   const calendarConnected = (bootstrap?.accounts ?? []).some((a) =>
     (a.capabilities_granted as readonly string[]).includes('calendar_read'),
   );
@@ -581,6 +659,12 @@ export function ReminderSheetScreen() {
     setDestination({ kind: 'apple_reminders', listId: list.id, listTitle: list.title });
     setStep('main');
   };
+  const isDefault = sameDestination(currentDefault, storedDestination(destination));
+  const toggleDefault = () => {
+    const next: StoredDestination = isDefault ? { kind: 'in_app' } : storedDestination(destination);
+    setStoredDefault(next);
+    void saveOwnRow('user_preferences', { default_reminder_destination: next }, (data) => data);
+  };
   const destinations = (
     <View style={styles.body} accessibilityRole="radiogroup" testID="reminder.destinations">
       <OptionRow
@@ -644,6 +728,16 @@ export function ReminderSheetScreen() {
           />
         );
       })}
+      <ListRow
+        icon="bookmark"
+        title={t('destination.makeDefault')}
+        trailing={{ kind: 'switch', value: isDefault }}
+        {...(destination.kind === 'in_app' && currentDefault.kind === 'in_app'
+          ? { disabled: true }
+          : {})}
+        onPress={toggleDefault}
+        testID="reminder.dest.default"
+      />
       {accounts.length === 0 && isScreenAvailable('/settings/accounts') ? (
         <ListRow
           title={t('destination.connect')}
