@@ -12,6 +12,11 @@ import {
   buildAppConfig,
 } from '../app.config';
 import { createWithDaShare } from '../modules/da-share/plugin/withDaShare';
+import {
+  ANDROID_PERMISSION_RATIONALES,
+  IOS_NEVER_REQUESTED_KEYS,
+  IOS_PERMISSION_STRINGS,
+} from '../src/i18n/native-strings';
 
 const withDaShare = createWithDaShare(ConfigPlugins);
 
@@ -342,6 +347,58 @@ describe('native configuration (INTEGRATION_PLAN §12.1)', () => {
     expect(plist.NSMicrophoneUsageDescription).toMatch(/sesle soru/);
     expect(JSON.stringify(expo.locales?.en)).toMatch(/ask the assistant by voice/);
     expect(expo.ios?.privacyManifests?.NSPrivacyTracking).toBe(false);
+  });
+
+  it('T-8.31: tr/en strings for every requested permission, none for the never-requested ones', () => {
+    const plist = expo.ios?.infoPlist ?? {};
+    const en = (expo.locales?.en as { ios?: Record<string, string> } | undefined)?.ios ?? {};
+    for (const key of Object.keys(IOS_PERMISSION_STRINGS.tr)) {
+      expect(typeof plist[key]).toBe('string');
+      expect(en[key]).toBe(
+        IOS_PERMISSION_STRINGS.en[key as keyof typeof IOS_PERMISSION_STRINGS.en],
+      );
+    }
+    for (const key of IOS_NEVER_REQUESTED_KEYS) {
+      expect(plist[key]).toBeUndefined();
+      expect(JSON.stringify(expo)).not.toContain(key);
+    }
+    const runtime = ['READ_CALENDAR', 'WRITE_CALENDAR', 'RECORD_AUDIO', 'CAMERA'];
+    for (const permission of [...runtime, 'POST_NOTIFICATIONS', 'SCHEDULE_EXACT_ALARM']) {
+      expect(expo.android?.permissions).toContain(permission);
+      for (const locale of ['tr', 'en'] as const) {
+        const text =
+          ANDROID_PERMISSION_RATIONALES[locale][
+            permission as keyof (typeof ANDROID_PERMISSION_RATIONALES)['tr']
+          ];
+        expect(text.length).toBeGreaterThan(20);
+      }
+    }
+    expect(ANDROID_PERMISSION_RATIONALES.tr.POST_NOTIFICATIONS).not.toMatch(/ortalama 3/);
+    const manifest = expo.ios?.privacyManifests;
+    expect(manifest?.NSPrivacyTrackingDomains).toEqual([]);
+    expect(
+      manifest?.NSPrivacyAccessedAPITypes?.map((t) => t.NSPrivacyAccessedAPIType).sort(),
+    ).toEqual([
+      'NSPrivacyAccessedAPICategoryDiskSpace',
+      'NSPrivacyAccessedAPICategoryFileTimestamp',
+      'NSPrivacyAccessedAPICategorySystemBootTime',
+      'NSPrivacyAccessedAPICategoryUserDefaults',
+    ]);
+    for (const blocked of [
+      'android.permission.READ_MEDIA_IMAGES',
+      'android.permission.READ_MEDIA_AUDIO',
+      'android.permission.ACCESS_FINE_LOCATION',
+      'android.permission.ACCESS_BACKGROUND_LOCATION',
+      'android.permission.READ_CONTACTS',
+      'android.permission.QUERY_ALL_PACKAGES',
+      'com.google.android.gms.permission.AD_ID',
+    ]) {
+      expect(expo.android?.blockedPermissions).toContain(blocked);
+    }
+    expect(expo.ios?.associatedDomains).toEqual([
+      'applinks:dijitalasistan.app',
+      'webcredentials:dijitalasistan.app',
+    ]);
   });
 
   it('blocks the permissions the product never requests and verifies app links', () => {

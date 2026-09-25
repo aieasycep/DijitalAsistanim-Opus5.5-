@@ -1317,9 +1317,13 @@ DisconnectResponse = Success(z.object({ account: AccountSummary,
 - **Role requirement:** end user.
 
 ```ts
-SyncBody = z.strictObject({ resources: z.array(z.enum(['mail', 'calendar', 'tasks'])).min(1).max(3).optional() });
+SyncBody = z.strictObject({ resources: z.array(z.enum(['mail', 'calendar', 'tasks'])).min(1).max(3).optional(),
+  message_ids: z.array(Uuid).min(1).max(20).optional(), force_analysis: z.boolean().optional() })
+  // message_ids ⇔ force_analysis:true; only with resources absent or ['mail'] (M-MAIL-03 "Analiz et")
 SyncResponse = Success(z.object({ jobs: z.array(JobRef), next_allowed_at: IsoDateTime }));   // HTTP 202
 ```
+
+- **Forced analysis (body extension, M-MAIL-03 "Analiz et"):** `{message_ids, force_analysis:true}` enqueues only JOB-11 `email_analysis` (`force:true`, reasons `summary|key_points|deadline`, key `email_analysis:{message_id}:force:{UTC date}`) for messages of this account (others → `NOT_FOUND`; `mail_read` off → `DATA_SOURCE_DISABLED`). It bypasses the explicit-rule skip of triage, never the AI budget: an exhausted budget marks the message `ai_status='skipped_budget'`; a successful run sets `classified`. The same 1 / 60 s per-account limit applies.
 
 - **Validation:** the account is owned and `healthy|syncing|partial`. `needs_reauth` → `PROVIDER_REAUTH_REQUIRED`. Resources are filtered by granted capabilities and data sources.
 - **DB effects:** enqueue coalesced jobs (`gmail_sync` | `outlook_sync` | `calendar_sync` | `tasks_sync`) with `trigger='manual'`; `sync_states.last_manual_sync_at`.
@@ -1620,9 +1624,13 @@ ReplyDraftRegenerateBody = z.strictObject({ tone: z.enum(['short','professional'
 
 ```ts
 ReplyDraftPatch = z.strictObject({ body_text: z.string().min(1).max(20000).optional(), subject: z.string().min(1).max(998).optional(),
-  to: z.array(Recipient).min(1).max(50).optional(), cc: z.array(Recipient).max(50).optional(), expected_version: z.int().min(1) });
+  to: z.array(Recipient).min(1).max(50).optional(), cc: z.array(Recipient).max(50).optional(),
+  status: z.literal('discarded').optional(),   // "Taslağı sil" (M-REPLY-01/05); not combined with edits
+  expected_version: z.int().min(1) });
 // Output: Success(ReplyDraft)
 ```
+
+- **Discard:** `status:'discarded'` moves only a `draft` to `discarded` (any other status → 409 `STATE_CONFLICT` `draft_not_discardable`; a stale version → 409). Stored attachments are removed by the retention job. The client sends it after the 5 s undo window (R-06).
 
 - **Validation:**
   - `status='draft'`.

@@ -1,0 +1,26 @@
+appId: com.dijitalasistan.app.e2e
+name: 'E2E-S-11 · Priority rules: create, preview, delete + undo'
+tags: [screens, android, ios, pro]
+env:
+  USER_KEY: u_pro
+  SCENARIO: canon
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- openLink: 'dijitalasistan-e2e://settings/priority-rules'
+- extendedWaitUntil: { visible: { id: 'screen.settings.rules' }, timeout: 30000 }
+- tapOn: { id: 'rules.add' }
+- extendedWaitUntil: { visible: { id: 'screen.settings.ruleEditor' }, timeout: 30000 }
+- tapOn: { id: 'rule.sender' }
+- inputText: 'mehmet@yilmazendustri.com'
+- extendedWaitUntil: { visible: { id: 'rule.preview' }, timeout: 30000 }
+- tapOn: { id: 'rule.save' }
+- extendedWaitUntil: { visible: { id: 'screen.settings.rules' }, timeout: 30000 }
+- tapOn: mehmet@yilmazendustri.com
+- tapOn: { id: 'rule.delete' }
+- tapOn: '${output.t.common.actions.delete}'
+- tapOn: '${output.t.common.actions.undo}'

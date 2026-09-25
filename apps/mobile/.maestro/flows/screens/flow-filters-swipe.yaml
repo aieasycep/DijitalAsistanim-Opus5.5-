@@ -1,0 +1,22 @@
+appId: com.dijitalasistan.app.e2e
+name: 'E2E-S-01 · Flow filters and swipe actions'
+tags: [screens, android, ios, pro]
+env:
+  USER_KEY: u_pro
+  SCENARIO: canon
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- runFlow: { file: ../../subflows/open-tab.yaml, env: { TAB: flow } }
+- extendedWaitUntil: { visible: { id: 'flow.filters' }, timeout: 30000 }
+- tapOn: '${output.t.mail.categories.important}'
+- extendedWaitUntil: { visible: { id: 'flow.list' }, timeout: 30000 }
+- swipe: { from: { id: 'flow.list' }, direction: RIGHT }
+- extendedWaitUntil: { visible: '${output.t.common.actions.undo}', timeout: 30000 }
+- tapOn: '${output.t.common.actions.undo}'
+- swipe: { from: { id: 'flow.list' }, direction: LEFT }
+- tapOn: '${output.t.flow.swipe.notImportant}'

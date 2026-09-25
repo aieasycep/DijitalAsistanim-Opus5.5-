@@ -48,6 +48,11 @@ export const EmailAnalysisPayload = z.object({
       ]),
     )
     .min(1),
+  /**
+   * "Analiz et" (API-INT-04 `force_analysis`): the user asked for this message although triage
+   * skipped it (explicit rule). The unchanged-content shortcut is bypassed; the AI budget is not.
+   */
+  force: z.boolean().optional(),
 });
 export type EmailAnalysisPayload = z.infer<typeof EmailAnalysisPayload>;
 
@@ -80,7 +85,9 @@ export async function runEmailAnalysis(
       ? [message.subject ?? '', message.snippet ?? ''].filter((s) => s !== '').join('\n')
       : visibleText({ text: body.text, html: body.html }, 6_000);
   const analysisHash = `\\x${sha256Hex(`${message.content_hash}|${[...reasons].sort().join(',')}|${visible.length}`)}`;
+  const forced = p.force === true;
   if (
+    !forced &&
     thread !== undefined &&
     thread.analysis_hash === analysisHash &&
     message.analyzed_at !== null
@@ -106,8 +113,14 @@ export async function runEmailAnalysis(
       senderKnown: known.has(message.from_email.toLowerCase()),
     });
     result.deep = deep.kind;
+    if (forced && deep.kind === 't0' && deep.reason === 'ai_budget_exhausted') {
+      // The forced run still honours the daily AI budget (M-MAIL-03 `skipped_budget` hint).
+      await deps.mail.updateMessage(message.id, { ai_status: 'skipped_budget' });
+      result.forced = 'skipped_budget';
+    }
     if (deep.kind === 'ai') {
       await deps.mail.updateMessage(message.id, {
+        ...(forced ? { ai_status: 'classified' as const } : {}),
         ...(deep.summary === null ? {} : { ai_summary: deep.summary }),
         key_points: deep.keyPoints.map((k) => ({ text: k.text, evidence: [k.evidence] })),
         dropped_fields: [...deep.droppedFields],

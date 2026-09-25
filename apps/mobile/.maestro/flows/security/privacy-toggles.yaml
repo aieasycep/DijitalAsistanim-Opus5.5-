@@ -1,0 +1,23 @@
+appId: com.dijitalasistan.app.e2e
+name: 'TST-E2E-M-03 · Privacy toggles persist (server state)'
+tags: [security, android, ios, pro]
+env:
+  USER_KEY: u_pro
+  SCENARIO: canon
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- openLink: 'dijitalasistan-e2e://settings/privacy/data-sources'
+- extendedWaitUntil: { visible: { id: 'screen.privacy.dataSources' }, timeout: 30000 }
+- assertVisible: { id: 'dataSources.reads' }
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- openLink: 'dijitalasistan-e2e://settings/privacy/data-sources'
+- assertVisible: { id: 'dataSources.reads' }
+- openLink: 'dijitalasistan-e2e://settings/privacy/retention'
+- tapOn: { id: 'retention.segments' }
+- assertVisible: { id: 'sheet.retentionShorten' }

@@ -1,0 +1,96 @@
+# Mobile E2E on Android (TEST_PLAN §13 / §18 row `e2e-mobile-android`; IMPLEMENTATION_PLAN T-12.02).
+# Heavy (emulators + a release build), so it runs on pull requests, nightly and on demand — not
+# on every branch push. iOS runs on EAS Workflows (apps/mobile/.eas/workflows/e2e-ios.yml).
+name: Mobile E2E
+
+on:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 1 * * *'
+
+concurrency:
+  group: mobile-e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  TURBO_TELEMETRY_DISABLED: '1'
+  MAESTRO_VERSION: 2.10.0
+  MAESTRO_SHARDS: '2'
+  DA_FIXED_NOW: '2026-09-22T05:45:00Z'
+
+jobs:
+  e2e-mobile-android:
+    name: e2e-mobile-android (tier A + emulator API 35 + Maestro)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+        with:
+          turbo-cache-key: mobile-e2e
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Tier-A stack, functions (APP_ENV=e2e, demo, fixture AI, fixed clock), demo seed, harness
+        run: bash scripts/e2e/start-stack.sh
+
+      - name: Build the e2e APK (expo prebuild + Gradle assembleRelease)
+        env:
+          APP_ENV: e2e
+          EXPO_PUBLIC_APP_ENV: e2e
+          EXPO_PUBLIC_APP_SCHEME: dijitalasistan-e2e
+          EXPO_PUBLIC_DEMO_MODE: 'true'
+          EXPO_PUBLIC_ANALYTICS_ENABLED: 'false'
+          EXPO_PUBLIC_SUPABASE_URL: http://10.0.2.2:54321
+          # External credential required: a RevenueCat Test Store `test_…` public key (CI variable).
+          EXPO_PUBLIC_REVENUECAT_TEST_STORE_API_KEY: ${{ vars.REVENUECAT_TEST_STORE_API_KEY }}
+          EXPO_NO_TELEMETRY: '1'
+        run: |
+          export EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY="$E2E_SUPABASE_PUBLISHABLE_KEY"
+          pnpm --filter @da/mobile exec expo prebuild --platform android --clean --no-install
+          (cd apps/mobile/android && ./gradlew :app:assembleRelease --no-daemon)
+          echo "E2E_APK=$PWD/apps/mobile/android/app/build/outputs/apk/release/app-release.apk" >> "$GITHUB_ENV"
+
+      - name: Maestro ${{ env.MAESTRO_VERSION }}
+        run: |
+          curl -fsSL "https://get.maestro.mobile.dev" | bash
+          "$HOME/.maestro/bin/maestro" --version
+
+      - name: Emulator API 35 x86_64 google_apis (tr-TR) + Maestro --shard-split over tag android
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          cores: 2
+          ram-size: 3072M
+          avd-name: test
+          force-avd-creation: false
+          disable-animations: true
+          emulator-boot-timeout: 900
+          emulator-options: -read-only -no-window -no-snapshot -noaudio -no-boot-anim -camera-back none -gpu swiftshader_indirect -change-locale tr-TR -timezone Europe/Istanbul
+          script: bash scripts/e2e/run-maestro-android.sh
+
+      - name: JUnit, screenshots and logcat
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-e2e-android
+          path: |
+            build/maestro
+            build/e2e/*.log
+          retention-days: 14

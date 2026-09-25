@@ -1,0 +1,54 @@
+# iOS E2E on EAS Workflows (TEST_PLAN §9.1, §13 row `e2e-mobile-ios`; T-12.02): the `e2e` profile
+# simulator build, then Maestro 2.10.0 over the `ios` flows against the staging E2E project
+# (demo mode, real clock) with the harness in staging mode (/seed, /otp, /state only).
+# External credentials required: EXPO_TOKEN, and in the EAS `preview` environment the staging
+# E2E_SUPABASE_URL / E2E_SUPABASE_SECRET_KEY / E2E_DB_URL secrets (never shipped in the app).
+name: E2E iOS
+
+on:
+  push:
+    branches: ['main']
+  schedule:
+    - cron: '43 2 * * *'
+
+jobs:
+  build_ios_simulator:
+    name: Build iOS simulator (e2e)
+    type: build
+    params:
+      platform: ios
+      profile: e2e
+
+  maestro_ios:
+    name: Maestro (tag ios)
+    needs: [build_ios_simulator]
+    runs_on: macos-medium
+    environment: preview
+    env:
+      MAESTRO_VERSION: 2.10.0
+      E2E_TARGET: staging
+      APP_ENV: e2e
+    steps:
+      - uses: eas/checkout
+      - uses: eas/install_node_modules
+      - uses: eas/download_build
+        id: download
+        with:
+          build_id: ${{ needs.build_ios_simulator.outputs.build_id }}
+      - uses: eas/start_ios_simulator
+      - run: xcrun simctl install booted "${{ steps.download.outputs.artifact_path }}"
+      - name: Harness (staging mode)
+        run: |
+          SUPABASE_URL="$E2E_SUPABASE_URL" SUPABASE_SECRET_KEY="$E2E_SUPABASE_SECRET_KEY" \
+            DA_E2E_DB_URL="$E2E_DB_URL" nohup node ../../scripts/e2e/harness-server.ts > harness.log 2>&1 &
+      - uses: eas/install_maestro
+      - uses: eas/maestro_test
+        with:
+          flow_path: |
+            .maestro
+          maestro_version: 2.10.0
+          include_tags: ios
+      - uses: eas/upload_artifact
+        if: ${{ always() }}
+        with:
+          path: harness.log

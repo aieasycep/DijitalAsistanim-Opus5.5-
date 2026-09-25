@@ -1,0 +1,20 @@
+appId: com.dijitalasistan.app.e2e
+name: 'E2E-S-17 · Android notification access: disclosure, not granted'
+tags: [screens, android, pro]
+env:
+  USER_KEY: u_android_ni
+  SCENARIO: android_ni
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- openLink: 'dijitalasistan-e2e://settings/android-notifications'
+- extendedWaitUntil: { visible: { id: 'screen.settings.androidNi' }, timeout: 30000 }
+- tapOn: '${output.t.android_ni.grantCta}'
+- extendedWaitUntil: { visible: { id: 'sheet.aniDisclosure' }, timeout: 30000 }
+- tapOn: { id: 'aniDisclosure.accept' }
+- back
+- extendedWaitUntil: { visible: { id: 'ani.status.notGranted' }, timeout: 30000 }

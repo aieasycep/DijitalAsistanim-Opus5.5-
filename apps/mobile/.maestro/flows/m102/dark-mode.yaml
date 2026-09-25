@@ -1,0 +1,40 @@
+appId: com.dijitalasistan.app.e2e
+name: 'E2E-M-18 · Dark mode'
+tags: [m102, android, ios, pro]
+env:
+  USER_KEY: u_pro
+  SCENARIO: canon
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- openLink: 'dijitalasistan-e2e://settings/appearance'
+- tapOn: { id: 'appearance.theme.dark' }
+- assertDarkMode
+- runFlow: { file: ../../subflows/open-tab.yaml, env: { TAB: today } }
+- takeScreenshot: vis-today-dark
+- runFlow: { file: ../../subflows/open-tab.yaml, env: { TAB: flow } }
+- takeScreenshot: vis-flow-dark
+- runFlow: { file: ../../subflows/open-tab.yaml, env: { TAB: plan } }
+- takeScreenshot: vis-plan-dark
+- runFlow: { file: ../../subflows/open-tab.yaml, env: { TAB: assistant } }
+- takeScreenshot: vis-assistant-dark
+- openLink: 'dijitalasistan-e2e://mail/${output.ids.messageAhmet}'
+- takeScreenshot: vis-mail-detail-dark
+- openLink: 'dijitalasistan-e2e://approvals'
+- takeScreenshot: vis-approvals-dark
+- openLink: 'dijitalasistan-e2e://settings'
+- takeScreenshot: vis-settings-dark
+- launchApp: { clearState: false }
+- assertDarkMode
+- openLink: 'dijitalasistan-e2e://settings/appearance'
+- tapOn: { id: 'appearance.theme.system' }
+- setDarkMode: false
+- assertLightMode
+- runFlow: { file: ../../subflows/open-tab.yaml, env: { TAB: today } }
+- takeScreenshot: vis-today-light
+- setDarkMode: true
+- assertDarkMode

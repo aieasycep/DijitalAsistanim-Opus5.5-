@@ -270,6 +270,74 @@ export interface ManualSyncResult {
   readonly next_allowed_at: string;
 }
 
+/** The reasons a forced analysis ("Analiz et", M-MAIL-03) asks `email_analysis` for. */
+export const FORCED_ANALYSIS_REASONS = ['summary', 'key_points', 'deadline'] as const;
+
+/**
+ * API-INT-04 body extension (`message_ids` + `force_analysis`): enqueue JOB-11 `email_analysis` for
+ * those messages of this account with `force: true`, which bypasses the explicit-rule skip of
+ * triage (a muted sender's mail, `t0_final` + `explicit_rule`). The AI budget still applies inside
+ * the job: an exhausted budget marks the message `skipped_budget`. One forced run per message per
+ * UTC day (the key), so a repeated tap returns the same job.
+ */
+export async function requestForcedAnalysis(
+  rt: IntegrationRuntime,
+  input: {
+    userId: string;
+    accountId: string;
+    messageIds: readonly string[];
+    correlationId: string;
+  },
+): Promise<ManualSyncResult> {
+  const account = await ownedAccount(rt, input.userId, input.accountId);
+  if (account.status === 'needs_reauth')
+    throw new AppError('PROVIDER_REAUTH_REQUIRED', {
+      details: { account_id: account.id, provider: account.provider },
+    });
+  if (account.status === 'disconnected')
+    throw new AppError('STATE_CONFLICT', { details: { reason: 'account_disconnected' } });
+  const toggles = togglesOf(account);
+  if (!account.capabilities_granted.includes('mail_read') || !toggles.mail_read)
+    throw new AppError('DATA_SOURCE_DISABLED', { details: { account_id: account.id } });
+  const ids = [...new Set(input.messageIds)];
+  for (const id of ids) {
+    const message = await rt.store.getMessage(id);
+    if (
+      message === null ||
+      message.user_id !== input.userId ||
+      message.connected_account_id !== account.id ||
+      message.provider_deleted_at !== null
+    )
+      throw new AppError('NOT_FOUND', { details: { resource: 'email_message' } });
+  }
+  const day = rt.now().toISOString().slice(0, 10);
+  const jobIds: string[] = [];
+  for (const id of ids)
+    jobIds.push(
+      await rt.enqueue({
+        type: 'email_analysis',
+        idempotencyKey: `email_analysis:${id}:force:${day}`,
+        payload: {
+          email_message_id: id,
+          connected_account_id: account.id,
+          reasons: [...FORCED_ANALYSIS_REASONS],
+          force: true,
+        },
+        userId: input.userId,
+        accountId: account.id,
+        correlationId: input.correlationId,
+      }),
+    );
+  const statuses = new Map(
+    (await rt.store.jobStatuses(jobIds)).map((j) => [j.id, j.status] as const),
+  );
+  await rt.poke('integration_force_analysis');
+  return {
+    jobs: jobIds.map((id) => jobRef(id, statuses.get(id) ?? 'queued')),
+    next_allowed_at: new Date(rt.now().getTime() + 60_000).toISOString(),
+  };
+}
+
 /** API-INT-04 (the 1 / 60 s per-account limit is enforced by the route). */
 export async function requestManualSync(
   rt: IntegrationRuntime,

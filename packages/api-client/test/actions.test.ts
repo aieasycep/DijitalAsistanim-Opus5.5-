@@ -7,8 +7,11 @@ import {
   MAIL_ORIGINAL_GC_TIME_MS,
   apiMutationOptions,
   conflictOptionsQueryOptions,
+  discardReplyDraftMutationOptions,
+  forceAnalysisMutationOptions,
   freeSlotsQueryOptions,
   mailOriginalQueryOptions,
+  meetingPrepAudioQueryOptions,
   meetingPrepQueryOptions,
   retryTransient,
   threadSummaryQueryOptions,
@@ -83,6 +86,75 @@ describe('route mutations', () => {
     for (const key of ACTION_MUTATION_ROUTES) {
       expect(apiMutationOptions(client, key).mutationKey).toEqual(['api', key]);
     }
+  });
+
+  it('"Analiz et" posts message_ids with force_analysis to the account sync route', async () => {
+    const mock = mockFetch(() =>
+      json(
+        202,
+        ok({
+          jobs: [{ job_id: uuid(30), status: 'queued', poll_after_ms: 2000 }],
+          next_allowed_at: TS,
+        }),
+      ),
+    );
+    const options = forceAnalysisMutationOptions(api(mock.fn));
+    expect(options.mutationKey).toEqual([
+      'api',
+      'POST /integrations/:accountId/sync',
+      'force_analysis',
+    ]);
+    const data = await new MutationObserver(new QueryClient(), options).mutate({
+      accountId: uuid(23),
+      messageIds: [uuid(21)],
+    });
+    expect(data.jobs).toHaveLength(1);
+    expect(mock.calls[0]?.url).toBe(
+      `https://api.example.com/functions/v1/api/integrations/${uuid(23)}/sync`,
+    );
+    const body = mock.calls[0]?.init.body;
+    expect(JSON.parse(typeof body === 'string' ? body : '{}')).toEqual({
+      message_ids: [uuid(21)],
+      force_analysis: true,
+    });
+  });
+
+  it('meeting summary audio posts the prep version hash and keys the cache by it', async () => {
+    const audio = {
+      mode: 'premium',
+      signed_url: 'https://files.example.com/prep/abc.mp3?token=t',
+      expires_at: TS,
+      duration_s: 118,
+      chapters: [{ index: 0, title: 'Giriş', start_s: 0 }],
+    };
+    const mock = mockFetch(() => json(200, ok(audio)));
+    const options = meetingPrepAudioQueryOptions(api(mock.fn), uuid(40), 'hash-1');
+    expect(options.queryKey).toEqual(['meeting', 'prep', uuid(40), 'audio', 'hash-1']);
+    const data = await new QueryClient().query(options);
+    expect(data.mode).toBe('premium');
+    expect(mock.calls[0]?.url).toBe(
+      `https://api.example.com/functions/v1/api/meetings/${uuid(40)}/prep/audio`,
+    );
+    const body = mock.calls[0]?.init.body;
+    expect(JSON.parse(typeof body === 'string' ? body : '{}')).toEqual({
+      prep_version_hash: 'hash-1',
+    });
+  });
+
+  it('"Taslağı sil" patches status discarded with the expected version and key', async () => {
+    const mock = mockFetch(() => json(200, ok({ ...draft, status: 'discarded', version: 2 })));
+    const data = await new MutationObserver(
+      new QueryClient(),
+      discardReplyDraftMutationOptions(api(mock.fn)),
+    ).mutate({ draftId: uuid(20), expectedVersion: 1, idempotencyKey: 'discard-1' });
+    expect(data.status).toBe('discarded');
+    expect(mock.calls[0]?.init.method).toBe('PATCH');
+    expect(mock.calls[0]?.headers['idempotency-key']).toBe('discard-1');
+    const body = mock.calls[0]?.init.body;
+    expect(JSON.parse(typeof body === 'string' ? body : '{}')).toEqual({
+      status: 'discarded',
+      expected_version: 1,
+    });
   });
 
   it('surfaces server errors as typed ApiErrors', async () => {

@@ -1,0 +1,38 @@
+appId: com.dijitalasistan.app.e2e
+name: 'E2E-M-09 · Reminder'
+tags: [m102, android, ios, pro]
+env:
+  USER_KEY: u_pro
+  SCENARIO: canon
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- openLink: 'dijitalasistan-e2e://mail/${output.ids.messageAhmet}'
+- tapOn: { id: 'email.tile.remind' }
+- extendedWaitUntil: { visible: { id: 'sheet.reminder' }, timeout: 30000 }
+- assertVisible: { id: 'reminder.preset.before_30m' }
+- assertVisible: { id: 'reminder.preset.before_1h' }
+- assertVisible: { id: 'reminder.preset.this_evening' }
+- assertVisible: { id: 'reminder.preset.tomorrow_morning' }
+- assertVisible: '${output.t.reminder.presets.smart}'
+- assertVisible: '${output.t.reminder.presets.custom}'
+- assertVisible: ${output.expect.preset_before_1h}
+- tapOn: { id: 'reminder.preset.before_1h' }
+- tapOn: { id: 'reminder.submit' }
+- extendedWaitUntil: { visible: '${output.t.common.actions.undo}', timeout: 30000 }
+- tapOn: '${output.t.common.actions.undo}'
+- tapOn: { id: 'email.tile.remind' }
+- tapOn: { id: 'reminder.custom' }
+- assertVisible: { id: 'reminder.picker' }
+- tapOn: { id: 'reminder.custom.choose' }
+- tapOn: { id: 'reminder.destination' }
+- tapOn: '${output.t.common.providers.microsoftTodo}'
+- tapOn: { id: 'reminder.submit' }
+- runFlow: ../../subflows/approve-sheet.yaml
+- runScript:
+    file: ../../scripts/harness.js
+    env: { ACTION: state, USER_KEY: '${USER_KEY}', PROBE: 'reminders_active' }

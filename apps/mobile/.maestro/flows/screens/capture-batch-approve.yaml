@@ -1,0 +1,29 @@
+appId: com.dijitalasistan.app.e2e
+name: 'E2E-S-09 · Capture batch approve with undo (R-06)'
+tags: [screens, android, ios, pro]
+env:
+  USER_KEY: u_pro
+  SCENARIO: canon
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- openLink: 'dijitalasistan-e2e://capture'
+- tapOn: { id: 'capture.text' }
+- inputText: 'Perşembe 15:00 Ayşe ile kahve, öncesinde raporu bitir. Çarşamba akşamı bana hatırlat.'
+- hideKeyboard
+- tapOn: { id: 'capture.analyze' }
+- extendedWaitUntil: { visible: { id: 'capture.results' }, timeout: 90000 }
+- tapOn: { id: 'capture.send' }
+- extendedWaitUntil: { visible: { id: 'sheet.approval' }, timeout: 30000 }
+- tapOn: { id: 'approvalSheet.approve' }
+- tapOn: '${output.t.common.actions.undo}'
+- runScript:
+    file: ../../scripts/harness.js
+    env: { ACTION: state, USER_KEY: '${USER_KEY}', PROBE: 'approvals_by_status' }
+- tapOn: { id: 'capture.send' }
+- runFlow: ../../subflows/approve-sheet.yaml
+- extendedWaitUntil: { visible: { id: 'capture.success' }, timeout: 60000 }

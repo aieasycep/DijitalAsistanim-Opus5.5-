@@ -1,0 +1,6 @@
+appId: com.dijitalasistan.app.e2e
+name: 'Subflow · demo consent (GET /oauth/demo/authorize grants the requested scopes implicitly)'
+---
+# The demo authorize route answers 302 → /oauth/demo/callback → the app scheme, so the Custom Tab /
+# ASWebAuthenticationSession closes on its own; the app then calls POST /integrations/oauth/complete.
+- extendedWaitUntil: { visible: '${output.t.onboarding.connect.connected}', timeout: 60000 }

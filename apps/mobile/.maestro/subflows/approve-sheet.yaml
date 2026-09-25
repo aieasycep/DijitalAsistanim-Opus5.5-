@@ -1,0 +1,11 @@
+appId: com.dijitalasistan.app.e2e
+name: 'Subflow · approve the open approval sheet (scope upgrade through the demo consent first)'
+---
+- extendedWaitUntil: { visible: { id: 'sheet.approval' }, timeout: 20000 }
+- runFlow:
+    when: { visible: { id: 'm2.scope' } }
+    commands:
+      - tapOn: { id: 'm2.scope.allow' }
+      - extendedWaitUntil: { visible: { id: 'sheet.approval' }, timeout: 60000 }
+- tapOn: { id: 'approvalSheet.approve' }
+- waitForAnimationToEnd

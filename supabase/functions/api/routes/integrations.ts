@@ -43,6 +43,7 @@ import {
 import {
   calendarViews,
   type Consequence,
+  requestForcedAnalysis,
   requestManualSync,
   updateDataSources,
 } from '../../_shared/services/integrations/controls.ts';
@@ -357,12 +358,21 @@ export function integrationRoutes(rt: IntegrationRuntime): RouteRegistrar {
           'integrations_sync',
           `a:${params.accountId}`,
         );
-        const data = await requestManualSync(rt, {
-          userId: auth.userId,
-          accountId: params.accountId,
-          ...(body.resources === undefined ? {} : { resources: body.resources }),
-          correlationId: c.get('correlationId'),
-        });
+        // M-MAIL-03 "Analiz et": `message_ids` + `force_analysis` enqueue `email_analysis` only.
+        const data =
+          body.message_ids !== undefined && body.force_analysis === true
+            ? await requestForcedAnalysis(rt, {
+                userId: auth.userId,
+                accountId: params.accountId,
+                messageIds: body.message_ids,
+                correlationId: c.get('correlationId'),
+              })
+            : await requestManualSync(rt, {
+                userId: auth.userId,
+                accountId: params.accountId,
+                ...(body.resources === undefined ? {} : { resources: body.resources }),
+                correlationId: c.get('correlationId'),
+              });
         return sendData(c, data, sync.status, {});
       },
     );

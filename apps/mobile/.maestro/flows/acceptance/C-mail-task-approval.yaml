@@ -1,0 +1,22 @@
+appId: com.dijitalasistan.app.e2e
+name: 'E2E-C · Mail → task → approval'
+tags: [acceptance, android, ios, pro]
+env:
+  USER_KEY: u_pro
+  SCENARIO: canon
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- openLink: 'dijitalasistan-e2e://mail/${output.ids.messageAhmet}'
+- tapOn: { id: 'email.tile.task' }
+- runFlow: ../../subflows/approve-sheet.yaml
+- extendedWaitUntil: { visible: '${output.t.approvals.results.task_create}', timeout: 60000 }
+- runFlow: { file: ../../subflows/open-tab.yaml, env: { TAB: plan } }
+- extendedWaitUntil: { visible: { id: 'plan.timeline' }, timeout: 30000 }
+- runScript:
+    file: ../../scripts/harness.js
+    env: { ACTION: state, USER_KEY: '${USER_KEY}', PROBE: 'approvals_by_status' }

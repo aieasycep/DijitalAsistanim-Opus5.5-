@@ -396,6 +396,71 @@ Deno.test(
       { key: key() },
     );
     assertEquals((await edit.json()).error.code, 'APPROVAL_STATE_CONFLICT');
+    // A submitted draft cannot be discarded ("Taslağı sil" → 409).
+    const discardSubmitted = await s.request(
+      'PATCH',
+      `/reply-drafts/${created.id}`,
+      { status: 'discarded', expected_version: 4 },
+      { key: key() },
+    );
+    assertEquals(discardSubmitted.status, 409);
+    assertEquals((await discardSubmitted.json()).error.code, 'STATE_CONFLICT');
+  },
+);
+
+Deno.test(
+  'API-MAIL-04 status discarded: only draft → discarded; a stale version, a repeat and edits after → 409',
+  async () => {
+    const s = await setup();
+    const created = (
+      await (
+        await s.request('POST', `/mail/${M1}/reply-drafts`, { tone: 'short' }, { key: key() })
+      ).json()
+    ).data;
+    const stale = await s.request(
+      'PATCH',
+      `/reply-drafts/${created.id}`,
+      { status: 'discarded', expected_version: 7 },
+      { key: key() },
+    );
+    assertEquals(stale.status, 409);
+    const mixed = await s.request(
+      'PATCH',
+      `/reply-drafts/${created.id}`,
+      { status: 'discarded', body_text: 'x', expected_version: 1 },
+      { key: key() },
+    );
+    assertEquals(mixed.status, 422);
+    const discardKey = key();
+    const res = await s.request(
+      'PATCH',
+      `/reply-drafts/${created.id}`,
+      { status: 'discarded', expected_version: 1 },
+      { key: discardKey },
+    );
+    assertEquals(res.status, 200);
+    assertEquals((await res.json()).data.status, 'discarded');
+    const replay = await s.request(
+      'PATCH',
+      `/reply-drafts/${created.id}`,
+      { status: 'discarded', expected_version: 1 },
+      { key: discardKey },
+    );
+    assertEquals(replay.headers.get('Idempotency-Replayed'), 'true');
+    const again = await s.request(
+      'PATCH',
+      `/reply-drafts/${created.id}`,
+      { status: 'discarded', expected_version: 2 },
+      { key: key() },
+    );
+    assertEquals(again.status, 409);
+    const edit = await s.request(
+      'PATCH',
+      `/reply-drafts/${created.id}`,
+      { body_text: 'x', expected_version: 2 },
+      { key: key() },
+    );
+    assertEquals(edit.status, 409);
   },
 );
 

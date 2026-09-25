@@ -1,0 +1,52 @@
+appId: com.dijitalasistan.app.e2e
+name: 'E2E-M-05 · Briefing'
+tags: [m102, android, ios, pro]
+env:
+  USER_KEY: u_pro
+  SCENARIO: canon
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- openLink: 'dijitalasistan-e2e://briefing/${output.ids.briefingMorning}'
+- extendedWaitUntil: { visible: { id: 'screen.briefing' }, timeout: 30000 }
+- assertVisible: '${output.t.briefing.sections.priorities}'
+- assertVisible: '${output.t.briefing.sections.schedule}'
+- assertVisible: '${output.t.briefing.sections.awaiting_me}'
+- scrollUntilVisible:
+    { element: '${output.t.briefing.sections.life}', direction: DOWN, timeout: 20000 }
+- assertVisible: '${output.t.briefing.sections.awaiting_them}'
+- assertVisible: '${output.t.briefing.sections.deadlines}'
+- tapOn: '${output.t.explain.whereFrom}'
+- extendedWaitUntil: { visible: { id: 'sheet.why' }, timeout: 30000 }
+- back
+- tapOn: { id: 'briefing.listen' }
+- extendedWaitUntil: { visible: { id: 'screen.listen' }, timeout: 30000 }
+- extendedWaitUntil: { visible: { id: 'player.premium' }, timeout: 60000 }
+- runScript:
+    file: ../../scripts/harness.js
+    env: { ACTION: tick, P_NOW: '2026-09-22T10:00:00Z' }
+- runScript:
+    file: ../../scripts/harness.js
+    env: { ACTION: drain }
+- runFlow: { file: ../../subflows/open-tab.yaml, env: { TAB: today } }
+- extendedWaitUntil: { visible: { id: 'today.hero' }, timeout: 30000 }
+- runScript:
+    file: ../../scripts/harness.js
+    env: { ACTION: tick, P_NOW: '2026-09-22T16:00:00Z' }
+- runScript:
+    file: ../../scripts/harness.js
+    env: { ACTION: drain }
+- openLink: 'dijitalasistan-e2e://briefings'
+- extendedWaitUntil: { visible: { id: 'screen.history' }, timeout: 30000 }
+- openLink: 'dijitalasistan-e2e://weekly/${output.ids.weekly}'
+- extendedWaitUntil: { visible: { id: 'screen.weekly' }, timeout: 30000 }
+- tapOn: { id: 'weekly.share' }
+- extendedWaitUntil: { visible: { id: 'screen.weeklyShare' }, timeout: 30000 }
+- assertNotVisible: { id: 'weekly.people' }
+- runScript:
+    file: ../../scripts/harness.js
+    env: { ACTION: state, USER_KEY: '${USER_KEY}', PROBE: 'briefing_today:morning' }

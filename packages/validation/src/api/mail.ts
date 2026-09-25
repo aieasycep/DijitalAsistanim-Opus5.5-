@@ -72,6 +72,8 @@ export const ReplyDraftPatch = z
     subject: z.string().min(1).max(998).optional(),
     to: z.array(RecipientInput).min(1).max(50).optional(),
     cc: z.array(RecipientInput).max(50).optional(),
+    // "Taslağı sil" (SCREEN_AND_FLOW_MAP M-REPLY-01 / M-REPLY-05): only `draft` → `discarded`.
+    status: z.literal('discarded').optional(),
     expected_version: z.int().min(1),
   })
   .refine(
@@ -79,8 +81,18 @@ export const ReplyDraftPatch = z
       patch.body_text !== undefined ||
       patch.subject !== undefined ||
       patch.to !== undefined ||
-      patch.cc !== undefined,
+      patch.cc !== undefined ||
+      patch.status !== undefined,
     'no_changes',
+  )
+  .refine(
+    (patch) =>
+      patch.status === undefined ||
+      (patch.body_text === undefined &&
+        patch.subject === undefined &&
+        patch.to === undefined &&
+        patch.cc === undefined),
+    { message: 'discard_without_edits', path: ['status'] },
   );
 
 // API-MAIL-05 · POST /reply-drafts/:id/submit

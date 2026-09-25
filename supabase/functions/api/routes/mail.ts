@@ -516,11 +516,27 @@ async function patchDraft(
     subject?: string | undefined;
     to?: { email: string }[] | undefined;
     cc?: { email: string }[] | undefined;
+    status?: 'discarded' | undefined;
     expected_version: number;
   },
 ): Promise<ReplyDraftRow> {
   const { assist, intel } = assistOf(kit);
   const draft = await ownedDraft(kit, auth.userId, id);
+  if (body.status === 'discarded') {
+    // "Taslağı sil" (M-REPLY-01 / M-REPLY-05): only a `draft` can be discarded; a submitted, sent,
+    // failed or already discarded draft → 409. Stored attachments go with the retention job.
+    if (draft.status !== 'draft') {
+      throw new AppError('STATE_CONFLICT', {
+        details: { reason: 'draft_not_discardable', status: draft.status },
+      });
+    }
+    assertEditable(draft, body.expected_version);
+    const discarded = await assist.store.updateReplyDraft(auth.userId, draft.id, draft.version, {
+      status: 'discarded',
+    });
+    if (discarded === null) throw versionConflict();
+    return discarded;
+  }
   assertEditable(draft, body.expected_version);
   const to = body.to?.map((r) => r.email.toLowerCase()) ?? [...draft.to_emails];
   const cc = body.cc?.map((r) => r.email.toLowerCase()) ?? [...draft.cc_emails];
