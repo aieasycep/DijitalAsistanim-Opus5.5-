@@ -104,20 +104,50 @@ export const JobRetryBody = z.strictObject({
 });
 export const JobCancelBody = SensitiveBody;
 export const JobMutationResponse = Success(z.object({ id: Uuid, status: JobStatusEnum }));
+/**
+ * Bulk retry (API_CONTRACTS ADM-05, BACKOFFICE_PLAN §6.6): either the selected rows (`job_ids`, at
+ * most 100, each through the single-retry guards) or a type + status + time window (`filter` with
+ * `max` ≤ 500). Exactly one of the two.
+ */
 export const JobsBulkRetryBody = z
   .strictObject({
-    filter: z.strictObject({
-      type: JobType,
-      status: z.enum(['dead_letter', 'failed']),
-      from: IsoDateTime,
-      to: IsoDateTime,
-    }),
-    max: z.int().min(1).max(500),
+    job_ids: z.array(Uuid).min(1).max(100).optional(),
+    filter: z
+      .strictObject({
+        type: JobType,
+        status: z.enum(['dead_letter', 'failed']),
+        from: IsoDateTime,
+        to: IsoDateTime,
+      })
+      .optional(),
+    max: z.int().min(1).max(500).optional(),
     reason: Reason,
     confirm: z.literal(true),
   })
-  .refine((b) => Date.parse(b.filter.to) > Date.parse(b.filter.from), {
+  .refine((b) => (b.job_ids === undefined) !== (b.filter === undefined), {
+    message: 'job_ids_or_filter',
+    path: ['job_ids'],
+  })
+  .refine((b) => b.filter === undefined || b.max !== undefined, {
+    message: 'max_required',
+    path: ['max'],
+  })
+  .refine((b) => b.filter === undefined || Date.parse(b.filter.to) > Date.parse(b.filter.from), {
     message: 'to_before_from',
     path: ['filter', 'to'],
   });
-export const JobsBulkRetryResponse = Success(z.object({ retried: z.int().min(0) }));
+export const JobsBulkRetryResponse = Success(
+  z.object({
+    retried: z.int().min(0),
+    /** Selection mode: the retried ids and the skipped ones with their reason key. */
+    retried_ids: z.array(Uuid).optional(),
+    skipped: z
+      .array(
+        z.object({
+          id: Uuid,
+          reason_key: z.enum(['invalid_state', 'max_manual_retries', 'not_found']),
+        }),
+      )
+      .optional(),
+  }),
+);

@@ -3,13 +3,18 @@
  * `GET /me` (the `admin_me` context itself), `GET /me/sessions` (`sessions_list_own`: the caller's
  * rows only, never `ip_hash` or the raw user agent), `GET/PATCH /preferences`
  * (`admin_preferences_get` / `admin_preferences_set`) and `POST /me/recovery-codes`
- * (`recovery_codes_store`: 10 fresh codes returned once; step-up once codes exist).
+ * (`recovery_codes_store`: 10 fresh codes returned once; step-up once codes exist). The backup
+ * factor (BACKOFFICE_PLAN §3.3): `POST /me/mfa-factors` confirms a TOTP factor the backoffice just
+ * enrolled and verified with the admin's own Auth session (at most two verified factors; an extra
+ * one is removed again) and `DELETE /me/mfa-factors/:factorId` removes one (step-up; one must stay).
  */
 import { admin as A } from '@da/validation';
 import type { z } from 'zod';
 import { AppError } from '../../_shared/errors.ts';
 import { arr, count, type Json, obj, str } from '../lib/map.ts';
+import { deleteMfaFactor, verifiedTotpFactorIds } from '../lib/ops.ts';
 import { defineRoutes, type RouteCtx } from '../lib/route.ts';
+import { auditWrite } from '../middleware/audit.ts';
 import { generateRecoveryCodes, recoveryCodeDigest } from '../services/recovery-codes.ts';
 
 const PERMISSIONS = new Set<string>(A.ADMIN_PERMISSION_VALUES);
@@ -90,6 +95,59 @@ async function patchPreferences(ctx: RouteCtx) {
   return { data: mapPreferences(out) };
 }
 
+function ownAdminId(ctx: RouteCtx): string {
+  if (ctx.adminId === null) throw new AppError('AUTH_REQUIRED');
+  return ctx.adminId;
+}
+
+async function confirmFactor(ctx: RouteCtx) {
+  const body = ctx.body as z.infer<typeof A.MfaFactorConfirmBody>;
+  const adminId = ownAdminId(ctx);
+  const verified = await verifiedTotpFactorIds(ctx.rt, adminId);
+  if (!verified.includes(body.factor_id)) {
+    throw new AppError('STATE_CONFLICT', { details: { reason: 'factor_not_verified' } });
+  }
+  if (verified.length > A.MAX_ADMIN_MFA_FACTORS) {
+    await deleteMfaFactor(ctx.rt, adminId, body.factor_id);
+    throw new AppError('STATE_CONFLICT', { details: { reason: 'max_factors' } });
+  }
+  await auditWrite(ctx.db, {
+    action: 'admin.mfa_factor_added',
+    targetType: 'admin_user',
+    targetId: adminId,
+    reason: 'backup TOTP factor enrolled',
+    result: 'success',
+    details: { factor_id: body.factor_id, verified_factors: verified.length },
+    idempotencyKey: ctx.idempotencyKey,
+  });
+  return {
+    data: { factor_id: body.factor_id, verified_factors: verified.length },
+    status: 201 as const,
+  };
+}
+
+async function removeFactor(ctx: RouteCtx) {
+  const body = ctx.body as z.infer<typeof A.MfaFactorRemoveBody>;
+  const adminId = ownAdminId(ctx);
+  const factorId = String(ctx.params.factorId);
+  const verified = await verifiedTotpFactorIds(ctx.rt, adminId);
+  if (!verified.includes(factorId)) throw new AppError('NOT_FOUND');
+  if (verified.length < 2) {
+    throw new AppError('STATE_CONFLICT', { details: { reason: 'last_factor' } });
+  }
+  await deleteMfaFactor(ctx.rt, adminId, factorId);
+  await auditWrite(ctx.db, {
+    action: 'admin.mfa_factor_removed',
+    targetType: 'admin_user',
+    targetId: adminId,
+    reason: body.reason,
+    result: 'success',
+    details: { factor_id: factorId, verified_factors: verified.length - 1 },
+    idempotencyKey: ctx.idempotencyKey,
+  });
+  return { data: { factor_id: factorId, verified_factors: verified.length - 1 } };
+}
+
 export const meRoutes = defineRoutes({
   'GET /me': {
     rate: 'R',
@@ -118,4 +176,6 @@ export const meRoutes = defineRoutes({
     stepUp: (context) => context.recoveryCodesRemaining > 0,
     handle: recoveryCodes,
   },
+  'POST /me/mfa-factors': { rate: 'X', handle: confirmFactor },
+  'DELETE /me/mfa-factors/:factorId': { rate: 'X', handle: removeFactor },
 });

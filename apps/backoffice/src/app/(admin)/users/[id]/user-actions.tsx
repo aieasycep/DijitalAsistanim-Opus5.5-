@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { confirmToken } from '@/lib/formatters';
 import { useFormatters } from '@/lib/use-formatters';
+import { PushTestPreview } from './push-test-preview';
 
 type Device = z.infer<typeof UserDevicesResponse>['data'][number];
 type Ticket = z.infer<typeof UserSupportResponse>['data']['tickets'][number];
@@ -178,30 +179,40 @@ export function UserActions({
         title={t('pushTest.title')}
         effects={t('pushTest.effects')}
         fields={
-          devices === null ? (
-            <p className="text-bo-meta text-ink-2">{t('pushTest.devicesUnknown')}</p>
-          ) : activeDevices.length === 0 ? (
+          devices !== null && activeDevices.length === 0 ? (
             <p role="alert" className="text-bo-body text-tone-warning-text">
               {t('pushTest.noDevice')}
             </p>
           ) : (
-            <RadioField
-              legend={t('pushTest.device')}
-              inline={false}
-              value={installation}
-              onChange={setInstallation}
-              options={[
-                { value: 'all', label: t('pushTest.allDevices') },
-                ...activeDevices.map((device) => ({
-                  value: device.installation_id,
-                  label: t('pushTest.deviceLabel', {
-                    platform: label('platform', device.platform),
-                    version: device.app_version,
-                    token: device.token_masked ?? '—',
-                  }),
-                })),
-              ]}
-            />
+            <div className="flex flex-col gap-3">
+              {open === 'push-test' ? (
+                <PushTestPreview
+                  userId={userId}
+                  installationId={installation === 'all' ? null : installation}
+                />
+              ) : null}
+              {devices === null ? (
+                <p className="text-bo-meta text-ink-2">{t('pushTest.devicesUnknown')}</p>
+              ) : (
+                <RadioField
+                  legend={t('pushTest.device')}
+                  inline={false}
+                  value={installation}
+                  onChange={setInstallation}
+                  options={[
+                    { value: 'all', label: t('pushTest.allDevices') },
+                    ...activeDevices.map((device) => ({
+                      value: device.installation_id,
+                      label: t('pushTest.deviceLabel', {
+                        platform: label('platform', device.platform),
+                        version: device.app_version,
+                        token: device.token_masked ?? '—',
+                      }),
+                    })),
+                  ]}
+                />
+              )}
+            </div>
           )
         }
         validate={() =>

@@ -338,9 +338,31 @@ async function Versions({ params }: { params: Record<string, string | string[] |
   const rows = result.data.versions
     .filter((row) => platform === null || row.platform === platform)
     .filter((row) => !oldOnly || row.below_minimum);
+  // Crash data comes from Sentry (§6.22): never a number without the API credentials.
+  const crash = result.data.crash_reporting;
+  const crashRate = (value: number | null) => (value === null ? '—' : f.percent(value));
   return (
     <div className="flex flex-col gap-4">
       {links}
+      {crash.status === 'configured' ? null : (
+        <p
+          role="status"
+          data-testid="crash-reporting"
+          className="flex flex-wrap items-center gap-2 rounded-tile bg-surface-sunken px-4 py-2 text-bo-body text-ink-2"
+        >
+          <StatusBadge
+            group="credential"
+            value={
+              crash.status === 'external_credential_required'
+                ? 'external_credential_required'
+                : 'configured'
+            }
+          />
+          {crash.status === 'external_credential_required'
+            ? t('crashNotConfigured')
+            : t('crashUnavailable')}
+        </p>
+      )}
       <Panel title={t('versions')} description={t('versionsHint')}>
         {rows.length === 0 ? (
           <p className="text-bo-body text-ink-2">{t('noVersions')}</p>
@@ -361,6 +383,12 @@ async function Versions({ params }: { params: Record<string, string | string[] |
                 <th scope="col" className="py-1.5 pr-3 text-right font-semibold">
                   {t('syncErrorRate')}
                 </th>
+                <th scope="col" className="py-1.5 pr-3 text-right font-semibold">
+                  {t('crashFreeSessions')}
+                </th>
+                <th scope="col" className="py-1.5 pr-3 text-right font-semibold">
+                  {t('crashFreeUsers')}
+                </th>
                 <th scope="col" className="py-1.5 font-semibold">
                   {t('columns.status')}
                 </th>
@@ -377,6 +405,12 @@ async function Versions({ params }: { params: Record<string, string | string[] |
                   <td className="py-1.5 pr-3 text-right text-ink">{f.number(row.installations)}</td>
                   <td className="py-1.5 pr-3 text-right text-ink">
                     {f.percent(row.sync_error_rate)}
+                  </td>
+                  <td className="py-1.5 pr-3 text-right text-ink">
+                    {crashRate(row.crash_free_sessions)}
+                  </td>
+                  <td className="py-1.5 pr-3 text-right text-ink">
+                    {crashRate(row.crash_free_users)}
                   </td>
                   <td className="py-1.5">
                     {row.below_minimum ? (

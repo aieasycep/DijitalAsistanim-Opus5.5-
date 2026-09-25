@@ -357,6 +357,16 @@
       "permission_denials": "Permission denials",
       "webhook_signature_failures": "Webhook signature failures",
       "byAdmin": "Events by admin"
+    },
+    "platform": {
+      "label": "Platform",
+      "all": "All",
+      "ios": "iOS",
+      "android": "Android"
+    },
+    "rollup": {
+      "stale": "Last updated {relative}.",
+      "never": "Summary metrics have not been computed yet."
     }
   },
   "charts": {
@@ -434,7 +444,11 @@
     "workerLag": "Worker lag: {lag}",
     "ran": "Probes ran",
     "running": "Running…",
-    "runNow": "Probe now"
+    "runNow": "Probe now",
+    "crashNotConfigured": "Sentry is not configured — external credential required",
+    "crashUnavailable": "Crash data could not be loaded",
+    "crashFreeSessions": "Crash-free sessions",
+    "crashFreeUsers": "Crash-free users"
   },
   "enums": {
     "jobStatus": {
@@ -752,7 +766,12 @@
       "openai": "OpenAI",
       "voyage": "Voyage",
       "fixture": "Fixture",
-      "native": "On device"
+      "native": "On device",
+      "stt": "STT (speech → text)",
+      "tts": "TTS (text → speech)",
+      "deepgram": "Deepgram",
+      "azure_speech": "Azure Speech",
+      "elevenlabs": "ElevenLabs"
     },
     "credential": {
       "configured": "Configured",
@@ -1030,7 +1049,11 @@
         "deviceLabel": "{platform} · {version} · {token}",
         "confirm": "Send test notification",
         "queued": "Test notification queued. Waiting for the receipt.",
-        "deferred": "The user is in quiet hours. The test notification will be sent at {time}."
+        "deferred": "The user is in quiet hours. The test notification will be sent at {time}.",
+        "previewLoading": "Checking the user's local time…",
+        "previewFailed": "The quiet-hours preview could not be loaded; the test push still respects quiet hours.",
+        "quietHours": "The user's local time is {time}, inside quiet hours. The test push will be sent when quiet hours end ({end}).",
+        "localTime": "The user's local time is {time} ({zone}). The test push is sent right away."
       },
       "supportAccess": {
         "menu": "Request support access…",
@@ -1113,7 +1136,8 @@
       "off": "off",
       "recentJobs": "Recent sync jobs",
       "noJobs": "No sync jobs.",
-      "viewJobs": "View this account's jobs"
+      "viewJobs": "View this account's jobs",
+      "mailbox": "Mailbox"
     },
     "usage": {
       "ai": "AI usage",
@@ -1216,7 +1240,9 @@
       "span": "{start} – {end}",
       "views": "{count, plural, one {# view} other {# views}}",
       "revokedAt": "ended {time}"
-    }
+    },
+    "name": "Name",
+    "internal": "Internal"
   },
   "accountActions": {
     "forceSync": "Start sync",
@@ -1453,7 +1479,8 @@
       "platform": "Platform / version",
       "contact": "Contact email",
       "assignee": "Assignee",
-      "created": "Created"
+      "created": "Created",
+      "user": "User"
     },
     "filters": {
       "status": "Status",
@@ -1610,6 +1637,21 @@
       "chainHint": "Correlation ID {id}",
       "noChain": "No records for this correlation.",
       "open": "Open"
+    },
+    "live": {
+      "toggle": "Live (10 s)",
+      "on": "The list refreshes every 10 seconds.",
+      "failed": "Live update failed; retrying in 10 seconds."
+    },
+    "selection": {
+      "count": "{count} selected",
+      "retry": "Retry selected…",
+      "title": "Retry the {count} selected jobs",
+      "effects": "Of the {count} selected jobs, the failed and dead-letter ones are queued again; each goes through the single-retry rules and the others are skipped.",
+      "done": "{retried} jobs queued, {skipped} skipped.",
+      "clear": "Clear selection",
+      "row": "Select job {id}",
+      "page": "Select the jobs on this page"
     }
   },
   "notifications": {
@@ -1740,7 +1782,9 @@
       "reasoning": "Reasoning model",
       "embedding": "Embedding model",
       "stt": "STT",
-      "tts": "TTS"
+      "tts": "TTS",
+      "assistant": "Assistant model",
+      "probe": "Probe model"
     },
     "exceptions": "{count, plural, one {# feature uses a different model} other {# features use a different model}}",
     "routingTable": "Feature routing",
@@ -1793,7 +1837,10 @@
     "testEffects": "A fixed test prompt with no user data runs on the primary model and is recorded as an admin probe.",
     "testResult": "Test finished: {latency} ms, schema {schema}.",
     "schemaPass": "valid",
-    "schemaFail": "invalid"
+    "schemaFail": "invalid",
+    "costFor": "Typical Pro user · {profile}",
+    "costUnknown": "Not enough data",
+    "switchCost": "Estimated monthly AI cost of a typical Pro user over the last 30 days: Balanced {balanced}, Lean {lean}."
   },
   "prompts": {
     "title": "Prompt Management",
@@ -1886,13 +1933,14 @@
     "negative": "Negative",
     "rate": "Positive rate",
     "caption": "AI feedback",
-    "hidden": "Hidden",
+    "hidden": "Has comment · hidden",
     "columns": {
       "time": "Time",
       "rating": "Rating",
       "reason": "Reason",
       "comment": "Comment"
-    }
+    },
+    "noComment": "No comment"
   },
   "subscriptions": {
     "title": "Subscriptions",
@@ -2321,7 +2369,32 @@
       "othersDone": "{count, plural, one {# session ended} other {# sessions ended}}",
       "all": "Sign out everywhere",
       "newCodes": "New recovery codes",
-      "newCodesHint": "Store the codes somewhere safe; they are not shown again after you leave this page."
+      "newCodesHint": "Store the codes somewhere safe; they are not shown again after you leave this page.",
+      "backup": {
+        "title": "Authenticators",
+        "hint": "Up to two devices. A backup device lets you sign in when the primary one is lost.",
+        "unnamed": "Device {index}",
+        "since": "Added: {date}",
+        "remove": "Remove",
+        "lastFactor": "The last authenticator cannot be removed.",
+        "removeTitle": "Remove authenticator",
+        "removeEffects": "Codes from this device are no longer accepted. Your other authenticator keeps working.",
+        "removed": "Authenticator removed.",
+        "add": "Add backup device",
+        "limit": "At most {max} authenticators can be added.",
+        "enrolTitle": "Add backup device",
+        "enrolHint": "Scan the QR code with Google Authenticator, 1Password or a similar app, then enter the 6-digit code.",
+        "qrAlt": "QR code for the backup device",
+        "manual": "Enter the key manually: {secret}",
+        "code": "Verification code",
+        "cancel": "Cancel",
+        "verify": "Verify",
+        "added": "Backup device added.",
+        "codeFormat": "The code must have 6 digits.",
+        "codeInvalid": "The code could not be verified. Try again.",
+        "max": "At most two authenticators can be added.",
+        "unavailable": "Authenticators could not be loaded right now."
+      }
     },
     "system": {
       "config": "App settings",

@@ -206,7 +206,12 @@ export const USER_CASES: Cases = {
       assertEquals(argsOf(h, 'user_overview'), { p_user: uuid(1) });
       const d = data(body);
       assertEquals(d.job_errors, ['PROVIDER_UNAVAILABLE']);
-      assert(!('email_masked' in d), 'overview carries no PII beyond the contract');
+      assertEquals(
+        [d.email_masked, d.display_name_masked, d.is_internal],
+        ['yu***@gmail.com', 'Y***', false],
+        'masked identity and the internal flag (§5.5, §6.3)',
+      );
+      assert(!('time_zone' in d) && !('plan_source' in d), 'nothing beyond the contract');
       assertEquals((d.integrations as Record<string, unknown>[])[0], {
         provider: 'google',
         status: 'healthy',

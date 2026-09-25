@@ -28,7 +28,8 @@ import {
   schemaNameForFeature,
 } from '../services/ai-probe.ts';
 
-const CONTRACT_PROVIDERS = new Set(['anthropic', 'openai', 'voyage', 'fixture', 'native']);
+const CONTRACT_PROVIDERS: ReadonlySet<string> = new Set(A.MODEL_TARGET_PROVIDERS);
+const MODEL_ROLES: ReadonlySet<string> = new Set(A.MODEL_ROLES);
 const EFFORTS = new Set(['low', 'medium', 'high']);
 const BATCH_TO_CONTRACT: Readonly<Record<string, string>> = {
   never: 'realtime',
@@ -81,8 +82,11 @@ export function configRow(r: Json) {
   if (r.escalation_target !== null && r.escalation_target !== undefined && escalation === null)
     return null;
   const evalStatus = str(r.eval_status);
+  const role = str(r.role);
+  if (role === null || !MODEL_ROLES.has(role)) return null;
   return {
     profile: r.profile,
+    role,
     feature: r.feature,
     tier: r.tier,
     enabled: r.enabled === true,
@@ -107,6 +111,32 @@ function findConfig(list: Json, profile: string, feature: string, id?: unknown):
   return rows.find((r) => id !== undefined && r.id === id) ?? rows[0] ?? null;
 }
 
+/** Provider rows of "Sağlayıcılar" (§6.10) → the Edge credential they need (names only). */
+const CREDENTIAL_KEYS = [
+  ['anthropic', 'anthropic'],
+  ['openai', 'openai'],
+  ['voyage', 'voyage'],
+  ['stt', 'deepgram'],
+  ['tts', 'tts_premium'],
+] as const;
+
+/** `private.ai_profile_cost_estimates` → the contract (null stays null: no estimate, no figure). */
+export function profileCosts(raw: Json) {
+  const out: Record<string, unknown> = {};
+  for (const profile of ['balanced', 'lean'] as const) {
+    const p = obj(raw[profile]);
+    const monthly = num(p.monthly_usd);
+    const coverage = num(p.coverage);
+    out[profile] = {
+      monthly_usd: monthly === null ? null : Math.max(0, monthly),
+      coverage: coverage === null ? null : Math.min(1, Math.max(0, coverage)),
+      pro_users: count(p.pro_users),
+      window_days: Math.max(1, count(p.window_days) || 30),
+    };
+  }
+  return out;
+}
+
 async function models(ctx: RouteCtx) {
   const list = await listConfig(ctx);
   const configs = arr(list.rows)
@@ -114,8 +144,8 @@ async function models(ctx: RouteCtx) {
     .filter((r) => r !== null);
   const profiles = obj(list.routing_profiles);
   const credentials: Record<string, string> = {};
-  for (const provider of ['anthropic', 'openai', 'voyage'] as const) {
-    credentials[provider] = credentialStatus(provider, ctx.rt.env.raw).status;
+  for (const [key, name] of CREDENTIAL_KEYS) {
+    credentials[key] = credentialStatus(name, ctx.rt.env.raw).status;
   }
   return {
     data: {
@@ -125,6 +155,7 @@ async function models(ctx: RouteCtx) {
         pro: profiles.pro === 'lean' ? 'lean' : 'balanced',
       },
       credentials,
+      profile_costs: profileCosts(obj(list.profile_costs)),
     },
   };
 }
@@ -168,14 +199,20 @@ async function patchModel(ctx: RouteCtx) {
   ];
   for (const target of targets) {
     if (target === undefined) continue;
-    if (
+    const credential =
       target.provider === 'anthropic' ||
       target.provider === 'openai' ||
-      target.provider === 'voyage'
+      target.provider === 'voyage' ||
+      target.provider === 'deepgram'
+        ? target.provider
+        : target.provider === 'azure_speech' || target.provider === 'elevenlabs'
+          ? 'tts_premium'
+          : null;
+    if (
+      credential !== null &&
+      credentialStatus(credential, ctx.rt.env.raw).status !== 'configured'
     ) {
-      if (credentialStatus(target.provider, ctx.rt.env.raw).status !== 'configured') {
-        throw fieldError('primary_target.provider', 'provider_not_configured');
-      }
+      throw fieldError('primary_target.provider', 'provider_not_configured');
     }
   }
   const list = await listConfig(ctx);
@@ -309,7 +346,7 @@ async function probeModel(ctx: RouteCtx) {
     cost_usd: usd(outcome.costMicros / 1e6),
   };
   await auditWrite(ctx.db, {
-    action: 'admin.ai.model_probed',
+    action: 'ai_model_config.tested',
     targetType: 'ai_model_config',
     targetId: str(row.id),
     reason: `synthetic model probe (${body.fixture_set})`,
@@ -377,6 +414,7 @@ async function feedbackList(ctx: RouteCtx) {
     prompt_version: num(f.prompt_version) === null ? null : String(f.prompt_version),
     rating: num(f.rating) === 1 ? 1 : -1,
     reason_code: str(f.reason_code),
+    has_comment: f.has_comment === true,
     created_at: f.created_at,
   }));
 }

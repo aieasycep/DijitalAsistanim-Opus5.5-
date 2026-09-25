@@ -38,6 +38,8 @@ export const TicketRow = z.object({
   assignee: z.string().nullable(),
   created_at: IsoDateTime,
   contact_email_masked: EmailMasked.nullable(),
+  /** The matched app user (full uuid, not PII by itself, §5.5); `null` for an unmatched web form. */
+  user_id: Uuid.nullable(),
 });
 export const TicketsListResponse = PagedSuccess(TicketRow);
 export const TicketDetailResponse = Success(

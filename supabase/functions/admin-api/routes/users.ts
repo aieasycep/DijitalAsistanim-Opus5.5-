@@ -77,6 +77,9 @@ async function overview(ctx: RouteCtx) {
   return {
     data: {
       user_id: o.user_id,
+      email_masked: str(o.email_masked),
+      display_name_masked: str(o.display_name_masked),
+      is_internal: o.is_internal === true,
       account_status: o.account_status,
       plan: o.plan === 'pro' ? 'pro' : 'free',
       integrations: arr(o.integrations).map((i) => ({
@@ -413,7 +416,7 @@ async function setDisabled(ctx: RouteCtx, disable: boolean) {
     if (current.account_status !== (disable ? 'disabled' : 'active')) throw error;
     resumed = true;
   }
-  const action = disable ? 'admin.user.disabled' : 'admin.user.restored';
+  const action = disable ? 'user.disabled' : 'user.restored';
   try {
     await setAuthBan(ctx.rt, id, disable);
   } catch (error) {

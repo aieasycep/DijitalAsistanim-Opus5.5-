@@ -60,7 +60,7 @@ export function sqlAuditRow(id: number, extra: Record<string, unknown> = {}) {
     actor_type: 'admin',
     actor: { id: uuid(100), display_name: null, email_masked: 'op***@dijitalasistan.app' },
     role: 'operations',
-    action: 'admin.job.retried',
+    action: 'job.retried',
     target_type: 'job',
     target_id: uuid(70),
     target_user: { id: uuid(2), email_masked: 'yu***@gmail.com', display_name_masked: 'Y***' },

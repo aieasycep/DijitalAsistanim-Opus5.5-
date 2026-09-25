@@ -53,6 +53,11 @@ export const UsersListResponse = PagedSuccess(UserRow);
 export const UserOverviewResponse = Success(
   z.object({
     user_id: Uuid,
+    /** Masked in SQL (BACKOFFICE_PLAN §5.5): `yu***@gmail.com`, `Y*** K.`; reveal is audited. */
+    email_masked: EmailMasked.nullable(),
+    display_name_masked: z.string().max(80).nullable(),
+    /** "Dahili" badge: internal and test accounts are excluded from metrics. */
+    is_internal: z.boolean(),
     account_status: z.enum(USER_STATE_VALUES),
     plan: UserPlanFilter,
     integrations: z.array(
@@ -341,8 +346,16 @@ export const UserDevicesResponse = Success(
 );
 
 // Mutations
+/**
+ * The PII fields `POST /users/:id/reveal` can reveal (BACKOFFICE_PLAN §5.5): the account email, the
+ * display name, one integration mailbox email (`integration_email:{account_id}`) and one ticket
+ * contact email (`ticket_contact_email:{ticket_id}`) of this user.
+ */
+export const USER_REVEAL_FIELD_PATTERN =
+  /^(email|display_name|(integration_email|ticket_contact_email):[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/;
+export const UserRevealField = z.string().regex(USER_REVEAL_FIELD_PATTERN);
 export const UserRevealBody = z.strictObject({
-  field: z.literal('email'),
+  field: UserRevealField,
   reason: Reason,
   confirm: z.literal(true),
 });

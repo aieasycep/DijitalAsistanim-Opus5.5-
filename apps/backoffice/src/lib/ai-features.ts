@@ -1,12 +1,24 @@
 /*
  * AI feature → M§57 model role (BACKOFFICE_PLAN §6.10; master plan R-18): each `ai_feature` belongs
- * to exactly one role. The registry's `ModelConfigRow` carries no `role` column, so the backoffice
- * derives it with the same mapping the model-config seed uses.
+ * to exactly one role. `GET /ai/models` rows carry the `role` column itself; `roleOf` is the same
+ * mapping the model-config seed uses, for places that only know the feature.
  */
 
 export type AiRole = 'classifier' | 'reasoning' | 'embedding' | 'stt' | 'tts';
 
 export const AI_ROLES: readonly AiRole[] = ['classifier', 'reasoning', 'embedding', 'stt', 'tts'];
+
+/**
+ * The model slots to show (§6.10 "Model yuvaları"): the M§57 concepts in their order plus any other
+ * `ai_model_config.role` present in the rows (the DB also has `assistant` and `probe` rows).
+ */
+export const EXTRA_ROLES = ['assistant', 'probe'] as const;
+export type SlotRole = AiRole | (typeof EXTRA_ROLES)[number];
+
+export function slotRoles(rows: readonly { role: SlotRole }[]): SlotRole[] {
+  const present = new Set<SlotRole>(rows.map((row) => row.role));
+  return [...AI_ROLES, ...EXTRA_ROLES.filter((role) => present.has(role))];
+}
 
 export function roleOf(feature: string): AiRole {
   if (feature === 'email_triage') return 'classifier';

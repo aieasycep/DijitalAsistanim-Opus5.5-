@@ -441,6 +441,36 @@ const BRIEFING_CASES: Cases = {
   },
 };
 
+const PUSH_PREVIEW_CASES: Cases = {
+  'GET /notifications/test-push/preview': {
+    sql: {
+      notification_test_preview: () => ({
+        timezone: 'Europe/Istanbul',
+        local_time: '23:40',
+        in_quiet_hours: true,
+        quiet_hours_end_local: '08:00',
+        deferred_until: '2026-09-25T05:00:00+00:00',
+        active_devices: 2,
+      }),
+    },
+    expect(h, body) {
+      assertEquals(argsOf(h, 'notification_test_preview'), {
+        p_user: uuid(2),
+        p_installation: null,
+      });
+      assertEquals(data(body), {
+        timezone: 'Europe/Istanbul',
+        local_time: '23:40',
+        in_quiet_hours: true,
+        quiet_hours_end_local: '08:00',
+        deferred_until: '2026-09-25T05:00:00+00:00',
+        active_devices: 2,
+      });
+      assertEquals(pokes(h), [], 'a preview never sends anything');
+    },
+  },
+};
+
 const SUBSCRIPTION_CASES: Cases = {
   'GET /subscriptions/metrics': {
     sql: {
@@ -828,7 +858,7 @@ const PRIVACY_CASES: Cases = {
           hash: _h,
           metadata: _m,
           ...row
-        } = sqlAuditRow(1042, { action: 'admin.pii.revealed' });
+        } = sqlAuditRow(1042, { action: 'user.pii_revealed' });
         return sqlPage([
           row,
           {
@@ -847,7 +877,7 @@ const PRIVACY_CASES: Cases = {
         p_page: 1,
         p_page_size: 25,
         p_sort: null,
-        p_filter: { action: 'admin.pii.revealed', from: TS },
+        p_filter: { action: 'user.pii_revealed', from: TS },
       });
       assertEquals(
         rows(body).map((r) => [r.id, r.actor, r.target]),
@@ -901,6 +931,7 @@ export const OPS_CASES: Cases = {
   ...INTEGRATION_CASES,
   ...JOB_CASES,
   ...BRIEFING_CASES,
+  ...PUSH_PREVIEW_CASES,
   ...SUBSCRIPTION_CASES,
   ...PRIVACY_CASES,
 };

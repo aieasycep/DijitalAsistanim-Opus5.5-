@@ -22,6 +22,7 @@ import * as subs from './subscriptions.ts';
 import * as support from './support.ts';
 import * as sys from './system.ts';
 import * as users from './users.ts';
+import type { AuditAction } from './audit-actions.ts';
 
 export type { AdminRouteContract } from './common.ts';
 
@@ -42,7 +43,7 @@ function write(
   access: AdminAccess,
   request: RouteRequest,
   response: z.ZodType,
-  options: { status?: 200 | 201 | 202; audit?: string } = {},
+  options: { status?: 200 | 201 | 202; audit?: AuditAction } = {},
 ): AdminRouteContract {
   return {
     id,
@@ -85,7 +86,7 @@ export const adminRoutes = {
     anyAdmin,
     { body: session.SessionStartBody },
     session.SessionStartResponse,
-    { audit: 'admin.session.started' },
+    { audit: 'admin.login' },
   ),
   'POST /session/heartbeat': write(
     'ADM-00',
@@ -110,7 +111,7 @@ export const adminRoutes = {
     own,
     { body: session.SessionLogoutBody },
     session.SessionEndedResponse,
-    { audit: 'admin.session.logout' },
+    { audit: 'admin.logout' },
   ),
   'POST /session/logout-all': write(
     'ADM-00',
@@ -119,7 +120,7 @@ export const adminRoutes = {
     own,
     { body: session.SessionLogoutAllBody },
     session.SessionEndedResponse,
-    { audit: 'admin.session.logout_all' },
+    { audit: 'admin.logout_all' },
   ),
   'GET /preferences': read('ADM-00', '/preferences', own, {}, session.AdminPreferencesResponse),
   'PATCH /preferences': write(
@@ -155,7 +156,7 @@ export const adminRoutes = {
     bff,
     { body: session.InviteRedeemBody },
     session.InviteRedeemResponse,
-    { audit: 'admin.invite_accepted' },
+    { audit: 'admin.invite_redeemed' },
   ),
   'POST /auth/recovery-code/redeem': write(
     'ADM-00',
@@ -175,6 +176,24 @@ export const adminRoutes = {
     session.RecoveryCodesResponse,
     { status: 201, audit: 'admin.recovery_codes_regenerated' },
   ),
+  'POST /me/mfa-factors': write(
+    'ADM-00',
+    'POST',
+    '/me/mfa-factors',
+    own,
+    { body: session.MfaFactorConfirmBody },
+    session.MfaFactorResponse,
+    { status: 201, audit: 'admin.mfa_factor_added' },
+  ),
+  'DELETE /me/mfa-factors/:factorId': write(
+    'ADM-00',
+    'DELETE',
+    '/me/mfa-factors/:factorId',
+    stepUp('own'),
+    { params: session.MfaFactorParams, body: session.MfaFactorRemoveBody },
+    session.MfaFactorResponse,
+    { audit: 'admin.mfa_factor_removed' },
+  ),
   'POST /session/step-up': write(
     'ADM-00',
     'POST',
@@ -182,7 +201,7 @@ export const adminRoutes = {
     own,
     { body: session.StepUpBody },
     session.StepUpResponse,
-    { audit: 'admin.session.step_up' },
+    { audit: 'admin.step_up' },
   ),
 
   // ADM-01 · Dashboard
@@ -308,7 +327,7 @@ export const adminRoutes = {
     perm('users.pii.reveal'),
     idBody(users.UserRevealBody),
     RevealResponse,
-    { audit: 'admin.pii.revealed' },
+    { audit: 'user.pii_revealed' },
   ),
   'POST /users/:id/force-sync': write(
     'ADM-02',
@@ -317,7 +336,7 @@ export const adminRoutes = {
     perm('users.force_sync'),
     idBody(users.UserForceSyncBody),
     users.UserForceSyncResponse,
-    { status: 202, audit: 'admin.user.force_sync' },
+    { status: 202, audit: 'user.force_sync' },
   ),
   'POST /users/:id/disable': write(
     'ADM-02',
@@ -326,7 +345,7 @@ export const adminRoutes = {
     stepUp('users.disable'),
     idBody(users.UserDisableBody),
     users.UserStateResponse,
-    { audit: 'admin.user.disabled' },
+    { audit: 'user.disabled' },
   ),
   'POST /users/:id/restore': write(
     'ADM-02',
@@ -335,7 +354,7 @@ export const adminRoutes = {
     stepUp('users.disable'),
     idBody(users.UserRestoreBody),
     users.UserStateResponse,
-    { audit: 'admin.user.restored' },
+    { audit: 'user.restored' },
   ),
   'POST /users/:id/entitlement-grants': write(
     'ADM-02',
@@ -344,7 +363,7 @@ export const adminRoutes = {
     perm('entitlements.grant', { or: ['entitlements.grant_limited'] }),
     idBody(users.EntitlementGrantBody),
     users.EntitlementGrantResponse,
-    { status: 201, audit: 'admin.entitlement.granted' },
+    { status: 201, audit: 'entitlement.granted' },
   ),
   'POST /users/:id/entitlement-grants/:grantId/revoke': write(
     'ADM-02',
@@ -353,7 +372,7 @@ export const adminRoutes = {
     perm('entitlements.revoke'),
     { params: users.GrantParams, body: users.GrantRevokeBody },
     users.EntitlementGrantResponse,
-    { audit: 'admin.entitlement.revoked' },
+    { audit: 'entitlement.revoked' },
   ),
   'POST /users/:id/integrations/:accountId/disconnect': write(
     'ADM-02',
@@ -362,7 +381,7 @@ export const adminRoutes = {
     stepUp('integrations.disconnect'),
     { params: users.UserIntegrationParams, body: users.AdminDisconnectBody },
     users.AdminDisconnectResponse,
-    { audit: 'admin.integration.disconnected' },
+    { audit: 'integration.disconnected' },
   ),
   'POST /users/:id/internal': write(
     'ADM-02',
@@ -371,7 +390,7 @@ export const adminRoutes = {
     perm('users.mark_internal'),
     idBody(users.UserInternalBody),
     users.UserInternalResponse,
-    { audit: 'admin.user.marked_internal' },
+    { audit: 'user.marked_internal' },
   ),
 
   // ADM-03 · Support and Support Access
@@ -396,7 +415,7 @@ export const adminRoutes = {
     perm('support.write'),
     idBody(support.TicketPatchBody),
     support.TicketResponse,
-    { audit: 'admin.ticket.updated' },
+    { audit: 'ticket.updated' },
   ),
   'POST /support/tickets/:id/notes': write(
     'ADM-03',
@@ -405,7 +424,7 @@ export const adminRoutes = {
     perm('support.write'),
     idBody(support.TicketNoteBody),
     support.TicketNoteResponse,
-    { status: 201, audit: 'admin.ticket.note_added' },
+    { status: 201, audit: 'ticket.note_added' },
   ),
   'POST /support/tickets/:id/reply': write(
     'ADM-03',
@@ -414,7 +433,7 @@ export const adminRoutes = {
     perm('support.write'),
     idBody(support.TicketNoteBody),
     support.TicketReplyResponse,
-    { status: 202, audit: 'admin.ticket.replied' },
+    { status: 202, audit: 'ticket.reply_sent' },
   ),
   'POST /support-access/grants': write(
     'ADM-03',
@@ -423,7 +442,7 @@ export const adminRoutes = {
     stepUp('support.access'),
     { body: support.SupportAccessGrantBody },
     support.SupportAccessGrantResponse,
-    { status: 201, audit: 'admin.support_access.granted' },
+    { status: 201, audit: 'support_access.granted' },
   ),
   'POST /support-access/grants/:id/revoke': write(
     'ADM-03',
@@ -432,7 +451,7 @@ export const adminRoutes = {
     perm('support.access'),
     idBody(support.SupportAccessRevokeBody),
     support.SupportAccessGrantResponse,
-    { audit: 'admin.support_access.revoked' },
+    { audit: 'support_access.revoked' },
   ),
   'GET /support-access/grants/:id/content/:scope': read(
     'ADM-03',
@@ -471,7 +490,7 @@ export const adminRoutes = {
     perm('users.force_sync'),
     { params: intg.AccountParams, body: intg.IntegrationForceSyncBody },
     intg.IntegrationJobsResponse,
-    { status: 202, audit: 'admin.integration.force_sync' },
+    { status: 202, audit: 'user.force_sync' },
   ),
   'POST /integrations/:accountId/renew-watch': write(
     'ADM-04',
@@ -480,7 +499,7 @@ export const adminRoutes = {
     perm('integrations.renew_watch'),
     { params: intg.AccountParams, body: intg.IntegrationRenewWatchBody },
     intg.IntegrationJobsResponse,
-    { status: 202, audit: 'admin.integration.watch_renewed' },
+    { status: 202, audit: 'integration.watch_renew_requested' },
   ),
 
   // ADM-05 · Sync and jobs
@@ -505,7 +524,7 @@ export const adminRoutes = {
     perm('jobs.retry'),
     { body: jobs.JobsBulkRetryBody },
     jobs.JobsBulkRetryResponse,
-    { audit: 'admin.job.bulk_retried' },
+    { audit: 'job.bulk_retried' },
   ),
   'GET /jobs/:id': read(
     'ADM-05',
@@ -528,7 +547,7 @@ export const adminRoutes = {
     perm('jobs.retry'),
     idBody(jobs.JobRetryBody),
     jobs.JobMutationResponse,
-    { audit: 'admin.job.retried' },
+    { audit: 'job.retried' },
   ),
   'POST /jobs/:id/cancel': write(
     'ADM-05',
@@ -537,7 +556,7 @@ export const adminRoutes = {
     perm('jobs.cancel'),
     idBody(jobs.JobCancelBody),
     jobs.JobMutationResponse,
-    { audit: 'admin.job.cancelled' },
+    { audit: 'job.cancelled' },
   ),
 
   // ADM-06 · Briefings
@@ -562,7 +581,7 @@ export const adminRoutes = {
     perm('briefings.regenerate'),
     idBody(brf.BriefingRegenerateBody),
     brf.BriefingRegenerateResponse,
-    { status: 202, audit: 'admin.briefing.regenerated' },
+    { status: 202, audit: 'briefing.regenerated' },
   ),
 
   // ADM-07 · Notifications
@@ -587,7 +606,14 @@ export const adminRoutes = {
     perm('push.test'),
     { body: brf.AdminTestPushBody },
     brf.AdminTestPushResponse,
-    { status: 202, audit: 'admin.notification.test_sent' },
+    { status: 202, audit: 'push.test_sent' },
+  ),
+  'GET /notifications/test-push/preview': read(
+    'ADM-07',
+    '/notifications/test-push/preview',
+    perm('push.test'),
+    { query: brf.AdminTestPushPreviewQuery },
+    brf.AdminTestPushPreviewResponse,
   ),
 
   // ADM-08 · AI Operations and Model Config
@@ -620,7 +646,7 @@ export const adminRoutes = {
     perm('ai.models.write'),
     { params: ai.ModelConfigParams, body: ai.ModelConfigPatch },
     ai.ModelConfigResponse,
-    { audit: 'admin.ai.model_config_changed' },
+    { audit: 'ai_model_config.updated' },
   ),
   'POST /ai/models/:profile/:feature/test': write(
     'ADM-08',
@@ -629,7 +655,7 @@ export const adminRoutes = {
     perm('ai.models.write'),
     { params: ai.ModelConfigParams, body: ai.ModelProbeBody },
     ai.ModelProbeResponse,
-    { audit: 'admin.ai.model_probed' },
+    { audit: 'ai_model_config.tested' },
   ),
   'PATCH /ai/routing-profile': write(
     'ADM-08',
@@ -638,7 +664,7 @@ export const adminRoutes = {
     perm('ai.models.write'),
     { body: ai.RoutingProfileBody },
     ai.RoutingProfileResponse,
-    { audit: 'admin.ai.routing_profile_changed' },
+    { audit: 'ai_routing_profile.changed' },
   ),
 
   // ADM-09 · Prompt management
@@ -677,7 +703,7 @@ export const adminRoutes = {
     perm('prompts.write'),
     { params: prompts.PromptKeyParams, body: prompts.PromptDraftBody },
     prompts.PromptVersionResponse,
-    { status: 201, audit: 'admin.prompt.draft_created' },
+    { status: 201, audit: 'prompt.draft_created' },
   ),
   'PATCH /ai/prompts/:key/versions/:v': write(
     'ADM-09',
@@ -686,7 +712,7 @@ export const adminRoutes = {
     perm('prompts.write'),
     { params: prompts.PromptVersionParams, body: prompts.PromptDraftPatch },
     prompts.PromptVersionResponse,
-    { audit: 'admin.prompt.draft_edited' },
+    { audit: 'prompt.draft_updated' },
   ),
   'POST /ai/prompts/:key/versions/:v/test': write(
     'ADM-09',
@@ -703,7 +729,7 @@ export const adminRoutes = {
     perm('prompts.activate'),
     { params: prompts.PromptVersionParams, body: prompts.PromptActivateBody },
     prompts.PromptVersionResponse,
-    { audit: 'admin.prompt.activated' },
+    { audit: 'prompt.activated' },
   ),
   'POST /ai/prompts/:key/rollback': write(
     'ADM-09',
@@ -712,7 +738,7 @@ export const adminRoutes = {
     perm('prompts.activate'),
     { params: prompts.PromptKeyParams, body: prompts.PromptRollbackBody },
     prompts.PromptVersionResponse,
-    { audit: 'admin.prompt.rolled_back' },
+    { audit: 'prompt.rolled_back' },
   ),
   'POST /ai/prompts/:key/versions/:v/archive': write(
     'ADM-09',
@@ -721,7 +747,7 @@ export const adminRoutes = {
     perm('prompts.activate'),
     { params: prompts.PromptVersionParams, body: prompts.PromptArchiveBody },
     prompts.PromptVersionResponse,
-    { audit: 'admin.prompt.archived' },
+    { audit: 'prompt.archived' },
   ),
 
   // ADM-10 · AI Feedback
@@ -746,7 +772,7 @@ export const adminRoutes = {
     perm('ai_feedback.reveal'),
     idBody(ai.AiFeedbackRevealBody),
     ai.AiFeedbackRevealResponse,
-    { audit: 'admin.ai_feedback.revealed' },
+    { audit: 'ai_feedback.comment_revealed' },
   ),
 
   // ADM-11 · Subscriptions
@@ -799,7 +825,7 @@ export const adminRoutes = {
     perm('subscriptions.resync'),
     { params: subs.SubscriptionUserParams, body: subs.SubscriptionResyncBody },
     subs.SubscriptionResyncResponse,
-    { status: 202, audit: 'admin.subscription.synced' },
+    { status: 202, audit: 'subscription.resync_requested' },
   ),
 
   // ADM-12 · Referrals
@@ -824,7 +850,7 @@ export const adminRoutes = {
     perm('referrals.review'),
     idBody(subs.ReferralReviewBody),
     subs.ReferralReviewResponse,
-    { audit: 'admin.referral.approved' },
+    { audit: 'referral.approved' },
   ),
   'POST /referrals/:id/reject': write(
     'ADM-12',
@@ -833,7 +859,7 @@ export const adminRoutes = {
     perm('referrals.review'),
     idBody(subs.ReferralReviewBody),
     subs.ReferralReviewResponse,
-    { audit: 'admin.referral.rejected' },
+    { audit: 'referral.rejected' },
   ),
 
   // ADM-13 · Feedback
@@ -858,7 +884,7 @@ export const adminRoutes = {
     perm('feedback.write'),
     idBody(product.FeedbackPatchBody),
     product.FeedbackResponse,
-    { audit: 'admin.feedback.updated' },
+    { audit: 'feedback.updated' },
   ),
   'POST /feedback/:id/reveal': write(
     'ADM-13',
@@ -867,7 +893,7 @@ export const adminRoutes = {
     perm('users.pii.reveal'),
     idBody(product.FeedbackRevealBody),
     product.FeedbackRevealResponse,
-    { audit: 'admin.feedback.revealed' },
+    { audit: 'feedback.revealed' },
   ),
 
   // ADM-14 · Feature flags
@@ -899,7 +925,7 @@ export const adminRoutes = {
     flagWrite,
     { body: product.FlagCreateBody },
     product.FlagResponse,
-    { status: 201, audit: 'admin.flag.created' },
+    { status: 201, audit: 'flag.created' },
   ),
   'PATCH /flags/:key': write(
     'ADM-14',
@@ -908,7 +934,7 @@ export const adminRoutes = {
     flagWrite,
     { params: product.FlagParams, body: product.FlagPatchBody },
     product.FlagResponse,
-    { audit: 'admin.flag.updated' },
+    { audit: 'flag.updated' },
   ),
   'POST /flags/:key/kill': write(
     'ADM-14',
@@ -917,7 +943,7 @@ export const adminRoutes = {
     flagWrite,
     { params: product.FlagParams, body: product.FlagKillBody },
     product.FlagResponse,
-    { audit: 'admin.flag.killed' },
+    { audit: 'flag.kill_switch_on' },
   ),
   'POST /flags/:key/archive': write(
     'ADM-14',
@@ -926,7 +952,7 @@ export const adminRoutes = {
     flagWrite,
     { params: product.FlagParams, body: product.FlagArchiveBody },
     product.FlagResponse,
-    { audit: 'admin.flag.archived' },
+    { audit: 'flag.archived' },
   ),
   'POST /flags/:key/overrides': write(
     'ADM-14',
@@ -935,7 +961,7 @@ export const adminRoutes = {
     flagWrite,
     { params: product.FlagParams, body: product.FlagOverrideBody },
     product.FlagOverrideResponse,
-    { status: 201, audit: 'admin.flag.override_set' },
+    { status: 201, audit: 'flag.override_added' },
   ),
   'DELETE /flags/:key/overrides/:userId': write(
     'ADM-14',
@@ -944,7 +970,7 @@ export const adminRoutes = {
     flagWrite,
     { params: product.FlagOverrideParams, body: EmptyAdminBody },
     product.FlagOverrideResponse,
-    { audit: 'admin.flag.override_removed' },
+    { audit: 'flag.override_removed' },
   ),
 
   // ADM-15 · Announcements
@@ -977,7 +1003,7 @@ export const adminRoutes = {
     perm('announcements.write'),
     { body: product.AnnouncementBody },
     product.AnnouncementResponse,
-    { status: 201, audit: 'admin.announcement.created' },
+    { status: 201, audit: 'announcement.created' },
   ),
   'PATCH /announcements/:id': write(
     'ADM-15',
@@ -986,7 +1012,7 @@ export const adminRoutes = {
     perm('announcements.write'),
     idBody(product.AnnouncementPatchBody),
     product.AnnouncementResponse,
-    { audit: 'admin.announcement.updated' },
+    { audit: 'announcement.updated' },
   ),
   'POST /announcements/:id/preview': write(
     'ADM-15',
@@ -1003,7 +1029,7 @@ export const adminRoutes = {
     perm('announcements.write'),
     idBody(product.AnnouncementScheduleBody),
     product.AnnouncementResponse,
-    { audit: 'admin.announcement.scheduled' },
+    { audit: 'announcement.scheduled' },
   ),
   'POST /announcements/:id/cancel': write(
     'ADM-15',
@@ -1012,7 +1038,7 @@ export const adminRoutes = {
     perm('announcements.write'),
     idBody(product.AnnouncementCancelBody),
     product.AnnouncementResponse,
-    { audit: 'admin.announcement.cancelled' },
+    { audit: 'announcement.cancelled' },
   ),
 
   // ADM-16 · Data requests
@@ -1030,7 +1056,7 @@ export const adminRoutes = {
     perm('data_requests.manage'),
     { params: ops.ExportRegenerateParams, body: ops.ExportRegenerateBody },
     ops.ExportRegenerateResponse,
-    { status: 202, audit: 'admin.data_request.export_regenerated' },
+    { status: 202, audit: 'data_request.export_regenerated' },
   ),
   'GET /data-requests/:kind/:id': read(
     'ADM-16',
@@ -1046,7 +1072,7 @@ export const adminRoutes = {
     perm('data_requests.manage'),
     { params: ops.DataRequestParams, body: ops.DataRequestRetryBody },
     ops.DataRequestRetryResponse,
-    { status: 202, audit: 'admin.data_request.retried' },
+    { status: 202, audit: 'data_request.retried' },
   ),
 
   // ADM-17 · Audit logs (read-only; no update or delete route exists)
@@ -1094,7 +1120,7 @@ export const adminRoutes = {
     perm('health.run'),
     { body: sys.HealthRunBody },
     sys.HealthRunResponse,
-    { audit: 'admin.health.run' },
+    { audit: 'health.run_requested' },
   ),
   'GET /health/app-versions': read(
     'ADM-18',
@@ -1120,7 +1146,7 @@ export const adminRoutes = {
     stepUp('admins.manage'),
     { body: sys.AdminInviteBody },
     sys.AdminUserResponse,
-    { status: 201, audit: 'admin.admin.invited' },
+    { status: 201, audit: 'admin.invited' },
   ),
   'PATCH /admins/:id': write(
     'ADM-19',
@@ -1129,7 +1155,7 @@ export const adminRoutes = {
     stepUp('admins.manage'),
     idBody(sys.AdminRoleBody),
     sys.AdminUserResponse,
-    { audit: 'admin.admin.role_changed' },
+    { audit: 'admin.role_changed' },
   ),
   'POST /admins/:id/disable': write(
     'ADM-19',
@@ -1138,7 +1164,7 @@ export const adminRoutes = {
     stepUp('admins.manage'),
     idBody(sys.AdminStatusBody),
     sys.AdminUserResponse,
-    { audit: 'admin.admin.disabled' },
+    { audit: 'admin.disabled' },
   ),
   'POST /admins/:id/enable': write(
     'ADM-19',
@@ -1147,7 +1173,7 @@ export const adminRoutes = {
     stepUp('admins.manage'),
     idBody(sys.AdminStatusBody),
     sys.AdminUserResponse,
-    { audit: 'admin.admin.enabled' },
+    { audit: 'admin.enabled' },
   ),
   'POST /admins/:id/revoke-sessions': write(
     'ADM-19',
@@ -1156,7 +1182,7 @@ export const adminRoutes = {
     stepUp('admins.manage'),
     idBody(sys.AdminReasonBody),
     sys.AdminSessionsRevokedResponse,
-    { audit: 'admin.admin.sessions_revoked' },
+    { audit: 'admin.sessions_revoked' },
   ),
   'POST /admins/:id/resend-invite': write(
     'ADM-19',
@@ -1165,7 +1191,7 @@ export const adminRoutes = {
     stepUp('admins.manage'),
     idBody(sys.AdminReasonBody),
     sys.AdminUserResponse,
-    { audit: 'admin.admin.invite_resent' },
+    { audit: 'admin.invite_resent' },
   ),
   'POST /admins/:id/reset-mfa': write(
     'ADM-19',
@@ -1174,7 +1200,7 @@ export const adminRoutes = {
     stepUp('admins.manage'),
     idBody(sys.AdminResetMfaBody),
     sys.AdminUserResponse,
-    { audit: 'admin.admin.mfa_reset' },
+    { audit: 'admin.mfa_reset' },
   ),
   'POST /admins/:id/unlock': write(
     'ADM-19',
@@ -1183,7 +1209,7 @@ export const adminRoutes = {
     stepUp('admins.manage'),
     idBody(sys.AdminReasonBody),
     sys.AdminUserResponse,
-    { audit: 'admin.admin.unlocked' },
+    { audit: 'admin.unlocked' },
   ),
 
   // ADM-20 · Settings
@@ -1195,7 +1221,7 @@ export const adminRoutes = {
     stepUp('settings.system.write'),
     { body: sys.PlanLimitPatchBody },
     sys.SettingChangedResponse,
-    { audit: 'admin.settings.plan_limit_changed' },
+    { audit: 'plan_limits.updated' },
   ),
   'PATCH /settings/config/:key': write(
     'ADM-20',
@@ -1204,7 +1230,7 @@ export const adminRoutes = {
     stepUp('settings.system.write'),
     { params: sys.ConfigParams, body: sys.ConfigPatchBody },
     sys.SettingChangedResponse,
-    { audit: 'admin.settings.config_changed' },
+    { audit: 'settings.system_updated' },
   ),
 
   // ADM-21 · Global search and command palette

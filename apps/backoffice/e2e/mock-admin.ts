@@ -16,8 +16,10 @@ import { ADMIN_EMAIL, ADMIN_ID, chartPoints, dashboardMetrics, searchResults } f
 import {
   MAIN_USER_ID,
   buildDataset,
+  displayName,
   istanbulDate,
   maskEmail,
+  maskName,
   uid,
   type Dataset,
   type MockAudit,
@@ -50,6 +52,8 @@ export interface Ctx {
 }
 
 const HOUR = 3_600_000;
+/** The mock user whose local time is inside quiet hours (push-test preview, R-13). */
+export const QUIET_USER_ID = uid('1111', 2);
 const DAY = 24 * HOUR;
 
 // ── Route matching ───────────────────────────────────────────────────────────
@@ -192,7 +196,12 @@ function targetOf(ctx: Ctx): { type: string | null; id: string | null; user: str
 }
 
 export function auditMutation(ctx: Ctx): void {
-  const action = (adminRoutes[ctx.key] as { audit?: string }).audit;
+  const declared = (adminRoutes[ctx.key] as { audit?: string }).audit;
+  // `POST /flags/:key/kill {on:false}` re-enables: the §10 name is flag.kill_switch_off.
+  const action =
+    ctx.key === 'POST /flags/:key/kill' && ctx.body.on === false
+      ? 'flag.kill_switch_off'
+      : declared;
   if (action === undefined) return;
   const target = targetOf(ctx);
   actorRow(ctx.now, {
@@ -391,7 +400,23 @@ const handlers: Partial<Record<RouteKey, Handler>> = {
     ]),
 
   // Dashboard and metrics
-  'GET /dashboard/metrics': () => ok(dashboardMetrics()),
+  'GET /dashboard/metrics': ({ query, now }) => {
+    // The platform scopes the user, active-user and push KPIs (§6.1); the rollup is 45 min old.
+    const platform =
+      query.platform === 'ios' || query.platform === 'android' ? query.platform : 'all';
+    const share = platform === 'ios' ? 0.62 : platform === 'android' ? 0.38 : 1;
+    const metrics = { ...dashboardMetrics() };
+    for (const key of ['total_users', 'active_users', 'new_users', 'push_sent'] as const) {
+      const metric = metrics[key];
+      if (metric !== undefined)
+        metrics[key] = { ...metric, value: Math.round(metric.value * share) };
+    }
+    return ok({
+      ...metrics,
+      platform,
+      rollup: { last_computed_at: iso(now - 45 * 60_000), stale: true },
+    });
+  },
   'GET /dashboard/charts': ({ query }) => {
     const series = typeof query.series === 'string' ? query.series : 'user_growth';
     const points = chartPoints(series).map((p) =>
@@ -499,6 +524,9 @@ const handlers: Partial<Record<RouteKey, Handler>> = {
       .slice(0, 7);
     return ok({
       user_id: u.id,
+      email_masked: maskEmail(u.email),
+      display_name_masked: maskName(displayName(u.email)),
+      is_internal: u.internal,
       account_status: u.status,
       plan: u.plan,
       integrations: d()
@@ -818,9 +846,19 @@ const handlers: Partial<Record<RouteKey, Handler>> = {
       },
     ]);
   },
-  'POST /users/:id/reveal': ({ params }) => {
+  'POST /users/:id/reveal': ({ params, body }) => {
     const u = user(params.id);
-    return u === undefined ? notFound() : ok({ value: u.email, expires_in_s: 60 });
+    if (u === undefined) return notFound();
+    const [kind, ref] = String(body.field).split(':');
+    if (kind === 'email') return ok({ value: u.email, expires_in_s: 60 });
+    if (kind === 'display_name') return ok({ value: displayName(u.email), expires_in_s: 60 });
+    if (kind === 'integration_email') {
+      const account = d().accounts.find((a) => a.account_id === ref && a.user_id === u.id);
+      const email = account?.email ?? null;
+      return email === null ? notFound() : ok({ value: email, expires_in_s: 60 });
+    }
+    const ticket = d().tickets.find((t) => t.row.id === ref && t.row.user_id === u.id);
+    return ticket === undefined ? notFound() : ok({ value: u.email, expires_in_s: 60 });
   },
   'POST /users/:id/force-sync': ({ params, body, now }) => {
     if (user(params.id) === undefined) return notFound();
@@ -1244,6 +1282,22 @@ const handlers: Partial<Record<RouteKey, Handler>> = {
     return ok({ id: job.id, status: job.status });
   },
   'POST /jobs/retry-bulk': ({ body, now }) => {
+    if (Array.isArray(body.job_ids)) {
+      const retried: string[] = [];
+      const skipped: { id: string; reason_key: string }[] = [];
+      for (const id of body.job_ids as string[]) {
+        const job = d().jobs.find((j) => j.id === id);
+        if (job === undefined) skipped.push({ id, reason_key: 'not_found' });
+        else if (job.status !== 'failed' && job.status !== 'dead_letter')
+          skipped.push({ id, reason_key: 'invalid_state' });
+        else {
+          job.status = 'queued';
+          job.run_after = iso(now);
+          retried.push(id);
+        }
+      }
+      return ok({ retried: retried.length, retried_ids: retried, skipped });
+    }
     const filter = body.filter as { type: string; status: string; from: string; to: string };
     const matching = d()
       .jobs.filter(
@@ -1314,10 +1368,27 @@ const handlers: Partial<Record<RouteKey, Handler>> = {
       sent_at: iso(now),
       receipt_status: null,
     });
+    // R-13: inside quiet hours the test is scheduled for the quiet-hours end, never sent at once.
+    const deferred = u.id === QUIET_USER_ID ? iso(now + 8 * HOUR + 20 * 60_000) : null;
     return ok(
-      { notification_id: id, job: jobRef(now, 'notification', u.id), deferred_until: null },
+      { notification_id: id, job: jobRef(now, 'notification', u.id), deferred_until: deferred },
       202,
     );
+  },
+
+  'GET /notifications/test-push/preview': ({ query, now }) => {
+    const u = user(String(query.user_id));
+    if (u === undefined) return notFound();
+    // The second user is inside quiet hours (23:40 local, ends 08:00): the test waits (R-13).
+    const quiet = u.id === QUIET_USER_ID;
+    return ok({
+      timezone: 'Europe/Istanbul',
+      local_time: quiet ? '23:40' : '14:05',
+      in_quiet_hours: quiet,
+      quiet_hours_end_local: quiet ? '08:00' : null,
+      deferred_until: quiet ? iso(now + 8 * HOUR + 20 * 60_000) : null,
+      active_devices: u.status === 'active' ? 2 : 0,
+    });
   },
 
   // AI
@@ -1383,6 +1454,12 @@ const handlers: Partial<Record<RouteKey, Handler>> = {
         anthropic: 'configured',
         openai: 'external_credential_required',
         voyage: 'configured',
+        stt: 'external_credential_required',
+        tts: 'external_credential_required',
+      },
+      profile_costs: {
+        balanced: { monthly_usd: 2.24, coverage: 0.98, pro_users: 1_204, window_days: 30 },
+        lean: { monthly_usd: 1.02, coverage: 0.95, pro_users: 1_204, window_days: 30 },
       },
     }),
   'PATCH /ai/models/:profile/:feature': ({ params, body }) => {
@@ -1779,7 +1856,7 @@ const handlers: Partial<Record<RouteKey, Handler>> = {
     flag.history.unshift({
       ts: iso(now),
       actor: ADMIN_EMAIL,
-      action: 'admin.flag.updated',
+      action: 'flag.updated',
       reason: String(reason),
       before: { enabled: before.enabled, rollout_percent: before.rollout_percent },
       after: { enabled: flag.row.enabled, rollout_percent: flag.row.rollout_percent },
@@ -1789,16 +1866,17 @@ const handlers: Partial<Record<RouteKey, Handler>> = {
   'POST /flags/:key/kill': ({ params, body, now }) => {
     const flag = d().flags.find((f) => f.row.key === params.key);
     if (flag === undefined) return notFound();
-    flag.row.enabled = false;
+    const on = body.on !== false;
+    flag.row.enabled = !on;
     flag.row.updated_by = ADMIN_EMAIL;
     flag.row.updated_at = iso(now);
     flag.history.unshift({
       ts: iso(now),
       actor: ADMIN_EMAIL,
-      action: 'admin.flag.killed',
+      action: on ? 'flag.kill_switch_on' : 'flag.kill_switch_off',
       reason: String(body.reason),
-      before: { enabled: true },
-      after: { enabled: false },
+      before: { enabled: on },
+      after: { enabled: !on },
     });
     return ok(flag.row);
   },
@@ -2042,6 +2120,8 @@ const handlers: Partial<Record<RouteKey, Handler>> = {
           installations: 3_912,
           sync_error_rate: 0.004,
           below_minimum: false,
+          crash_free_sessions: null,
+          crash_free_users: null,
         },
         {
           platform: 'ios',
@@ -2049,6 +2129,8 @@ const handlers: Partial<Record<RouteKey, Handler>> = {
           installations: 2_207,
           sync_error_rate: 0.006,
           below_minimum: false,
+          crash_free_sessions: null,
+          crash_free_users: null,
         },
         {
           platform: 'ios',
@@ -2056,6 +2138,8 @@ const handlers: Partial<Record<RouteKey, Handler>> = {
           installations: 318,
           sync_error_rate: 0.031,
           below_minimum: true,
+          crash_free_sessions: null,
+          crash_free_users: null,
         },
         {
           platform: 'android',
@@ -2063,6 +2147,8 @@ const handlers: Partial<Record<RouteKey, Handler>> = {
           installations: 2_644,
           sync_error_rate: 0.008,
           below_minimum: false,
+          crash_free_sessions: null,
+          crash_free_users: null,
         },
         {
           platform: 'android',
@@ -2070,8 +2156,14 @@ const handlers: Partial<Record<RouteKey, Handler>> = {
           installations: 205,
           sync_error_rate: 0.044,
           below_minimum: true,
+          crash_free_sessions: null,
+          crash_free_users: null,
         },
       ],
+      crash_reporting: {
+        status: 'external_credential_required',
+        credential_keys: ['SENTRY_AUTH_TOKEN', 'SENTRY_ORG', 'SENTRY_PROJECT'],
+      },
     }),
   'GET /health/cron': ({ now }) =>
     ok({

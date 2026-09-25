@@ -1,4 +1,5 @@
 export * from './ai.ts';
+export * from './audit-actions.ts';
 export * from './briefings.ts';
 export * from './common.ts';
 export * from './dashboard.ts';

@@ -24,6 +24,8 @@ export const ADMIN_RESPONSES = {
   'POST /auth/invite/redeem': admin.InviteRedeemResponse,
   'POST /auth/recovery-code/redeem': admin.RecoveryCodeRedeemResponse,
   'POST /me/recovery-codes': admin.RecoveryCodesResponse,
+  'POST /me/mfa-factors': admin.MfaFactorResponse,
+  'DELETE /me/mfa-factors/:factorId': admin.MfaFactorResponse,
   'POST /session/step-up': admin.StepUpResponse,
   // ADM-01 · dashboard
   'GET /dashboard/metrics': admin.DashboardMetricsResponse,
@@ -82,6 +84,7 @@ export const ADMIN_RESPONSES = {
   'GET /notifications/metrics': admin.NotificationsMetricsResponse,
   'GET /notifications': admin.NotificationsListResponse,
   'POST /notifications/test-push': admin.AdminTestPushResponse,
+  'GET /notifications/test-push/preview': admin.AdminTestPushPreviewResponse,
   // ADM-08 · AI operations and model config
   'GET /ai/metrics': admin.AiMetricsResponse,
   'GET /ai/metrics/series': admin.AiMetricsSeriesResponse,
@@ -269,6 +272,7 @@ export const MODULE_MUTATION_ROUTES = [
   'PATCH /settings/config/:key',
   'POST /session/logout-all',
   'POST /me/recovery-codes',
+  'DELETE /me/mfa-factors/:factorId',
 ] as const satisfies readonly TypedMutationKey[];
 export type ModuleMutationKey = (typeof MODULE_MUTATION_ROUTES)[number];
 
@@ -323,15 +327,11 @@ export function routeConfirmation(key: AdminRouteKey): RouteConfirmation {
 }
 
 /**
- * Every `audit_logs.action` the admin-api registry declares, plus the guard's denial action, sorted
- * (the audit log's action filter, §6.20).
+ * The audit log's action filter (§6.20): the BACKOFFICE_PLAN §10 catalogue, sorted. Every action a
+ * route or SQL function emits is a catalogue name (tests in validation, admin-api and pgTAP).
  */
 export function auditActions(): string[] {
-  const actions = new Set<string>(['admin.permission_denied']);
-  for (const route of Object.values(adminRoutes) as { audit?: string }[]) {
-    if (route.audit !== undefined) actions.add(route.audit);
-  }
-  return [...actions].sort();
+  return [...admin.AUDIT_ACTIONS].sort();
 }
 
 export type RouteConfirmations = Readonly<Record<ModuleMutationKey, RouteConfirmation>>;

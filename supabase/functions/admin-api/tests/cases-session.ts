@@ -1,5 +1,6 @@
 /** ADM-00 session, own account and sign-in, ADM-01 dashboard: SQL-shaped outputs and mapped responses. */
 import { assert, assertEquals, assertMatch, assertNotEquals } from '@std/assert';
+import { jsonResponse } from '../../_shared/testing/fetch.ts';
 import { hmacSha256Hex, sha256Hex } from '../../_shared/crypto/hmac.ts';
 import { ADMIN_ID, FACTOR_ID } from './harness.ts';
 import {
@@ -8,6 +9,7 @@ import {
   type Cases,
   data,
   LATER,
+  REASON,
   pokes,
   rows,
   TS,
@@ -274,6 +276,34 @@ export const SESSION_CASES: Cases = {
       );
     },
   },
+  'POST /me/mfa-factors': {
+    request: { body: { factor_id: FACTOR_ID } },
+    expect(h, body) {
+      assertEquals(authCalls(h), [`GET /admin/users/${ADMIN_ID}/factors`]);
+      const audit = argsOf(h, 'audit_write') ?? {};
+      assertEquals([audit.p_action, audit.p_result], ['admin.mfa_factor_added', 'success']);
+      assertEquals(data(body), { factor_id: FACTOR_ID, verified_factors: 1 });
+    },
+  },
+  'DELETE /me/mfa-factors/:factorId': {
+    request: { params: { factorId: FACTOR_ID } },
+    outbound: (call) =>
+      call.method === 'GET' && /\/factors$/.test(new URL(call.url).pathname)
+        ? jsonResponse([
+            { id: FACTOR_ID, factor_type: 'totp', status: 'verified' },
+            { id: uuid(121), factor_type: 'totp', status: 'verified' },
+          ])
+        : null,
+    expect(h, body) {
+      assertEquals(authCalls(h), [
+        `GET /admin/users/${ADMIN_ID}/factors`,
+        `DELETE /admin/users/${ADMIN_ID}/factors/${FACTOR_ID}`,
+      ]);
+      const audit = argsOf(h, 'audit_write') ?? {};
+      assertEquals([audit.p_action, audit.p_reason], ['admin.mfa_factor_removed', REASON]);
+      assertEquals(data(body), { factor_id: FACTOR_ID, verified_factors: 1 });
+    },
+  },
   'POST /session/step-up': {
     sql: { admin_session_step_up: () => ({ step_up_valid_until: '2026-09-24T10:10:00+00:00' }) },
     expect(_h, body) {
@@ -289,13 +319,17 @@ export const SESSION_CASES: Cases = {
         end_at: LATER,
         source: 'raw',
         computed_at: TS,
+        platform: 'ios',
         value: metricBlock(2),
         prev_value: metricBlock(1),
+        rollup: { last_computed_at: TS, stale: true, expected_every_minutes: 15 },
         ai_cost_per_active_user: 0.3125,
       }),
     },
     expect(h, body) {
-      assertEquals(argsOf(h, 'dashboard_metrics'), { p_range: '30d' });
+      assertEquals(argsOf(h, 'dashboard_metrics'), { p_range: '30d', p_platform: 'ios' });
+      assertEquals(data(body).platform, 'ios');
+      assertEquals(data(body).rollup, { last_computed_at: TS, stale: true });
       const d = data<Record<string, { value: number; delta: number | null }>>(body);
       assertEquals(d.total_users, { value: 200, delta: 1 });
       assertEquals(d.ai_cost_per_active_user, { value: 0.3125, delta: 0 });

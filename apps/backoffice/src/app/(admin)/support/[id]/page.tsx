@@ -12,6 +12,7 @@ import { cn } from '@/lib/cn';
 import { getFormatters } from '@/server/formatters';
 import { readAdmin } from '@/server/read';
 import { loadAdminContext } from '@/server/session';
+import { UserPiiValue } from '../../users/[id]/user-pii-value';
 import { TicketComposer, TicketControls } from './ticket-controls';
 
 /*
@@ -134,8 +135,34 @@ export default async function TicketPage({ params }: { params: Promise<{ id: str
               columns={1}
               items={[
                 {
+                  label: t('columns.user'),
+                  value:
+                    ticket.user_id === null ? (
+                      t('webNoMatch')
+                    ) : (
+                      <Link
+                        href={`/users/${ticket.user_id}/overview`}
+                        className="font-mono text-text-link hover:underline"
+                      >
+                        {ticket.user_id.slice(0, 8)}
+                      </Link>
+                    ),
+                },
+                {
                   label: t('columns.contact'),
-                  value: ticket.contact_email_masked ?? t('webNoMatch'),
+                  value:
+                    ticket.contact_email_masked === null ? (
+                      t('webNoMatch')
+                    ) : ticket.user_id === null ? (
+                      ticket.contact_email_masked
+                    ) : (
+                      <UserPiiValue
+                        userId={ticket.user_id}
+                        field={`ticket_contact_email:${ticket.id}`}
+                        masked={ticket.contact_email_masked}
+                        label={t('columns.contact')}
+                      />
+                    ),
                 },
                 {
                   label: t('columns.platform'),

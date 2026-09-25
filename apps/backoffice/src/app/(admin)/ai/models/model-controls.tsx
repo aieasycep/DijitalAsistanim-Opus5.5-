@@ -1,6 +1,8 @@
 'use client';
 
 import {
+  MODEL_TARGET_PROVIDERS,
+  VOICE_ONLY_PROVIDERS,
   isForbiddenModel,
   modelConfigViolations,
   type ModelConfigRow,
@@ -13,11 +15,19 @@ import { ActionButton, ActionDialog } from '@/components/action-dialog';
 import { useCan } from '@/components/admin-provider';
 import { CheckboxField, RadioField, SelectField, TextField } from '@/components/form-fields';
 import { useEnumLabel } from '@/components/status-badge';
+import { useFormatters } from '@/lib/use-formatters';
 import { Button } from '@/components/ui/button';
 
 type Row = z.infer<typeof ModelConfigRow>;
 type Profile = 'balanced' | 'lean';
-const PROVIDERS = ['anthropic', 'openai', 'voyage', 'fixture', 'native'] as const;
+const PROVIDERS = MODEL_TARGET_PROVIDERS;
+/** Voice-only providers are offered on `stt` / `tts` rows only (§6.10 capability rule). */
+function providersFor(role: string): readonly (typeof PROVIDERS)[number][] {
+  const voice = role === 'stt' || role === 'tts';
+  return PROVIDERS.filter(
+    (provider) => voice || !(VOICE_ONLY_PROVIDERS as readonly string[]).includes(provider),
+  );
+}
 const BATCH = ['realtime', 'micro_batch', 'message_batches'] as const;
 const CACHE = ['none', '5m', '1h'] as const;
 
@@ -28,8 +38,24 @@ const CACHE = ['none', '5m', '1h'] as const;
  * the same `@da/validation` helpers admin-api runs; the eval gate is decided by admin-api.
  */
 
-export function RoutingProfileControl({ free, pro }: { free: Profile; pro: Profile }) {
+/** Per-profile monthly AI cost of a typical Pro user (`null` = not enough priced traffic). */
+export type ProfileCosts = Readonly<Record<Profile, number | null>>;
+
+export function RoutingProfileControl({
+  free,
+  pro,
+  costs,
+}: {
+  free: Profile;
+  pro: Profile;
+  costs: ProfileCosts;
+}) {
   const t = useTranslations('backoffice.models');
+  const f = useFormatters();
+  const cost = (profile: Profile) => {
+    const value = costs[profile];
+    return value === null ? t('costUnknown') : f.usd(value);
+  };
   const can = useCan();
   const [target, setTarget] = useState<{ plan: 'free' | 'pro'; profile: Profile } | null>(null);
   const writable = can('ai.models.write');
@@ -64,6 +90,16 @@ export function RoutingProfileControl({ free, pro }: { free: Profile; pro: Profi
           </div>
         );
       })}
+      <dl className="grid grid-cols-2 gap-2" data-testid="profile-costs">
+        {(['balanced', 'lean'] as const).map((profile) => (
+          <div key={profile} className="flex flex-col gap-0.5">
+            <dt className="text-bo-meta text-ink-3">
+              {t('costFor', { profile: t(`profiles.${profile}`) })}
+            </dt>
+            <dd className="text-bo-body font-semibold text-ink tabular-nums">{cost(profile)}</dd>
+          </div>
+        ))}
+      </dl>
       <p className="text-bo-meta text-ink-3">{t('profileCost')}</p>
       <ActionDialog
         open={target !== null}
@@ -76,11 +112,11 @@ export function RoutingProfileControl({ free, pro }: { free: Profile; pro: Profi
         effects={
           target === null
             ? undefined
-            : t('switchEffects', {
+            : `${t('switchEffects', {
                 plan: t(`plans.${target.plan}`),
                 from: t(`profiles.${target.plan === 'free' ? free : pro}`),
                 to: t(`profiles.${target.profile}`),
-              })
+              })} ${t('switchCost', { balanced: cost('balanced'), lean: cost('lean') })}`
         }
         confirmLabel={t('switch')}
         successMessage={(data) =>
@@ -180,7 +216,10 @@ export function ModelRowActions({ row }: { row: Row }) {
               label={t('provider')}
               value={provider}
               onChange={setProvider}
-              options={PROVIDERS.map((value) => ({ value, label: label('modelProvider', value) }))}
+              options={providersFor(row.role).map((value) => ({
+                value,
+                label: label('modelProvider', value),
+              }))}
             />
             <TextField
               label={t('model')}

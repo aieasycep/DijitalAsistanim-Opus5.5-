@@ -6,6 +6,7 @@
  */
 import { admin as A } from '@da/validation';
 import type { z } from 'zod';
+import { fieldError } from '../../_shared/errors.ts';
 import { listArgs, paged, qValue } from '../lib/list.ts';
 import { arr, count, type Json, num, obj, str } from '../lib/map.ts';
 import { poke } from '../lib/ops.ts';
@@ -106,16 +107,40 @@ async function retry(ctx: RouteCtx) {
   return { data: { id: out.id, status: out.status } };
 }
 
+const SKIP_REASONS = new Set(['invalid_state', 'max_manual_retries', 'not_found']);
+
+/**
+ * Bulk retry: the selected rows (`job_ids`, each through the single-retry guards; the skipped ones
+ * come back with a reason key) or a type + status + time window capped at `max`.
+ */
 async function retryBulk(ctx: RouteCtx) {
   const body = ctx.body as z.infer<typeof A.JobsBulkRetryBody>;
+  if (body.job_ids !== undefined) {
+    const out = obj(
+      await ctx.db.call('job_retry_selected', { p_job_ids: body.job_ids, p_reason: body.reason }),
+    );
+    const retriedIds = (Array.isArray(out.retried) ? out.retried : []).filter(
+      (id): id is string => typeof id === 'string',
+    );
+    const skipped = arr(out.skipped)
+      .filter((s) => typeof s.id === 'string')
+      .map((s) => ({
+        id: String(s.id),
+        reason_key: SKIP_REASONS.has(String(s.reason_key)) ? String(s.reason_key) : 'invalid_state',
+      }));
+    if (retriedIds.length > 0) await poke(ctx.rt, ctx.log, 'admin_job_retry_bulk');
+    return { data: { retried: retriedIds.length, retried_ids: retriedIds, skipped } };
+  }
+  const filter = body.filter;
+  if (filter === undefined || body.max === undefined) throw fieldError('body.filter', 'required');
   const out = obj(
     await ctx.db.call('job_retry_bulk', {
-      p_type: body.filter.type,
-      p_status: body.filter.status,
+      p_type: filter.type,
+      p_status: filter.status,
       p_reason: body.reason,
       p_max: body.max,
-      p_from: body.filter.from,
-      p_to: body.filter.to,
+      p_from: filter.from,
+      p_to: filter.to,
     }),
   );
   const retried = count(out.retried);

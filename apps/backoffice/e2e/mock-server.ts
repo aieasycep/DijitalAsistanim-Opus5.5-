@@ -583,6 +583,38 @@ async function handleAdmin(
       reply(res, key, { codes: RECOVERY_CODES, generated_at: new Date(now).toISOString() }, 201);
       return;
     }
+    case 'POST /me/mfa-factors': {
+      const factorId = String((ctx.body as { factor_id?: string }).factor_id);
+      const verified = state.factors.filter((f) => f.status === 'verified');
+      if (!verified.some((f) => f.id === factorId)) {
+        adminError(res, 409, 'STATE_CONFLICT', { reason: 'factor_not_verified' });
+        return;
+      }
+      if (verified.length > 2) {
+        state.factors = state.factors.filter((f) => f.id !== factorId);
+        adminError(res, 409, 'STATE_CONFLICT', { reason: 'max_factors' });
+        return;
+      }
+      auditMutation(ctx);
+      reply(res, key, { factor_id: factorId, verified_factors: verified.length }, 201);
+      return;
+    }
+    case 'DELETE /me/mfa-factors/:factorId': {
+      const factorId = ctx.params.factorId;
+      const verified = state.factors.filter((f) => f.status === 'verified');
+      if (!verified.some((f) => f.id === factorId)) {
+        adminError(res, 404, 'NOT_FOUND');
+        return;
+      }
+      if (verified.length < 2) {
+        adminError(res, 409, 'STATE_CONFLICT', { reason: 'last_factor' });
+        return;
+      }
+      state.factors = state.factors.filter((f) => f.id !== factorId);
+      auditMutation(ctx);
+      reply(res, key, { factor_id: factorId, verified_factors: verified.length - 1 });
+      return;
+    }
     case 'POST /session/logout': {
       session.ended = true;
       reply(res, key, { ended_sessions: 1 });

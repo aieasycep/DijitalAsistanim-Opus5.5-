@@ -1,5 +1,5 @@
 /**
- * Route specifications of `admin-api`: each `@da/validation` admin registry route (142, keyed
+ * Route specifications of `admin-api`: each `@da/validation` admin registry route (145, keyed
  * `"METHOD /path"`) gets exactly one spec with its rate class (BACKOFFICE_PLAN §3.9, §12) and its
  * handler. The pipeline in `app.ts` runs the access rule, session, permission, step-up, rate limit,
  * contract and idempotency steps before a handler; handlers only call `admin_api` and map shapes.

@@ -40,7 +40,7 @@ test.describe('support', () => {
     await page.getByRole('button', { name: 'Kapat', exact: true }).click();
     await confirmDialog(page, 'Talebi kapat');
     await expect(page.getByText('Talep kapatıldı.').first()).toBeVisible();
-    expect((await mockAudit(request)).at(-1)).toMatchObject({ action: 'admin.ticket.updated' });
+    expect((await mockAudit(request)).at(-1)).toMatchObject({ action: 'ticket.updated' });
   });
 
   test('Support Access: grant with step-up, view scoped content, revoke', async ({
@@ -80,7 +80,7 @@ test.describe('support', () => {
     await expect(page.getByTestId('support-access-banner')).toHaveCount(0);
     const actions = (await mockAudit(request)).map((a) => a.action);
     expect(actions).toEqual(
-      expect.arrayContaining(['admin.support_access.granted', 'admin.support_access.revoked']),
+      expect.arrayContaining(['support_access.granted', 'support_access.revoked']),
     );
   });
 });

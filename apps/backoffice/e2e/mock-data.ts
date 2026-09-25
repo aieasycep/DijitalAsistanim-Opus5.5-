@@ -42,6 +42,23 @@ export function maskEmail(email: string): string {
   return `${local.slice(0, 2)}***@${domain}`;
 }
 
+/** The display name of a mock user, derived from the local part (`yunus.emre` → "Yunus Emre"). */
+export function displayName(email: string): string {
+  const local = email.split('@')[0] ?? '';
+  return local
+    .split(/[._-]/)
+    .filter((part) => part !== '')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+}
+
+/** `private.mask_name`: "Yunus Emre" → "Y*** E." */
+export function maskName(name: string): string {
+  const [first = '', ...rest] = name.split(' ');
+  const last = rest.at(-1);
+  return `${first.charAt(0)}***${last === undefined ? '' : ` ${last.charAt(0)}.`}`;
+}
+
 const HOUR = 3_600_000;
 const DAY = 24 * HOUR;
 
@@ -451,6 +468,16 @@ function buildModels(now: number): Dataset['models'] {
       const lean = profile === 'lean' && model === 'claude-sonnet-4-5';
       rows.push({
         profile,
+        role:
+          feature === 'email_triage'
+            ? 'classifier'
+            : feature.startsWith('embedding')
+              ? 'embedding'
+              : feature === 'stt' || feature === 'tts'
+                ? feature
+                : feature === 'admin_probe'
+                  ? 'probe'
+                  : 'reasoning',
         feature,
         tier,
         enabled: feature !== 'admin_probe' || profile === 'balanced',
@@ -597,6 +624,7 @@ function buildAiFeedback(now: number): Pick<Dataset, 'aiFeedback' | 'aiFeedbackC
     prompt_version: `v${String((index % 2) + 1)}`,
     rating: index % 3 === 1 ? -1 : 1,
     reason_code: index % 3 === 1 ? (reasons[index % reasons.length] ?? null) : null,
+    has_comment: index % 3 === 1,
     created_at: at(now, -(index + 1) * 5 * HOUR),
   }));
   const comments = new Map<string, string>();
@@ -784,6 +812,7 @@ function buildTickets(now: number, users: readonly MockUser[]): MockTicket[] {
         assignee: status === 'in_progress' ? 'Destek Ekibi' : null,
         created_at: at(now, -(index + 1) * 7 * HOUR),
         contact_email_masked: user === undefined ? null : maskEmail(user.email),
+        user_id: user?.id ?? null,
       },
     };
   });
@@ -863,7 +892,7 @@ function buildFlags(now: number): MockFlag[] {
         {
           ts: at(now, -(index + 1) * 13 * HOUR),
           actor: 'ops@dijitalasistan.app',
-          action: 'admin.flag.updated',
+          action: 'flag.updated',
           reason: 'Kademeli açılış planı',
           before: { enabled: !enabled },
           after: { enabled },
@@ -1104,9 +1133,9 @@ function buildAudit(now: number): MockAudit[] {
     'success' | 'denied' | 'failure',
     string,
   ][] = [
-    ['admin.session.started', 'admin_session', null, null, 'success', 'kurucu@dijitalasistan.app'],
+    ['admin.login', 'admin_session', null, null, 'success', 'kurucu@dijitalasistan.app'],
     [
-      'admin.user.force_sync',
+      'user.force_sync',
       'user',
       MAIN_USER_ID,
       'Kullanıcı senkron sorunu bildirdi (DA-10240)',
@@ -1114,7 +1143,7 @@ function buildAudit(now: number): MockAudit[] {
       'destek@dijitalasistan.app',
     ],
     [
-      'admin.pii.revealed',
+      'user.pii_revealed',
       'user',
       MAIN_USER_ID,
       'Destek talebi için e-posta doğrulaması',
@@ -1122,7 +1151,7 @@ function buildAudit(now: number): MockAudit[] {
       'destek@dijitalasistan.app',
     ],
     [
-      'admin.flag.updated',
+      'flag.updated',
       'feature_flag',
       'feature.voice',
       'Kademeli açılış planı',
@@ -1138,7 +1167,7 @@ function buildAudit(now: number): MockAudit[] {
       'destek@dijitalasistan.app',
     ],
     [
-      'admin.job.retried',
+      'job.retried',
       'job',
       uid('4444', 30),
       'Sağlayıcı kesintisi sonrası yeniden deneme',

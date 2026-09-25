@@ -48,20 +48,19 @@ export default async function JobsPage({
   const state = loadTableState(params, JOB_FILTERS);
   const canList = context.permissions.includes('jobs.read');
   const showStats = hasAnyPermission(context.permissions, ['jobs.read', 'metrics.ops.read']);
-  const result = await readAdmin('GET /jobs', {
-    query: toAdminListQuery(state, {
-      sortable: ['created_at', 'run_after', 'attempts'],
-      filterKeys: JOB_FILTERS,
-      transform: {
-        type: firstValue,
-        status: firstValue,
-        user_id: firstValue,
-        account_id: firstValue,
-        from: dayBound('from'),
-        to: dayBound('to'),
-      },
-    }),
+  const listQuery = toAdminListQuery(state, {
+    sortable: ['created_at', 'run_after', 'attempts'],
+    filterKeys: JOB_FILTERS,
+    transform: {
+      type: firstValue,
+      status: firstValue,
+      user_id: firstValue,
+      account_id: firstValue,
+      from: dayBound('from'),
+      to: dayBound('to'),
+    },
   });
+  const result = await readAdmin('GET /jobs', { query: listQuery });
   const deadOnly = state['f.status']?.[0] === 'dead_letter';
   return (
     <>
@@ -92,6 +91,8 @@ export default async function JobsPage({
       <JobsTable
         data={toTableData(result, { aggregatesVisible: showStats && !canList })}
         deadOnly={deadOnly}
+        listQuery={listQuery}
+        canRetry={context.permissions.includes('jobs.retry')}
       />
     </>
   );

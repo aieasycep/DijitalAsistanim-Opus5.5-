@@ -29,7 +29,7 @@ select is(admin_api.user_reveal_email(tests.user_id('customer@admin-threat.test'
           'customer@admin-threat.test', 'a reasoned reveal returns the value');
 select tests.clear_authentication();
 select is((select count(*)::integer from public.audit_logs
-           where action = 'pii.reveal' and target_user_id = tests.user_id('customer@admin-threat.test')
+           where action = 'user.pii_revealed' and target_user_id = tests.user_id('customer@admin-threat.test')
              and actor_id = md5('da-test-admin:helper@admin-threat.test')::uuid
              and reason = 'Kullanıcı e-posta adresinin doğrulanmasını istedi'), 1,
           'the reveal is audited with its actor and reason');

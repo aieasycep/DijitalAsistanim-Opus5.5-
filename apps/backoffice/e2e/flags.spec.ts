@@ -38,7 +38,7 @@ test.describe('feature flags', () => {
       typed: 'feature.voice',
     });
     await expect(page.getByText('Acil kapatıldı', { exact: true }).first()).toBeVisible();
-    expect((await mockAudit(request)).at(-1)).toMatchObject({ action: 'admin.flag.killed' });
+    expect((await mockAudit(request)).at(-1)).toMatchObject({ action: 'flag.kill_switch_on' });
     await expect(page.getByTestId('flag-enable').first()).toBeVisible();
   });
 

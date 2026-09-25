@@ -77,9 +77,24 @@ export const AiRequestRow = z.strictObject({
 });
 export const AiRequestsResponse = PagedSuccess(AiRequestRow);
 
-/** A model target; `native` = on-device TTS/STT, `fixture` = deterministic (rejected in production). */
+/**
+ * A model target; `native` = on-device TTS/STT, `fixture` = deterministic (rejected in production).
+ * `deepgram` (STT), `azure_speech` and `elevenlabs` (premium TTS) are voice-only providers: they are
+ * accepted on `stt` / `tts` rows only.
+ */
+export const MODEL_TARGET_PROVIDERS = [
+  'anthropic',
+  'openai',
+  'voyage',
+  'fixture',
+  'native',
+  'deepgram',
+  'azure_speech',
+  'elevenlabs',
+] as const;
+export const VOICE_ONLY_PROVIDERS = ['deepgram', 'azure_speech', 'elevenlabs'] as const;
 export const ModelTarget = z.strictObject({
-  provider: z.enum(['anthropic', 'openai', 'voyage', 'fixture', 'native']),
+  provider: z.enum(MODEL_TARGET_PROVIDERS),
   model: z.string().min(1).max(120),
   effort: z.enum(['low', 'medium', 'high']).optional(),
   max_output_tokens: z.int().min(1).max(64000).optional(),
@@ -101,8 +116,20 @@ export const EMBEDDING_1024_MODELS = [
 ] as const;
 
 const BatchPolicy = z.enum(['realtime', 'micro_batch', 'message_batches']);
+/** `ai_model_config.role` (the M§57 model slots, DATABASE_AND_RLS_PLAN check constraint). */
+export const MODEL_ROLES = [
+  'classifier',
+  'reasoning',
+  'assistant',
+  'embedding',
+  'stt',
+  'tts',
+  'probe',
+] as const;
+export const ModelRole = z.enum(MODEL_ROLES);
 export const ModelConfigRow = z.object({
   profile: RoutingProfile,
+  role: ModelRole,
   feature: AiFeature,
   tier: z.enum(AI_TIER_VALUES),
   enabled: z.boolean(),
@@ -120,9 +147,23 @@ export const AiModelsResponse = Success(
   z.object({
     configs: z.array(ModelConfigRow),
     plan_profiles: z.object({ free: RoutingProfile, pro: RoutingProfile }),
+    /** Names only: `stt` = `STT_API_KEY`, `tts` = `TTS_PREMIUM_PROVIDER` + `TTS_API_KEY`. */
     credentials: z.record(
-      z.enum(['anthropic', 'openai', 'voyage']),
+      z.enum(['anthropic', 'openai', 'voyage', 'stt', 'tts']),
       z.enum(['configured', 'external_credential_required']),
+    ),
+    /**
+     * Monthly AI cost of a typical Pro user per routing profile (BACKOFFICE_PLAN §6.10), from the
+     * last 30 days of `ai_metrics_daily`; `monthly_usd` is null without Pro traffic or prices.
+     */
+    profile_costs: z.record(
+      RoutingProfile,
+      z.object({
+        monthly_usd: z.number().min(0).nullable(),
+        coverage: z.number().min(0).max(1).nullable(),
+        pro_users: z.int().min(0),
+        window_days: z.int().min(1),
+      }),
     ),
   }),
 );
@@ -172,6 +213,9 @@ export function modelConfigViolations(
     if (targets.some((t) => !allowed.includes(t.model))) violations.push('embedding_dimensions');
   }
   if (targets.some((t) => isForbiddenModel(t.model))) violations.push('model_forbidden');
+  const voiceOnly = VOICE_ONLY_PROVIDERS as readonly string[];
+  if (feature !== 'stt' && feature !== 'tts' && targets.some((t) => voiceOnly.includes(t.provider)))
+    violations.push('provider_role_mismatch');
   return violations;
 }
 export const ModelConfigResponse = Success(ModelConfigRow);
@@ -219,6 +263,8 @@ export const AiFeedbackRow = z.strictObject({
   prompt_version: z.string().nullable(),
   rating: z.union([z.literal(1), z.literal(-1)]),
   reason_code: z.string().nullable(),
+  /** "Yorum var · gizli": the text itself only through the audited reveal (R-09). */
+  has_comment: z.boolean(),
   created_at: IsoDateTime,
 });
 export const AiFeedbackListResponse = PagedSuccess(AiFeedbackRow);

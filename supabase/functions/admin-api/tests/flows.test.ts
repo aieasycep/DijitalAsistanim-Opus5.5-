@@ -108,7 +108,7 @@ Deno.test('disable: a ban failure is a partial 503 with a failure audit row', as
     [503, 'SERVICE_UNAVAILABLE', true, 'auth_ban'],
   );
   const audit = h.rpc.find((r) => r.fn === 'audit_write')?.args ?? {};
-  assertEquals([audit.p_action, audit.p_result], ['admin.user.disabled', 'failure']);
+  assertEquals([audit.p_action, audit.p_result], ['user.disabled', 'failure']);
   assertEquals(audit.p_details, { partial: true, step: 'auth_ban' });
 });
 
@@ -151,7 +151,7 @@ Deno.test('admins: an unban failure after enable is partial and audited', async 
     await h.request('POST', `/admins/${ADMIN}/enable`, { body: SENSITIVE }),
   );
   assertEquals([err.status, err.details.step], [503, 'auth_unban']);
-  assertEquals(h.rpc.find((r) => r.fn === 'audit_write')?.args.p_action, 'admin.admin.enabled');
+  assertEquals(h.rpc.find((r) => r.fn === 'audit_write')?.args.p_action, 'admin.enabled');
 });
 
 Deno.test('admins: reset-mfa reports a factor deletion failure as partial', async () => {
@@ -166,7 +166,7 @@ Deno.test('admins: reset-mfa reports a factor deletion failure as partial', asyn
   );
   assertEquals([err.status, err.details.step], [503, 'delete_factors']);
   const audit = h.rpc.find((r) => r.fn === 'audit_write')?.args ?? {};
-  assertEquals([audit.p_action, audit.p_result], ['admin.admin.mfa_reset', 'failure']);
+  assertEquals([audit.p_action, audit.p_result], ['admin.mfa_reset', 'failure']);
 });
 
 Deno.test('admins: unlock clears the counters stored under the sign-in key', async () => {

@@ -58,17 +58,23 @@ export function AiFeedbackTable({ data }: { data: TableData<Row> }) {
     {
       id: 'comment',
       header: t('columns.comment'),
-      cell: (row) => (
-        <MaskedValue
-          masked={t('hidden')}
-          label={t('columns.comment')}
-          reveal={{
-            permission: 'ai_feedback.reveal',
-            reveal: (envelope) =>
-              revealAction({ route: 'POST /ai/feedback/:id/reveal', id: row.id }, envelope),
-          }}
-        />
-      ),
+      // "Yorum var · gizli" only when a comment exists (§5.5); the text needs the audited reveal.
+      cell: (row) =>
+        row.has_comment ? (
+          <MaskedValue
+            masked={t('hidden')}
+            label={t('columns.comment')}
+            reveal={{
+              permission: 'ai_feedback.reveal',
+              reveal: (envelope) =>
+                revealAction({ route: 'POST /ai/feedback/:id/reveal', id: row.id }, envelope),
+            }}
+          />
+        ) : (
+          <span className="text-ink-3" data-testid={`feedback-no-comment-${row.id}`}>
+            {t('noComment')}
+          </span>
+        ),
     },
   ];
   return (

@@ -4,7 +4,12 @@ import { MetricsRange, Success } from './common.ts';
 
 /* ADM-01 · Dashboard (§12.3): read-only aggregates, users counted never listed. */
 
-export const DashboardMetricsQuery = z.strictObject({ range: MetricsRange.default('7d') });
+/** Platform filter of the user, active-user and push KPIs (BACKOFFICE_PLAN §6.1). */
+export const DashboardPlatform = z.enum(['all', 'ios', 'android']);
+export const DashboardMetricsQuery = z.strictObject({
+  range: MetricsRange.default('7d'),
+  platform: DashboardPlatform.default('all'),
+});
 const Metric = z.object({ value: z.number(), delta: z.number().nullable() });
 export const DASHBOARD_METRIC_KEYS = [
   'total_users',
@@ -26,13 +31,23 @@ export const DASHBOARD_METRIC_KEYS = [
   'sync_success_rate',
   'reconnect_rate',
 ] as const;
+/**
+ * `metrics_daily` freshness: the rollup runs every 15 min; `stale` when older than 30 min or never
+ * computed (BACKOFFICE_PLAN §5.6 "Son güncelleme {relative}.", §7.6).
+ */
+export const RollupState = z.object({
+  last_computed_at: IsoDateTime.nullable(),
+  stale: z.boolean(),
+});
 export const DashboardMetricsResponse = Success(
-  z.object(
-    Object.fromEntries(DASHBOARD_METRIC_KEYS.map((key) => [key, Metric])) as Record<
-      (typeof DASHBOARD_METRIC_KEYS)[number],
-      typeof Metric
-    >,
-  ),
+  z
+    .object(
+      Object.fromEntries(DASHBOARD_METRIC_KEYS.map((key) => [key, Metric])) as Record<
+        (typeof DASHBOARD_METRIC_KEYS)[number],
+        typeof Metric
+      >,
+    )
+    .extend({ platform: DashboardPlatform, rollup: RollupState }),
 );
 
 export const DashboardChartsQuery = z.strictObject({

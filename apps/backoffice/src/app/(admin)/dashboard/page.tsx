@@ -8,7 +8,14 @@ import type { ValueFormat } from '@/components/charts/chart-data';
 import { MultiSeriesChartCard } from '@/components/charts/multi-series-chart';
 import type { SeriesKind } from '@/components/charts/use-chart-colors';
 import { Icon } from '@/components/icon';
-import { KpiCard, Panel, ReadError, StatGrid } from '@/components/module-kit';
+import {
+  KpiCard,
+  Panel,
+  ReadError,
+  SegmentedLinks,
+  StatGrid,
+  withParam,
+} from '@/components/module-kit';
 import { PageHeader } from '@/components/page-header';
 import { MetricGroups } from '@/components/metric-groups';
 import { KpiSkeleton, LoadingState } from '@/components/states/loading-state';
@@ -25,14 +32,17 @@ import { getFormatters } from '@/server/formatters';
 import { readAdmin } from '@/server/read';
 import { loadAdminContext } from '@/server/session';
 import { RangePicker } from './range-picker';
-import { RANGES, type Range } from './ranges';
+import { PLATFORMS, RANGES, type Platform, type Range } from './ranges';
 
 /*
  * Dashboard (BACKOFFICE_PLAN §6.1, §7; M§50, M§119; T-10.05). Every number comes from admin-api
  * (`admin_api.dashboard_metrics` / `dashboard_series` / `metrics_ops` / `metrics_product`, which count
  * only the non-internal, non-demo population). Each card, chart and panel loads and fails on its own
  * with its own retry; panels the admin has no permission for are not rendered (cosmetic, the API
- * decides). Range 24h/7d/30d/90d is URL state and persisted as `dashboard_range`.
+ * decides). Range 24h/7d/30d/90d is URL state and persisted as `dashboard_range`; the platform
+ * (Tümü/iOS/Android) is URL state and scopes the user, active-user and push KPIs. When the
+ * `metrics_daily` rollup is older than 30 minutes the KPI section shows "Son güncelleme {relative}."
+ * (§5.6).
  */
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -81,9 +91,13 @@ function isRange(value: unknown): value is Range {
   return typeof value === 'string' && (RANGES as readonly string[]).includes(value);
 }
 
-/** One `GET /dashboard/metrics` per request and range, shared by the KPI and product panels. */
-const dashboardMetrics = cache((range: Range) =>
-  readAdmin('GET /dashboard/metrics', { query: { range } }),
+function isPlatform(value: unknown): value is Platform {
+  return typeof value === 'string' && (PLATFORMS as readonly string[]).includes(value);
+}
+
+/** One `GET /dashboard/metrics` per request, range and platform (KPI and product panels). */
+const dashboardMetrics = cache((range: Range, platform: Platform) =>
+  readAdmin('GET /dashboard/metrics', { query: { range, platform } }),
 );
 
 export default async function DashboardPage({
@@ -97,6 +111,7 @@ export default async function DashboardPage({
     searchParams,
   ]);
   const range: Range = isRange(params.range) ? params.range : context.preferences.dashboard_range;
+  const platform: Platform = isPlatform(params.platform) ? params.platform : 'all';
   const can = (...permissions: string[]) => hasAnyPermission(context.permissions, permissions);
   const showProduct = PRODUCT_KEYS.some((item) => can(item.permission));
 
@@ -105,11 +120,24 @@ export default async function DashboardPage({
       <PageHeader
         title={t('title')}
         description={t('description')}
-        actions={<RangePicker value={range} />}
+        actions={
+          <>
+            <SegmentedLinks
+              label={t('platform.label')}
+              active={platform}
+              items={PLATFORMS.map((value) => ({
+                key: value,
+                label: t(`platform.${value}`),
+                href: withParam('/dashboard', params, { platform: value === 'all' ? null : value }),
+              }))}
+            />
+            <RangePicker value={range} />
+          </>
+        }
       />
       <section aria-label={t('kpisLabel')}>
-        <Suspense key={`kpi-${range}`} fallback={<KpiGridSkeleton />}>
-          <KpiGrid range={range} />
+        <Suspense key={`kpi-${range}-${platform}`} fallback={<KpiGridSkeleton />}>
+          <KpiGrid range={range} platform={platform} />
         </Suspense>
       </section>
       <section aria-label={t('chartsLabel')} className="grid grid-cols-1 gap-4 xl:grid-cols-2">
@@ -133,7 +161,7 @@ export default async function DashboardPage({
             key={`product-${range}`}
             fallback={<PanelSkeleton title={t('product.title')} />}
           >
-            <ProductMetrics range={range} permissions={context.permissions} />
+            <ProductMetrics range={range} platform={platform} permissions={context.permissions} />
           </Suspense>
         ) : null}
         {can('metrics.ops.read') ? (
@@ -183,9 +211,9 @@ function PanelSkeleton({ title }: { title: string }) {
   );
 }
 
-async function KpiGrid({ range }: { range: Range }) {
+async function KpiGrid({ range, platform }: { range: Range; platform: Platform }) {
   const [t, f] = await Promise.all([getTranslations('backoffice.dashboard'), getFormatters()]);
-  const result = await dashboardMetrics(range);
+  const result = await dashboardMetrics(range, platform);
   if (!result.ok) {
     return (
       <Card>
@@ -193,42 +221,57 @@ async function KpiGrid({ range }: { range: Range }) {
       </Card>
     );
   }
+  const rollup = result.data.rollup;
   return (
-    <StatGrid label={t('kpisLabel')}>
-      {KPI_KEYS.map((key) => {
-        const metric = result.data[key];
-        const direction = deltaDirection(metric.delta);
-        const deltaText =
-          direction === 'none'
-            ? t('delta.none')
-            : direction === 'flat'
-              ? t('delta.flat')
-              : t(`delta.${direction}`, {
-                  value: f.number(Math.abs((metric.delta ?? 0) * 100), 1),
-                });
-        return (
-          <KpiCard
-            key={key}
-            label={t(`kpis.${key}`)}
-            value={key === 'ai_cost_usd' ? f.usd(metric.value) : f.number(metric.value)}
-            testId={`kpi-${key}`}
-            hint={
-              <span
-                className={cn(
-                  'flex items-center gap-1',
-                  direction === 'up' && 'text-tone-success-text',
-                  direction === 'down' && 'text-tone-critical-text',
-                )}
-              >
-                {direction === 'up' ? <Icon name="trending_up" size={16} /> : null}
-                {direction === 'down' ? <Icon name="trending_down" size={16} /> : null}
-                {deltaText}
-              </span>
-            }
-          />
-        );
-      })}
-    </StatGrid>
+    <div className="flex flex-col gap-4">
+      {rollup.stale ? (
+        <p
+          role="status"
+          data-testid="rollup-stale"
+          className="flex items-center gap-2 rounded-tile bg-tone-warning-soft px-4 py-2 text-bo-body text-tone-warning-text"
+        >
+          <Icon name="schedule" size={16} />
+          {rollup.last_computed_at === null
+            ? t('rollup.never')
+            : t('rollup.stale', { relative: f.relative(rollup.last_computed_at, requestTime()) })}
+        </p>
+      ) : null}
+      <StatGrid label={t('kpisLabel')}>
+        {KPI_KEYS.map((key) => {
+          const metric = result.data[key];
+          const direction = deltaDirection(metric.delta);
+          const deltaText =
+            direction === 'none'
+              ? t('delta.none')
+              : direction === 'flat'
+                ? t('delta.flat')
+                : t(`delta.${direction}`, {
+                    value: f.number(Math.abs((metric.delta ?? 0) * 100), 1),
+                  });
+          return (
+            <KpiCard
+              key={key}
+              label={t(`kpis.${key}`)}
+              value={key === 'ai_cost_usd' ? f.usd(metric.value) : f.number(metric.value)}
+              testId={`kpi-${key}`}
+              hint={
+                <span
+                  className={cn(
+                    'flex items-center gap-1',
+                    direction === 'up' && 'text-tone-success-text',
+                    direction === 'down' && 'text-tone-critical-text',
+                  )}
+                >
+                  {direction === 'up' ? <Icon name="trending_up" size={16} /> : null}
+                  {direction === 'down' ? <Icon name="trending_down" size={16} /> : null}
+                  {deltaText}
+                </span>
+              }
+            />
+          );
+        })}
+      </StatGrid>
+    </div>
   );
 }
 
@@ -301,13 +344,15 @@ async function DashboardChart({
 
 async function ProductMetrics({
   range,
+  platform,
   permissions,
 }: {
   range: Range;
+  platform: Platform;
   permissions: readonly string[];
 }) {
   const [t, f] = await Promise.all([getTranslations('backoffice.dashboard'), getFormatters()]);
-  const result = await dashboardMetrics(range);
+  const result = await dashboardMetrics(range, platform);
   return (
     <Panel title={t('product.title')} description={t('product.description')}>
       {result.ok ? (

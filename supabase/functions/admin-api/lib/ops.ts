@@ -162,6 +162,25 @@ export async function deleteMfaFactors(rt: AdminRuntime, userId: string): Promis
   return removed;
 }
 
+/** The verified TOTP factor ids of an Auth user (Auth admin API, service client). */
+export async function verifiedTotpFactorIds(rt: AdminRuntime, userId: string): Promise<string[]> {
+  const listed = await rt.system.auth.admin.mfa.listFactors({ userId });
+  if (listed.error !== null) throw authError('list_factors', listed.error);
+  return (listed.data?.factors ?? [])
+    .filter((f) => f.factor_type === 'totp' && f.status === 'verified')
+    .map((f) => f.id);
+}
+
+/** Deletes one MFA factor of an Auth user. */
+export async function deleteMfaFactor(
+  rt: AdminRuntime,
+  userId: string,
+  factorId: string,
+): Promise<void> {
+  const { error } = await rt.system.auth.admin.mfa.deleteFactor({ id: factorId, userId });
+  if (error !== null) throw authError('delete_factor', error);
+}
+
 /** Revokes refresh tokens of the JWT's session(s); failures are logged (the SQL row is ended). */
 export async function authSignOut(
   rt: AdminRuntime,

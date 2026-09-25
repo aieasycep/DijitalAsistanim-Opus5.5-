@@ -233,7 +233,8 @@ export const FlagPatchBody = z.strictObject({
   reason: Reason,
 });
 export const FlagResponse = Success(FlagRow);
-export const FlagKillBody = SensitiveBody;
+/** `on=true` kills the flag (`enabled=false`), `on=false` re-enables it; the targeting is kept. */
+export const FlagKillBody = SensitiveBody.extend({ on: z.boolean().default(true) });
 export const FlagArchiveBody = SensitiveBody;
 export const FlagOverrideBody = z.strictObject({
   user_id: Uuid,

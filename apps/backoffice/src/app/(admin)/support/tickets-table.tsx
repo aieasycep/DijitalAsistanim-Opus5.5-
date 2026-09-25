@@ -1,6 +1,7 @@
 'use client';
 
 import type { TicketRow } from '@da/validation/admin/support';
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import type { z } from 'zod';
 
@@ -61,6 +62,22 @@ export function TicketsTable({ data }: { data: TableData<Row> }) {
         row.platform === null
           ? '—'
           : `${label('platform', row.platform)}${row.app_version === null ? '' : ` · ${row.app_version}`}`,
+    },
+    {
+      id: 'user',
+      header: t('columns.user'),
+      cell: (row) =>
+        row.user_id === null ? (
+          t('webNoMatch')
+        ) : (
+          <Link
+            href={`/users/${row.user_id}/overview`}
+            className="font-mono text-text-link hover:underline"
+            data-testid={`ticket-user-${row.id}`}
+          >
+            {row.user_id.slice(0, 8)}
+          </Link>
+        ),
     },
     {
       id: 'contact',

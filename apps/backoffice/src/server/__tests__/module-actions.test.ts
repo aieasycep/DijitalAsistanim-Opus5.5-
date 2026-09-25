@@ -73,8 +73,8 @@ describe('module mutation allow-list', () => {
   it('offers every registry audit action plus denials, sorted and unique', () => {
     const actions = auditActions();
     expect(actions).toContain('admin.permission_denied');
-    expect(actions).toContain('admin.flag.killed');
-    expect(actions).toContain('admin.support_access.granted');
+    expect(actions).toContain('flag.kill_switch_on');
+    expect(actions).toContain('support_access.granted');
     expect([...actions].sort()).toEqual(actions);
     expect(new Set(actions).size).toBe(actions.length);
   });

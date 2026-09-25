@@ -21,6 +21,7 @@ import {
   writeMfaFailures,
 } from '@/server/auth-flow';
 import { safeNextPath } from '@/server/request-meta';
+import { verifyTotpCode } from '@/server/mfa';
 import { serverSupabase } from '@/server/supabase';
 
 /*
@@ -173,12 +174,22 @@ export async function verifyMfaAction(
   const supabase = await serverSupabase();
   const claims = (await supabase.auth.getClaims()).data?.claims;
   const email = typeof claims?.email === 'string' ? claims.email : '';
-  const verified = await supabase.auth.mfa.challengeAndVerify({
-    factorId: factorId.data,
-    code: code.data,
-  });
-  if (verified.error !== null) {
-    const status = (verified.error as { status?: number }).status ?? 400;
+  // Enrolment verifies the new factor; a challenge accepts either verified device (§3.3 backup).
+  let accessToken: string | null = null;
+  let status = 400;
+  if (enrolling) {
+    const verified = await supabase.auth.mfa.challengeAndVerify({
+      factorId: factorId.data,
+      code: code.data,
+    });
+    if (verified.error === null) accessToken = verified.data.access_token;
+    else status = (verified.error as { status?: number }).status ?? 400;
+  } else {
+    const verified = await verifyTotpCode(supabase, code.data, factorId.data);
+    if (verified.ok) accessToken = verified.accessToken;
+    else status = verified.status;
+  }
+  if (accessToken === null) {
     if (status === 0 || status >= 500) return error('auth.unavailable');
     const failures = (await readMfaFailures()) + 1;
     if (email !== '') await recordAttempt(email, 'mfa', false);
@@ -193,7 +204,7 @@ export async function verifyMfaAction(
   await writeMfaFailures(0);
   if (email !== '') await recordAttempt(email, 'mfa', true);
 
-  const token = verified.data.access_token;
+  const token = accessToken;
   const started = await adminApi('POST /session/start', { body: {} }, { token });
   if (!started.ok) {
     if (started.error.code === 'FORBIDDEN' || started.error.code === 'AUTH_REQUIRED') {

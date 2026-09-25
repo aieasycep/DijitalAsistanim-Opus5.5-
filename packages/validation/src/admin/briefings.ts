@@ -102,6 +102,27 @@ export const AdminTestPushBody = z.strictObject({
   reason: Reason,
   confirm: z.literal(true),
 });
+/**
+ * The push-test dialog's preview (BACKOFFICE_PLAN §6.8, R-13): the user's local time and whether a
+ * test sent now falls in their quiet hours (then it is scheduled for the quiet-hours end).
+ */
+export const AdminTestPushPreviewQuery = z.strictObject({
+  user_id: Uuid,
+  installation_id: Uuid.optional(),
+});
+export const AdminTestPushPreviewResponse = Success(
+  z.object({
+    timezone: z.string().min(1).max(64),
+    local_time: z.string().regex(/^\d{2}:\d{2}$/),
+    in_quiet_hours: z.boolean(),
+    quiet_hours_end_local: z
+      .string()
+      .regex(/^\d{2}:\d{2}$/)
+      .nullable(),
+    deferred_until: IsoDateTime.nullable(),
+    active_devices: z.int().min(0),
+  }),
+);
 export const AdminTestPushResponse = Success(
   z.object({ notification_id: Uuid, job: JobRef, deferred_until: IsoDateTime.nullable() }),
 );
