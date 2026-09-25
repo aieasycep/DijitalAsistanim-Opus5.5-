@@ -688,7 +688,8 @@ export function supabaseAssistStore(db: DbClient): AssistStore {
         await db
           .from('jobs')
           .select(JOB_COLUMNS)
-          .like('idempotency_key', `${prefix.replace(/[%_]/g, '')}%`)
+          // Escape LIKE wildcards: keys such as `initial_sync:<id>:` contain literal underscores.
+          .like('idempotency_key', `${prefix.replace(/[\\%_]/g, (c) => `\\${c}`)}%`)
           .order('created_at', { ascending: false })
           .limit(50),
       );

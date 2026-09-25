@@ -1016,7 +1016,8 @@ export function supabaseMemoryStore(db: DbClient): MemoryStore {
               .select('topic_label')
               .eq('user_id', userId)
               .not('topic_label', 'is', null)
-              .contains('participants', [{ contact_id: String(r.id) }])
+              // jsonb containment takes a JSON literal (an array value would encode as `{…}`).
+              .contains('participants', JSON.stringify([{ contact_id: String(r.id) }]))
               .order('last_message_at', { ascending: false })
               .limit(5),
           ) ?? []) as Row[];
