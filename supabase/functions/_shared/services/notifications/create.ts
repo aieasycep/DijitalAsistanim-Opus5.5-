@@ -82,17 +82,25 @@ export const NotificationJobPayload = z
     briefing_id: Uuid.optional(),
     /** `app_installations.id` for pushes to one installation (test pushes). */
     installation_id: Uuid.nullable().optional(),
-    /** Admin test push (`admin_api.notification_send_test`, R-13). */
-    kind: z.literal('test').optional(),
+    /**
+     * Admin test push (`admin_api.notification_send_test`, R-13), or the account reconnect form the
+     * DB trigger `trg_connected_accounts_status_notify` enqueues (`account_reauth`).
+     */
+    kind: z.enum(['test', 'account_reauth']).optional(),
+    connected_account_id: Uuid.optional(),
+    status: z.enum(['needs_reauth', 'admin_consent_required']).optional(),
     detail_mode: z.literal('generic').optional(),
     bypass_caps: z.boolean().optional(),
     bypass_quiet_hours: z.literal(false).optional(),
     admin_id: Uuid.optional(),
   })
   .superRefine((p, ctx) => {
-    const forms = [p.build !== undefined, p.trigger !== undefined, p.kind === 'test'].filter(
-      Boolean,
-    ).length;
+    const forms = [
+      p.build !== undefined,
+      p.trigger !== undefined,
+      p.kind === 'test',
+      p.kind === 'account_reauth',
+    ].filter(Boolean).length;
     if (forms !== 1) {
       ctx.addIssue({ code: 'custom', path: [], message: 'exactly_one_payload_form' });
     }

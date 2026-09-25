@@ -16,6 +16,8 @@ export const MAX_VOYAGE_BATCH = 128;
 export interface VoyageOptions {
   readonly apiKey: string;
   readonly fetch?: typeof fetch;
+  /** Test-only `VOYAGE_API_BASE_URL` (e.g. `http://127.0.0.1:8788/voyage/v1`); never in preview/production. */
+  readonly baseUrl?: string;
 }
 
 export function buildVoyageRequest(
@@ -33,6 +35,10 @@ export function buildVoyageRequest(
 
 export function createVoyageProvider(options: VoyageOptions): LLMProvider {
   const doFetch = options.fetch ?? fetch;
+  const endpoint =
+    options.baseUrl === undefined
+      ? VOYAGE_ENDPOINT
+      : `${options.baseUrl.replace(/\/+$/, '')}/embeddings`;
   return {
     id: 'voyage',
     async embed(params: EmbedParams, target: ModelTarget): Promise<EmbedResult> {
@@ -43,7 +49,7 @@ export function createVoyageProvider(options: VoyageOptions): LLMProvider {
       let response: Response;
       try {
         const timeout = AbortSignal.timeout(timeoutMs(target, 20_000));
-        response = await doFetch(VOYAGE_ENDPOINT, {
+        response = await doFetch(endpoint, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${options.apiKey}`,

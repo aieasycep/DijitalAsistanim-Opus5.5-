@@ -102,6 +102,29 @@ jobs:
         env:
           DA_TYPEGEN_DB_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
 
+  integration:
+    name: integration (tier A — local stack, mock providers, IT suites)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+        with:
+          turbo-cache-key: integration
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/deno
+          key: deno-${{ runner.os }}-${{ hashFiles('supabase/functions/import_map.base.json') }}
+          restore-keys: deno-${{ runner.os }}-
+      - run: pnpm exec supabase start -x studio,imgproxy
+      - run: pnpm test:integration
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: integration-function-logs
+          path: .cache/integration/logs
+          include-hidden-files: true
+          retention-days: 7
+
   web:
     name: web (next build, Playwright E2E)
     runs-on: ubuntu-24.04

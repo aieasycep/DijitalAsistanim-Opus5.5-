@@ -1,0 +1,58 @@
+[
+  {
+    "id": "18f2a0c1d0000006",
+    "threadId": "18f2a0c1d0000006",
+    "labelIds": ["INBOX", "UNREAD", "IMPORTANT"],
+    "snippet": "Yunus Bey merhaba,\n\nEkim teslimatı ve Hizmet Sözleşmesi v3 hakkında toparlayayım. Hukuk ek",
+    "internalDate": "0",
+    "internal_offset_minutes": -20,
+    "sizeEstimate": 1110,
+    "payload": {
+      "partId": "",
+      "mimeType": "multipart/alternative",
+      "filename": "",
+      "headers": [
+        {
+          "name": "From",
+          "value": "Mehmet Yılmaz <mehmet@yilmazendustri.example>"
+        },
+        {
+          "name": "To",
+          "value": "Yunus Demir <yunus.demir@example.com>"
+        },
+        {
+          "name": "Subject",
+          "value": "Hizmet Sözleşmesi v3 ve ekim teslimatı"
+        },
+        {
+          "name": "Date",
+          "value": "Fri, 25 Sep 2026 09:40:00 +0300"
+        },
+        {
+          "name": "Message-ID",
+          "value": "<18f2a0c1d0000006@mail.example.com>"
+        }
+      ],
+      "body": {
+        "size": 0
+      },
+      "parts": [
+        {
+          "partId": "0",
+          "mimeType": "text/plain",
+          "filename": "",
+          "headers": [
+            {
+              "name": "Content-Type",
+              "value": "text/plain; charset=\"UTF-8\""
+            }
+          ],
+          "body": {
+            "size": 767,
+            "data": "WXVudXMgQmV5IG1lcmhhYmEsCgpFa2ltIHRlc2xpbWF0xLEgdmUgSGl6bWV0IFPDtnpsZcWfbWVzaSB2MyBoYWtrxLFuZGEgdG9wYXJsYXlhecSxbS4gSHVrdWsgZWtpYmltaXogc8O2emxlxZ9tZW5pbiA5LjIgbWFkZGVzaW5kZWtpIHRlc2xpbSBzw7xyZXNpbmkgaW5jZWxlZGk7IGltemEgacOnaW4gc29uIGfDvG4gMzAgRXlsw7xsIDIwMjYgb2xhcmFrIGfDtnLDvG7DvHlvci4gVGVrbGlmIHYy4oCZZGVraSBiaXJpbSBmaXlhdGxhciBidSB0YXJpaGUga2FkYXIgZ2XDp2VybGksIHNvbnJhc8SxbmRhIHllbmkgZml5YXQgbGlzdGVzaSB1eWd1bGFuYWNhay4gRWtpbSB0ZXNsaW1hdMSxbsSxbiBpbGsgcGFydGlzaW5pIDEyIEVraW3igJlkZSwgaWtpbmNpIHBhcnRpc2luaSAyNiBFa2lt4oCZZGUgcGxhbmzEsXlvcnV6OyBkZXBvIGthcGFzaXRlc2kgacOnaW4gc2l6ZGVuIG9uYXkgYmVrbGl5b3J1ei4gQXlyxLFjYSBmYXR1cmEgYWRyZXNpbmluIGfDvG5jZWwgb2x1cCBvbG1hZMSxxJ_EsW7EsSB0ZXlpdCBlZGViaWxpciBtaXNpbml6PyBDdW1hIGfDvG7DvCAxNDowMOKAmXRlIGvEsXNhIGJpciBnw7Zyw7zFn21lIHlhcGFiaWxpcnNlayBhw6fEsWsga2FsYW4gbWFkZGVsZXJpIGJpcmxpa3RlIGthcGF0YWzEsW0uIFPDtnpsZcWfbWVuaW4gaW16YWzEsSBrb3B5YXPEsW7EsSAzMCBFeWzDvGzigJllIGthZGFyIGlsZXRtZW5peiB5ZXRlcmxpIG9sYWNha3TEsXIuCgpTYXlnxLFsYXLEsW1sYSwKTWVobWV0IFnEsWxtYXoKWcSxbG1heiBFbmTDvHN0cmk"
+          }
+        }
+      ]
+    }
+  }
+]

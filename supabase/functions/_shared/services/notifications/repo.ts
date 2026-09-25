@@ -280,6 +280,16 @@ export function supabaseNotificationsRepo(system: DbClient): NotificationsRepo {
 
 export function supabaseTriggerRepo(system: DbClient): TriggerRepo {
   return {
+    connectedAccount(userId, id) {
+      return one(
+        system
+          .from('connected_accounts')
+          .select('provider,demo_flavor,status')
+          .eq('id', id)
+          .eq('user_id', userId)
+          .maybeSingle(),
+      );
+    },
     event(userId, id) {
       return one(
         system

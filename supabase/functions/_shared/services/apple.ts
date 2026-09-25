@@ -16,6 +16,18 @@ import type { AuditWriter } from './audit.ts';
 import type { CredentialsRepo } from './credentials.ts';
 
 export const APPLE_TOKEN_ENDPOINT = 'https://appleid.apple.com/auth/token';
+const APPLE_ID_ORIGIN = 'https://appleid.apple.com';
+
+/**
+ * `https://appleid.apple.com`, or the test-only `APPLE_ID_BASE_URL` (mock provider server, TEST_PLAN
+ * §6.1) outside preview and production, where the env schema also refuses the key.
+ */
+export function appleIdBase(env: RawEnv): string {
+  const appEnv = (env.APP_ENV ?? '').trim();
+  if (appEnv === 'production' || appEnv === 'preview') return APPLE_ID_ORIGIN;
+  const override = (env.APPLE_ID_BASE_URL ?? '').trim().replace(/\/+$/, '');
+  return override === '' ? APPLE_ID_ORIGIN : override;
+}
 /** `oauth_credentials.provider` for the SIWA token (ARCHITECTURE_DECISIONS ADR-29). */
 export const SIWA_PROVIDER = 'apple_device';
 
@@ -72,7 +84,7 @@ export async function exchangeAppleCode(
 
   let response: Response;
   try {
-    response = await (deps.fetch ?? fetch)(APPLE_TOKEN_ENDPOINT, {
+    response = await (deps.fetch ?? fetch)(`${appleIdBase(deps.env)}/auth/token`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' },
       body: new URLSearchParams({

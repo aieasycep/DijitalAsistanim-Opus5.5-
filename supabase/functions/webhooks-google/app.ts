@@ -61,7 +61,12 @@ export function createGoogleWebhookApp(deps: GoogleWebhookAppDeps): Hono<AppEnv>
       return await rejected(c, deps, 'gmail', deps.pubsub === null ? 'not_configured' : 'jwt');
     }
     const outcome = await ingestGmailPush(
-      { runtime: deps.runtime, webhooks: deps.webhooks, log: c.get('log') },
+      {
+        runtime: deps.runtime,
+        webhooks: deps.webhooks,
+        log: c.get('log'),
+        correlationId: c.get('correlationId'),
+      },
       await c.req.text(),
     );
     c.get('log').info('webhook_gmail', { outcome: outcome.reason, enqueued: outcome.enqueued });
@@ -84,7 +89,12 @@ export function createGoogleWebhookApp(deps: GoogleWebhookAppDeps): Hono<AppEnv>
     }
     await c.req.text();
     const outcome = await ingestCalendarNotification(
-      { runtime: deps.runtime, webhooks: deps.webhooks, log: c.get('log') },
+      {
+        runtime: deps.runtime,
+        webhooks: deps.webhooks,
+        log: c.get('log'),
+        correlationId: c.get('correlationId'),
+      },
       headers,
       deps.calendarSecret,
     );

@@ -36,6 +36,7 @@ import type {
 } from './model.ts';
 import { deliveryOf, renderNotification } from './render.ts';
 import { adminTestSpec } from './triggers/test-push.ts';
+import { accountReauthTrigger } from './triggers/account-reauth.ts';
 import { runTrigger, type TriggerRepo } from './triggers/index.ts';
 import type { TriggerContext, TriggerOutcome } from './triggers/types.ts';
 
@@ -135,6 +136,8 @@ async function resolve(
   const payload = ctx.payload;
   if (payload.build !== undefined) return { kind: 'spec', spec: specFromBuild(payload.build) };
   if (payload.kind === 'test') return { kind: 'spec', spec: adminTestSpec(tctx, ctx.job.id) };
+  if (payload.kind === 'account_reauth')
+    return await accountReauthTrigger(tctx, payload.connected_account_id);
   if (payload.trigger !== undefined) return await runTrigger(payload.trigger, tctx);
   return { kind: 'skip', reason: 'no_payload_form' };
 }
@@ -284,7 +287,14 @@ export async function processNotification(
       row = await repo.insertNotification({
         ...base,
         decision: 'scheduled',
-        suppression_reason: null,
+        // Every decision row carries its reason (TEST_PLAN IT-NTF-07): a push held by quiet hours or a
+        // snooze says so; a push scheduled for its intended delivery time needs none.
+        suppression_reason:
+          decision.decidedBy === 'quiet_hours'
+            ? 'quiet_hours'
+            : decision.decidedBy === 'category_preference'
+              ? 'snoozed'
+              : null,
         scheduled_for: at.toISOString(),
       });
       if (row === null) return { decision: 'deduplicated', reason: 'deduplicated' };

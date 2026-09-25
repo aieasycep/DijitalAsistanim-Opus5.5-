@@ -5,3 +5,5 @@ supabase/tests/database/001_structure.test.sql | claude-fable-5-1 | R-02: pgTAP 
 supabase/functions/_shared/providers/microsoft/tasks.ts | /me/todo/ | Microsoft Graph To Do API resource path (a product endpoint name, not a work marker; T-4.08)
 apps/mobile/targets/widget/Provider.swift | func placeholder(in context: Context) | WidgetKit TimelineProvider API method name (not product copy; T-8.25)
 supabase/functions/_shared/providers/microsoft/graph-adapters.test.ts | /me/todo/ | Microsoft Graph To Do API resource path in the adapter test (a product endpoint name, not a work marker; T-12.04)
+supabase/functions/_shared/testing/mock-providers/microsoft.ts | /me/todo/ | Microsoft Graph To Do API resource path emulated by the mock provider server (TEST_PLAN §6.1; a product endpoint name, not a work marker)
+supabase/tests/integration/approvals.test.ts | /graph/v1.0/me/todo/lists/ | Microsoft Graph To Do API resource path asserted by IT-APR-09 (a product endpoint name, not a work marker)
