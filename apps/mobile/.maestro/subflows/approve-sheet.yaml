@@ -6,6 +6,9 @@ name: 'Subflow · approve the open approval sheet (scope upgrade through the dem
     when: { visible: { id: 'm2.scope' } }
     commands:
       - tapOn: { id: 'm2.scope.allow' }
+      # The capability upgrade opens the demo consent page (OAUTH-03); every scope stays ticked.
+      - extendedWaitUntil: { visible: '${output.t.web.demoConsent.allow}', timeout: 60000 }
+      - tapOn: '${output.t.web.demoConsent.allow}'
       - extendedWaitUntil: { visible: { id: 'sheet.approval' }, timeout: 60000 }
 - tapOn: { id: 'approvalSheet.approve' }
 - waitForAnimationToEnd

@@ -13,7 +13,11 @@ import {
 import { toBase64Url } from '../../crypto/encoding.ts';
 import { sha256Hex } from '../../crypto/hmac.ts';
 import { AppError } from '../../errors.ts';
-import { integrationHarness, type IntegrationHarness } from '../../testing/integrations.ts';
+import {
+  demoConsent,
+  integrationHarness,
+  type IntegrationHarness,
+} from '../../testing/integrations.ts';
 import { USER_A, USER_B } from '../../testing/jwt.ts';
 import { createOAuthApp } from '../../../oauth/app.ts';
 import { DemoOAuth } from '../../providers/demo/auth.ts';
@@ -42,7 +46,7 @@ async function demoConnect(
   });
   const app = createOAuthApp({ runtime: h.runtime, demoEnabled: true, log: h.runtime.log });
   const authUrl = new URL(start.data.auth_url);
-  const authorize = await app.request(`/oauth/demo/authorize${authUrl.search}`);
+  const authorize = await demoConsent(app, authUrl);
   assertEquals(authorize.status, 302);
   const callbackUrl = new URL(authorize.headers.get('Location') ?? '');
   const callback = await app.request(`/oauth/demo/callback${callbackUrl.search}`);
@@ -434,7 +438,7 @@ Deno.test(
     assert(up.data.already_granted === false);
     if (up.data.already_granted !== false) return;
     const authUrl = new URL(up.data.auth_url);
-    const authorize = await first.app.request(`/oauth/demo/authorize${authUrl.search}`);
+    const authorize = await demoConsent(first.app, authUrl);
     const cb = await first.app.request(
       `/oauth/demo/callback${new URL(authorize.headers.get('Location') ?? '').search}`,
     );

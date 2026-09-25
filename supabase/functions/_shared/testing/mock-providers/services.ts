@@ -4,6 +4,10 @@
  *   and recorded) and `/apple/auth/revoke`;
  * - `/revenuecat/v2/projects/{p}` (entitlements, customers, subscriptions, products, DELETE customer)
  *   answered from `POST /__revenuecat {op:'customer', id, fixture}` seeds (`customer_v2_*.json`);
+ * - `POST /revenuecat/__activate {app_user_id, product}` (also `POST /__revenuecat {op:'activate'}`):
+ *   a completed store purchase, as the E2E paywall flow simulates it through the harness — the next
+ *   REST v2 customer read answers an active `pro` entitlement for that product, so the app's
+ *   `POST /purchases/sync` mirrors it;
  * - `/expo/--/api/v2/push/send` (≤ 100 messages, bearer `EXPO_ACCESS_TOKEN`, gzip bodies) and
  *   `/expo/--/api/v2/push/getReceipts` (per-ticket outcomes seeded by `POST /__expo`);
  * - `/voyage/v1/embeddings` (deterministic unit vectors of `output_dimension`, from SHA-256 of the
@@ -33,7 +37,11 @@ export function mountServices(app: Hono<MockEnv>, state: MockState): void {
     secrets: [] as Record<string, unknown>[],
     sub: '001234.0a1b2c3d4e5f60718293a4b5c6d7e8f9.1200',
   };
-  let rc = { customers: new Map<string, RcCustomer>(), deleted: [] as string[] };
+  let rc = {
+    customers: new Map<string, RcCustomer>(),
+    deleted: [] as string[],
+    products: new Map<string, string>(),
+  };
   let expo = {
     tickets: new Map<string, { to: string; data: unknown }>(),
     receipts: new Map<string, Record<string, unknown>>(),
@@ -45,7 +53,7 @@ export function mountServices(app: Hono<MockEnv>, state: MockState): void {
       secrets: [],
       sub: '001234.0a1b2c3d4e5f60718293a4b5c6d7e8f9.1200',
     };
-    rc = { customers: new Map(), deleted: [] };
+    rc = { customers: new Map(), deleted: [], products: new Map() };
     expo = { tickets: new Map(), receipts: new Map(), byToken: new Map() };
   });
 
@@ -94,8 +102,53 @@ export function mountServices(app: Hono<MockEnv>, state: MockState): void {
 
   // ── RevenueCat v2 ─────────────────────────────────────────────────────────────────────────
   const rcBase = '/revenuecat/v2/projects/:project';
+  /** A completed purchase of `product` (`da_pro_annual` | `da_pro_monthly`) for `appUserId`. */
+  const activate = (body: Record<string, unknown>): { ok: true; product_id: string } | null => {
+    const appUserId = typeof body.app_user_id === 'string' ? body.app_user_id : '';
+    const product = typeof body.product === 'string' ? body.product : 'da_pro_annual';
+    if (!/^[0-9a-f-]{36}$/i.test(appUserId) || !/^da_pro_(annual|monthly)$/.test(product))
+      return null;
+    const monthly = product === 'da_pro_monthly';
+    const seed = fixture<RcCustomer>('revenuecat/customer_v2_active.json');
+    const now = Date.now();
+    const ends = now + (monthly ? 30 : 365) * 86_400_000;
+    const productId = `prod_${product}`;
+    rc.products.set(productId, `${product}:${monthly ? 'monthly' : 'annual'}`);
+    seed.customer.id = appUserId;
+    seed.customer.first_seen_at = now;
+    seed.customer.last_seen_at = now;
+    const active = seed.customer.active_entitlements as { items?: { expires_at?: number }[] };
+    for (const item of active.items ?? []) item.expires_at = ends;
+    for (const sub of seed.subscriptions) {
+      Object.assign(sub, {
+        id: `sub_${randomId()}`,
+        customer_id: appUserId,
+        original_customer_id: appUserId,
+        product_id: productId,
+        starts_at: now,
+        current_period_starts_at: now,
+        current_period_ends_at: ends,
+        store_subscription_identifier: String(now),
+        ...(typeof body.environment === 'string' ? { environment: body.environment } : {}),
+      });
+    }
+    rc.customers.set(appUserId, seed);
+    return { ok: true, product_id: productId };
+  };
+  app.post('/revenuecat/__activate', (c) => {
+    const out = activate(jsonOf(c));
+    return out === null
+      ? c.json({ error: 'app_user_id and product are required' }, 400)
+      : c.json(out);
+  });
   app.post('/__revenuecat', async (c) => {
     const body = (await c.req.json()) as Record<string, unknown>;
+    if (body.op === 'activate') {
+      const out = activate(body);
+      return out === null
+        ? c.json({ error: 'app_user_id and product are required' }, 400)
+        : c.json(out);
+    }
     if (body.op === 'customer') {
       const seed = fixture<RcCustomer>(String(body.fixture));
       const id = String(body.id);
@@ -155,7 +208,7 @@ export function mountServices(app: Hono<MockEnv>, state: MockState): void {
     c.json({
       object: 'product',
       id: c.req.param('id'),
-      store_identifier: 'da_pro_annual:annual',
+      store_identifier: rc.products.get(c.req.param('id')) ?? 'da_pro_annual:annual',
       type: 'subscription',
     }),
   );

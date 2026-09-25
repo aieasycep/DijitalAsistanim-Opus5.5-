@@ -459,14 +459,38 @@ it('IT-OAUTH-11', 'Apple exchange stores the SIWA refresh token encrypted', asyn
   assertEquals(foreign.status, 422);
 });
 
+/** OAUTH-03: the demo consent page, then its form (all rendered capabilities unless `caps`). */
+async function demoDecide(
+  authSearch: string,
+  decision: 'allow' | 'deny',
+  caps?: string[],
+): Promise<Response> {
+  const page = await call('oauth', 'GET', `/demo/authorize${authSearch}`, { overrides: DEMO });
+  const html = await page.text();
+  assertEquals(page.status, 200, html.slice(0, 200));
+  const hidden = (name: string) =>
+    new RegExp(`name="${name}" value="([^"]*)"`).exec(html)?.[1] ?? '';
+  const form = new URLSearchParams({
+    state: hidden('state'),
+    code_challenge: hidden('code_challenge'),
+    decision,
+  });
+  for (const cap of caps ??
+    [...html.matchAll(/name="cap" value="([a-z_]+)"/g)].map((m) => m[1] ?? ''))
+    form.append('cap', cap);
+  return await call('oauth', 'POST', '/demo/authorize', {
+    rawBody: form.toString(),
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    overrides: DEMO,
+  });
+}
+
 it('IT-OAUTH-12', 'demo OAuth runs the real state / PKCE / completion path', async () => {
   const user = await createUser();
   const flow = await startFlow(user, 'google', ['mail_read', 'calendar_read'], { overrides: DEMO });
   const auth = new URL(flow.authUrl);
   assert(auth.pathname.endsWith('/functions/v1/oauth/demo/authorize'), auth.pathname);
-  const authorize = await call('oauth', 'GET', `/demo/authorize${auth.search}`, {
-    overrides: DEMO,
-  });
+  const authorize = await demoDecide(auth.search, 'allow');
   await authorize.body?.cancel();
   assertEquals(authorize.status, 302);
   const next = new URL(authorize.headers.get('location') ?? '');
@@ -489,6 +513,49 @@ it('IT-OAUTH-12', 'demo OAuth runs the real state / PKCE / completion path', asy
   );
   assert(state.completed_at !== null);
 });
+
+it(
+  'IT-OAUTH-12',
+  'demo consent page: gmail.readonly unticked → partial without mail_read; Reddet → denied',
+  async () => {
+    const user = await createUser();
+    const flow = await startFlow(user, 'google', ['mail_read', 'calendar_read'], {
+      overrides: DEMO,
+    });
+    const partial = await demoDecide(new URL(flow.authUrl).search, 'allow', ['calendar_read']);
+    await partial.body?.cancel();
+    const link = await callback(
+      `/demo/callback${new URL(partial.headers.get('location') ?? '').search}`,
+      DEMO,
+    );
+    assertEquals(link.searchParams.get('result'), 'pending_confirmation');
+    const done = await complete(
+      user,
+      link.searchParams.get('completion_code') ?? '',
+      flow.deviceNonce,
+      DEMO,
+    );
+    assertEquals(done.status, 200, JSON.stringify(done.body));
+    const acct = await account(String((done.body.data as { account: { id: string } }).account.id));
+    assertEquals(acct.status, 'partial');
+    assertEquals(acct.capabilities_granted, ['calendar_read']);
+
+    const other = await createUser();
+    const denied = await startFlow(other, 'google', ['mail_read'], { overrides: DEMO });
+    const no = await demoDecide(new URL(denied.authUrl).search, 'deny');
+    await no.body?.cancel();
+    const deniedLink = await callback(
+      `/demo/callback${new URL(no.headers.get('location') ?? '').search}`,
+      DEMO,
+    );
+    assertEquals(deniedLink.searchParams.get('result'), 'denied');
+    assertEquals(deniedLink.searchParams.get('completion_code'), null);
+    assertEquals(
+      await count(`select 1 from public.connected_accounts where user_id = $1`, [other.id]),
+      0,
+    );
+  },
+);
 
 async function pendingFlow(user: Awaited<ReturnType<typeof createUser>>) {
   const tag = crypto.randomUUID().replace(/-/g, '');

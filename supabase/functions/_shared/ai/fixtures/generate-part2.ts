@@ -8,6 +8,7 @@
 import { detectCommitments, parseAmountsTR, parseDatesTR, prescanInjection } from '@da/domain';
 import { parseUntrusted } from '../prompts/assemble.ts';
 import type { GenerateStructuredParams } from '../types.ts';
+import { sentences } from './sentences.ts';
 
 type Params = GenerateStructuredParams<unknown>;
 type Doc = { ref: string; kind: string; text: string };
@@ -23,7 +24,7 @@ function docs(params: Params): Doc[] {
 }
 
 function sentencesOf(text: string): string[] {
-  return (text.match(/[^.!?\n]+[.!?]*/g) ?? []).map((s) => s.trim()).filter((s) => s.length >= 3);
+  return sentences(text).map((s) => s.text);
 }
 
 function contextValue(params: Params, label: string): string | null {

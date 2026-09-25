@@ -1168,3 +1168,33 @@ export async function drain(
   }
   return claimed;
 }
+
+/**
+ * OAUTH-03 as a user answers it: `GET /oauth/demo/authorize` renders the consent page, whose form is
+ * submitted with every rendered capability still ticked (or only `capabilities`), or with "Reddet".
+ * Returns the form response (302 to the demo callback).
+ */
+export async function demoConsent(
+  app: { request(path: string, init?: RequestInit): Response | Promise<Response> },
+  authUrl: URL | string,
+  options: { decision?: 'allow' | 'deny'; capabilities?: readonly string[] } = {},
+): Promise<Response> {
+  const search = new URL(authUrl).search;
+  const page = await app.request(`/oauth/demo/authorize${search}`);
+  if (page.status !== 200) return page;
+  const html = await page.text();
+  const hidden = (name: string) =>
+    new RegExp(`name="${name}" value="([^"]*)"`).exec(html)?.[1] ?? '';
+  const rendered = [...html.matchAll(/name="cap" value="([a-z_]+)"/g)].map((m) => m[1] ?? '');
+  const form = new URLSearchParams({
+    state: hidden('state'),
+    code_challenge: hidden('code_challenge'),
+    decision: options.decision ?? 'allow',
+  });
+  for (const cap of options.capabilities ?? rendered) form.append('cap', cap);
+  return await app.request('/oauth/demo/authorize', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: form.toString(),
+  });
+}

@@ -3,10 +3,11 @@
  * Hono app on `127.0.0.1:8788` emulating the provider contracts the adapters call, reached through
  * the base-URL overrides that exist only outside preview/production (`GOOGLE_OAUTH_BASE_URL`,
  * `GOOGLE_API_BASE_URL`, `MS_LOGIN_BASE_URL`, `MS_GRAPH_BASE_URL`, `APPLE_ID_BASE_URL`,
- * `REVENUECAT_API_BASE_URL`, `EXPO_PUSH_BASE_URL`, `VOYAGE_API_BASE_URL`).
+ * `REVENUECAT_API_BASE_URL`, `EXPO_PUSH_BASE_URL`, `VOYAGE_API_BASE_URL`, `ANTHROPIC_API_BASE_URL`,
+ * `OPENAI_API_BASE_URL`).
  *
  * Path families: `/google-oauth`, `/gmail`, `/calendar` (gcal), `/tasks` (gtasks), `/ms-login`,
- * `/graph`, `/apple`, `/revenuecat`, `/expo`, `/voyage`. Control endpoints: `POST /__script`,
+ * `/graph`, `/apple`, `/revenuecat`, `/expo`, `/voyage`, `/anthropic`, `/openai`. Control endpoints: `POST /__script`,
  * `GET /__requests`, `POST /__reset`, plus per-provider seed/inspect endpoints (`/__google`,
  * `/__graph`, `/__apple`, `/__revenuecat`, `/__expo`). Responses are built from the fixtures under
  * `../fixtures/<provider>/` (hand-authored from the public API references; canon names only).
@@ -15,6 +16,7 @@
  * `scripts/integration/run.ts`). Never deployed: it lives under `_shared/testing/`.
  */
 import { Hono } from 'hono';
+import { mountAi } from './ai.ts';
 import { type MockEnv, MockState, mountCore } from './core.ts';
 import { mountGoogle } from './google.ts';
 import { mountMicrosoft } from './microsoft.ts';
@@ -27,6 +29,7 @@ export async function createMockProviders(): Promise<{ app: Hono<MockEnv>; state
   await mountGoogle(app, state);
   mountMicrosoft(app, state);
   mountServices(app, state);
+  mountAi(app, state);
   app.notFound((c) =>
     c.json(
       { error: 'mock_route_not_found', method: c.req.method, path: new URL(c.req.url).pathname },

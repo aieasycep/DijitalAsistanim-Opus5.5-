@@ -27,6 +27,7 @@ import {
   enqueueInsightRefresh,
   enqueueTriage,
   enqueueWatch,
+  sha1Hex,
   type InitialSyncPayload,
 } from './enqueue.ts';
 import { mailRowOf } from './rows.ts';
@@ -494,7 +495,10 @@ export async function runMailSync(run: SyncRun, payload: MailSyncPayload): Promi
           resource: 'mail',
           phase: 'resync',
           windowStart: new Date(now.getTime() - RESYNC_DAYS * 86_400_000).toISOString(),
-          origin: `resync:${state.id}:${now.getTime()}`,
+          // One resync per invalidated history window: a push (`provider_webhook` → `gmail_sync`)
+          // and a poll that both hit the 404 on the same stale cursor share the idempotency key
+          // (hashed: a Graph delta link is longer than the payload's `origin`).
+          origin: `resync:${state.id}:${await sha1Hex(state.cursor ?? '')}`,
           correlationId: run.correlationId,
           ...(folder === undefined ? {} : { folder }),
         });

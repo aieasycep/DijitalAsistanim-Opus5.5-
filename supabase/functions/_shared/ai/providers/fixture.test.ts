@@ -102,3 +102,42 @@ Deno.test('provider set: no keys means no adapters; fixture mode serves every pr
   assert(fixtures.fixtureMode);
   assertEquals(fixtures.get('anthropic')?.id, 'fixture');
 });
+
+Deno.test(
+  'provider set: LLM base-URL overrides reach the SDKs outside preview/production only',
+  async () => {
+    const seen: string[] = [];
+    const fetchStub = ((input: Request | URL | string) => {
+      seen.push(input instanceof Request ? input.url : String(input));
+      return Promise.resolve(
+        new Response(JSON.stringify({ type: 'error', error: { type: 'api_error' } }), {
+          status: 400,
+          headers: { 'content-type': 'application/json' },
+        }),
+      );
+    }) as typeof fetch;
+    const env = {
+      ANTHROPIC_API_KEY: 'k',
+      OPENAI_API_KEY: 'k',
+      ANTHROPIC_API_BASE_URL: 'http://127.0.0.1:8788/anthropic',
+      OPENAI_API_BASE_URL: 'http://127.0.0.1:8788/openai/v1',
+    };
+    const call = async (appEnv: string) => {
+      const set = createAiProviders(testEnv({ ...env, APP_ENV: appEnv }), { fetch: fetchStub });
+      const target = { model: 'm', params: { max_output_tokens: 10, timeout_ms: 1000 } };
+      for (const id of ['anthropic', 'openai'] as const) {
+        await set
+          .get(id)
+          ?.generateStructured?.(paramsFor('ThreadSummaryV1'), { ...target, provider: id })
+          .catch(() => undefined);
+      }
+    };
+    await call('development');
+    assertEquals(seen.splice(0), [
+      'http://127.0.0.1:8788/anthropic/v1/messages',
+      'http://127.0.0.1:8788/openai/v1/responses',
+    ]);
+    await call('production');
+    assert(seen.length === 2 && seen.every((u) => !u.includes('127.0.0.1')), seen.join(' '));
+  },
+);
