@@ -9,7 +9,7 @@ import { fireEvent, screen, waitFor } from 'expo-router/testing-library';
 
 import { json, renderApp, resetAppState, type RecordedCall } from '../helpers/app';
 import { ok, uuid } from '../helpers/fixtures';
-import { summaryParagraphs } from '../../src/features/meeting/MeetingSummaryScreen';
+import { chapterSkip, summaryParagraphs } from '../../src/features/meeting/MeetingSummaryScreen';
 import { defaultSelected } from '../../src/features/meeting/PostMeetingScreen';
 import { approved, commitmentApproval, events, setup, SOURCE } from './harness';
 
@@ -187,6 +187,93 @@ describe('M-MEET-03 · 2 Dakikalık Özet', () => {
       engine: 'native',
       speed: '1',
     });
+  });
+});
+
+describe('M-MEET-03 · premium audio (API-MEET-04)', () => {
+  it('computes chapter skips like the Listen screen', () => {
+    const chapters = [
+      { index: 0, title: 'Giriş', start_s: 0 },
+      { index: 1, title: 'Teklif', start_s: 40 },
+    ];
+    expect(chapterSkip(chapters, 10, 1)).toBe(40);
+    expect(chapterSkip(chapters, 45, -1)).toBe(40);
+    expect(chapterSkip(chapters, 41, -1)).toBe(0);
+    expect(chapterSkip(chapters, 50, 1)).toBe(50);
+  });
+
+  it('plays the premium file with expo-audio when the server returns one', async () => {
+    const audio = jest.requireMock<{
+      readonly __player: {
+        readonly play: jest.Mock;
+        readonly seekTo: jest.Mock;
+        readonly setPlaybackRate: jest.Mock;
+      };
+    }>('expo-audio');
+    audio.__player.play.mockClear();
+    const { api } = setup({
+      pro: true,
+      data: { tables: { calendar_events: [eventRow()] } },
+      api: {
+        [`POST /meetings/${EVENT_ID}/prep`]: () => json(200, ok(prep('ready'))),
+        [`POST /meetings/${EVENT_ID}/prep/audio`]: () =>
+          json(
+            200,
+            ok({
+              mode: 'premium',
+              signed_url: 'https://files.example.com/prep/hash-1.mp3?token=t',
+              expires_at: iso(5),
+              duration_s: 90,
+              chapters: [
+                { index: 0, title: 'Giriş', start_s: 0 },
+                { index: 1, title: 'Teklif', start_s: 40 },
+              ],
+            }),
+          ),
+      },
+    });
+    await renderApp(`/meeting/${EVENT_ID}/summary`);
+    expect(await screen.findByTestId('summary.premium')).toBeOnTheScreen();
+    expect(screen.queryByTestId('summary.listen')).toBeNull();
+    expect(screen.getByText('Doğal sesle okunur.')).toBeOnTheScreen();
+    await fireEvent.press(screen.getByTestId('summary.premium.playPause'));
+    expect(audio.__player.play).toHaveBeenCalled();
+    expect(events('meeting_summary_audio_played')[0]?.props).toEqual({
+      engine: 'premium',
+      speed: '1',
+    });
+    await fireEvent.press(screen.getByTestId('summary.premium.speed'));
+    expect(audio.__player.setPlaybackRate).toHaveBeenLastCalledWith(1.25, 'high');
+    const body = api.calls.find((c: RecordedCall) => c.url.endsWith('/prep/audio'))?.body;
+    expect(body).toEqual({ prep_version_hash: 'hash-1' });
+    expect(Speech.speak).not.toHaveBeenCalled();
+  });
+
+  it('keeps the device voice while the premium file is still generating', async () => {
+    setup({
+      pro: true,
+      data: { tables: { calendar_events: [eventRow()] } },
+      api: {
+        [`POST /meetings/${EVENT_ID}/prep`]: () => json(200, ok(prep('ready'))),
+        [`POST /meetings/${EVENT_ID}/prep/audio`]: () =>
+          json(
+            200,
+            ok({
+              mode: 'native',
+              language: 'tr-TR',
+              paragraphs: ['Geçen hafta teklif gönderildi.'],
+              notice_key: null,
+              premium_status: 'generating',
+            }),
+          ),
+      },
+    });
+    await renderApp(`/meeting/${EVENT_ID}/summary`);
+    expect(
+      await screen.findByText('Doğal ses hazırlanıyor; şimdilik cihaz sesiyle okunur.'),
+    ).toBeOnTheScreen();
+    expect(screen.getByTestId('summary.listen')).toBeOnTheScreen();
+    expect(screen.queryByTestId('summary.premium')).toBeNull();
   });
 });
 

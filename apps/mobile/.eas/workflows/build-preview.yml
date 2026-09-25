@@ -1,0 +1,21 @@
+# EAS Workflows (IMPLEMENTATION_PLAN T-12.02): internal preview builds for both platforms.
+# External credential required: EXPO_TOKEN (the Expo account), plus the store credentials EAS holds.
+name: Build preview
+
+on:
+  push:
+    branches: ['main']
+
+jobs:
+  build_android:
+    name: Build Android preview
+    type: build
+    params:
+      platform: android
+      profile: preview
+  build_ios:
+    name: Build iOS preview
+    type: build
+    params:
+      platform: ios
+      profile: preview

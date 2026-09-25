@@ -18,6 +18,7 @@ import {
   AssuranceNote,
   Button,
   ChipWrap,
+  ConfirmDialog,
   DraftEditorCard,
   ErrorCard,
   HintRow,
@@ -36,7 +37,7 @@ import {
 import type { ApprovalView } from '@da/validation/api/approvals';
 import type { ReplyDraft } from '@da/validation/api/common';
 import { MAX_REPLY_ATTACHMENTS_BYTES } from '@da/validation/api/approvals';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import * as Clipboard from 'expo-clipboard';
 import * as Crypto from 'expo-crypto';
 import * as DocumentPicker from 'expo-document-picker';
@@ -56,6 +57,7 @@ import { openApprovalViewSheet } from '../approvals/ApprovalSheet';
 import { useApprovalRunner } from '../approvals/runner';
 import { threadIdOfMessage } from '../mail/data';
 import { fetchApprovalForEdit, fetchDraft } from './data';
+import { scheduleDiscard } from './discard';
 import { openRecipientsSheet, type RecipientValue } from './RecipientsSheet';
 
 export const TONES = ['short', 'professional', 'friendly', 'detailed'] as const;
@@ -192,6 +194,8 @@ export function ReplyScreen() {
   } | null>(null);
   const [sent, setSent] = useState<ApprovalView | null>(null);
   const [attaching, setAttaching] = useState(false);
+  const [confirmDiscard, setConfirmDiscard] = useState(false);
+  const queryClient = useQueryClient();
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingSave = useRef<Promise<unknown> | null>(null);
   const intent = useRef<string | null>(null);
@@ -608,6 +612,46 @@ export function ReplyScreen() {
     );
   };
 
+  /**
+   * "Taslağı sil": close now, "Taslak silindi · Geri al" for 5 s (R-06), then
+   * `PATCH /reply-drafts/:id {status:'discarded'}`; unsaved edits are dropped with the draft.
+   */
+  const discard = async () => {
+    if (draft === null) return;
+    if (saveTimer.current !== null) {
+      clearTimeout(saveTimer.current);
+      saveTimer.current = null;
+    }
+    const saved = (await pendingSave.current?.catch(() => null)) as ReplyDraft | null | undefined;
+    const expectedVersion = Math.max(draft.version, saved?.version ?? 0);
+    const draftId = draft.id;
+    track('reply_draft_close', { kept: false });
+    const scheduled = scheduleDiscard({
+      client,
+      queryClient,
+      draftId,
+      expectedVersion,
+      idempotencyKey: Crypto.randomUUID(),
+      onDone: () => {
+        void queryClient.invalidateQueries({ queryKey: qk.mail.message(messageId) });
+      },
+      onFailed: () => {
+        toast.show({ message: t('screen.discardFailed'), kind: 'error' });
+      },
+    });
+    toast.show({
+      message: t('screen.discarded'),
+      kind: 'success',
+      action: {
+        label: tc('actions.undo'),
+        onPress: () => {
+          scheduled.cancel();
+        },
+      },
+    });
+    back();
+  };
+
   const more = () => {
     const handoff =
       draft === null
@@ -652,6 +696,19 @@ export function ReplyScreen() {
                 },
               },
             ]),
+        // Only a `draft` can be discarded (the server answers 409 otherwise).
+        ...(draft?.status === 'draft' && editApproval === null && phase === 'ready'
+          ? [
+              {
+                key: 'discard',
+                label: t('screen.discard'),
+                icon: 'delete' as const,
+                onPress: () => {
+                  setConfirmDiscard(true);
+                },
+              },
+            ]
+          : []),
       ],
     });
   };
@@ -681,6 +738,18 @@ export function ReplyScreen() {
               });
           },
         },
+        ...(draft.status === 'draft' && editApproval === null
+          ? [
+              {
+                key: 'discard',
+                label: t('screen.discardConfirm'),
+                icon: 'delete' as const,
+                onPress: () => {
+                  void discard();
+                },
+              },
+            ]
+          : []),
         { key: 'edit', label: t('screen.keepEditing'), icon: 'edit', onPress: () => undefined },
       ],
     });
@@ -871,12 +940,32 @@ export function ReplyScreen() {
             icon="more_horiz"
             accessibilityLabel={tc('a11y.moreOptions')}
             onPress={more}
+            testID="reply.more"
           />
         )
       }
       testID="reply.screen"
     >
       {content}
+      <ConfirmDialog
+        visible={confirmDiscard}
+        title={t('screen.discardTitle')}
+        body={t('screen.discardBody')}
+        confirm={{
+          label: t('screen.discardConfirm'),
+          onPress: () => {
+            setConfirmDiscard(false);
+            void discard();
+          },
+        }}
+        cancel={{
+          label: t('screen.keepEditing'),
+          onPress: () => {
+            setConfirmDiscard(false);
+          },
+        }}
+        testID="reply.discardDialog"
+      />
     </DetailScreen>
   );
 }

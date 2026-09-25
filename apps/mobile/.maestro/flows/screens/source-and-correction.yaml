@@ -1,0 +1,24 @@
+appId: com.dijitalasistan.app.e2e
+name: 'E2E-S-20 · Source sheet and correction'
+tags: [screens, android, ios, pro]
+env:
+  USER_KEY: u_pro
+  SCENARIO: canon
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- openLink: 'dijitalasistan-e2e://mail/${output.ids.messageAhmet}'
+- tapOn: { id: 'email.badge' }
+- extendedWaitUntil: { visible: { id: 'sheet.why' }, timeout: 30000 }
+- assertVisible: { id: 'why.content' }
+- back
+- tapOn: { id: 'email.more' }
+- tapOn: '${output.t.common.actions.viewSource}'
+- extendedWaitUntil: { visible: { id: 'sheet.why' }, timeout: 30000 }
+- runScript:
+    file: ../../scripts/harness.js
+    env: { ACTION: state, USER_KEY: '${USER_KEY}', PROBE: 'ai_feedback' }

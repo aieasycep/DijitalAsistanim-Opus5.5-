@@ -1,0 +1,31 @@
+appId: com.dijitalasistan.app.e2e
+name: 'E2E-M-20 · Offline and reconnect'
+tags: [m102, android, free]
+env:
+  USER_KEY: u_free
+  SCENARIO: canon
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- extendedWaitUntil: { visible: { id: 'tab.today' }, timeout: 60000 }
+- setAirplaneMode: enabled
+- extendedWaitUntil: { visible: { id: 'today.offline' }, timeout: 30000 }
+- runFlow: { file: ../../subflows/open-tab.yaml, env: { TAB: flow } }
+- swipe: { from: { id: 'flow.list' }, direction: RIGHT }
+- openLink: 'dijitalasistan-e2e://mail/${output.ids.messageAhmet}'
+- tapOn: { id: 'email.tile.calendar' }
+- assertVisible: '${output.t.approvals.toasts.offline}'
+- openLink: 'dijitalasistan-e2e://approvals'
+- assertVisible: { id: 'approvals.offline' }
+- launchApp: { clearState: false }
+- assertVisible: { id: 'today.offline' }
+- setAirplaneMode: disabled
+- extendedWaitUntil: { visible: { id: 'today.hero' }, timeout: 60000 }
+- assertNotVisible: { id: 'today.offline' }
+- runScript:
+    file: ../../scripts/harness.js
+    env: { ACTION: state, USER_KEY: '${USER_KEY}', PROBE: 'approvals_by_status' }

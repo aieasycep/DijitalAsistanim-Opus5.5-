@@ -68,6 +68,82 @@ expect_once() {
   fi
 }
 
+# expect_plist_value <file> <key> <value line> — the element right after <key>…</key>.
+expect_plist_value() {
+  local file="$1" key="$2" value="$3" next
+  if [[ ! -f "$file" ]]; then
+    fail "${file#"$WORK"/} is missing (wanted: $key = $value)"
+    return
+  fi
+  next="$(grep -A1 -F -- "<key>$key</key>" "$file" | sed -n 2p | tr -d '[:space:]')"
+  [[ "$next" == "$value" ]] || fail "${file#"$WORK"/} has $key = '${next:-<absent>}' (expected $value)"
+}
+
+# T-8.31 store readiness (INTEGRATION_PLAN §12.8, M§112): usage strings in tr + en for every
+# permission requested, none for the never-requested ones, the encryption declaration, the privacy
+# manifest (no tracking, the declared required-reason APIs) and both associated domains.
+IOS_USAGE_KEYS=(
+  NSCalendarsFullAccessUsageDescription NSCalendarsUsageDescription
+  NSRemindersFullAccessUsageDescription NSRemindersUsageDescription
+  NSMicrophoneUsageDescription NSSpeechRecognitionUsageDescription
+  NSCameraUsageDescription NSPhotoLibraryUsageDescription NSFaceIDUsageDescription
+)
+IOS_NEVER_KEYS=(
+  NSLocationWhenInUseUsageDescription NSLocationAlwaysAndWhenInUseUsageDescription
+  NSLocationAlwaysUsageDescription NSContactsUsageDescription NSUserTrackingUsageDescription
+  NSPhotoLibraryAddUsageDescription
+)
+PRIVACY_REASONS=(
+  "NSPrivacyAccessedAPICategoryUserDefaults:CA92.1"
+  "NSPrivacyAccessedAPICategoryUserDefaults:1C8F.1"
+  "NSPrivacyAccessedAPICategoryFileTimestamp:C617.1"
+  "NSPrivacyAccessedAPICategorySystemBootTime:35F9.1"
+  "NSPrivacyAccessedAPICategoryDiskSpace:E174.1"
+)
+BLOCKED_PERMISSIONS=(
+  android.permission.READ_MEDIA_IMAGES android.permission.READ_MEDIA_VIDEO
+  android.permission.READ_MEDIA_AUDIO android.permission.READ_MEDIA_VISUAL_USER_SELECTED
+  android.permission.ACCESS_MEDIA_LOCATION android.permission.READ_EXTERNAL_STORAGE
+  android.permission.WRITE_EXTERNAL_STORAGE android.permission.ACCESS_FINE_LOCATION
+  android.permission.ACCESS_COARSE_LOCATION android.permission.ACCESS_BACKGROUND_LOCATION
+  android.permission.READ_CONTACTS android.permission.WRITE_CONTACTS
+  android.permission.USE_EXACT_ALARM android.permission.QUERY_ALL_PACKAGES
+  com.google.android.gms.permission.AD_ID
+)
+
+assert_store_readiness_ios() {
+  local plist="$1" privacy="$2" strings_en="$3" entitlements="$4" key entry category reason
+  for key in "${IOS_USAGE_KEYS[@]}"; do
+    expect_contains "$plist" "<key>$key</key>" "usage string $key"
+    expect_contains "$strings_en" "$key" "English $key"
+  done
+  for key in "${IOS_NEVER_KEYS[@]}"; do
+    expect_absent "$plist" "<key>$key</key>" "never-requested $key"
+  done
+  expect_plist_value "$plist" ITSAppUsesNonExemptEncryption "<false/>"
+  expect_plist_value "$privacy" NSPrivacyTracking "<false/>"
+  expect_contains "$privacy" "<key>NSPrivacyTrackingDomains</key>" "NSPrivacyTrackingDomains"
+  for entry in "${PRIVACY_REASONS[@]}"; do
+    category="${entry%%:*}"
+    reason="${entry##*:}"
+    expect_contains "$privacy" "<string>$category</string>" "$category"
+    expect_contains "$privacy" "<string>$reason</string>" "$category reason $reason"
+  done
+  expect_contains "$entitlements" "<string>webcredentials:$WEB_HOST</string>" "webcredentials domain"
+}
+
+assert_store_readiness_android() {
+  local manifest="$1" permission
+  expect_contains "$manifest" "android:host=\"$WEB_HOST\" android:pathPrefix=\"/r\"" \
+    "verified /r link"
+  for permission in "${BLOCKED_PERMISSIONS[@]}"; do
+    expect_contains "$manifest" \
+      "<uses-permission android:name=\"$permission\" tools:node=\"remove\"/>" "blocked $permission"
+    expect_absent "$manifest" "<uses-permission android:name=\"$permission\"/>" \
+      "a requested $permission"
+  done
+}
+
 copy_app() {
   local dest="$1"
   mkdir -p "$dest"
@@ -127,6 +203,8 @@ assert_variant() {
   expect_contains "$ios/$SHARE_TARGET/ShareExtension.entitlements" "<string>$group</string>" \
     "share extension App Group"
   expect_contains "$ios/$project/PrivacyInfo.xcprivacy" "1C8F.1" "App Group UserDefaults reason"
+  assert_store_readiness_ios "$plist" "$ios/$project/PrivacyInfo.xcprivacy" \
+    "$ios/$project/Supporting/en.lproj/InfoPlist.strings" "$entitlements"
 
   # Widgets (T-8.25): the WidgetKit target (@bacons/apple-targets), its App Group, and the
   # DAAppGroup key the da-widgets module and the extension read.
@@ -186,6 +264,14 @@ assert_variant() {
   expect_absent "$manifest" \
     "<uses-permission android:name=\"android.permission.QUERY_ALL_PACKAGES\"/>" \
     "QUERY_ALL_PACKAGES"
+  assert_store_readiness_android "$manifest"
+
+  if [[ "$app_env" == "e2e" ]]; then
+    expect_contains "$manifest" "android:usesCleartextTraffic=\"true\"" \
+      "cleartext traffic for the local E2E stack"
+  else
+    expect_absent "$manifest" "android:usesCleartextTraffic=\"true\"" "cleartext traffic"
+  fi
 
   if [[ -z "$suffix" ]]; then
     # Production carries no variant identifiers at all.

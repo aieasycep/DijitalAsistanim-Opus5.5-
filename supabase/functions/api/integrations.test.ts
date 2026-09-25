@@ -100,6 +100,74 @@ Deno.test(
 );
 
 Deno.test(
+  'API-INT-04 force_analysis: enqueues email_analysis for owned messages only; body rules → 422',
+  async () => {
+    const { ih, h, jwt } = await setup();
+    const account = await activeDemoAccount(ih, { userId: USER_A, status: 'healthy' });
+    const [stored] = await ih.store.upsertMail(account.id, [
+      {
+        provider_message_id: 'force-1',
+        provider_thread_id: 'force-thread',
+        internet_message_id: null,
+        in_reply_to: null,
+        references_ids: [],
+        direction: 'inbound',
+        from_email: 'bulten@kampanya.example',
+        from_name: null,
+        to_emails: ['user@example.test'],
+        cc_emails: [],
+        subject: 'Kampanya',
+        snippet: 'Kampanya',
+        sent_at: null,
+        received_at: '2026-09-22T05:00:00.000Z',
+        is_read: false,
+        importance: null,
+        labels: [],
+        has_attachments: false,
+        list_unsubscribe: false,
+        auto_submitted: false,
+        precedence_bulk: false,
+        dkim_pass: null,
+        spf_pass: null,
+        content_hash: 'a'.repeat(64),
+        web_link: null,
+        thread_web_link: null,
+        deleted: false,
+      } as Parameters<typeof ih.store.upsertMail>[1][number],
+    ]);
+    const messageId = stored!.id;
+    const mixed = await call(h, 'POST', `/integrations/${account.id}/sync`, {
+      jwt,
+      body: { message_ids: [messageId], force_analysis: true, resources: ['calendar'] },
+    });
+    assertEquals(mixed.status, 422);
+    const alone = await call(h, 'POST', `/integrations/${account.id}/sync`, {
+      jwt,
+      body: { message_ids: [messageId] },
+    });
+    assertEquals(alone.status, 422);
+    const res = await call(h, 'POST', `/integrations/${account.id}/sync`, {
+      jwt,
+      body: { message_ids: [messageId], force_analysis: true },
+    });
+    assertEquals(res.status, 202);
+    const data = (await res.json()).data;
+    assertEquals(data.jobs.length, 1);
+    const job = ih.jobs.jobs.get(data.jobs[0].job_id);
+    assertEquals(job?.type, 'email_analysis');
+    assert(job?.idempotency_key.startsWith(`email_analysis:${messageId}:force:`));
+    assertEquals((job?.payload as { force?: boolean } | undefined)?.force, true);
+    // A message of another account (here: unknown) is not found; nothing is enqueued.
+    const other = await activeDemoAccount(ih, { userId: USER_A, status: 'healthy' });
+    const unknown = await call(h, 'POST', `/integrations/${other.id}/sync`, {
+      jwt,
+      body: { message_ids: [messageId], force_analysis: true },
+    });
+    assertEquals(unknown.status, 404);
+  },
+);
+
+Deno.test(
   'API-INT-05 / API-INT-03: stale expected_updated_at → 409; disconnect twice is a no-op',
   async () => {
     const { ih, h, jwt } = await setup();

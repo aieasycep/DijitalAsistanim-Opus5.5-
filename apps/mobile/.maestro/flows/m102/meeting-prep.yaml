@@ -1,0 +1,32 @@
+appId: com.dijitalasistan.app.e2e
+name: 'E2E-M-11 · Meeting prep'
+tags: [m102, android, ios, pro]
+env:
+  USER_KEY: u_pro
+  SCENARIO: canon
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- openLink: 'dijitalasistan-e2e://meeting/${output.ids.meetingEvent}/prep'
+- extendedWaitUntil: { visible: { id: 'prep.screen' }, timeout: 60000 }
+- assertVisible: Mehmet Yılmaz
+- assertVisible: { id: 'prep.points' }
+- tapOn: { id: 'prep.person' }
+- extendedWaitUntil: { visible: { id: 'screen.person' }, timeout: 30000 }
+- back
+- scrollUntilVisible: { element: { id: 'prep.emails' }, direction: DOWN, timeout: 20000 }
+- tapOn: { id: 'prep.emails' }
+- back
+- tapOn: '${output.t.meeting.prepScreen.readSummary}'
+- extendedWaitUntil: { visible: { id: 'summary.screen' }, timeout: 30000 }
+- assertVisible: '${output.t.meeting.summaryScreen.title}'
+- back
+- tapOn: { id: 'prep.note' }
+- tapOn: { id: 'meeting.note.input' }
+- inputText: 'Teslim tarihini sor.'
+- tapOn: { id: 'meeting.note.save' }
+- extendedWaitUntil: { visible: { id: 'prep.screen' }, timeout: 30000 }

@@ -1,0 +1,20 @@
+appId: com.dijitalasistan.app.e2e
+name: 'TST-E2E-M-04 · Notification detail-level preview'
+tags: [security, android, ios, pro]
+env:
+  USER_KEY: u_pro
+  SCENARIO: canon
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- openLink: 'dijitalasistan-e2e://settings/notifications'
+- tapOn: { id: 'notifications.detail.full' }
+- assertVisible: { id: 'notifications.preview' }
+- tapOn: { id: 'notifications.detail.title_only' }
+- assertVisible: { id: 'notifications.preview' }
+- tapOn: { id: 'notifications.detail.generic' }
+- assertVisible: { id: 'notifications.preview' }

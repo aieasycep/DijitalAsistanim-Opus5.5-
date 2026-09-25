@@ -1,0 +1,20 @@
+appId: com.dijitalasistan.app.e2e
+name: 'E2E-S-18 · Error states: reauth, sync delayed, AI unavailable'
+tags: [screens, android, ios, pro]
+env:
+  USER_KEY: u_error
+  SCENARIO: errors
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- runFlow: { file: ../../subflows/open-tab.yaml, env: { TAB: flow } }
+- extendedWaitUntil: { visible: { id: 'flow.reauth' }, timeout: 60000 }
+- assertVisible: '${output.t.common.actions.reconnect}'
+- assertVisible: { id: 'flow.syncDelayed' }
+- runFlow: { file: ../../subflows/open-tab.yaml, env: { TAB: assistant } }
+- extendedWaitUntil: { visible: { id: 'assistant.aiUnavailable' }, timeout: 30000 }
+- assertVisible: '${output.t.states.error.aiUnavailable.title}'

@@ -1,0 +1,37 @@
+appId: com.dijitalasistan.app.e2e
+name: 'E2E-M-12 · Commitment'
+tags: [m102, android, ios, pro]
+env:
+  USER_KEY: u_pro
+  SCENARIO: canon
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- openLink: 'dijitalasistan-e2e://commitments'
+- extendedWaitUntil: { visible: { id: 'commitments.screen' }, timeout: 30000 }
+- assertVisible: { id: 'commitments.direction' }
+- tapOn: Mehmet'e yarın teklif göndereceğim.
+- extendedWaitUntil: { visible: { id: 'commitment.screen' }, timeout: 30000 }
+- tapOn: { id: 'commitment.done' }
+- extendedWaitUntil: { visible: '${output.t.common.actions.undo}', timeout: 30000 }
+- back
+- runScript:
+    file: ../../scripts/harness.js
+    env: { ACTION: tick, P_NOW: '2026-09-22T12:31:00Z' }
+- openLink: 'dijitalasistan-e2e://meeting/${output.ids.meetingEvent}/post'
+- extendedWaitUntil: { visible: { id: 'post.screen' }, timeout: 30000 }
+- assertVisible: '${output.t.meeting.postScreen.headline}'
+- tapOn: { id: 'post.modeToggle' }
+- tapOn: { id: 'post.input' }
+- inputText: "Mehmet'e yarın teklif göndereceğim."
+- tapOn: { id: 'post.extract' }
+- extendedWaitUntil: { visible: { id: 'post.proposals' }, timeout: 60000 }
+- tapOn: { id: 'post.save' }
+- extendedWaitUntil: { visible: { id: 'post.saved' }, timeout: 30000 }
+- runScript:
+    file: ../../scripts/harness.js
+    env: { ACTION: state, USER_KEY: '${USER_KEY}', PROBE: 'commitments' }

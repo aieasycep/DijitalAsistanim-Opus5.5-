@@ -9,7 +9,12 @@
  * original's text offers "Kopyala" on long-press.
  */
 import { isApiError, qk } from '@da/api-client';
-import { callRoute, mailOriginalQueryOptions, useApiClient } from '@da/api-client/react';
+import {
+  callRoute,
+  forceAnalysisMutationOptions,
+  mailOriginalQueryOptions,
+  useApiClient,
+} from '@da/api-client/react';
 import { formatFileSize } from '@da/i18n';
 import {
   Accordion,
@@ -32,7 +37,7 @@ import {
   useTheme,
   useToast,
 } from '@da/ui';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
@@ -92,6 +97,10 @@ export function originalToText(
     .trim();
   return { text, links };
 }
+
+/** "Analiz et" polling: every 3 s for at most 60 s after the job is queued. */
+const ANALYZE_POLL_MS = 3_000;
+const ANALYZE_POLL_LIMIT_MS = 60_000;
 
 type AiStatusBucket = 'pending' | 't0_final' | 'classified' | 'skipped' | 'failed';
 
@@ -252,7 +261,18 @@ export function EmailDetailScreen() {
   const back = useBack('/flow');
   const proposals = useProposals();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const query = useQuery(emailDetailOptions(id));
+  // "Analiz et" (API-INT-04 force_analysis): poll the detail (R-19) until the job lands, ≤ 60 s.
+  const [analyzeQueuedAt, setAnalyzeQueuedAt] = useState<number | null>(null);
+  const query = useQuery({
+    ...emailDetailOptions(id),
+    refetchInterval: (q) =>
+      analyzeQueuedAt !== null &&
+      q.state.data?.message.aiStatus === 't0_final' &&
+      now().getTime() - analyzeQueuedAt < ANALYZE_POLL_LIMIT_MS
+        ? ANALYZE_POLL_MS
+        : false,
+  });
+  const forceAnalysis = useMutation(forceAnalysisMutationOptions(client));
   const queryClient = useQueryClient();
   const contactId = query.data?.contactId ?? null;
   // The sender's VIP state (M-MAIL-04), read from the cache when the menu opens.
@@ -542,6 +562,28 @@ export function EmailDetailScreen() {
   const analyzing =
     status === 'pending_t0' || status === 'queued_realtime' || status === 'queued_batch';
   const ruleSkipped = status === 't0_final' && message.tier === 'explicit_rule';
+  const analyzeQueued = ruleSkipped && analyzeQueuedAt !== null;
+  const analyze = () => {
+    if (blocked('sync') || forceAnalysis.isPending) return;
+    forceAnalysis.mutate(
+      { accountId: message.accountId, messageIds: [message.id] },
+      {
+        onSuccess: () => {
+          setAnalyzeQueuedAt(now().getTime());
+          toast.show({ message: t('screen.analyzeQueued'), kind: 'success' });
+        },
+        onError: (error) => {
+          toast.show({
+            message:
+              isApiError(error) && error.code === 'RATE_LIMITED'
+                ? t('screen.analyzeLimited')
+                : t('screen.analyzeFailed'),
+            kind: 'error',
+          });
+        },
+      },
+    );
+  };
 
   return (
     <DetailScreen
@@ -591,8 +633,25 @@ export function EmailDetailScreen() {
       </Text>
 
       {message.injectionSuspected ? <HintRow text={t('screen.injection')} /> : null}
-      {ruleSkipped ? (
-        <HintRow text={t('screen.ruleSkipped')} />
+      {analyzeQueued ? (
+        <AiCard
+          kicker={t('screen.analyzing')}
+          title={message.subject ?? t('screen.noSubject')}
+          state="loading"
+          testID="email.ai.loading"
+        />
+      ) : ruleSkipped ? (
+        <View style={{ gap: 8 }}>
+          <HintRow text={t('screen.ruleSkipped')} />
+          <Button
+            label={t('screen.analyze')}
+            variant="tonal"
+            size="sm"
+            loading={forceAnalysis.isPending}
+            onPress={analyze}
+            testID="email.analyze"
+          />
+        </View>
       ) : status === 'skipped_budget' ? (
         <View style={{ gap: 8 }}>
           <HintRow text={t('screen.budgetSkipped')} />

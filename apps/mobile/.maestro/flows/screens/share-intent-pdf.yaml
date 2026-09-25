@@ -1,0 +1,21 @@
+appId: com.dijitalasistan.app.e2e
+name: 'E2E-S-08 · Android share intent (PDF) → capture'
+tags: [screens, android, pro]
+env:
+  USER_KEY: u_pro
+  SCENARIO: canon
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- extendedWaitUntil: { visible: { id: 'tab.today' }, timeout: 60000 }
+- runScript:
+    file: ../../scripts/harness.js
+    env: { ACTION: share_pdf }
+- extendedWaitUntil: { visible: { id: 'screen.capture' }, timeout: 30000 }
+- assertVisible: { id: 'capture.shareNotice' }
+- tapOn: { id: 'capture.analyze' }
+- extendedWaitUntil: { visible: { id: 'capture.results' }, timeout: 90000 }

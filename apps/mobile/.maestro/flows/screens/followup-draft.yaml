@@ -1,0 +1,20 @@
+appId: com.dijitalasistan.app.e2e
+name: 'E2E-S-05 · Follow-up draft and reminder'
+tags: [screens, android, ios, pro]
+env:
+  USER_KEY: u_pro
+  SCENARIO: canon
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- openLink: 'dijitalasistan-e2e://followups'
+- extendedWaitUntil: { visible: { id: 'followups.screen' }, timeout: 30000 }
+- tapOn: '${output.t.followups.screen.draft}'
+- extendedWaitUntil: { visible: { id: 'reply.editor' }, timeout: 60000 }
+- tapOn: { id: 'reply.approve' }
+- runFlow: ../../subflows/approve-sheet.yaml
+- extendedWaitUntil: { visible: { id: 'reply.sent' }, timeout: 60000 }

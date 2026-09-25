@@ -178,7 +178,13 @@ const FONT_FILES = [
   'lora/400Regular_Italic/Lora_400Regular_Italic.ttf',
 ].map((file) => `./node_modules/@expo-google-fonts/${file}`);
 
-/** Required-reason API declarations for the app target (§12.1; App Group sharing is `1C8F.1`). */
+/**
+ * Required-reason API declarations for the app target (§12.1; T-8.31 audit). UserDefaults: React
+ * Native / Expo preferences (`CA92.1`) and the App Group shared with the widget and the share
+ * extension (`1C8F.1`); file timestamps: expo-file-system and the audio / capture caches
+ * (`C617.1`); system boot time: React Native's performance clock (`35F9.1`); disk space: the
+ * free-space check before downloads (`E174.1`). The pods' own manifests cover their internal use.
+ */
 const PRIVACY_API_REASONS = [
   {
     NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategoryUserDefaults',
@@ -221,6 +227,12 @@ export const ANDROID_BLOCKED_PERMISSIONS = [
   'android.permission.USE_EXACT_ALARM',
   'android.permission.QUERY_ALL_PACKAGES',
   'com.google.android.gms.permission.AD_ID',
+  // T-8.31 audit: the remaining media, background location and contact writes.
+  'android.permission.READ_MEDIA_AUDIO',
+  'android.permission.READ_MEDIA_VISUAL_USER_SELECTED',
+  'android.permission.ACCESS_MEDIA_LOCATION',
+  'android.permission.ACCESS_BACKGROUND_LOCATION',
+  'android.permission.WRITE_CONTACTS',
 ];
 
 /**
@@ -281,7 +293,14 @@ function plugins(variant: AppVariant, env: Env): PluginEntry[] {
       'expo-build-properties',
       {
         useHermesV1: true,
-        android: { compileSdkVersion: 36, targetSdkVersion: 36, minSdkVersion: 24 },
+        android: {
+          compileSdkVersion: 36,
+          targetSdkVersion: 36,
+          minSdkVersion: 24,
+          // The `e2e` APK talks to the emulator host's local stack over http://10.0.2.2:54321
+          // (TEST_PLAN §9.1); every other variant keeps cleartext traffic off.
+          ...(variant.appEnv === 'e2e' ? { usesCleartextTraffic: true } : {}),
+        },
       },
     ],
     [
@@ -408,6 +427,7 @@ export function buildAppConfig(base: Partial<ExpoConfig>, env: Env): ExpoConfig 
           },
           privacyManifests: {
             NSPrivacyTracking: false,
+            NSPrivacyTrackingDomains: [],
             NSPrivacyAccessedAPITypes: PRIVACY_API_REASONS,
           },
         },

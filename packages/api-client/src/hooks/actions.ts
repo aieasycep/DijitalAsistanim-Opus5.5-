@@ -88,6 +88,78 @@ export const ACTION_MUTATION_ROUTES = [
   'POST /integrations/oauth/complete',
 ] as const satisfies readonly JsonRouteKey[];
 
+/** Variables of the M-MAIL-03 "Analiz et" request (API-INT-04 body extension). */
+export interface ForceAnalysisVariables {
+  readonly accountId: string;
+  readonly messageIds: readonly string[];
+}
+
+/**
+ * API-INT-04 with `{message_ids, force_analysis: true}`: enqueue `email_analysis` for messages an
+ * explicit rule kept from the AI. The server still applies the AI budget (`skipped_budget`).
+ */
+export function forceAnalysisMutationOptions(client: ApiClient) {
+  return mutationOptions({
+    mutationKey: ['api', 'POST /integrations/:accountId/sync', 'force_analysis'] as const,
+    mutationFn: ({ accountId, messageIds }: ForceAnalysisVariables) =>
+      callRoute(client, 'POST /integrations/:accountId/sync', {
+        params: { accountId },
+        body: { message_ids: [...messageIds], force_analysis: true },
+      }),
+  });
+}
+
+/** Variables of "Taslağı sil" (API-MAIL-04 `status: 'discarded'`). */
+export interface DiscardDraftVariables {
+  readonly draftId: string;
+  readonly expectedVersion: number;
+  readonly idempotencyKey?: string;
+}
+
+/** API-MAIL-04 `{status:'discarded', expected_version}`: only a `draft` is discarded (else 409). */
+export function discardReplyDraftMutationOptions(client: ApiClient) {
+  return mutationOptions({
+    mutationKey: ['api', 'PATCH /reply-drafts/:id', 'discard'] as const,
+    mutationFn: ({ draftId, expectedVersion, idempotencyKey }: DiscardDraftVariables) =>
+      callRoute(
+        client,
+        'PATCH /reply-drafts/:id',
+        {
+          params: { id: draftId },
+          body: { status: 'discarded', expected_version: expectedVersion },
+        },
+        idempotencyKey === undefined ? {} : { idempotencyKey },
+      ),
+  });
+}
+
+/** A premium file is re-requested at most every 4 min (the signed URL lives 300 s). */
+export const MEETING_AUDIO_STALE_MS = 4 * 60_000;
+
+/**
+ * API-MEET-04 `POST /meetings/:eventId/prep/audio` used as a query (M-MEET-03): `premium` → a
+ * signed file; `native` → the device voice reads the paragraphs (`premium_status:'generating'`
+ * while JOB-30 renders the file). Pro-only on the server (402 → the device voice).
+ */
+export function meetingPrepAudioQueryOptions(
+  client: ApiClient,
+  eventId: string,
+  prepVersionHash: string,
+) {
+  return queryOptions({
+    queryKey: [...qk.meetings.prep(eventId), 'audio', prepVersionHash] as const,
+    queryFn: ({ signal }) =>
+      callRoute(
+        client,
+        'POST /meetings/:eventId/prep/audio',
+        { params: { eventId }, body: { prep_version_hash: prepVersionHash } },
+        { signal },
+      ),
+    staleTime: MEETING_AUDIO_STALE_MS,
+    retry: retryTransient(1),
+  });
+}
+
 /** 5 min: the original body lives in memory only (M-MAIL-03, SECURITY CTL-3.13). */
 export const MAIL_ORIGINAL_GC_TIME_MS = 5 * 60_000;
 

@@ -1,0 +1,21 @@
+appId: com.dijitalasistan.app.e2e
+name: 'E2E-D · Mail → smart reminder → Microsoft To Do approval'
+tags: [acceptance, android, ios, pro]
+env:
+  USER_KEY: u_pro
+  SCENARIO: canon
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- openLink: 'dijitalasistan-e2e://mail/${output.ids.messageAhmet}'
+- tapOn: { id: 'email.tile.remind' }
+- tapOn: '${output.t.reminder.presets.smart}'
+- tapOn: { id: 'reminder.destination' }
+- tapOn: '${output.t.common.providers.microsoftTodo}'
+- tapOn: '${output.t.reminder.cta.approval}'
+- runFlow: ../../subflows/approve-sheet.yaml
+- extendedWaitUntil: { visible: '${output.t.approvals.results.reminder_create}', timeout: 60000 }

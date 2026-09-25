@@ -78,13 +78,31 @@ export const DisconnectResponse = Success(
 );
 
 // API-INT-04 · POST /integrations/:accountId/sync
-export const SyncBody = z.strictObject({
-  resources: z
-    .array(z.enum(['mail', 'calendar', 'tasks']))
-    .min(1)
-    .max(3)
-    .optional(),
-});
+// Body extension (SCREEN_AND_FLOW_MAP M-MAIL-03 "Analiz et"): `message_ids` + `force_analysis: true`
+// enqueue `email_analysis` for those messages of this account, bypassing the explicit-rule skip but
+// not the AI budget. The two fields come together and only with `resources` absent or `['mail']`.
+export const SYNC_FORCE_ANALYSIS_MAX_MESSAGES = 20;
+export const SyncBody = z
+  .strictObject({
+    resources: z
+      .array(z.enum(['mail', 'calendar', 'tasks']))
+      .min(1)
+      .max(3)
+      .optional(),
+    message_ids: z.array(Uuid).min(1).max(SYNC_FORCE_ANALYSIS_MAX_MESSAGES).optional(),
+    force_analysis: z.boolean().optional(),
+  })
+  .refine((body) => (body.message_ids !== undefined) === (body.force_analysis === true), {
+    message: 'message_ids_require_force_analysis',
+    path: ['force_analysis'],
+  })
+  .refine(
+    (body) =>
+      body.message_ids === undefined ||
+      body.resources === undefined ||
+      (body.resources.length === 1 && body.resources[0] === 'mail'),
+    { message: 'force_analysis_mail_only', path: ['resources'] },
+  );
 export const SyncResponse = Success(
   z.object({ jobs: z.array(JobRef), next_allowed_at: IsoDateTime }),
 );

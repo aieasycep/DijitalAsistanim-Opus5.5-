@@ -290,6 +290,49 @@ Deno.test(
 );
 
 Deno.test(
+  'email_analysis force (API-INT-04 "Analiz et"): an explicit-rule mail is analysed; the budget still applies',
+  async () => {
+    const seed = (mem: MemoryIntel) => {
+      const t = threadRow({ subject: 'Revize teklif' });
+      const m = messageRow({
+        thread_id: t.id,
+        subject: 'Revize teklif',
+        from_email: 'mehmet@yilmazendustri.example',
+        ai_status: 't0_final',
+        classification_tier: 'explicit_rule',
+        analyzed_at: NOW.toISOString(),
+      });
+      mem.threads.push(t);
+      mem.messages.push(m);
+      mem.bodies.set(m.provider_message_id, {
+        text: "Merhaba, revize teklifi bugün 17:00'ye kadar PDF olarak iletebilir misiniz?",
+        html: null,
+      });
+      return m.id;
+    };
+    const payload = (id: string) => ({
+      email_message_id: id,
+      connected_account_id: ACCOUNT_ID,
+      reasons: ['summary' as const, 'key_points' as const, 'deadline' as const],
+      force: true,
+    });
+    const mem = new MemoryIntel();
+    const id = seed(mem);
+    const out = await runEmailAnalysis(deps(mem), jobContext(payload(id)));
+    assertEquals(out.deep, 'ai');
+    assertEquals(mem.messages[0]!.ai_status, 'classified');
+
+    const limited = new MemoryIntel();
+    const limitedId = seed(limited);
+    const budget = fixtureServices({ budget: { allow: false, reason: 'units_exhausted' } });
+    const skipped = await runEmailAnalysis(deps(limited, budget), jobContext(payload(limitedId)));
+    assertEquals(skipped.forced, 'skipped_budget');
+    assertEquals(limited.messages[0]!.ai_status, 'skipped_budget');
+    assertEquals(budget.calls.length, 0);
+  },
+);
+
+Deno.test(
   'IT-AI-07 / EF-AI-01: an injection mail changes nothing and yields no approval',
   async () => {
     const mem = new MemoryIntel();

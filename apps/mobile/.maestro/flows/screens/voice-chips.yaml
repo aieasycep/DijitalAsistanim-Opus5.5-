@@ -1,0 +1,24 @@
+appId: com.dijitalasistan.app.e2e
+name: 'E2E-S-14 · Voice mode chips and tap-only approval'
+tags: [screens, android, ios, pro]
+env:
+  USER_KEY: u_pro
+  SCENARIO: canon
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow, microphone: deny } }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- openLink: 'dijitalasistan-e2e://voice'
+- extendedWaitUntil: { visible: { id: 'screen.voice' }, timeout: 30000 }
+- tapOn: '${output.t.voice.chips.tomorrow}'
+- extendedWaitUntil: { visible: { id: 'voice.answer' }, timeout: 60000 }
+- tapOn: { id: 'voice.askWithText' }
+- inputText: "Yarın 10:00'da Mehmet ile toplantı ekle"
+- hideKeyboard
+- extendedWaitUntil: { visible: '${output.t.voice.tapToApprove}', timeout: 60000 }
+- runScript:
+    file: ../../scripts/harness.js
+    env: { ACTION: state, USER_KEY: '${USER_KEY}', PROBE: 'approvals_by_status' }

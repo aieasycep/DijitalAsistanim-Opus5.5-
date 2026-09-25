@@ -1,0 +1,23 @@
+appId: com.dijitalasistan.app.e2e
+name: 'TST-E2E-M-01 · No cached content after sign-out'
+tags: [security, android, free]
+env:
+  USER_KEY: u_free
+  SCENARIO: canon
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- extendedWaitUntil: { visible: { id: 'tab.today' }, timeout: 60000 }
+- openLink: 'dijitalasistan-e2e://settings'
+- tapOn: { id: 'hub.signOut' }
+- tapOn: { id: 'signOut.confirm' }
+- extendedWaitUntil: { visible: { id: 'intro.signIn' }, timeout: 30000 }
+- setAirplaneMode: enabled
+- launchApp: { clearState: false }
+- assertVisible: { id: 'intro.signIn' }
+- assertNotVisible: Ahmet Yılmaz
+- setAirplaneMode: disabled

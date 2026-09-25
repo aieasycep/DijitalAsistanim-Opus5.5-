@@ -1,0 +1,18 @@
+appId: com.dijitalasistan.app.e2e
+name: 'E2E-S-07 · Reminder presets in Europe/Berlin (DST)'
+tags: [screens, android, ios, pro]
+env:
+  USER_KEY: u_en
+  SCENARIO: dst_berlin
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- openLink: 'dijitalasistan-e2e://mail/${output.ids.messageAhmet}'
+- tapOn: { id: 'email.tile.remind' }
+- extendedWaitUntil: { visible: { id: 'sheet.reminder' }, timeout: 30000 }
+- assertVisible: { id: 'reminder.preset.before_1h' }
+- assertVisible: { id: 'reminder.preset.tomorrow_morning' }

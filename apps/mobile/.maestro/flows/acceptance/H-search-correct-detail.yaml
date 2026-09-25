@@ -1,0 +1,35 @@
+appId: com.dijitalasistan.app.e2e
+name: 'E2E-H · Search lands on the correct detail'
+tags: [acceptance, android, ios, pro]
+env:
+  USER_KEY: u_pro
+  SCENARIO: canon
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- openLink: 'dijitalasistan-e2e://search'
+- tapOn: { id: 'search.field' }
+- inputText: 'Mehmet'
+- extendedWaitUntil: { visible: Mehmet Yılmaz, timeout: 30000 }
+- tapOn: Mehmet Yılmaz
+- extendedWaitUntil: { visible: { id: 'screen.person' }, timeout: 30000 }
+- back
+- eraseText
+- inputText: 'teklif'
+- extendedWaitUntil: { visible: { id: 'search.results' }, timeout: 30000 }
+- tapOn: Ahmet Yılmaz
+- extendedWaitUntil: { visible: { id: 'email.screen' }, timeout: 30000 }
+- back
+- eraseText
+- inputText: 'uçak bileti'
+- tapOn: TK2412
+- extendedWaitUntil: { visible: { id: 'life.sheet' }, timeout: 30000 }
+- back
+- eraseText
+- inputText: 'fatura'
+- tapOn: 1.842 TL
+- extendedWaitUntil: { visible: { id: 'life.sheet' }, timeout: 30000 }

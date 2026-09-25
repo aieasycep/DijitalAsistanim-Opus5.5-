@@ -1,0 +1,21 @@
+appId: com.dijitalasistan.app.e2e
+name: 'E2E-S-15 · Language switch to English and back'
+tags: [screens, android, ios, pro]
+env:
+  USER_KEY: u_pro
+  SCENARIO: canon
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- openLink: 'dijitalasistan-e2e://settings/language'
+- tapOn: { id: 'language.en' }
+- runFlow: { file: ../../subflows/open-tab.yaml, env: { TAB: today } }
+- extendedWaitUntil: { visible: { id: 'tab.today' }, timeout: 30000 }
+- launchApp: { clearState: false }
+- openLink: 'dijitalasistan-e2e://settings/language'
+- tapOn: { id: 'language.tr' }
+- assertVisible: '${output.t.settings.language.turkish}'

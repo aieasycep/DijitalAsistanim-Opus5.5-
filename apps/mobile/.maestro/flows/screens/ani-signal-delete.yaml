@@ -1,0 +1,22 @@
+appId: com.dijitalasistan.app.e2e
+name: 'E2E-S-22 · Android notification signals: delete one and all'
+tags: [screens, android, pro]
+env:
+  USER_KEY: u_android_ni
+  SCENARIO: android_ni
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- openLink: 'dijitalasistan-e2e://settings/android-notifications'
+- extendedWaitUntil: { visible: { id: 'ani.signals' }, timeout: 30000 }
+- tapOn: { id: 'ani.deleteAll' }
+- extendedWaitUntil: { visible: { id: 'ani.deleteAllDialog' }, timeout: 30000 }
+- tapOn: '${output.t.common.actions.delete}'
+- extendedWaitUntil: { visible: { id: 'ani.signals.empty' }, timeout: 30000 }
+- runScript:
+    file: ../../scripts/harness.js
+    env: { ACTION: state, USER_KEY: '${USER_KEY}', PROBE: 'ani_signals', FIELD: count, EXPECT: '0' }

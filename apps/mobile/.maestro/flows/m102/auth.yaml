@@ -1,0 +1,38 @@
+appId: com.dijitalasistan.app.e2e
+name: 'E2E-M-02 · Auth'
+tags: [m102, android, ios, free]
+env:
+  USER_KEY: u_free
+  SCENARIO: canon
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- tapOn: { id: 'intro.signIn' }
+- tapOn: { id: 'auth.provider.email' }
+- tapOn: { id: 'auth.email.field' }
+- inputText: '${output.user.email}'
+- tapOn: { id: 'auth.email.send' }
+- tapOn: { id: 'auth.code.input' }
+- inputText: '000000'
+- tapOn: { id: 'auth.code.verify' }
+- extendedWaitUntil: { visible: { id: 'auth.code.error' }, timeout: 30000 }
+- tapOn: { id: 'auth.code.resend' }
+- runScript:
+    file: ../../scripts/harness.js
+    env: { ACTION: otp, EMAIL: '${output.user.email}' }
+- eraseText
+- inputText: '${output.otp.code}'
+- tapOn: { id: 'auth.code.verify' }
+- extendedWaitUntil: { visible: { id: 'tab.today' }, timeout: 60000 }
+- openLink: 'dijitalasistan-e2e://settings'
+- tapOn: { id: 'hub.signOut' }
+- tapOn: { id: 'signOut.confirm' }
+- extendedWaitUntil: { visible: { id: 'intro.signIn' }, timeout: 30000 }
+- launchApp: { clearState: false }
+- assertVisible: { id: 'intro.signIn' }
+- assertNotVisible: { id: 'tab.today' }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- extendedWaitUntil: { visible: { id: 'tab.today' }, timeout: 60000 }

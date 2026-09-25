@@ -1,0 +1,60 @@
+appId: com.dijitalasistan.app.e2e
+name: 'E2E-M-19 · Privacy'
+tags: [m102, android, ios, pro]
+env:
+  USER_KEY: u_pro
+  SCENARIO: canon
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- openLink: 'dijitalasistan-e2e://settings/privacy'
+- extendedWaitUntil: { visible: { id: 'screen.privacy' }, timeout: 30000 }
+- assertVisible: '${output.t.privacy.promises.encrypted}'
+- assertVisible: '${output.t.privacy.promises.approval}'
+- assertVisible: '${output.t.privacy.promises.ads}'
+- assertNotVisible: .*uçtan uca.*
+- tapOn: { id: 'privacy.row.aiData' }
+- tapOn: '${output.t.privacy.aiData.attachments.title}'
+- back
+- tapOn: { id: 'privacy.row.retention' }
+- extendedWaitUntil: { visible: { id: 'screen.privacy.retention' }, timeout: 30000 }
+- tapOn: { id: 'retention.segments' }
+- tapOn: { id: 'retentionShorten.confirm' }
+- back
+- tapOn: { id: 'privacy.row.export' }
+- tapOn: { id: 'export.cta' }
+- extendedWaitUntil: { visible: { id: 'export.processing' }, timeout: 30000 }
+- runScript:
+    file: ../../scripts/harness.js
+    env: { ACTION: drain, TYPES: 'privacy_export' }
+- extendedWaitUntil: { visible: { id: 'export.ready' }, timeout: 60000 }
+- back
+- tapOn: { id: 'privacy.row.history' }
+- tapOn: { id: 'history.cta' }
+- tapOn: { id: 'historyConfirm.delete' }
+- tapOn: { id: 'reauth.sendCode' }
+- runScript:
+    file: ../../scripts/harness.js
+    env: { ACTION: otp, EMAIL: '${output.user.email}' }
+- tapOn: { id: 'reauth.code' }
+- inputText: '${output.otp.code}'
+- tapOn: { id: 'reauth.verify' }
+- extendedWaitUntil: { visible: { id: 'history.processing' }, timeout: 30000 }
+- runScript:
+    file: ../../scripts/harness.js
+    env: { ACTION: drain }
+- extendedWaitUntil: { visible: { id: 'history.completed' }, timeout: 60000 }
+- runScript:
+    file: ../../scripts/harness.js
+    env:
+      {
+        ACTION: state,
+        USER_KEY: '${USER_KEY}',
+        PROBE: 'export_request',
+        FIELD: status,
+        EXPECT: 'ready',
+      }

@@ -1,0 +1,32 @@
+appId: com.dijitalasistan.app.e2e
+name: 'E2E-M-16 · Paywall'
+tags: [m102, android, ios, free]
+env:
+  USER_KEY: u_free
+  SCENARIO: canon
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- openLink: 'dijitalasistan-e2e://paywall'
+- extendedWaitUntil: { visible: { id: 'screen.paywall' }, timeout: 30000 }
+- assertVisible: { id: 'paywall.plan.monthly' }
+- assertVisible: { id: 'paywall.plan.annual' }
+- assertVisible: { id: 'paywall.close' }
+- assertVisible: '${output.t.paywall.restore}'
+- assertVisible: '${output.t.paywall.terms}'
+- assertVisible: '${output.t.paywall.privacy}'
+- tapOn: { id: 'paywall.plan.annual' }
+- tapOn: { id: 'paywall.cta' }
+- runScript:
+    file: ../../scripts/harness.js
+    env: { ACTION: revenuecat, USER_KEY: '${USER_KEY}', PRODUCT: da_pro_annual }
+- extendedWaitUntil: { visible: { id: 'paywall.success' }, timeout: 60000 }
+- openLink: 'dijitalasistan-e2e://settings/subscription'
+- tapOn: { id: 'subscription.restore' }
+- runScript:
+    file: ../../scripts/harness.js
+    env: { ACTION: state, USER_KEY: '${USER_KEY}', PROBE: 'entitlement' }

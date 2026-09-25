@@ -1,0 +1,16 @@
+appId: com.dijitalasistan.app.e2e
+name: 'Subflow · sign in with the email code (harness /otp)'
+---
+- extendedWaitUntil: { visible: { id: 'intro.signIn' }, timeout: 30000 }
+- tapOn: { id: 'intro.signIn' }
+- tapOn: { id: 'auth.provider.email' }
+- tapOn: { id: 'auth.email.field' }
+- inputText: '${output.user.email}'
+- tapOn: { id: 'auth.email.send' }
+- runScript:
+    file: ../scripts/harness.js
+    env: { ACTION: otp, EMAIL: '${output.user.email}' }
+- tapOn: { id: 'auth.code.input' }
+- inputText: '${output.otp.code}'
+- tapOn: { id: 'auth.code.verify' }
+- waitForAnimationToEnd

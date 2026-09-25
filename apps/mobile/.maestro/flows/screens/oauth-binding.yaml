@@ -1,0 +1,39 @@
+appId: com.dijitalasistan.app.e2e
+name: 'E2E-S-21 · Demo OAuth binding (R-07)'
+tags: [screens, android, ios, free]
+env:
+  USER_KEY: u_empty
+  SCENARIO: none
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- openLink: 'dijitalasistan-e2e://settings/accounts'
+- tapOn: { id: 'accounts.add' }
+- tapOn: { id: 'addAccount.gmail' }
+- tapOn: { id: 'explainer' }
+- runFlow: ../../subflows/demo-consent.yaml
+- extendedWaitUntil: { visible: { id: 'screen.accounts' }, timeout: 30000 }
+- runScript:
+    file: ../../scripts/harness.js
+    env:
+      {
+        ACTION: state,
+        USER_KEY: '${USER_KEY}',
+        PROBE: 'oauth_state',
+        FIELD: completed,
+        EXPECT: 'true',
+      }
+- runScript:
+    file: ../../scripts/harness.js
+    env:
+      {
+        ACTION: state,
+        USER_KEY: '${USER_KEY}',
+        PROBE: 'connected_accounts',
+        FIELD: count,
+        EXPECT: '1',
+      }

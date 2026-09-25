@@ -294,3 +294,100 @@ describe('M-REPLY-01 · AI yanıt', () => {
     expect(await screen.findByText('Taslak kopyalandı')).toBeOnTheScreen();
   });
 });
+
+describe('M-MAIL-03 · "Analiz et" (API-INT-04 force_analysis)', () => {
+  const skippedRow = {
+    ...messageRow,
+    ai_summary: null,
+    ai_status: 't0_final',
+    classification_tier: 'explicit_rule',
+  };
+
+  it('asks the server to analyse a rule-skipped mail and shows the analysing card', async () => {
+    const { api } = setup({
+      data: { tables: { email_messages: [skippedRow] } },
+      api: {
+        [`POST /integrations/${googleAccount.id}/sync`]: () =>
+          json(
+            202,
+            ok({
+              jobs: [{ job_id: uuid(95), status: 'queued', poll_after_ms: 2000 }],
+              next_allowed_at: TS,
+            }),
+          ),
+      },
+    });
+    await renderApp(`/mail/${MESSAGE}`);
+    expect(
+      await screen.findByText('Kuralın nedeniyle bu mail AI ile analiz edilmedi.'),
+    ).toBeOnTheScreen();
+    await fireEvent.press(screen.getByTestId('email.analyze'));
+    await waitFor(() => {
+      expect(api.calls.some((c) => c.url.endsWith('/sync'))).toBe(true);
+    });
+    expect(api.calls.find((c) => c.url.endsWith('/sync'))?.body).toEqual({
+      message_ids: [MESSAGE],
+      force_analysis: true,
+    });
+    expect(await screen.findByText('Analiz başladı. Özet birazdan burada.')).toBeOnTheScreen();
+    expect(screen.getByTestId('email.ai.loading')).toBeOnTheScreen();
+    expect(screen.queryByTestId('email.analyze')).toBeNull();
+  });
+
+  it('keeps the hint and explains a rate limit', async () => {
+    setup({
+      data: { tables: { email_messages: [skippedRow] } },
+      api: {
+        [`POST /integrations/${googleAccount.id}/sync`]: () =>
+          json(429, {
+            error: {
+              code: 'RATE_LIMITED',
+              message: 'slow down',
+              message_key: 'errors.rate_limited',
+              retryable: true,
+              correlation_id: 'corr-1',
+              details: {},
+            },
+          }),
+      },
+    });
+    await renderApp(`/mail/${MESSAGE}`);
+    await fireEvent.press(await screen.findByTestId('email.analyze'));
+    expect(await screen.findByText('Az önce denedin. Biraz sonra tekrar dene.')).toBeOnTheScreen();
+    expect(screen.getByTestId('email.analyze')).toBeOnTheScreen();
+  });
+});
+
+describe('M-REPLY-01 · "Taslağı sil" (API-MAIL-04 status discarded)', () => {
+  it('confirms, closes with an undo toast and discards after the 5 s window', async () => {
+    const { api } = setup({
+      bootstrap: { accounts: [sendAccount] },
+      data: { tables: { email_messages: [messageRow] } },
+      api: {
+        [`POST /mail/${MESSAGE}/reply-drafts`]: () => json(201, ok(draft)),
+        [`PATCH /reply-drafts/${DRAFT}`]: () =>
+          json(200, ok({ ...draft, status: 'discarded', version: 2 })),
+      },
+    });
+    await renderApp(`/mail/${MESSAGE}/reply`);
+    expect(await screen.findByDisplayValue(draft.body_text)).toBeOnTheScreen();
+    await fireEvent.press(screen.getByTestId('reply.more'));
+    await fireEvent.press(await screen.findByText('Taslağı sil'));
+    expect(await screen.findByText('Taslak silinsin mi?')).toBeOnTheScreen();
+    await fireEvent.press(screen.getByText('Taslağı Sil'));
+    expect(await screen.findByText('Taslak silindi')).toBeOnTheScreen();
+    // Nothing leaves the device inside the undo window (R-06).
+    expect(api.calls.some((c) => c.method === 'PATCH')).toBe(false);
+    await waitFor(
+      () => {
+        expect(api.calls.some((c) => c.method === 'PATCH')).toBe(true);
+      },
+      { timeout: 8000 },
+    );
+    expect(api.calls.find((c) => c.method === 'PATCH')?.body).toEqual({
+      status: 'discarded',
+      expected_version: 1,
+    });
+    expect(events('reply_draft_close').at(-1)?.props).toEqual({ kept: false });
+  }, 20_000);
+});
