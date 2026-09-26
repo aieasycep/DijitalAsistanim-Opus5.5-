@@ -285,11 +285,8 @@ it(
 it('IT-RC-08', 'POST /purchases/sync re-fetches REST and makes the entitlement pro', async () => {
   const user = await createUser();
   assertEquals((await entitlement(user.id)).is_active, false);
-  await mock.revenuecat({
-    op: 'customer',
-    id: user.id,
-    fixture: 'revenuecat/customer_v2_active.json',
-  });
+  // The store purchase the Maestro harness reports (E2E-M-06/M-16).
+  await mock.revenuecatActivate(user.id, 'da_pro_annual');
   const res = await call('api', 'POST', '/purchases/sync', {
     jwt: user.jwt,
     key: crypto.randomUUID(),
@@ -299,7 +296,9 @@ it('IT-RC-08', 'POST /purchases/sync re-fetches REST and makes the entitlement p
   assertEquals(res.status, 200, JSON.stringify(out));
   await releaseJobs();
   await drain({ types: ['billing_sync'] });
-  assertEquals((await mirror(user.id))?.status, 'active');
+  const row = await mirror(user.id);
+  assertEquals(row?.status, 'active');
+  assertEquals(row?.product_id, 'da_pro_annual');
   const e = await entitlement(user.id);
   assertEquals(e.entitlement, 'pro');
   assertEquals(e.is_active, true);

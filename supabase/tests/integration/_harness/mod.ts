@@ -130,6 +130,9 @@ export const mock = {
   graph: <T = unknown>(body: Record<string, unknown>) => mockPost<T>('/__graph', body),
   apple: <T = unknown>(body: Record<string, unknown> = {}) => mockPost<T>('/__apple', body),
   revenuecat: <T = unknown>(body: Record<string, unknown>) => mockPost<T>('/__revenuecat', body),
+  /** The Maestro harness's store purchase (`scripts/e2e/harness-server.ts`). */
+  revenuecatActivate: (appUserId: string, product: string) =>
+    mockPost('/revenuecat/__activate', { app_user_id: appUserId, product }),
   expo: <T = unknown>(body: Record<string, unknown>) => mockPost<T>('/__expo', body),
 };
 

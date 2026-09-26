@@ -78,6 +78,67 @@ test('mobile-e2e.yml: PR, manual and nightly only; emulator API 35 x86_64 google
   assert.match(script, /logcat/);
 });
 
+test('start-stack.sh serves the RevenueCat mock to the edge runtime and the harness (E2E-M-06/M-16)', () => {
+  const script = readFileSync(join(ROOT, 'scripts/e2e/start-stack.sh'), 'utf8');
+  const mockDir = join(ROOT, 'supabase/functions/_shared/testing/mock-providers');
+  const server = readFileSync(join(mockDir, 'server.ts'), 'utf8');
+  const services = readFileSync(join(mockDir, 'services.ts'), 'utf8');
+
+  // The mock: deno from node_modules/.bin (the binary the shim resolves, so $! is the server), a
+  // run-scoped key, a runner-local address, its pid in $OUT.
+  assert.match(
+    script,
+    /^DENO_BIN="\$\(.*node_modules\/\.bin\/deno eval 'console\.log\(Deno\.execPath\(\)\)'\)"$/m,
+  );
+  const deno = script.indexOf('"$DENO_BIN" run');
+  assert.ok(deno > script.indexOf('DENO_BIN='), 'the mock starts with the resolved deno binary');
+  const launch = script.slice(script.lastIndexOf('nohup', deno), script.indexOf(' &\n', deno));
+  for (const part of [
+    '--allow-net=',
+    '--allow-env',
+    '--allow-read',
+    '--config supabase/functions/deno.json',
+    'supabase/functions/_shared/testing/mock-providers/server.ts',
+    'REVENUECAT_API_V2_SECRET_KEY="$RC_SECRET_VALUE"',
+    'MOCK_PROVIDERS_HOSTNAME="$MOCK_PROVIDERS_HOSTNAME"',
+    'MOCK_PROVIDERS_PORT="$MOCK_PORT"',
+  ]) {
+    assert.ok(launch.includes(part), part);
+  }
+  assert.match(script, /^RC_SECRET_VALUE="sk_\$\(openssl rand -hex \d+\)"$/m);
+  assert.match(server, /Deno\.env\.get\('MOCK_PROVIDERS_HOSTNAME'\)/);
+  assert.match(script, /docker network inspect bridge/);
+  assert.doesNotMatch(script, /0\.0\.0\.0/);
+  const pid = script.indexOf('echo $! >"$OUT/mock-providers.pid"');
+  assert.ok(pid > deno, 'the mock pid is written to $OUT');
+  const functions = script.indexOf('nohup pnpm exec supabase functions serve');
+  assert.ok(pid < functions, 'the mock starts before functions');
+
+  // The functions reach it as host.docker.internal with test-only RevenueCat values.
+  const heredoc = /cat >"\$ENV_FILE" <<EOF\n([\s\S]*?)\nEOF\n/.exec(script)?.[1] ?? '';
+  const fnEnv = new Map(
+    heredoc
+      .split('\n')
+      .map((line) => [line.slice(0, line.indexOf('=')), line.slice(line.indexOf('=') + 1)]),
+  );
+  assert.equal(fnEnv.get('APP_ENV'), 'e2e');
+  assert.match(fnEnv.get('REVENUECAT_PROJECT_ID') ?? '', /^\w+$/);
+  assert.equal(fnEnv.get('REVENUECAT_API_V2_SECRET_KEY'), '$RC_SECRET_VALUE');
+  assert.equal(
+    fnEnv.get('REVENUECAT_API_BASE_URL'),
+    'http://host.docker.internal:$MOCK_PORT/revenuecat/v2',
+  );
+  assert.match(script, /^MOCK_PORT=8788$/m);
+  assert.ok(services.includes("'/revenuecat/v2/projects/:project'"));
+
+  // The harness activates through the mock's /revenuecat/__activate on the same address.
+  const harness = script.indexOf('nohup node scripts/e2e/harness-server.ts');
+  const exported = script.slice(script.lastIndexOf('export ', harness), harness);
+  assert.ok(exported.includes('REVENUECAT_MOCK_URL="$MOCK_URL/revenuecat"'));
+  assert.match(script, /^MOCK_URL="http:\/\/\$MOCK_PROVIDERS_HOSTNAME:\$MOCK_PORT"$/m);
+  assert.ok(services.includes("app.post('/revenuecat/__activate'"));
+});
+
 test('EAS workflows build the existing profiles and run Maestro 2.10.0 per platform tag', () => {
   const profiles = Object.keys(
     (JSON.parse(readFileSync(join(ROOT, 'apps/mobile/eas.json'), 'utf8')) as { build: object })

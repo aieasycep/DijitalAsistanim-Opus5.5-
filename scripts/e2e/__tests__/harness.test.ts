@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 
 import {
   DEFAULT_ANCHOR,
+  activationRequest,
   assertSafeEnv,
   canonExpect,
   canonIds,
@@ -20,6 +21,29 @@ test('the harness refuses anything but a local / CI stack on loopback', () => {
   assert.throws(() => assertSafeEnv({ ...ok, SUPABASE_URL: 'https://x.supabase.co' }), /loopback/);
   assert.throws(() => assertSafeEnv({ ...ok, SUPABASE_SECRET_KEY: '' }), /SECRET_KEY/);
   assert.deepEqual(assertSafeEnv({ E2E_TARGET: 'staging' }), { staging: true });
+});
+
+test('the RevenueCat mock is reached on loopback or the Docker bridge, never beyond the runner', () => {
+  const ok = { APP_ENV: 'e2e', SUPABASE_URL: 'http://127.0.0.1:54321', SUPABASE_SECRET_KEY: 'k' };
+  for (const url of ['http://127.0.0.1:8788/revenuecat', 'http://172.17.0.1:8788/revenuecat']) {
+    assert.deepEqual(assertSafeEnv({ ...ok, REVENUECAT_MOCK_URL: url }), { staging: false });
+  }
+  for (const url of ['https://api.revenuecat.com/v2', 'http://8.8.8.8:8788/revenuecat', 'nope']) {
+    assert.throws(() => assertSafeEnv({ ...ok, REVENUECAT_MOCK_URL: url }), /REVENUECAT_MOCK_URL/);
+  }
+});
+
+test('activation posts {app_user_id, product} to the mock /revenuecat/__activate', () => {
+  const user = '11111111-1111-4111-8111-111111111111';
+  const call = activationRequest({}, user, 'da_pro_annual');
+  assert.equal(call.url, 'http://127.0.0.1:8788/revenuecat/__activate');
+  assert.deepEqual(JSON.parse(call.body), { app_user_id: user, product: 'da_pro_annual' });
+  const bridge = activationRequest(
+    { REVENUECAT_MOCK_URL: 'http://172.17.0.1:8788/revenuecat/' },
+    user,
+    'da_pro_monthly',
+  );
+  assert.equal(bridge.url, 'http://172.17.0.1:8788/revenuecat/__activate');
 });
 
 test('demo ids equal the seed formula md5(da-demo:entity:slug)::uuid', () => {

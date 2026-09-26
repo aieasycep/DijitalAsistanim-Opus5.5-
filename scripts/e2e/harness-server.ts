@@ -8,7 +8,8 @@
  *   POST /otp {email}                the newest 6-digit code from the local Auth mail sink
  *   POST /tick {p_now}               select private.scheduler_tick(p_now)
  *   POST /drain {types?}             poke `worker` until the listed job types are empty
- *   POST /revenuecat/activate        {userKey, product} → the mock REST v2 answers "active"
+ *   POST /revenuecat/activate        {userKey, product} → the user's auth id (the RevenueCat app user
+ *                                    id) to the mock's `/revenuecat/__activate`: REST v2 "active"
  *   POST /android/share-pdf          adb push + ACTION_SEND of the synthetic PDF (E2E-S-08)
  *   GET  /state?user=&probe=         read-only probes from `probes.ts`
  *
@@ -20,7 +21,8 @@
  *
  * Env: SUPABASE_URL, SUPABASE_SECRET_KEY, DA_E2E_DB_URL (psql), CRON_SECRET, DA_FIXED_NOW,
  * E2E_RUN_ID, INBUCKET_URL (default http://127.0.0.1:54324), HARNESS_PORT (default 8790),
- * REVENUECAT_MOCK_URL (CI mock), ANDROID_SERIAL (adb).
+ * REVENUECAT_MOCK_URL (the mock provider server's `/revenuecat`, loopback or a private address such
+ * as the Docker bridge gateway; default http://127.0.0.1:8788/revenuecat), ANDROID_SERIAL (adb).
  */
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -37,6 +39,17 @@ export const E2E_DOMAIN = 'e2e.dijitalasistan.test';
 
 type Env = Readonly<Record<string, string | undefined>>;
 
+const LOOPBACK: readonly string[] = ['127.0.0.1', 'localhost', '::1', '[::1]'];
+
+/** Loopback or a private IPv4 address (e.g. the Docker bridge gateway): never beyond the runner. */
+function isRunnerLocal(host: string): boolean {
+  if (LOOPBACK.includes(host)) return true;
+  const octets = /^(\d{1,3})\.(\d{1,3})\.\d{1,3}\.\d{1,3}$/.exec(host);
+  if (octets === null) return false;
+  const [a, b] = [Number(octets[1]), Number(octets[2])];
+  return a === 127 || a === 10 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168);
+}
+
 /** Refuses anything but a local / CI stack on loopback (TEST_PLAN §9.1; APP_ENV per @da/validation). */
 export function assertSafeEnv(env: Env): { staging: boolean } {
   const staging = env.E2E_TARGET === 'staging';
@@ -45,12 +58,26 @@ export function assertSafeEnv(env: Env): { staging: boolean } {
     throw new Error('harness: APP_ENV must be e2e or development');
   }
   const host = new URL(env.SUPABASE_URL ?? 'http://invalid').hostname;
-  if (!['127.0.0.1', 'localhost', '::1', '[::1]'].includes(host)) {
+  if (!LOOPBACK.includes(host)) {
     throw new Error('harness: SUPABASE_URL must be a loopback address');
   }
   if ((env.SUPABASE_SECRET_KEY ?? '') === '')
     throw new Error('harness: SUPABASE_SECRET_KEY is required');
+  const mock = env.REVENUECAT_MOCK_URL;
+  if (mock !== undefined && !(URL.canParse(mock) && isRunnerLocal(new URL(mock).hostname))) {
+    throw new Error('harness: REVENUECAT_MOCK_URL must be a loopback or private address');
+  }
   return { staging };
+}
+
+/** The mock store's activation call; the RevenueCat app user id is the auth user id. */
+export function activationRequest(
+  env: Env,
+  appUserId: string,
+  product: string,
+): { url: string; body: string } {
+  const mock = (env.REVENUECAT_MOCK_URL ?? 'http://127.0.0.1:8788/revenuecat').replace(/\/+$/, '');
+  return { url: `${mock}/__activate`, body: JSON.stringify({ app_user_id: appUserId, product }) };
 }
 
 /** md5('da-demo:' || entity || ':' || slug)::uuid — the demo dataset's deterministic ids. */
@@ -156,8 +183,13 @@ async function admin(env: Env, path: string, init: RequestInit = {}): Promise<Re
   });
 }
 
+/** The auth user id of an address, or '' when there is no such user. */
+function userIdFor(env: Env, email: string): string {
+  return psql(env, "select id from auth.users where lower(email) = lower(:'p1')", [email]);
+}
+
 async function ensureUser(env: Env, email: string): Promise<string> {
-  const found = psql(env, "select id from auth.users where lower(email) = lower(:'p1')", [email]);
+  const found = userIdFor(env, email);
   if (found !== '') return found;
   const res = await admin(env, '/auth/v1/admin/users', {
     method: 'POST',
@@ -353,9 +385,20 @@ async function handle(
       return { status: 200, body: { rounds: await drain(env, types) } };
     }
     case 'POST /revenuecat/activate': {
-      const mock = env.REVENUECAT_MOCK_URL ?? 'http://127.0.0.1:8788/revenuecat';
-      const r = await fetch(`${mock}/__activate`, { method: 'POST', body: JSON.stringify(body) });
-      return { status: r.status, body: { ok: r.ok } };
+      const userKey = text(body.userKey);
+      const product = text(body.product);
+      if (userKey === '' || product === '')
+        return { status: 400, body: { error: 'userKey_and_product_required' } };
+      const appUserId = userIdFor(env, emailFor(userKey, env.E2E_RUN_ID ?? 'local'));
+      if (appUserId === '') return { status: 404, body: { error: 'unknown_user', userKey } };
+      const call = activationRequest(env, appUserId, product);
+      const r = await fetch(call.url, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: call.body,
+      });
+      await r.body?.cancel();
+      return { status: r.status, body: { ok: r.ok, app_user_id: appUserId } };
     }
     case 'POST /android/share-pdf': {
       const pdf = resolve(ROOT, 'apps', 'mobile', '.maestro', 'assets', 'Hizmet_Sozlesmesi_v3.pdf');

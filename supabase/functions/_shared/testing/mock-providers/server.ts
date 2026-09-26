@@ -8,11 +8,15 @@
  * Path families: `/google-oauth`, `/gmail`, `/calendar` (gcal), `/tasks` (gtasks), `/ms-login`,
  * `/graph`, `/apple`, `/revenuecat`, `/expo`, `/voyage`. Control endpoints: `POST /__script`,
  * `GET /__requests`, `POST /__reset`, plus per-provider seed/inspect endpoints (`/__google`,
- * `/__graph`, `/__apple`, `/__revenuecat`, `/__expo`). Responses are built from the fixtures under
- * `../fixtures/<provider>/` (hand-authored from the public API references; canon names only).
+ * `/__graph`, `/__apple`, `/__revenuecat`, `/revenuecat/__activate`, `/__expo`). Responses are
+ * built from the fixtures under `../fixtures/<provider>/` (hand-authored from the public API
+ * references; canon names only).
  *
  * Run: deno run --allow-net=127.0.0.1 --allow-env --allow-read server.ts  (started by
- * `scripts/integration/run.ts`). Never deployed: it lives under `_shared/testing/`.
+ * `scripts/integration/run.ts`; `scripts/e2e/start-stack.sh` binds it to the Docker bridge gateway
+ * so the edge runtime container reaches it as `host.docker.internal`). `MOCK_PROVIDERS_HOSTNAME`
+ * (default 127.0.0.1) must be loopback or a private IPv4 address: the server never listens beyond
+ * the host. Never deployed: it lives under `_shared/testing/`.
  */
 import { Hono } from 'hono';
 import { type MockEnv, MockState, mountCore } from './core.ts';
@@ -36,8 +40,25 @@ export async function createMockProviders(): Promise<{ app: Hono<MockEnv>; state
   return { app, state };
 }
 
+/**
+ * The listen address: loopback (127/8, ::1, localhost) or a private IPv4 address (10/8, 172.16/12,
+ * 192.168/16, e.g. the Docker bridge gateway). Wildcards, public addresses and other names throw.
+ */
+export function mockHostname(raw: string | undefined): string {
+  const host = (raw ?? '').trim() || '127.0.0.1';
+  if (host === 'localhost' || host === '::1') return host;
+  const octets = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(host)?.slice(1).map(Number);
+  if (octets !== undefined && octets.every((o) => o <= 255)) {
+    const [a, b] = octets as [number, number, number, number];
+    if (a === 127 || a === 10 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168))
+      return host;
+  }
+  throw new Error(`MOCK_PROVIDERS_HOSTNAME must be loopback or private IPv4, got ${host}`);
+}
+
 if (import.meta.main) {
   const { app } = await createMockProviders();
+  const hostname = mockHostname(Deno.env.get('MOCK_PROVIDERS_HOSTNAME'));
   const port = Number(Deno.env.get('MOCK_PROVIDERS_PORT') ?? 8788);
-  Deno.serve({ hostname: '127.0.0.1', port, onListen: () => {} }, app.fetch);
+  Deno.serve({ hostname, port, onListen: () => {} }, app.fetch);
 }

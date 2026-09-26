@@ -3,7 +3,9 @@
  * - `/apple/auth/token` (authorization_code → a refresh token; the ES256 client secret is decoded
  *   and recorded) and `/apple/auth/revoke`;
  * - `/revenuecat/v2/projects/{p}` (entitlements, customers, subscriptions, products, DELETE customer)
- *   answered from `POST /__revenuecat {op:'customer', id, fixture}` seeds (`customer_v2_*.json`);
+ *   answered from `POST /__revenuecat {op:'customer', id, fixture}` seeds (`customer_v2_*.json`)
+ *   and from `POST /revenuecat/__activate {app_user_id, product}` (the Maestro harness: the store
+ *   reports `product` active for a year, `product` being the store identifier the mirror reads);
  * - `/expo/--/api/v2/push/send` (≤ 100 messages, bearer `EXPO_ACCESS_TOKEN`, gzip bodies) and
  *   `/expo/--/api/v2/push/getReceipts` (per-ticket outcomes seeded by `POST /__expo`);
  * - `/voyage/v1/embeddings` (deterministic unit vectors of `output_dimension`, from SHA-256 of the
@@ -33,7 +35,12 @@ export function mountServices(app: Hono<MockEnv>, state: MockState): void {
     secrets: [] as Record<string, unknown>[],
     sub: '001234.0a1b2c3d4e5f60718293a4b5c6d7e8f9.1200',
   };
-  let rc = { customers: new Map<string, RcCustomer>(), deleted: [] as string[] };
+  let rc = {
+    customers: new Map<string, RcCustomer>(),
+    deleted: [] as string[],
+    /** Store identifiers of the products `__activate` created, by product id. */
+    products: new Map<string, string>(),
+  };
   let expo = {
     tickets: new Map<string, { to: string; data: unknown }>(),
     receipts: new Map<string, Record<string, unknown>>(),
@@ -45,7 +52,7 @@ export function mountServices(app: Hono<MockEnv>, state: MockState): void {
       secrets: [],
       sub: '001234.0a1b2c3d4e5f60718293a4b5c6d7e8f9.1200',
     };
-    rc = { customers: new Map(), deleted: [] };
+    rc = { customers: new Map(), deleted: [], products: new Map() };
     expo = { tickets: new Map(), receipts: new Map(), byToken: new Map() };
   });
 
@@ -94,32 +101,57 @@ export function mountServices(app: Hono<MockEnv>, state: MockState): void {
 
   // ── RevenueCat v2 ─────────────────────────────────────────────────────────────────────────
   const rcBase = '/revenuecat/v2/projects/:project';
+  const seedCustomer = (
+    id: string,
+    name: string,
+    options: { expiresInMs?: unknown; environment?: unknown } = {},
+  ): RcCustomer => {
+    const seed = fixture<RcCustomer>(name);
+    seed.customer.id = id;
+    // Relative expiry (the fixtures carry absolute epochs) and the store environment.
+    if (typeof options.expiresInMs === 'number') {
+      const at = Date.now() + options.expiresInMs;
+      for (const sub of seed.subscriptions) sub.current_period_ends_at = at;
+      const active = seed.customer.active_entitlements as
+        { items?: { expires_at?: number }[] } | undefined;
+      for (const item of active?.items ?? []) item.expires_at = at;
+    }
+    if (typeof options.environment === 'string')
+      for (const sub of seed.subscriptions) sub.environment = options.environment;
+    for (const sub of seed.subscriptions) {
+      sub.customer_id = id;
+      sub.original_customer_id = id;
+    }
+    rc.customers.set(id, seed);
+    return seed;
+  };
   app.post('/__revenuecat', async (c) => {
     const body = (await c.req.json()) as Record<string, unknown>;
     if (body.op === 'customer') {
-      const seed = fixture<RcCustomer>(String(body.fixture));
-      const id = String(body.id);
-      seed.customer.id = id;
-      // Relative expiry (the fixtures carry absolute epochs) and the store environment.
-      if (typeof body.expires_in_ms === 'number') {
-        const at = Date.now() + body.expires_in_ms;
-        for (const sub of seed.subscriptions) sub.current_period_ends_at = at;
-        const active = seed.customer.active_entitlements as
-          { items?: { expires_at?: number }[] } | undefined;
-        for (const item of active?.items ?? []) item.expires_at = at;
-      }
-      if (typeof body.environment === 'string')
-        for (const sub of seed.subscriptions) sub.environment = body.environment;
-      for (const sub of seed.subscriptions) {
-        sub.customer_id = id;
-        sub.original_customer_id = id;
-      }
-      rc.customers.set(id, seed);
+      seedCustomer(String(body.id), String(body.fixture), {
+        expiresInMs: body.expires_in_ms,
+        environment: body.environment,
+      });
       return c.json({ ok: true });
     }
     if (body.op === 'state')
       return c.json({ customers: [...rc.customers.keys()], deleted: rc.deleted });
     return c.json({ error: 'unknown op' }, 400);
+  });
+  // Control endpoint of the Maestro harness; registered before the bearer check below.
+  app.post('/revenuecat/__activate', (c) => {
+    const body = jsonOf<Record<string, unknown>>(c);
+    const appUserId = typeof body.app_user_id === 'string' ? body.app_user_id.trim() : '';
+    const product = typeof body.product === 'string' ? body.product.trim() : '';
+    if (appUserId === '' || product === '')
+      return c.json({ error: 'app_user_id and product are required' }, 400);
+    const productId = `prod_${product.replace(/[^A-Za-z0-9_]/g, '_')}`;
+    const seed = seedCustomer(appUserId, 'revenuecat/customer_v2_active.json', {
+      expiresInMs: 365 * 86_400_000,
+    });
+    for (const sub of seed.subscriptions) sub.product_id = productId;
+    rc.products.set(productId, product);
+    return c.json({ ok: true, app_user_id: appUserId, product });
   });
   app.use('/revenuecat/*', async (c, next) => {
     if (bearerOf(c) !== Deno.env.get('REVENUECAT_API_V2_SECRET_KEY'))
@@ -155,7 +187,7 @@ export function mountServices(app: Hono<MockEnv>, state: MockState): void {
     c.json({
       object: 'product',
       id: c.req.param('id'),
-      store_identifier: 'da_pro_annual:annual',
+      store_identifier: rc.products.get(c.req.param('id')) ?? 'da_pro_annual:annual',
       type: 'subscription',
     }),
   );
