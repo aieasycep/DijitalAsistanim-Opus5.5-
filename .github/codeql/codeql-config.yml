@@ -1,0 +1,16 @@
+# CodeQL (security-nightly, TST-CI-08): product code only. Generated sources, tests, fixtures and the
+# design reference are left out so a finding always points at code that ships.
+name: dijital-asistan
+paths-ignore:
+  - '**/node_modules/**'
+  - '**/generated/**'
+  - 'packages/api-client/src/database.types.ts'
+  - '**/*.test.ts'
+  - '**/*.test.tsx'
+  - '**/__tests__/**'
+  - '**/test/**'
+  - '**/e2e/**'
+  - 'supabase/tests/**'
+  - 'supabase/functions/_shared/testing/**'
+  - 'apps/mobile/.maestro/**'
+  - 'design/**'

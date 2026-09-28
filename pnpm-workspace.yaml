@@ -137,6 +137,9 @@ overrides:
   react: 19.2.3
   react-dom: 19.2.3
   react-native: 0.86.3
+  # Security (TST-CI-03): @bacons/apple-targets → @expo/plist pins a vulnerable xmldom (prebuild-time
+  # plist parsing); 0.8.15 fixes GHSA-wh4c-j3r5-mjhp and the other 0.8.x advisories.
+  '@xmldom/xmldom@<0.8.15': 0.8.15
 
 allowBuilds:
   esbuild: true

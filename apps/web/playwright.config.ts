@@ -12,6 +12,8 @@ const executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE;
 export default defineConfig({
   testDir: './e2e',
   testMatch: '**/*.spec.ts',
+  // The ZAP baseline scan (`e2e/dast.spec.ts`) runs only in security-nightly (`DA_DAST=1`).
+  testIgnore: process.env.DA_DAST === '1' ? [] : ['**/dast.spec.ts'],
   fullyParallel: true,
   forbidOnly: process.env.CI !== undefined,
   retries: process.env.CI === undefined ? 0 : 1,
