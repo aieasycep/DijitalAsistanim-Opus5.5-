@@ -128,7 +128,12 @@ export const BANNED_PROP_SUFFIXES: readonly string[] = [
   '_ip',
 ];
 
-const EMAIL_LIKE = /[^\s@]+@[^\s@]+\.[^\s@]+/;
+/**
+ * Contains `x@y.z` (runs without whitespace or `@`). One character on each side of the address is
+ * enough for `.test`, and it keeps the search linear: a leading `[^\s@]+` retried every start of a
+ * long run without `@` (quadratic).
+ */
+const EMAIL_LIKE = /[^\s@]@[^\s@]+\.[^\s@]/;
 const URL_LIKE = /\b(?:https?:\/\/|www\.)|^[a-z][a-z0-9+.-]*:\/\//i;
 
 /** `true` for strings that look like an email address or a URL (dropped server-side, §4.9). */

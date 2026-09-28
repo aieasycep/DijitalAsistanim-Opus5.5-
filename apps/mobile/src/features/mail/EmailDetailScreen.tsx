@@ -58,44 +58,13 @@ import { openLink, openMenu, openReminder, openSource } from '../actions/sheets'
 import { DetailScreen, QueryFailure, useBack, useOfflineGuard } from '../actions/ui';
 import { openApprovalViewSheet } from '../approvals/ApprovalSheet';
 import { emailDetailOptions, type EmailDetail } from './data';
+import { originalToText } from './original-text';
 
 /** "ahmet@example.com" → "a***@example.com" (source lines never show full foreign addresses). */
 export function maskEmail(email: string): string {
   const [user = '', domain = ''] = email.split('@');
   if (domain === '') return email;
   return `${user.slice(0, 1)}***@${domain}`;
-}
-
-export interface OriginalLink {
-  readonly href: string;
-  readonly text: string;
-}
-
-/** Sanitised HTML → readable text plus its links (rendered separately, never auto-linked). */
-export function originalToText(
-  format: 'html_sanitized' | 'text',
-  content: string,
-): { readonly text: string; readonly links: readonly OriginalLink[] } {
-  if (format === 'text') return { text: content, links: [] };
-  const links: OriginalLink[] = [];
-  const anchor = /<a\s[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi;
-  for (let match = anchor.exec(content); match !== null; match = anchor.exec(content)) {
-    const href = match[1] ?? '';
-    const text = (match[2] ?? '').replace(/<[^>]+>/g, '').trim();
-    if (href !== '') links.push({ href, text: text === '' ? href : text });
-  }
-  const text = content
-    .replace(/<(br|\/p|\/div|\/li|\/tr|\/h[1-6])[^>]*>/gi, '\n')
-    .replace(/<[^>]+>/g, '')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&amp;/g, '&')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
-  return { text, links };
 }
 
 /** "Analiz et" polling: every 3 s for at most 60 s after the job is queued. */

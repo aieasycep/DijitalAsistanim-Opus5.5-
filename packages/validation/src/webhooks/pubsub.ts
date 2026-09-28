@@ -34,7 +34,11 @@ const BASE64_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz012
 
 /** Decodes standard or URL-safe base64 to a UTF-8 string without runtime globals (`null` if invalid). */
 export function decodeBase64Utf8(input: string): string | null {
-  const normalized = input.replace(/-/g, '+').replace(/_/g, '/').replace(/=+$/, '');
+  // Trailing `=` padding is cut by a scan from the end: `/=+$/` retried every start of a long `=`
+  // run that does not reach the end (quadratic on a 64 KiB push body).
+  let end = input.length;
+  while (end > 0 && input.charAt(end - 1) === '=') end -= 1;
+  const normalized = input.slice(0, end).replace(/-/g, '+').replace(/_/g, '/');
   if (!/^[A-Za-z0-9+/]*$/.test(normalized) || normalized.length % 4 === 1) return null;
   const bytes: number[] = [];
   let buffer = 0;
@@ -62,6 +66,8 @@ export function decodeBase64Utf8(input: string): string | null {
       if (next === undefined || (next & 0xc0) !== 0x80) return null;
       code = (code << 6) | (next & 0x3f);
     }
+    // F4 90+ and F5–F7 lead bytes encode past U+10FFFF: invalid UTF-8, not a RangeError.
+    if (code > 0x10ffff) return null;
     out += String.fromCodePoint(code);
     i += size;
   }

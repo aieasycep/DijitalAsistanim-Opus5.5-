@@ -7,7 +7,7 @@
  * Usage: node scripts/functions/sync-import-maps.ts [--check]
  * `--check` writes nothing and exits 1 when a generated file drifts from the base map.
  */
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as prettier from 'prettier';
@@ -99,11 +99,24 @@ async function render(path: string, value: unknown): Promise<string> {
   return prettier.format(JSON.stringify(value, null, 2), { ...options, filepath: path });
 }
 
+/**
+ * The file's text, or `null` when it does not exist. One read with ENOENT handled, not an
+ * `existsSync` check followed by a read and a write (CodeQL js/file-system-race).
+ */
+export function readIfExists(path: string): string | null {
+  try {
+    return readFileSync(path, 'utf8');
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return null;
+    throw error;
+  }
+}
+
 export async function syncImportMaps(check: boolean): Promise<string[]> {
   const drift: string[] = [];
   for (const [path, value] of buildConfigs(readBaseMap())) {
     const next = await render(path, value);
-    const current = existsSync(path) ? readFileSync(path, 'utf8') : null;
+    const current = readIfExists(path);
     if (current === next) continue;
     drift.push(relative(REPO_ROOT, path));
     if (!check) writeFileSync(path, next);

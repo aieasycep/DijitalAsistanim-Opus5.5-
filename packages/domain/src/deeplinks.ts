@@ -12,6 +12,7 @@ import type {
   SourceType,
 } from './enums.ts';
 import { isUuid } from './ids.ts';
+import { trimEndChars } from './strings.ts';
 
 export const DEEP_LINK_SCHEME = 'dijitalasistan';
 export const DEEP_LINK_PREFIX = `${DEEP_LINK_SCHEME}://`;
@@ -252,7 +253,7 @@ export function parseDeepLink(url: string, opts: ParseDeepLinkOptions = {}): Dee
     rest = trimmed;
   } else if (/^https:\/\//i.test(trimmed)) {
     if (!opts.webOrigin) return { ok: false, reason: 'host_not_allowed' };
-    const origin = opts.webOrigin.replace(/\/+$/, '').toLowerCase();
+    const origin = trimEndChars(opts.webOrigin, '/').toLowerCase();
     const lower = trimmed.toLowerCase();
     if (!(lower === origin || lower.startsWith(`${origin}/`))) {
       return { ok: false, reason: 'host_not_allowed' };
@@ -380,7 +381,7 @@ export function toDeepLink(path: string): string {
 
 /** `https://<web-domain>/app/…` universal link for an app path. */
 export function toUniversalLink(path: string, webOrigin: string): string {
-  return `${webOrigin.replace(/\/+$/, '')}${UNIVERSAL_LINK_PREFIX}/${path.replace(/^\/+/, '')}`;
+  return `${trimEndChars(webOrigin, '/')}${UNIVERSAL_LINK_PREFIX}/${path.replace(/^\/+/, '')}`;
 }
 
 /** Push type used for device-local smart reminders (not a notification_category). */

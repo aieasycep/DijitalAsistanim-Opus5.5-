@@ -149,7 +149,8 @@ export type PlanLimitsParseResult =
 
 /** Validates `plan_limits` rows into a typed table; any invalid row fails the whole parse. */
 export function parsePlanLimitRows(rows: readonly PlanLimitRow[]): PlanLimitsParseResult {
-  const limits: Record<EntitlementPlan, Record<string, unknown>> = { free: {}, pro: {} };
+  // Maps, not object keys: a row key never becomes a property write (prototype pollution).
+  const byPlan: Record<EntitlementPlan, Map<string, unknown>> = { free: new Map(), pro: new Map() };
   const issues: PlanLimitIssue[] = [];
   for (const row of rows) {
     if (row.plan !== 'free' && row.plan !== 'pro') {
@@ -164,13 +165,17 @@ export function parsePlanLimitRows(rows: readonly PlanLimitRow[]): PlanLimitsPar
       issues.push({ plan: row.plan, key: row.key, problem: 'invalid_value' });
       continue;
     }
-    if (row.key in limits[row.plan]) {
+    if (byPlan[row.plan].has(row.key)) {
       issues.push({ plan: row.plan, key: row.key, problem: 'duplicate' });
       continue;
     }
-    limits[row.plan][row.key] = row.value;
+    byPlan[row.plan].set(row.key, row.value);
   }
   if (issues.length > 0) return { ok: false, issues };
+  const limits = {
+    free: Object.fromEntries(byPlan.free),
+    pro: Object.fromEntries(byPlan.pro),
+  };
   return { ok: true, limits };
 }
 

@@ -120,9 +120,19 @@ const CORRELATION_RE = /^[A-Za-z0-9-]{8,64}$/;
 const DEFAULT_TIMEOUT_MS = 30_000;
 const DEFAULT_STREAM_TIMEOUT_MS = 130_000;
 
+/**
+ * `url` without trailing slashes. A scan from the end: `/\/+$/` retried every start of a long `/`
+ * run that does not reach the end, O(n²) (CodeQL js/polynomial-redos).
+ */
+function withoutTrailingSlashes(url: string): string {
+  let end = url.length;
+  while (end > 0 && url.charAt(end - 1) === '/') end -= 1;
+  return url.slice(0, end);
+}
+
 /** The `api` function base URL for a Supabase project URL. */
 export function apiBaseUrl(supabaseUrl: string): string {
-  return `${supabaseUrl.replace(/\/+$/, '')}/functions/v1/api`;
+  return `${withoutTrailingSlashes(supabaseUrl)}/functions/v1/api`;
 }
 
 function hexByte(n: number): string {
@@ -283,7 +293,7 @@ function networkError(correlationId: string, cause: unknown): ApiError {
 }
 
 export function createApiClient(config: ApiClientConfig): ApiClient {
-  const baseUrl = config.baseUrl.replace(/\/+$/, '');
+  const baseUrl = withoutTrailingSlashes(config.baseUrl);
   const doFetch: FetchLike = config.fetch ?? ((url, init) => fetch(url, init));
   const generateId = config.generateId ?? defaultGenerateId;
 

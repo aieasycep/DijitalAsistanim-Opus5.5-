@@ -10,6 +10,7 @@
  * every swap of two adjacent payload characters changes the check character. Codes are unique
  * per user (`referral_codes (code)` unique; generation retries on collision).
  */
+import { trimEndChars } from '../strings.ts';
 
 export const REFERRAL_CODE_ALPHABET = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
 export const REFERRAL_CODE_PAYLOAD_LENGTH = 6;
@@ -116,5 +117,5 @@ export function isValidReferralCode(input: string): boolean {
 
 /** The share link `${PUBLIC_WEB_URL}/r/{code}` (API-BIZ-02 `share_url`). */
 export function referralShareUrl(publicWebUrl: string, code: string): string {
-  return `${publicWebUrl.replace(/\/+$/, '')}/r/${code}`;
+  return `${trimEndChars(publicWebUrl, '/')}/r/${code}`;
 }

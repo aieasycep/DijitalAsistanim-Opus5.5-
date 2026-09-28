@@ -230,6 +230,30 @@ function braces(source: string): [number, number][] {
   return out;
 }
 
+/**
+ * Offset after the whitespace, `// …\n` and `/* … *\/` comments starting at `i` (-1 when a comment
+ * is unterminated). A scan, not `(?:\/\/[^\n]*\n\s*|\/\*[\s\S]*?\*\/\s*)*`: the lazy block-comment
+ * body could also end at any later `*\/`, so "/*" + many "*\/\/*" backtracked exponentially
+ * (CodeQL js/redos).
+ */
+export function skipTrivia(text: string, i: number): number {
+  let at = i;
+  for (;;) {
+    while (at < text.length && /\s/.test(text.charAt(at))) at += 1;
+    if (text.startsWith('//', at)) {
+      const newline = text.indexOf('\n', at + 2);
+      if (newline === -1) return -1;
+      at = newline + 1;
+    } else if (text.startsWith('/*', at)) {
+      const close = text.indexOf('*/', at + 2);
+      if (close === -1) return -1;
+      at = close + 2;
+    } else {
+      return at;
+    }
+  }
+}
+
 /** Whether the config object holding the rule at `index` is scoped to test / e2e / script files. */
 function testOnlyBlock(source: string, index: number): boolean {
   // Innermost enclosing objects of `index`, innermost first.
@@ -243,7 +267,9 @@ function testOnlyBlock(source: string, index: number): boolean {
   const block = stack.at(-2);
   if (block === undefined) return false;
   const head = source.slice(block, index);
-  const list = /^\{\s*(?:\/\/[^\n]*\n\s*|\/\*[\s\S]*?\*\/\s*)*files:\s*\[([^\]]*)\]/.exec(head);
+  const start = skipTrivia(head, 1);
+  if (start === -1) return false;
+  const list = /^files:\s*\[([^\]]*)\]/.exec(head.slice(start));
   if (list === null) return false;
   const globs = [...(list[1] ?? '').matchAll(/['"]([^'"]+)['"]/g)].map((g) => g[1] ?? '');
   return (

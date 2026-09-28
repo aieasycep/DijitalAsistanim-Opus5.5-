@@ -3,8 +3,13 @@
  * label, six uppercase alphanumerics with at least one letter, and must not be a dictionary word.
  */
 
+/**
+ * Label, then an optional `:`/`#` between spaces, then the code. The separator is written
+ * `\s*(?:[:#]\s*)?` rather than `\s*[:#]?\s*`: two adjacent `\s*` split a run of spaces in O(n)
+ * ways, which made a label followed by many spaces quadratic (CodeQL js/polynomial-redos).
+ */
 const LABEL_RE =
-  /(?:pnr|rezervasyon\s*(?:kodu|no|numarası|numarasi)|booking\s*(?:reference|code|ref)|confirmation\s*(?:code|number)|record\s*locator)\s*[:#]?\s*([A-Za-z0-9]{6})(?![A-Za-z0-9])/giu;
+  /(?:pnr|rezervasyon\s*(?:kodu|no|numarası|numarasi)|booking\s*(?:reference|code|ref)|confirmation\s*(?:code|number)|record\s*locator)\s*(?:[:#]\s*)?([A-Za-z0-9]{6})(?![A-Za-z0-9])/giu;
 const TICKET_RE = /(?<![\d-])(235-?\d{10})(?![\d])/g;
 
 /** Six-letter words that follow booking labels in real mail but are never codes. */

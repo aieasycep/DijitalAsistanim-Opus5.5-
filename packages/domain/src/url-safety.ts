@@ -16,6 +16,7 @@
  */
 import { classifyIp, hostEndsInNumber, parseIpv4Loose, formatIpv4 } from './net/ip-ranges.ts';
 import { decodeLabel, toAsciiHost } from './net/punycode.ts';
+import { trimEndChars, trimStartChars } from './strings.ts';
 
 export const LINK_SCHEME_ALLOWLIST = ['https:', 'mailto:'] as const;
 export type AllowedLinkScheme = (typeof LINK_SCHEME_ALLOWLIST)[number];
@@ -370,17 +371,66 @@ export function siteOf(host: string): string {
 
 /** Dot-separated labels (Unicode letters allowed) ending in a label that starts with a letter. */
 const LABELS = String.raw`(?:[\p{L}\p{N}](?:[\p{L}\p{N}-]*[\p{L}\p{N}])?[.。．｡])+\p{L}[\p{L}\p{N}-]*`;
-/** A host after an explicit scheme (`https://…`) or after `www.`, anywhere in the text. */
-const URL_IN_TEXT = new RegExp(
-  String.raw`(?:\b[a-z][a-z0-9+.-]*:\/\/(?:[^\s@/]+@)?|\bwww\.)(${LABELS})`,
-  'iu',
-);
+/** The host after `://` (optional user info first), matched at one position. */
+const AFTER_SCHEME = new RegExp(String.raw`(?:[^\s@/]+@)?(${LABELS})`, 'iuy');
+/** `www.` and its host, matched at one position. */
+const AFTER_WWW = new RegExp(String.raw`www\.(${LABELS})`, 'iuy');
+const SCHEME_START = /[a-z]/iu;
+const SCHEME_CHAR = /[a-z0-9+.-]/iu;
+const WORD_CHAR = /\w/iu;
+
+function stickyGroup(re: RegExp, text: string, at: number): string | undefined {
+  re.lastIndex = at;
+  return re.exec(text)?.[1];
+}
+
+/**
+ * A host after an explicit scheme (`\b<scheme>://[user@]<host>`) or after `\bwww.`, anywhere in the
+ * text: the first match of `/(?:\b[a-z][a-z0-9+.-]*:\/\/(?:[^\s@/]+@)?|\bwww\.)(<labels>)/iu`.
+ * That regex rescans the scheme run from every word boundary inside it (O(n²) on "a.a.a.…");
+ * here the scheme run ends are computed once and the host after each `://` is tried once.
+ */
+function hostAfterSchemeOrWww(text: string): string | undefined {
+  const n = text.length;
+  const runEnd = new Int32Array(n + 1);
+  runEnd[n] = n;
+  for (let i = n - 1; i >= 0; i -= 1) {
+    runEnd[i] = SCHEME_CHAR.test(text.charAt(i)) ? (runEnd[i + 1] ?? n) : i;
+  }
+  const failedHosts = new Set<number>();
+  let previousIsWord = false;
+  for (let i = 0; i < n; i += 1) {
+    const isWord = WORD_CHAR.test(text.charAt(i));
+    const boundary = isWord !== previousIsWord;
+    previousIsWord = isWord;
+    if (!boundary) continue;
+    if (SCHEME_START.test(text.charAt(i))) {
+      const end = runEnd[i] ?? i;
+      if (text.startsWith('://', end) && !failedHosts.has(end)) {
+        const host = stickyGroup(AFTER_SCHEME, text, end + 3);
+        if (host !== undefined) return host;
+        failedHosts.add(end);
+      }
+    }
+    const www = stickyGroup(AFTER_WWW, text, i);
+    if (www !== undefined) return www;
+  }
+  return undefined;
+}
+
 /** The whole text is one host, scheme-less URL or e-mail address. */
 const WHOLE_HOST = new RegExp(
   String.raw`^(?:[^\s@/]+@)?(${LABELS})(?::[0-9]+)?(?:[/?#]\S*)?$`,
   'iu',
 );
-const WRAPPING_PUNCTUATION = /^[<(["'«“]+|[>)\]"'»”.,;:!?]+$/gu;
+/** Opening / closing punctuation around a bare host (`<example.com>`, `(www.x.com).`). */
+const WRAPPING_OPEN = '<(["\'«“';
+const WRAPPING_CLOSE = '>)]"\'»”.,;:!?';
+
+/** The text without its leading `WRAPPING_OPEN` and trailing `WRAPPING_CLOSE` characters. */
+function unwrap(text: string): string {
+  return trimEndChars(trimStartChars(text, WRAPPING_OPEN), WRAPPING_CLOSE);
+}
 
 /**
  * Host named by visible link text: a URL with a scheme or a `www.` host anywhere in the text, or
@@ -388,9 +438,7 @@ const WRAPPING_PUNCTUATION = /^[<(["'«“]+|[>)\]"'»”.,;:!?]+$/gu;
  */
 export function hostInText(text: string): string | null {
   const trimmed = text.trim();
-  const candidate =
-    URL_IN_TEXT.exec(trimmed)?.[1] ??
-    WHOLE_HOST.exec(trimmed.replace(WRAPPING_PUNCTUATION, ''))?.[1];
+  const candidate = hostAfterSchemeOrWww(trimmed) ?? WHOLE_HOST.exec(unwrap(trimmed))?.[1];
   if (candidate === undefined) return null;
   const ascii = normalizeLinkHost(candidate);
   if (ascii === null) return null;

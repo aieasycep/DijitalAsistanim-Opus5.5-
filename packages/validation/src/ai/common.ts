@@ -99,10 +99,28 @@ export interface BaseRefineContext {
   readonly aliases: Iterable<string>;
 }
 
+/**
+ * Every `<…>` tag replaced by a space, with the semantics of `replace(/<[^>]*>/g, ' ')` in one
+ * linear scan: that regex rescans to the next `>` from every `<`, O(n²) on "<<<<…" (CodeQL
+ * js/polynomial-redos). A `<` with no `>` after it is text and stays.
+ */
+function tagsToSpaces(value: string): string {
+  let out = '';
+  let i = 0;
+  for (;;) {
+    const lt = value.indexOf('<', i);
+    if (lt === -1) break;
+    const gt = value.indexOf('>', lt + 1);
+    if (gt === -1) break;
+    out += `${value.slice(i, lt)} `;
+    i = gt + 1;
+  }
+  return out + value.slice(i);
+}
+
 /** Collapses whitespace and strips HTML tags and markdown markers from model free text (§4.2). */
 export function cleanText(value: string): string {
-  return value
-    .replace(/<[^>]*>/g, ' ')
+  return tagsToSpaces(value)
     .replace(/(\*\*|__|`+)/g, '')
     .replace(/^\s{0,3}(#{1,6}|[-*•]|\d+[.)])\s+/gm, '')
     .replace(/\s+/g, ' ')

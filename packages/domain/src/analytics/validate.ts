@@ -52,7 +52,12 @@ export const BANNED_PROP_NAMES: readonly string[] = [
   'id',
 ];
 
-const EMAIL_LIKE = /[^\s@]+@[^\s@]+\.[^\s@]+/;
+/**
+ * Contains `x@y.z` (runs without whitespace or `@`). One character on each side of the address is
+ * enough for `.test`, and it keeps the search linear: a leading `[^\s@]+` retried every start of a
+ * long run without `@` (quadratic).
+ */
+const EMAIL_LIKE = /[^\s@]@[^\s@]+\.[^\s@]/;
 const URL_LIKE = /(?:https?:|www\.|:\/\/)/i;
 
 export type AnalyticsPropValue = string | number | boolean;
