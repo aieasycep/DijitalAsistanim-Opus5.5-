@@ -12,6 +12,7 @@
  */
 import {
   type IdempotencyMarker,
+  type MailAttachmentMeta,
   type MailChangeSet,
   type MailCursor,
   type MailProvider,
@@ -40,7 +41,14 @@ import {
   parseAddressList,
 } from '../common.ts';
 import { GMAIL_COST, GMAIL_METADATA_HEADERS, type GoogleEndpoints } from './config.ts';
-import { buildReplyMime, encodeRaw, type GmailPart, parseGmailPayload } from './mime.ts';
+import {
+  buildReplyMime,
+  encodeRaw,
+  GMAIL_ATTACHMENT_FIELDS,
+  gmailAttachments,
+  type GmailPart,
+  parseGmailPayload,
+} from './mime.ts';
 
 export interface GmailConfig {
   readonly endpoints: GoogleEndpoints;
@@ -317,6 +325,23 @@ export class GmailAdapter implements MailProvider {
       'interactive',
     );
     return parseGmailPayload(message.payload, opts.maxBytes);
+  }
+
+  /** Attachment metadata only: a `messages.get` whose field mask excludes every body. */
+  async listAttachments(
+    ctx: ProviderContext,
+    providerMessageId: string,
+  ): Promise<MailAttachmentMeta[]> {
+    const message = await this.get<GmailMessage>(
+      ctx,
+      this.url(`/messages/${encodeURIComponent(providerMessageId)}`, {
+        format: 'full',
+        fields: GMAIL_ATTACHMENT_FIELDS,
+      }),
+      GMAIL_COST.messagesGet,
+      'interactive',
+    );
+    return gmailAttachments(message.payload);
   }
 
   async getAttachment(

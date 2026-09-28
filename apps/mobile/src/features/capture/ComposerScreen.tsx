@@ -1,6 +1,8 @@
 /**
  * M-CAP-01 Ekle (capture composer; `/capture`, modal) with M-CAP-02 photo source, M-CAP-03 file
- * picker and M-CAP-04 share intake (`?entry=share`): text, link, photo, screenshot, PDF/file.
+ * picker (recent mail attachments and "Dosyalar'dan seç…") and M-CAP-04 share intake
+ * (`?entry=share`): text, link, photo, screenshot, PDF/file. A picked mail attachment is analyzed
+ * from the sheet's own "Analiz Et" (the server fetches it; see `mailAttachments`).
  * Analysis starts only on "Analiz Et" (M§27): text → `POST /captures` → analyze; link → the preview
  * capture → analyze; files → signed upload (real byte progress) → analyze; then `capture/{id}`.
  * The system photo picker needs no media permission (no `READ_MEDIA_IMAGES`); the camera asks
@@ -68,6 +70,12 @@ import {
   uploadFile,
   type LinkProblem,
 } from './flows';
+import {
+  MailAttachmentRows,
+  useAttachmentAccounts,
+  useCaptureAttachment,
+  type AttachmentCandidate,
+} from './mailAttachments';
 
 const LINK_DEBOUNCE_MS = 600;
 type Mode = 'text' | 'link' | 'media';
@@ -134,6 +142,14 @@ export function ComposerScreen() {
   const [analyzing, setAnalyzing] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
   const [cameraDenied, setCameraDenied] = useState(false);
+  const [picked, setPicked] = useState<AttachmentCandidate | null>(null);
+  const attachmentAccounts = useAttachmentAccounts();
+  const mailAttachments = pro && attachmentAccounts !== null && attachmentAccounts.size > 0;
+  const attachmentCapture = useCaptureAttachment('composer');
+  const closeFileSheet = () => {
+    setFileSheet(false);
+    setPicked(null);
+  };
   const started = useRef(false);
 
   useEffect(() => {
@@ -666,30 +682,48 @@ export function ComposerScreen() {
       </BottomSheet>
       <BottomSheet
         visible={fileSheet}
-        onDismiss={() => {
-          setFileSheet(false);
-        }}
+        onDismiss={closeFileSheet}
         title={t('files.title')}
-        subtitle={t('files.subtitle')}
+        subtitle={mailAttachments ? t('files.subtitleMail') : t('files.subtitle')}
+        dismissible={attachmentCapture.pending === null}
         testID="sheet.filePicker"
       >
         <View style={styles.section}>
+          {mailAttachments ? (
+            <MailAttachmentRows
+              enabled={fileSheet}
+              selectedKey={picked?.key ?? null}
+              onSelect={setPicked}
+            />
+          ) : null}
           <FileRow
             name={t('files.fromDevice')}
             icon="folder_open"
             selected={false}
             onPress={() => {
-              setFileSheet(false);
+              closeFileSheet();
               void pickDocument();
             }}
             testID="capture.files.device"
           />
+          {picked === null ? null : (
+            <Button
+              label={t('analyze')}
+              onPress={() => {
+                void attachmentCapture.run(picked).then((done) => {
+                  if (done) closeFileSheet();
+                });
+              }}
+              loading={attachmentCapture.pending !== null}
+              disabled={!online}
+              fullWidth
+              testID="capture.files.analyze"
+            />
+          )}
           <Button
             label={common('actions.nevermind')}
             variant="ghost"
-            onPress={() => {
-              setFileSheet(false);
-            }}
+            onPress={closeFileSheet}
             fullWidth
           />
         </View>

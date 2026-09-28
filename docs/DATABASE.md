@@ -13,7 +13,7 @@ retention: [PRIVACY.md](PRIVACY.md); admin permissions: [BACKOFFICE_RBAC.md](BAC
 
 | Schema | Exposed through PostgREST | Contents |
 |---|---|---|
-| `public` | Yes (`config.toml` `api.schemas`) | The 81 product tables, one view, the 25 user RPCs and the service-role wrappers the Edge Functions call |
+| `public` | Yes (`config.toml` `api.schemas`) | The 81 product tables, one view, the 26 user RPCs and the service-role wrappers the Edge Functions call |
 | `admin_api` | Yes, but every function fails closed without the admin gateway header | The backoffice functions; each runs `private.require_admin(permission)` (gateway hash, `aal2`, admin identity, active session, role permission) |
 | `private` | No | Helpers, security-definer logic (entitlements, approvals state machine, jobs, budgets, retention, scheduler, audit chain), internal tables and views |
 | `extensions` | No | `pgcrypto`, `pg_trgm`, `unaccent`, `citext`, `vector` |
@@ -34,6 +34,7 @@ order, one transaction each (`lock_timeout = 10s`). The generated
 | `20260924001400` | The access layer: baseline revokes, owner policies, column grants, restrictive `aal2` policies on admin-only tables, append-only revokes |
 | `20260924001500`–`001700` | The eight `da_*` pg_cron jobs (skipped when pg_cron is absent), the three private buckets and their read policies, the first service wrapper for the audit-chain probe |
 | `20260924002000`–`003000` | Feature runtimes added by later tasks: integrations runtime (R-07 binding, device snapshots), approvals and reminders runtime, billing sync, referrals, public-api data layer, admin contract bridge, AI pipeline parts 1 and 2 (with the generated prompt seeds `002410` and `002610`), privacy engine, retention triggers, the referral loop fix, the admin contract gaps |
+| `20260924003400`–`003440` | Calendar intelligence: the `calendar_freebusy` capability (attendee free/busy, KPL-46); the cross-source event merge (KPL-15): `calendar_events.merged_into_id` / `merge_sources`, `private.merge_calendar_events` run by statement triggers on `calendar_events` and by a change of `calendars.selected`, the restrictive `calendar_events_hide_merged` policy, the user RPC `calendar_event_canonical_id`, `plan_range` event `sources`, the Microsoft `calendar_freebusy` backfill; then the validation of the new constraints |
 
 Conventions that hold across the files:
 
@@ -118,6 +119,7 @@ At `ec14e92` tier C runs 32 pgTAP files with 1,104 assertions. The suites:
 | `130_storage_cron`, `150_column_grants`, `160_user_rpcs`, `222_public_api` | Buckets and folder policies, pg_cron schedules and the worker poke; client column privileges; the user RPCs; the public-api data layer |
 | `20260924002000_integrations_runtime`, `20260924002100_approvals_reminders_runtime` | R-07 binding and completion, content upserts without bodies; approvals, device execution and reminders runtime |
 | `300_threats_admin`, `300_threats_privilege`, `300_threats_tenant`, `300_threats_writes` | The SQL side of the threat tests ([SECURITY.md](SECURITY.md)) |
+| `20260924003410_calendar_merge` | Cross-source calendar merge: iCalUID, title + organiser and device matches, same-calendar and cancelled exclusions, the canonical choice, regrouping on change, deselection and deletion, `updated_at` untouched by bookkeeping, the restrictive policy, `calendar_event_canonical_id`, `plan_range` sources, the `calendar_freebusy` label |
 
 The Edge integration suites (`supabase/tests/integration/*.test.ts`, `pnpm test:integration`)
 run against tier A in CI and tier C+ locally; see [TESTING.md](TESTING.md).
@@ -142,7 +144,7 @@ does not understand.
 
 ### Migration order
 
-39 migrations, applied in file-name order:
+42 migrations, applied in file-name order:
 
 1. [`20260924000100_extensions_schemas_enums.sql`](../supabase/migrations/20260924000100_extensions_schemas_enums.sql)
 1. [`20260924000200_identity_settings.sql`](../supabase/migrations/20260924000200_identity_settings.sql)
@@ -183,6 +185,9 @@ does not understand.
 1. [`20260924002690_ai_pipeline_part2_validate.sql`](../supabase/migrations/20260924002690_ai_pipeline_part2_validate.sql)
 1. [`20260924002700_referral_loop_edges.sql`](../supabase/migrations/20260924002700_referral_loop_edges.sql)
 1. [`20260924003000_admin_contract_gaps.sql`](../supabase/migrations/20260924003000_admin_contract_gaps.sql)
+1. [`20260924003400_capability_calendar_freebusy.sql`](../supabase/migrations/20260924003400_capability_calendar_freebusy.sql)
+1. [`20260924003410_calendar_event_merge.sql`](../supabase/migrations/20260924003410_calendar_event_merge.sql)
+1. [`20260924003440_calendar_event_merge_validate.sql`](../supabase/migrations/20260924003440_calendar_event_merge_validate.sql)
 
 ### Tables (`public`)
 
@@ -246,7 +251,7 @@ Created in [`20260924000400_content.sql`](../supabase/migrations/20260924000400_
 | `vip_people` | User-marked important people with a relationship group (M§30); rows may exist on Free, effects apply only for Pro (M§44). | 10 | **read** own rows · all columns<br>**insert** own rows · all columns except `id`, `created_at`, `updated_at`<br>**update** own rows · `relationship`, `always_notify`, `bypass_quiet_hours`, `note`<br>**delete** own rows |  |
 | `email_threads` | Thread-level mail intelligence: category, reply state, summary, deadline (M§14–17). No body columns. | 40 | **read** own rows · all columns except `analysis_hash` |  |
 | `email_messages` | Message metadata, triage and classification. There is no body column: "Orijinal Mail" is fetched on demand and never stored (ADR-05). | 48 | **read** own rows · all columns except `references_ids`, `content_hash` |  |
-| `calendar_events` | Normalized events from Google, Graph, EventKit and CalendarContract snapshots (M§19–22); writes happen only through approvals. | 35 | **read** own rows · all columns |  |
+| `calendar_events` | Normalized events from Google, Graph, EventKit and CalendarContract snapshots (M§19–22); writes happen only through approvals. | 37 | **read** own rows · all columns | restrictive `calendar_events_hide_merged` (`merged_into_id is null`) |
 | `tasks` | Google Tasks, Microsoft To Do, Apple Reminders snapshots and in-app tasks (M§19, §75); provider tasks change only through approvals. | 25 | **read** own rows · all columns<br>**insert** own rows where `connected_account_id is null and origin = 'user' and approval_action_id is null` · `user_id`, `title`, `notes_excerpt`, `due_date`, `due_at`, `status`, `origin`<br>**update** own rows where `connected_account_id is null` · `title`, `notes_excerpt`, `due_date`, `due_at`, `status`, `completed_at`<br>**delete** own rows where `connected_account_id is null` |  |
 | `commitments` | Detected or user-confirmed promises ("Cuma gönderirim.") with verified evidence (M§18, §22, §83). | 27 | **read** own rows · all columns<br>**update** own rows · `due_at`, `due_is_date_only`, `status`, `snoozed_until`, `completed_at`, `cancelled_at` |  |
 | `reminders` | Smart reminders created through the reminder sheet (M§29); external destinations go through approvals. | 27 | **read** own rows · all columns |  |
@@ -262,7 +267,7 @@ Created in [`20260924000400_content.sql`](../supabase/migrations/20260924000400_
 - `vip_people`: id, user_id, contact_id, relationship, always_notify, bypass_quiet_hours, note, origin, created_at, updated_at
 - `email_threads`: id, user_id, connected_account_id, provider, provider_thread_id, subject, participants, message_count, last_message_at, last_inbound_at, last_outbound_at, has_unread, category, category_tier, category_reason, category_rule_id, category_learned_preference_id, category_confidence, urgency, reply_state, ai_summary, key_points, deadline_at, deadline_evidence, labels, web_link, is_muted, analysis_hash, analyzed_at, prompt_version_id, rolling_summary, last_processed_message_id, follow_up_state, awaiting_since, expects_reply_message_id, topic_label, search_tsv, expires_at, created_at, updated_at
 - `email_messages`: id, user_id, connected_account_id, thread_id, provider, provider_message_id, internet_message_id, in_reply_to, references_ids, direction, from_email, from_name, to_emails, cc_emails, subject, snippet, sent_at, received_at, is_read, importance, labels, has_attachments, attachment_meta, list_unsubscribe, auto_submitted, precedence_bulk, dkim_pass, spf_pass, content_hash, ai_status, injection_suspected, dropped_fields, life_signal, classification, classification_tier, classification_reason, classification_rule_id, classification_confidence, ai_summary, key_points, analyzed_at, prompt_version_id, provider_deleted_at, web_link, search_tsv, expires_at, created_at, updated_at
-- `calendar_events`: id, user_id, connected_account_id, calendar_id, provider, provider_event_id, ical_uid, recurring_event_id, etag, title, description_excerpt, location, is_online, conference_url, start_at, end_at, all_day, start_date, end_date, time_zone, status, organizer_email, organizer_self, can_modify, attendees, attendee_count, origin, device_last_synced_at, da_approval_id, provider_updated_at, provider_deleted_at, search_tsv, expires_at, created_at, updated_at
+- `calendar_events`: id, user_id, connected_account_id, calendar_id, provider, provider_event_id, ical_uid, recurring_event_id, etag, title, description_excerpt, location, is_online, conference_url, start_at, end_at, all_day, start_date, end_date, time_zone, status, organizer_email, organizer_self, can_modify, attendees, attendee_count, origin, device_last_synced_at, da_approval_id, provider_updated_at, provider_deleted_at, search_tsv, expires_at, created_at, updated_at, merged_into_id, merge_sources
 - `tasks`: id, user_id, connected_account_id, provider, provider_task_id, provider_list_id, title, notes_excerpt, due_date, due_at, status, completed_at, origin, approval_action_id, idempotency_key, source_type, source_id, source_provider, source_timestamp, confidence, evidence, search_tsv, expires_at, created_at, updated_at
 - `commitments`: id, user_id, contact_id, counterparty_name, direction, text, due_at, due_is_date_only, status, snoozed_until, completed_at, cancelled_at, dedupe_key, origin, approval_action_id, calendar_event_id, source_type, source_id, source_provider, source_timestamp, confidence, evidence, user_overrides, search_tsv, expires_at, created_at, updated_at
 - `reminders`: id, user_id, title, note, remind_at, preset, anchor_at, destination, origin, resolution_reason, channel, status, target_type, target_id, idempotency_key, approval_action_id, notification_id, delivered_at, cancelled_at, source_type, source_id, source_provider, source_timestamp, confidence, expires_at, created_at, updated_at
@@ -506,11 +511,11 @@ EXECUTE as granted by the migrations (PostgreSQL grants EXECUTE to PUBLIC on a n
 
 | Schema | Functions | `authenticated` (and `service_role`) | `service_role` only | Neither |
 |---|---|---|---|---|
-| `public` | 124 | 25 | 99 | 0 |
+| `public` | 125 | 26 | 99 | 0 |
 | `admin_api` | 145 | 141 | 4 | 0 |
-| `private` | 220 | 14 | 80 | 126 |
+| `private` | 226 | 14 | 80 | 132 |
 
-**User RPCs** (`public`, called with the user's JWT; RLS and `auth.uid()` scope them): `apply_insight_feedback`, `check_plan_limit`, `dismiss_announcement`, `effective_entitlement`, `flow_feed`, `flow_meta`, `get_explanation`, `get_usage_summary`, `history_deletion_preview`, `list_approvals`, `mail_intelligence`, `mark_briefing_opened`, `memory_vector_candidates`, `person_intelligence`, `plan_range`, `plan_week_density`, `preview_priority_rule`, `revert_insight_feedback`, `search_user_content`, `set_commitment_status`, `set_insight_status`, `submit_ai_correction`, `today_overview`, `upsert_manual_contact`, `vip_suggestions`.
+**User RPCs** (`public`, called with the user's JWT; RLS and `auth.uid()` scope them): `apply_insight_feedback`, `calendar_event_canonical_id`, `check_plan_limit`, `dismiss_announcement`, `effective_entitlement`, `flow_feed`, `flow_meta`, `get_explanation`, `get_usage_summary`, `history_deletion_preview`, `list_approvals`, `mail_intelligence`, `mark_briefing_opened`, `memory_vector_candidates`, `person_intelligence`, `plan_range`, `plan_week_density`, `preview_priority_rule`, `revert_insight_feedback`, `search_user_content`, `set_commitment_status`, `set_insight_status`, `submit_ai_correction`, `today_overview`, `upsert_manual_contact`, `vip_suggestions`.
 
 **Service-role wrappers and server helpers** (`public`; the Edge Functions call `private` logic through these): `account_can`, `account_deletion_begin`, `account_deletion_context`, `account_deletion_system_purge`, `account_paused_by_plan`, `acquire_sync_lease`, `ai_breaker_state`, `ai_budget_reserve`, `ai_budget_settle`, `ai_cost_by_model`, `ai_org_budget_evaluate`, `apply_device_snapshot`, `apply_mail_changes`, `apply_referral`, `apply_staged_device_snapshot`, `audit_log_append`, `audit_verify_chain`, `billing_apply_mirror`, `billing_mark_event`, `billing_sync_context`, `briefing_evening_ready`, `briefing_retry`, `cancel_reminder`, `claim_jobs`, `complete_job`, `consume_provider_quota`, `create_approval`, `create_deletion_request`, `create_export_request`, `deletion_request_update`, `demo_state_get`, `demo_state_record_write`, `demo_state_set_clock`, `discard_capture`, `disconnect_integration`, `edit_approval_payload`, `enqueue_job`, `ensure_referral_code`, `evaluate_flag`, `evaluate_flags`, `extend_job_lease`, `fail_job`, `first_analysis_counts`, `grant_entitlement`, `hash_subject`, `history_deletion_counts`, `integration_purge_batch`, `link_contact_refs`, `mark_calendar_events_deleted`, `memory_stats`, `next_morning_briefing_at`, `oauth_callback_store`, `oauth_close_flow`, `oauth_complete_binding`, `plan_limit`, `privacy_tombstones_upsert`, `prune_calendar_events`, `pseudonymize_audit_subject`, `public_deletion_status`, `public_deletion_subject`, `public_otp_lock_seconds`, `public_otp_record_failure`, `public_plans`, `public_referral_resolve`, `public_subscription_active`, `public_support_ticket`, `purge_history`, `purge_user_history`, `rate_limit_hit`, `recompute_expires_at`, `record_billing_event`, `referral_apply_context`, `referral_decide`, `referral_evaluation_context`, `referral_overview`, `referral_tombstone_match`, `refresh_contact_stats`, `release_sync_lease`, `retention_cleanup`, `retention_orphan_objects`, `retention_system_sweep`, `reward_referral`, `schedule_reminder`, `stage_device_snapshot`, `start_device_execution`, `support_inbound_note`, `transition_approval`, `try_lock_credential_refresh`, `update_job_progress`, `upsert_calendar_events`, `upsert_calendars`, `upsert_contacts_from_people`, `upsert_device_account`, `upsert_learned_preference`, `upsert_mail_messages`, `upsert_tasks`, `user_apple_sub`, `user_rows_remaining`, `web_analytics_increment`.
 
@@ -536,7 +541,7 @@ EXECUTE as granted by the migrations (PostgreSQL grants EXECUTE to PUBLIC on a n
 | `approval_via` | `approval_center` `inline_sheet` `voice_card` `capture_batch` `in_place` |
 | `briefing_kind` | `morning` `midday` `evening` `weekly` |
 | `briefing_status` | `scheduled` `generating` `ready` `delivered` `skipped` `failed` |
-| `capability` | `mail_read` `mail_send` `calendar_read` `calendar_write` `tasks_read` `tasks_write` |
+| `capability` | `mail_read` `mail_send` `calendar_read` `calendar_write` `tasks_read` `tasks_write` `calendar_freebusy` |
 | `capture_kind` | `photo` `screenshot` `pdf` `file` `link` `text` `share` |
 | `capture_status` | `pending_upload` `uploaded` `analyzing` `extracted` `actioned` `discarded` `failed` |
 | `commitment_direction` | `user_owes` `they_owe` |

@@ -991,6 +991,7 @@ Deno.test(
         mimeType: 'application/pdf',
         sizeBytes: 1200,
         inline: false,
+        kind: 'file',
       },
       {
         providerAttachmentId: 'a2',
@@ -998,6 +999,7 @@ Deno.test(
         mimeType: 'application/octet-stream',
         sizeBytes: 0,
         inline: false,
+        kind: 'file',
       },
     ]);
     const att = await mail.getAttachment(c, 'm0', 'a1', { maxBytes: 10_000 });

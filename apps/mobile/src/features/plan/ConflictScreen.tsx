@@ -5,6 +5,9 @@
  * previewed and approved here (never a direct calendar write), a new-time mail opens its draft in
  * the reply editor (`email_send` approval there), "Beni hatırlat" opens the reminder sheet and
  * "Böyle kalsın" dismisses with undo. Detection is free; the options are Pro (402 → gate).
+ * Each option states its attendee availability only as the provider answered it (KPL-46, DEV-46):
+ * who is busy, or why it is unknown; when the free/busy permission is missing, "Uygunluğu göster"
+ * starts the progressive `calendar_freebusy` upgrade and the options reload after the grant.
  */
 import { isApiError, qk } from '@da/api-client';
 import {
@@ -14,6 +17,7 @@ import {
 } from '@da/api-client/react';
 import { withTrCases } from '@da/i18n';
 import {
+  Button,
   ConflictPair,
   GroupedList,
   HintRow,
@@ -35,12 +39,54 @@ import { useFormats, useSessionContext } from '../../lib/data/session';
 import { track } from '../../lib/events';
 import { useOnline } from '../../lib/query/online-manager';
 import { ProGate } from '../actions/ProGate';
+import { openScopeUpgrade } from '../actions/scope';
 import { openReminder } from '../actions/sheets';
 import { DetailScreen, QueryFailure, useBack, useOfflineGuard } from '../actions/ui';
 import { ApprovalCardView } from '../approvals/ApprovalRunnerCard';
 import { useApprovalRunner } from '../approvals/runner';
 
 type OptionKind = 'move_own' | 'propose_time' | 'shorten' | 'keep';
+
+interface Feasibility {
+  readonly attendee_availability: 'free' | 'busy' | 'unknown';
+  readonly availability_reason?: string | undefined;
+  readonly attendees?:
+    | readonly { readonly email: string; readonly name: string | null; readonly status: string }[]
+    | undefined;
+}
+
+export type AvailabilityKey =
+  | 'availability.free'
+  | 'availability.busyNames'
+  | 'availability.partial'
+  | 'availability.not_shared'
+  | 'availability.scope_missing'
+  | 'availability.device_calendar'
+  | 'availability.provider_unavailable';
+
+const REASON_KEYS: Readonly<Record<string, AvailabilityKey>> = {
+  partial: 'availability.partial',
+  not_shared: 'availability.not_shared',
+  scope_missing: 'availability.scope_missing',
+  device_calendar: 'availability.device_calendar',
+  provider_unavailable: 'availability.provider_unavailable',
+};
+
+/** The option's availability line: who is busy, that everyone is free, or why it is unknown. */
+export function availabilityLine(
+  f: Feasibility,
+  t: (key: AvailabilityKey, values?: Record<string, string>) => string,
+): string | null {
+  const reason = f.availability_reason;
+  if (reason === undefined || reason === 'not_applicable' || reason === 'no_other_attendees')
+    return null;
+  const busy = (f.attendees ?? []).filter((a) => a.status === 'busy');
+  if (busy.length > 0)
+    return t('availability.busyNames', { names: busy.map((a) => a.name ?? a.email).join(', ') });
+  if (f.attendee_availability === 'free') return t('availability.free');
+  const key = REASON_KEYS[reason];
+  return key === undefined ? null : t(key);
+}
 
 function analyticsKind(kind: string): OptionKind | null {
   switch (kind) {
@@ -111,6 +157,8 @@ export function ConflictScreen() {
   const [preview, setPreview] = useState<{ approval: ApprovalView; kind: string } | null>(null);
   const data = query.data;
   const gone = isApiError(query.error) && query.error.code === 'STATE_CONFLICT';
+  const tAvailability = (key: AvailabilityKey, values?: Record<string, string>) =>
+    t(`conflictScreen.${key}`, values);
 
   useEffect(() => {
     track('conflict_opened', { origin: 'plan_day' });
@@ -290,7 +338,13 @@ export function ConflictScreen() {
                 key={option.option_id}
                 role="button"
                 label={option.title}
-                subtitle={[option.description, ...option.side_effects].join(' · ')}
+                subtitle={[
+                  option.description,
+                  ...option.side_effects,
+                  ...[availabilityLine(option.feasibility, tAvailability)].filter(
+                    (line): line is string => line !== null,
+                  ),
+                ].join(' · ')}
                 twoLine
                 recommended={index === 0}
                 ai={index === 0}
@@ -305,6 +359,28 @@ export function ConflictScreen() {
               />
             ))}
           </GroupedList>
+          {data?.availability_upgrade === undefined || data.availability_upgrade === null ? null : (
+            <View style={{ gap: 8 }} testID="conflict.availabilityUpgrade">
+              <HintRow text={t('conflictScreen.availability.upgradeHint')} />
+              <Button
+                label={t('conflictScreen.availability.upgrade')}
+                variant="tonal"
+                onPress={() => {
+                  const upgrade = data.availability_upgrade;
+                  if (upgrade === undefined || upgrade === null) return;
+                  openScopeUpgrade({
+                    accountId: upgrade.account_id,
+                    provider: upgrade.provider,
+                    capability: upgrade.capability,
+                    onGranted: () => {
+                      void query.refetch();
+                    },
+                  });
+                }}
+                testID="conflict.availability.upgrade"
+              />
+            </View>
+          )}
         </View>
       )}
     </DetailScreen>

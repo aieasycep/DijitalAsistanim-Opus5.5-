@@ -88,7 +88,10 @@
     "blocked": "This address can't be opened for security reasons.",
     "previewFailed": "Couldn't get a preview; you can still analyze it.",
     "uploadFailed": "Upload failed · Try again",
-    "textTooLong": "Up to 5,000 characters."
+    "textTooLong": "Up to 5,000 characters.",
+    "attachmentGone": "This attachment is no longer in the email.",
+    "attachmentsOff": "Attachment analysis is off for this account · You can turn it on in Settings.",
+    "reconnect": "This mail account needs to be reconnected."
   },
   "fileA11y": "{kind}, {name}, {size}",
   "sourcesA11y": "Choose a source",
@@ -111,7 +114,11 @@
   "files": {
     "title": "Choose a PDF or file",
     "subtitle": "From files on your device",
-    "fromDevice": "Choose from Files…"
+    "fromDevice": "Choose from Files…",
+    "subtitleMail": "Recent files · From mail attachments and Files",
+    "mailEmpty": "No files in recent mail attachments.",
+    "mailMeta": "{size} · {sender} · {date}",
+    "mailLoading": "Loading mail attachments"
   },
   "discard": {
     "title": "Delete the draft?",
@@ -168,5 +175,9 @@
   "noApprovalNeeded": "No approval needed",
   "editItem": "Edit item",
   "itemTitle": "Title",
-  "sendToApproval": "{count, plural, one {Send # item for approval} other {Send # items for approval}}"
+  "sendToApproval": "{count, plural, one {Send # item for approval} other {Send # items for approval}}",
+  "mailSheet": {
+    "title": "Send to Capture",
+    "body": "{name} is fetched from your mail account and analyzed; every suggested action waits for your approval."
+  }
 }

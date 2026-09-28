@@ -45,6 +45,7 @@ export interface StoredMail extends MailRow {
   readonly user_id: string;
   thread_id: string;
   provider_deleted_at: string | null;
+  attachment_meta?: unknown;
 }
 
 export interface StoredEvent extends EventRow {
@@ -703,7 +704,16 @@ export function memoryIntegrationStore(
         received_at: m.received_at,
         web_link: m.web_link,
         provider_deleted_at: m.provider_deleted_at,
+        has_attachments: m.has_attachments,
+        attachment_meta: m.attachment_meta ?? [],
       });
+    },
+    setAttachmentMeta(messageId, meta) {
+      for (const [key, m] of mails) {
+        if (m.id === messageId)
+          mails.set(key, { ...m, attachment_meta: meta, has_attachments: meta.length > 0 });
+      }
+      return Promise.resolve();
     },
     upsertEvents(accountId, calendarId, rows, origin) {
       let cancelled = 0;

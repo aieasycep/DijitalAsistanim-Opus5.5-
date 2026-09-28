@@ -32,7 +32,10 @@ text is in [`apps/web/src/content/legal`](../apps/web/src/content/legal). Table-
   sanitises it and answers `Cache-Control: no-store`. The AI pipeline fetches bodies transiently
   ([`services/intel/mail-bodies.ts`](../supabase/functions/_shared/services/intel/mail-bodies.ts))
   and passes them to the model only when `ai_data_access.mail_body` is on; they are never written or
-  logged. Mail attachments are not downloaded; only their names and sizes are kept.
+  logged. Mail attachments are not downloaded by sync or AI: triage keeps only their name, type,
+  size and provider id (`email_messages.attachment_meta`, while the `attachments` control and the
+  account's "Ekleri analiz et" are on). A file is fetched only when the user sends it to capture
+  ("Analiz Et"; API-CAP-02), and then lives as that capture under its retention.
 - **Plaintext tokens, PKCE verifiers, OAuth states, completion codes and device nonces** (hashes or
   ciphertext only).
 - **Prompts and model outputs in telemetry:** `ai_requests` rows are limited to an allow-list of

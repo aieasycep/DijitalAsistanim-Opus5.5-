@@ -88,7 +88,10 @@
     "blocked": "Bu adres güvenlik nedeniyle açılamıyor.",
     "previewFailed": "Önizleme alınamadı; yine de analiz edebilirsin.",
     "uploadFailed": "Yükleme başarısız · Tekrar dene",
-    "textTooLong": "En fazla 5.000 karakter."
+    "textTooLong": "En fazla 5.000 karakter.",
+    "attachmentGone": "Bu ek artık mailde bulunamadı.",
+    "attachmentsOff": "Bu hesap için ek analizi kapalı · Ayarlar'dan açabilirsin.",
+    "reconnect": "Bu mail hesabının yeniden bağlanması gerekiyor."
   },
   "fileA11y": "{kind}, {name}, {size}",
   "sourcesA11y": "Kaynak seç",
@@ -111,7 +114,11 @@
   "files": {
     "title": "PDF veya dosya seç",
     "subtitle": "Cihazındaki dosyalardan",
-    "fromDevice": "Dosyalar'dan seç…"
+    "fromDevice": "Dosyalar'dan seç…",
+    "subtitleMail": "Son dosyalar · Mail eklerinden ve Dosyalar'dan",
+    "mailEmpty": "Son mail eklerinde dosya yok.",
+    "mailMeta": "{size} · {sender} · {date}",
+    "mailLoading": "Mail ekleri yükleniyor"
   },
   "discard": {
     "title": "Taslak silinsin mi?",
@@ -168,5 +175,9 @@
   "noApprovalNeeded": "Onay gerektirmez",
   "editItem": "Öğeyi düzenle",
   "itemTitle": "Başlık",
-  "sendToApproval": "{count} Öğeyi Onaya Gönder"
+  "sendToApproval": "{count} Öğeyi Onaya Gönder",
+  "mailSheet": {
+    "title": "Ekle'ye gönder",
+    "body": "{name} mail hesabından alınır ve analiz edilir; önerilen her işlem onayını bekler."
+  }
 }

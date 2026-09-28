@@ -145,7 +145,7 @@ describe('api route catalogue coverage', () => {
       expect(Object.keys(routes)).toContain(key);
     }
     expect(new Set(ids).size).toBe(ids.length);
-    expect(ids).toHaveLength(64);
+    expect(ids).toHaveLength(65);
   });
 
   it('streams only the assistant message route', () => {

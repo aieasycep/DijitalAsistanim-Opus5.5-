@@ -26,6 +26,7 @@ import type {
   MeetingPrepUpsert,
 } from '../assist/store.ts';
 import { clip } from '../copy.ts';
+import { parseStoredAttachments } from '../integrations/attachments.ts';
 import type { CommitmentRow, MailMessageRow, MailThreadRow } from '../intel/types.ts';
 
 export const PREP_MAIL_DAYS = 60;
@@ -197,6 +198,46 @@ function openLoopsT0(sources: PrepSources) {
   }));
 }
 
+/** A stored "İLGİLİ DOSYALAR" pointer: the attachment's index in its mail's `attachment_meta`. */
+export interface PrepFilePointer {
+  readonly email_message_id: string;
+  readonly index: number;
+  readonly name: string;
+}
+
+/**
+ * File attachments of the mails exchanged with the attendees (newest first, one per name and
+ * size, ≤ 5; DEV-41, API_CONTRACTS §11 JOB-15 step 3 "attachment names in related threads").
+ */
+export function fileEntries(mails: readonly MailMessageRow[]): PrepFilePointer[] {
+  const out: PrepFilePointer[] = [];
+  const seen = new Set<string>();
+  for (const mail of mails) {
+    for (const [index, a] of parseStoredAttachments(mail.attachment_meta).entries()) {
+      if (a.kind !== 'file') continue;
+      const key = `${a.name.toLowerCase()}|${a.size}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push({ email_message_id: mail.id, index, name: a.name });
+      if (out.length >= 5) return out;
+    }
+  }
+  return out;
+}
+
+/** Stored pointers of a prep row (defensive: the column is plain jsonb). */
+export function filePointers(row: MeetingPrepRow): PrepFilePointer[] {
+  return (row.relevant_files as unknown[]).flatMap((raw) => {
+    if (typeof raw !== 'object' || raw === null) return [];
+    const r = raw as Record<string, unknown>;
+    return typeof r.email_message_id === 'string' &&
+      typeof r.index === 'number' &&
+      typeof r.name === 'string'
+      ? [{ email_message_id: r.email_message_id, index: r.index, name: r.name }]
+      : [];
+  });
+}
+
 export interface ComposedPrep {
   readonly row: MeetingPrepUpsert;
   readonly mode: 'ai' | 'template';
@@ -233,7 +274,7 @@ function baseRow(
     their_commitment_ids: sources.commitments
       .filter((c) => c.direction === 'they_owe')
       .map((c) => c.id),
-    relevant_files: [],
+    relevant_files: fileEntries(sources.mails),
     source_hash: sources.hash,
     generated_at: now.toISOString(),
     source_provider: sources.event.provider,
@@ -424,7 +465,11 @@ function entriesOf(row: MeetingPrepRow): SourceEntry[] {
 }
 
 /** The API view of a prep (`MeetingPrepView`). */
-export function prepView(row: MeetingPrepRow, event: MeetingEventRow): MeetingPrepView {
+export function prepView(
+  row: MeetingPrepRow,
+  event: MeetingEventRow,
+  files: MeetingPrepView['relevant_files'] = [],
+): MeetingPrepView {
   const entries = entriesOf(row);
   const purposeEvidence = (row.purpose_evidence as { quote?: string }[]).flatMap((e) =>
     typeof e.quote === 'string'
@@ -523,7 +568,7 @@ export function prepView(row: MeetingPrepRow, event: MeetingEventRow): MeetingPr
           ]
         : [],
     ),
-    relevant_files: [],
+    relevant_files: files,
     talking_points: (row.talking_points as { text: string; sources: Ref[] }[])
       .filter((p) => p.sources.length > 0)
       .slice(0, 3),

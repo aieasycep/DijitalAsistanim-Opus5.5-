@@ -115,6 +115,7 @@
     "vipRemoved": "VIP'den çıkarıldı.",
     "vipQueued": "Bağlantı gelince kaydedilecek.",
     "viewSender": "Gönderen kişiyi gör",
-    "wasImportant": "Aslında önemliydi"
+    "wasImportant": "Aslında önemliydi",
+    "attachmentToCapture": "Ekle'ye gönder"
   }
 }

@@ -4015,7 +4015,7 @@ Scheme `dijitalasistan://`; universal links `https://<web-domain>/app/...`. Ever
   - Hidden if "Ekleri analiz et" is off for that account.
 - **API dependencies**
   - Device: `DocumentPicker.getDocumentAsync({type:['application/pdf','text/plain','text/calendar','image/*'], copyToCacheDirectory:true})`.
-  - Mail attachment: `POST /captures` (API-CAP-02) with `source:{kind:'file', from_email_attachment:{email_message_id, attachment_ref}}` (`attachment_ref` = the HMAC-signed token from API-MAIL-01). The server fetches the attachment from the provider into the private bucket for the analysis window only.
+  - Mail attachment: `POST /captures` (API-CAP-02) with `source:{kind:'file', from_email_attachment:{email_message_id, attachment_ref}}` (`attachment_ref` = the HMAC-signed token from API-MAIL-09 `GET /mail/:messageId/attachments`, or from API-MAIL-01). The server fetches the attachment from the provider into the private bucket for the analysis window only.
 - **State dependencies** — Single selection.
 - **Source design reference**
   - PRIMARY 04/4.12a "PDF seç" sheet (`FileRow`s; selected `#F7F7FE` + `check_circle`; "Dosyalar'dan seç…"; CTA "Analiz Et"). Title changed to "PDF veya dosya seç" (Deviation D-5).

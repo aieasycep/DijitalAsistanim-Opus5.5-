@@ -47,7 +47,7 @@ Routes are relative to `apps/mobile/app/`. Components without a path are exports
 
 | Artboard | Screen | Route / component | Status |
 | --- | --- | --- | --- |
-| 3.1 Bugün · Light · Sabah | M-TD-01, M-TD-02…04 | `(tabs)/today/index` (`RootHeader`, `BriefingHero`, `PriorityCard`, `SwipeableRow`, sheets `CorrectionSheet`, `WhySheet`, `SnoozeSheet`) | Built, see DEV-24, DEV-65, DEV-68 |
+| 3.1 Bugün · Light · Sabah | M-TD-01, M-TD-02…04 | `(tabs)/today/index` (`RootHeader`, `BriefingHero`, `AiCard`, `PriorityCard`, `SwipeableRow`, sheets `CorrectionSheet`, `WhySheet`, `SnoozeSheet`) | Built, see DEV-24, DEV-65, DEV-68 |
 | 3.2 Bugün · Dark | M-TD-01 (dark, evening hero) | same | Built |
 | 3.3 Sabah Brifingi · 3.3D Dark | M-BR-01, M-BR-07 | `briefing/[id]`, `briefings/index` (`GradientHeader`, `EditorialParagraph`, `GroupedList`, `ProvenanceFooter`) | Built, see DEV-53 |
 | 3.4 Sesli Brifing | M-BR-02 | `briefing/[id]/listen` (`FullPlayer`, `ChapterList`, `SpeedPill`, `NativeTtsNotice`) | Built, see DEV-52 |
@@ -197,13 +197,13 @@ Each row is a DESIGN_AUDIT §7 entry and how it stands in the code.
 | DEV-38 | Store and ad copy fixes | Not applicable yet: store screenshots and ads are not produced in the repository |
 | DEV-39 | Provider handoff for the original mail | Applied (`webLink` in the overflow sheet and source line) |
 | DEV-40 | Join variant of `CountdownPill` and maps handoff | Applied (allow-listed conferencing URLs only) |
-| DEV-41 | "İLGİLİ DOSYALAR" only when attachments exist | Section built; the server sends no attachment metadata yet (`relevant_files` is empty), so it never shows |
+| DEV-41 | "İLGİLİ DOSYALAR" only when attachments exist | Applied: triage stores attachment metadata (name, type, size, provider id) of kept mails, and the prep lists the files of recent mails with the meeting's attendees when the `attachments` Data Source Control is on (tap → the mail) |
 | DEV-42 | Person open loops + "Tüm iletişimi gör" | Applied |
 | DEV-43 | Per-row disable, global "Etkileşimlerimden öğren", "Kural Ekle" to Priority Rules | Applied |
 | DEV-44 | VIP suggestion "Şimdi değil" | Applied |
 | DEV-45 | Plan "Planla" → proposal sheet → approval | Applied (M-PLAN-03) |
-| DEV-46 | Conflict options without invented availability; "Beni hatırlat, kendim çözeyim" | Applied; attendee availability is always reported as unknown (no free/busy lookup is built) |
-| DEV-47 | "Dosya" tile accepting PDF, images and text | Applied; mail attachments are not offered as a source |
+| DEV-46 | Conflict options without invented availability; "Beni hatırlat, kendim çözeyim" | Applied: each option states attendee availability as the provider answered it (Google free/busy after the "Uygunluğu göster" permission, Graph `getSchedule`), naming busy attendees or why it is unknown (KPL-46) |
+| DEV-47 | "Dosya" tile accepting PDF, images and text | Applied: the sheet lists PDFs and images from recent mail attachments above "Dosyalar'dan seç…" (hidden when "Ekleri analiz et" or the attachments control is off); Mail Detail sends an attachment to Ekle ("Ekle'ye gönder"); text files are not accepted by the capture bucket |
 | DEV-48 | Product links: memory save and reminder only | Applied (no price tracking exists) |
 | DEV-49 | 5 s client-side undo before approvals are sent; compensating actions after | Applied in `ApprovalSheet` (R-06) |
 | DEV-50 | Weekly share in 4:5 and 9:16 | Applied |
@@ -220,11 +220,11 @@ Each row is a DESIGN_AUDIT §7 entry and how it stands in the code.
 | DEV-61 | Call data only as user notes | Applied (no telephony source) |
 | DEV-62 | "AI önerisi" chip and grounded rewording | Rewording applied ("hepsi zamanında öne çıkarıldı", "Yanıtın {name} kişisine gönderildi."); suggestions are labelled "Önerilen" (Plan: "Önerilen · henüz gerçek değil") instead of an "AI önerisi" chip |
 | DEV-63 | Draft attachments only from real files | Applied |
-| DEV-64 | No "Kapıya Not Bırak"; "Cüzdana Ekle" only with a wallet link | "Kapıya Not Bırak" removed; no wallet action is offered at all |
+| DEV-64 | No "Kapıya Not Bırak"; "Cüzdana Ekle" only with a wallet link | "Kapıya Not Bırak" removed; "Cüzdana Ekle" stays hidden (a `.pkpass` attachment is now detectable, but nothing on the device can open it; see below) |
 | DEV-65 | Done variant of the Today hero at 0 items | Applied with the copy "Bugün her şeyi kapattın." |
 | DEV-66 | Neutral TAKVİM badge | Applied: only ACİL, SON TARİH and GÜVENLİK carry colour (`today/badges.ts`) |
 | DEV-67 | Dark mode on every screen | Applied; the route a11y suite renders every route in dark mode |
-| DEV-68 | At most one `AiCard` on Today | Differs: no separate AI card; conflicts and schedule suggestions appear among the priority cards |
+| DEV-68 | At most one `AiCard` on Today | Applied: the first open conflict or schedule suggestion of `today_overview` is the "Takvim zekâsı" `AiCard` between the hero and ÖNCELİKLERİN and is not repeated as a priority card; conflict → "Seçenekleri Gör" (`plan/conflict/[id]`) / "Böyle Kalsın" (dismiss with undo); suggestion → "Planla" (its linked proposal, or `POST /plan/proposals`) / "Önemli değil" |
 | DEV-69 | Backoffice and web in the PRIMARY language | Applied (`@da/design-tokens` CSS in both apps) |
 
 ## Differences from the plan
@@ -236,10 +236,8 @@ The rows marked "Differs", "Partial" and "Not produced" above are the difference
 | DEV-20 blur, DEV-57 gradient library | Fewer native dependencies; the kit's `TabBar` accepts a blur background if one is added later. |
 | DEV-24, DEV-25 header entries | The Today header was kept to the approvals pill and avatar; search moved to the Assistant home, where questions and search sit together. |
 | DEV-36 step counter | The connect and permission screens form one step in the shipped copy. |
-| DEV-41, DEV-46 | The server has no attachment metadata for meeting prep and no free/busy lookup (KNOWN_PLATFORM_LIMITATIONS KPL-46); the UI never invents either. |
 | DEV-52 mini-player, P:08 staged briefing opening | Not wired in the shell; the full-screen player and the plain stack transition are used. |
 | DEV-62 "Önerilen" label | One label for every unconfirmed suggestion, matching the Plan proposal kicker. |
-| DEV-64 wallet action | No wallet-pass detection exists, so the action is never offered rather than offered conditionally. |
-| DEV-68 AI card | Conflict and schedule insights reuse the priority card, ranked with everything else. |
+| DEV-64 wallet action | Attachment metadata now reveals a `.pkpass` (`application/vnd.apple.pkpass`, reported by API-MAIL-09 as `unsupported_type`), but the pass bytes are reachable only through the provider API with the account's bearer token: there is no URL that `Linking.openURL` could hand to Wallet, the app has no PassKit module (`PKAddPassesViewController`; Expo ships none, and a native module is outside this change), and Google Wallet "save" links are not extracted from mail. Offering the action would therefore be a dead control. |
 | DEV-17 iOS widget font | The widget extension uses the system font; no font files are bundled into the extension. |
 | P:09 assets, DEV-38 | Store screenshots and social assets are rendered by the owner from demo builds before submission. |

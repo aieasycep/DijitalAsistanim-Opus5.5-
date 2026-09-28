@@ -68,6 +68,8 @@ export interface MailMessageRow {
   readonly ai_summary: string | null;
   readonly analyzed_at: string | null;
   readonly has_attachments: boolean;
+  /** Attachment metadata (names, types, sizes, provider ids); never content. */
+  readonly attachment_meta?: unknown;
   readonly injection_suspected: boolean;
   readonly life_signal: string;
   /** `bytea` content hash in PostgREST hex form (`\x…`): content-hash dedupe. */
@@ -123,6 +125,15 @@ export type MessagePatch = Partial<{
   injection_suspected: boolean;
   dropped_fields: string[];
   life_signal: string;
+  /** Attachment metadata only (`services/integrations/attachments.ts` StoredAttachment[]). */
+  attachment_meta: readonly {
+    name: string;
+    mime: string;
+    size: number;
+    provider_attachment_id: string;
+    kind: string;
+  }[];
+  has_attachments: boolean;
 }>;
 
 export type ThreadPatch = Partial<{

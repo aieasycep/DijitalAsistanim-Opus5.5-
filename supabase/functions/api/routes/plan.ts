@@ -4,7 +4,10 @@
  * API-PLAN-04 `POST /plan/conflicts/:insightId/resolve`; M§19, M§20). Deterministic: the
  * `@da/domain` slot finder decides, no model is called. Every calendar write is a pending approval
  * (`calendar_create` for proposals, `calendar_update` for conflict moves) through B's
- * `proposeApproval`; a non-organizer never gets a move option.
+ * `proposeApproval`; a non-organizer never gets a move option. Conflict options state attendee
+ * availability only from the provider's free/busy answer (KPL-46): a move option carries the slot
+ * the free-slot finder chose with the answering attendees' busy blocks, and `resolve` proposes
+ * exactly that slot.
  */
 import { ConflictResolveBody, FreeSlotsQuery, PlanProposalBody, routes } from '@da/validation';
 import type { ApprovalView } from '@da/validation';
@@ -29,12 +32,22 @@ import { proposeApproval } from '../../_shared/services/approvals/propose.ts';
 import { toApprovalView } from '../../_shared/services/approvals/view.ts';
 import { clip, copy, formatDay, formatTime } from '../../_shared/services/copy.ts';
 import {
+  attendeeBusy,
+  attendeeBusyIntervals,
+  type AttendeeBusy,
+  type AvailabilityDeps,
+  availabilityAt,
+  type AvailabilityUpgrade,
+  NOT_APPLICABLE,
+} from '../../_shared/services/plan/availability.ts';
+import {
   buildOptions,
   type ConflictOption,
   conflictPair,
   OPTIONS_TTL_MS,
   publicOptions,
   reminderRoute,
+  withAvailability,
 } from '../../_shared/services/plan/conflicts.ts';
 import {
   busyIntervals,
@@ -50,14 +63,69 @@ import { createReplyDraft } from './mail.ts';
 
 const DAY_MS = 86_400_000;
 const FREE_RANGE_DAYS = 2;
+/** How far a move option looks for a new slot (API-PLAN-03). */
+const MOVE_SEARCH_DAYS = 7;
 
-async function busyFor(kit: RouteKit, userId: string, from: Date, to: Date) {
+/** Busy intervals of the user; `vacated` (the event being moved) does not block its own move. */
+async function busyFor(kit: RouteKit, userId: string, from: Date, to: Date, vacated?: string) {
   const { assist, intel } = assistOf(kit);
   const [events, tasks] = await Promise.all([
     intel.mail.events(userId, from, to),
     assist.store.timedTasks(userId, from, to),
   ]);
-  return busyIntervals(events, tasks);
+  return busyIntervals(
+    vacated === undefined ? events : events.filter((e) => e.id !== vacated),
+    tasks,
+  );
+}
+
+function availabilityDeps(c: AppContext, kit: RouteKit): AvailabilityDeps {
+  return { rt: kit.deps.integrations, log: c.get('log'), correlationId: c.get('correlationId') };
+}
+
+/**
+ * The earliest slot after the other event (within 7 days, working hours, outside quiet hours) for
+ * the event's duration where the user and every answering attendee are free; without such a slot,
+ * the user's own earliest free slot (its attendee availability then says who is busy).
+ */
+async function moveSlot(
+  kit: RouteKit,
+  user: AiUser,
+  events: readonly [MeetingEventRow, MeetingEventRow],
+  event: MeetingEventRow,
+  attendees: AttendeeBusy | null,
+): Promise<{ start: Date; end: Date } | null> {
+  const other = events.find((e) => e.id !== event.id) ?? events[0];
+  const minutes = Math.max(
+    1,
+    Math.ceil((Date.parse(event.end_at) - Date.parse(event.start_at)) / 60_000),
+  );
+  const from = new Date(Math.max(Date.parse(other.end_at), kit.now().getTime()));
+  const to = new Date(from.getTime() + MOVE_SEARCH_DAYS * DAY_MS);
+  const [own, quiet] = await Promise.all([
+    busyFor(kit, user.userId, from, to, event.id),
+    assistOf(kit).assist.store.quietHours(user.userId),
+  ]);
+  const pick = (busy: typeof own) =>
+    pickSlot(
+      freeSlots({
+        from,
+        to,
+        minMinutes: minutes,
+        withinWorkingHours: true,
+        timeZone: user.timeZone,
+        workingHours: user.workingHours,
+        quiet: quietSpec(quiet),
+        busy,
+      }),
+      minutes,
+      'any',
+      user.timeZone,
+    )?.slot ?? null;
+  const vacated = { start: event.start_at, end: event.end_at };
+  const shared =
+    attendees === null ? null : pick([...own, ...attendeeBusyIntervals(attendees, vacated)]);
+  return shared ?? pick(own);
 }
 
 async function reuseDuplicate(
@@ -257,21 +325,77 @@ async function conflictContext(kit: RouteKit, userId: string, insightId: string)
   return { insight, events };
 }
 
-async function optionsFor(
+interface CachedOptions {
+  readonly list: ConflictOption[];
+  readonly upgrade: AvailabilityUpgrade | null;
+}
+
+/** Availability of every option; move options get their proposed slot (KPL-46). */
+async function withSlotsAndAvailability(
+  deps: AvailabilityDeps,
   kit: RouteKit,
-  userId: string,
-  locale: 'tr' | 'en',
+  user: AiUser,
+  events: [MeetingEventRow, MeetingEventRow],
+  list: readonly ConflictOption[],
+): Promise<CachedOptions> {
+  let upgrade: AvailabilityUpgrade | null = null;
+  const out: ConflictOption[] = [];
+  for (const option of list) {
+    const event = events.find((e) => e.id === option.event_id);
+    if (option.kind !== 'move_event' || event === undefined) {
+      out.push(withAvailability(option, NOT_APPLICABLE));
+      continue;
+    }
+    const other = events.find((e) => e.id !== event.id) ?? events[0];
+    const from = new Date(Math.max(Date.parse(other.end_at), kit.now().getTime()));
+    const window = {
+      start: from.toISOString(),
+      end: new Date(from.getTime() + MOVE_SEARCH_DAYS * DAY_MS).toISOString(),
+    };
+    const info = await attendeeBusy(deps, event, window);
+    if (upgrade === null) upgrade = info.upgrade;
+    const slot = await moveSlot(kit, user, events, event, info);
+    if (slot === null) {
+      out.push({ ...withAvailability(option, NOT_APPLICABLE), proposed_slot: null });
+      continue;
+    }
+    const proposed = { start: slot.start.toISOString(), end: slot.end.toISOString() };
+    out.push({
+      ...withAvailability(
+        option,
+        availabilityAt(info, proposed, { start: event.start_at, end: event.end_at }),
+      ),
+      description: copy(user.locale, 'plan.generated.options.move.descriptionSlot', {
+        title: clip(event.title ?? '', 80),
+        day: formatDay(user.locale, slot.start, user.timeZone),
+        start: formatTime(slot.start, user.timeZone),
+        end: formatTime(slot.end, user.timeZone),
+      }),
+      proposed_slot: proposed,
+    });
+  }
+  return { list: out, upgrade };
+}
+
+async function optionsFor(
+  deps: AvailabilityDeps,
+  kit: RouteKit,
+  user: AiUser,
   insight: PlanInsightRow,
   events: [MeetingEventRow, MeetingEventRow],
-) {
+): Promise<CachedOptions> {
   const { assist } = assistOf(kit);
-  const cached = insight.payload?.options as { at?: string; list?: ConflictOption[] } | undefined;
+  const userId = user.userId;
+  const cached = insight.payload?.options as
+    { at?: string; list?: ConflictOption[]; upgrade?: AvailabilityUpgrade | null } | undefined;
+  // Options waiting for the free/busy grant are recomputed, so they change right after it.
   if (
     cached?.at !== undefined &&
     Array.isArray(cached.list) &&
+    (cached.upgrade ?? null) === null &&
     kit.now().getTime() - Date.parse(cached.at) < OPTIONS_TTL_MS
   ) {
-    return cached.list;
+    return { list: cached.list, upgrade: null };
   }
   const organizerMail = new Map<string, string>();
   for (const event of events) {
@@ -287,18 +411,19 @@ async function optionsFor(
     if (mail !== undefined) organizerMail.set(event.id, mail.id);
   }
   const phones = await assist.store.sourcePhones(userId, insight.source_type, insight.source_id);
-  const list = buildOptions({ events, locale, organizerMail, phones });
+  const base = buildOptions({ events, locale: user.locale, organizerMail, phones });
+  const built = await withSlotsAndAvailability(deps, kit, user, events, base);
   await assist.store.setInsightPayload(userId, insight.id, {
     ...(insight.payload ?? {}),
-    options: { at: kit.now().toISOString(), list },
+    options: { at: kit.now().toISOString(), list: built.list, upgrade: built.upgrade },
   });
-  return list;
+  return built;
 }
 
 function conflictView(
   insight: PlanInsightRow,
   events: [MeetingEventRow, MeetingEventRow],
-  options: ConflictOption[],
+  options: CachedOptions,
 ) {
   return {
     conflict: {
@@ -312,7 +437,8 @@ function conflictView(
         attendee_count: e.attendee_count,
       })),
     },
-    options: publicOptions(options),
+    options: publicOptions(options.list),
+    availability_upgrade: options.upgrade,
   };
 }
 
@@ -336,7 +462,7 @@ async function resolve(
   const { assist } = assistOf(kit);
   const repos = kit.deps.repos(auth);
   const { insight, events } = await conflictContext(kit, auth.userId, insightId);
-  const options = await optionsFor(kit, auth.userId, user.locale, insight, events);
+  const options = (await optionsFor(availabilityDeps(c, kit), kit, user, insight, events)).list;
   const option = options.find((o) => o.option_id === body.option_id);
   if (option === undefined)
     throw new AppError('VALIDATION_FAILED', { details: { reason: 'unknown_option' } });
@@ -392,32 +518,16 @@ async function resolve(
           body.params.new_end === undefined
             ? start + (end - Date.parse(event.start_at))
             : Date.parse(body.params.new_end);
+      } else if (option.proposed_slot !== undefined && option.proposed_slot !== null) {
+        // The slot the options showed (with its attendee availability).
+        start = Date.parse(option.proposed_slot.start);
+        end = Date.parse(option.proposed_slot.end);
       } else {
-        const duration = end - start;
-        const from = new Date(Math.max(Date.parse(other.end_at), kit.now().getTime()));
-        const [busy, quiet] = await Promise.all([
-          busyFor(kit, auth.userId, from, new Date(from.getTime() + 7 * DAY_MS)),
-          assist.store.quietHours(auth.userId),
-        ]);
-        const slot = pickSlot(
-          freeSlots({
-            from,
-            to: new Date(from.getTime() + 7 * DAY_MS),
-            minMinutes: Math.ceil(duration / 60_000),
-            withinWorkingHours: true,
-            timeZone: user.timeZone,
-            workingHours: user.workingHours,
-            quiet: quietSpec(quiet),
-            busy,
-          }),
-          Math.ceil(duration / 60_000),
-          'any',
-          user.timeZone,
-        );
+        const slot = await moveSlot(kit, user, events, event, null);
         if (slot === null)
           throw new AppError('STATE_CONFLICT', { details: { reason: 'no_free_slot' } });
-        start = slot.slot.start.getTime();
-        end = slot.slot.end.getTime();
+        start = slot.start.getTime();
+        end = slot.end.getTime();
       }
       if (!(end > start))
         throw new AppError('VALIDATION_FAILED', { details: { reason: 'invalid_time' } });
@@ -562,8 +672,8 @@ export const registerPlanRoutes: RouteRegistrar = (app, kit) => {
       const params = validParams(c, options.request.params);
       const user = await assistOf(kit).intel.ai.users.load(auth.userId);
       const { insight, events } = await conflictContext(kit, auth.userId, params.insightId);
-      const list = await optionsFor(kit, auth.userId, user.locale, insight, events);
-      return sendData(c, conflictView(insight, events, list));
+      const built = await optionsFor(availabilityDeps(c, kit), kit, user, insight, events);
+      return sendData(c, conflictView(insight, events, built));
     },
   );
 

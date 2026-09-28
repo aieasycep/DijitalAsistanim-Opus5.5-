@@ -85,6 +85,7 @@ import {
 import {
   DraftIdParams,
   FollowupDraftBody,
+  MailAttachmentsResponse,
   MailOriginalQuery,
   MailOriginalResponse,
   MessageIdParams,
@@ -373,6 +374,15 @@ export const routes = {
     response: ReplyAttachmentUploadResponse,
     status: 201,
     idempotency: 'client_id',
+  }),
+  'GET /mail/:messageId/attachments': defineRoute({
+    id: 'API-MAIL-09',
+    method: 'GET',
+    path: '/mail/:messageId/attachments',
+    request: { params: MessageIdParams },
+    response: MailAttachmentsResponse,
+    status: 200,
+    idempotency: 'none',
   }),
   // §8.6 Approvals
   'POST /approvals': defineRoute({

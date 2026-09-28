@@ -1,7 +1,8 @@
 /**
  * M-MAIL-03 · Mail Detayı — AI summary first (M§15): sender, subject, date, AI summary and key
  * points, the four actions (Yanıt Hazırla / Görev Oluştur / Takvime Ekle / Hatırlat, each wired to
- * a real flow), attachments, the thread, and "Orijinal Mail" fetched on demand from
+ * a real flow), attachments (a PDF or image goes to Ekle with "Analiz Et" when Pro and the
+ * account's "Ekleri analiz et" is on; M-CAP-03), the thread, and "Orijinal Mail" fetched on demand from
  * `GET /mail/:messageId/original` (sanitised by the server, memory-only query, never written to
  * the persisted cache or logged). Links inside the original go through the phishing-safe link
  * sheet. "···" holds the provider handoff ("Gmail'de / Outlook'ta Aç"), corrections and the
@@ -57,6 +58,11 @@ import { vipListQueryOptions, type VipRow } from '../person/data';
 import { openLink, openMenu, openReminder, openSource } from '../actions/sheets';
 import { DetailScreen, QueryFailure, useBack, useOfflineGuard } from '../actions/ui';
 import { openApprovalViewSheet } from '../approvals/ApprovalSheet';
+import {
+  candidateOf,
+  openMailAttachmentCapture,
+  useAttachmentAccounts,
+} from '../capture/mailAttachments';
 import { emailDetailOptions, type EmailDetail } from './data';
 import { originalToText } from './original-text';
 
@@ -229,6 +235,7 @@ export function EmailDetailScreen() {
   const openPaywall = useOpenPaywall();
   const back = useBack('/flow');
   const proposals = useProposals();
+  const attachmentAccounts = useAttachmentAccounts();
   const { id } = useLocalSearchParams<{ id: string }>();
   // "Analiz et" (API-INT-04 force_analysis): poll the detail (R-19) until the job lands, ≤ 60 s.
   const [analyzeQueuedAt, setAnalyzeQueuedAt] = useState<number | null>(null);
@@ -702,16 +709,42 @@ export function EmailDetailScreen() {
             count={String(message.attachments.length)}
           />
           <GroupedList>
-            {message.attachments.map((a, index) => (
-              <ListRow
-                key={`${a.name}-${String(index)}`}
-                title={a.name}
-                {...(a.size === undefined
-                  ? {}
-                  : { subtitle: formatFileSize(a.size, formats.locale) })}
-                icon="attach_file"
-              />
-            ))}
+            {message.attachments.map((a, index) => {
+              const candidate =
+                attachmentAccounts?.has(message.accountId) === true &&
+                isScreenAvailable('/capture/:id')
+                  ? candidateOf(
+                      {
+                        id: message.id,
+                        from_name: message.fromName,
+                        from_email: message.fromEmail,
+                        received_at: message.receivedAt,
+                      },
+                      index,
+                      a,
+                    )
+                  : null;
+              return (
+                <ListRow
+                  key={`${a.name}-${String(index)}`}
+                  title={a.name}
+                  {...(a.size === undefined
+                    ? {}
+                    : { subtitle: formatFileSize(a.size, formats.locale) })}
+                  icon="attach_file"
+                  {...(candidate === null
+                    ? {}
+                    : {
+                        trailing: { kind: 'link' as const, text: t('screen.attachmentToCapture') },
+                        accessibilityHint: t('screen.attachmentToCapture'),
+                        onPress: () => {
+                          openMailAttachmentCapture(candidate);
+                        },
+                      })}
+                  testID={`email.attachment.${String(index)}`}
+                />
+              );
+            })}
           </GroupedList>
         </View>
       )}

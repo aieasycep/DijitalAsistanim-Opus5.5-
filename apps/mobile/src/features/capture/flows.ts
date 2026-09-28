@@ -4,6 +4,8 @@
  * signed Storage URL (real byte progress) → `POST /captures/:id/analyze`. Analysis starts only on
  * "Analiz Et". The results screen sends selected items with `POST /captures/:id/actions` (pending
  * approvals for the batch sheet) and "İptal" / discard is `POST /captures/:id/discard`.
+ * A mail attachment (M-CAP-03, M-MAIL-03) is never downloaded to the device: its fresh API-MAIL-09
+ * ref goes to `POST /captures {kind:'file', from_email_attachment}` and the server fetches it.
  */
 import { isApiError, qk, type ApiClient } from '@da/api-client';
 import {
@@ -12,6 +14,7 @@ import {
   captureCreateMutationOptions,
   captureDiscardMutationOptions,
   captureUploadUrlMutationOptions,
+  mailAttachmentsQueryOptions,
 } from '@da/api-client/react';
 import type { Capture } from '@da/validation/api/common';
 import * as Crypto from 'expo-crypto';
@@ -177,6 +180,47 @@ export async function uploadFile(
   }
   onProgress(1);
   return target.capture_id;
+}
+
+/** The attachment is no longer where the listing said (renamed, removed, or not importable). */
+export class AttachmentGoneError extends Error {
+  constructor() {
+    super('attachment_gone');
+    this.name = 'AttachmentGoneError';
+  }
+}
+
+/**
+ * A stored mail attachment → a file capture → analyze; returns the capture id. `index` and `name`
+ * come from `email_messages.attachment_meta`, and the listing must still name the same file there.
+ */
+export async function captureMailAttachment(
+  attachment: { readonly messageId: string; readonly index: number; readonly name: string },
+  shareOrigin: ShareOrigin = 'in_app',
+  api: ApiClient = getApiClient(),
+): Promise<string> {
+  const listing = await getQueryClient().query(
+    mailAttachmentsQueryOptions(api, attachment.messageId),
+  );
+  const view = listing.attachments[attachment.index];
+  if (view?.name !== attachment.name || !view.capturable) {
+    throw new AttachmentGoneError();
+  }
+  const capture = await runMutation(captureCreateMutationOptions(api), {
+    body: {
+      client_capture_id: Crypto.randomUUID(),
+      share_origin: shareOrigin,
+      source: {
+        kind: 'file',
+        from_email_attachment: {
+          email_message_id: attachment.messageId,
+          attachment_ref: view.attachment_ref,
+        },
+      },
+    },
+  });
+  await analyzeCapture(capture.id, undefined, api);
+  return capture.id;
 }
 
 export async function analyzeCapture(

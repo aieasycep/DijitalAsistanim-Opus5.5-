@@ -517,7 +517,8 @@
       "calendar_read": "Read calendar",
       "calendar_write": "Write calendar",
       "tasks_read": "Read tasks",
-      "tasks_write": "Write tasks"
+      "tasks_write": "Write tasks",
+      "calendar_freebusy": "Availability (free/busy)"
     },
     "resource": {
       "mail": "Email",

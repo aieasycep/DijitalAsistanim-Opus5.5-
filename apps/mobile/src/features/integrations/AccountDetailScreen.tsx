@@ -48,12 +48,14 @@ const SCOPES: readonly Capability[] = [
   'mail_send',
   'calendar_read',
   'calendar_write',
+  'calendar_freebusy',
   'tasks_read',
   'tasks_write',
 ];
 const PROGRESSIVE: Readonly<Partial<Record<Capability, Capability>>> = {
   mail_send: 'mail_read',
   calendar_write: 'calendar_read',
+  calendar_freebusy: 'calendar_read',
   tasks_write: 'tasks_read',
 };
 
@@ -409,7 +411,12 @@ export function AccountDetailScreen() {
                 title={scopes(`scopes.${scope}`)}
                 {...(account.capabilities_granted.includes(scope)
                   ? {}
-                  : { subtitle: scopes('scopes.notRequested') })}
+                  : {
+                      subtitle:
+                        scope === 'calendar_freebusy'
+                          ? scopes('scopes.notRequestedFreebusy')
+                          : scopes('scopes.notRequested'),
+                    })}
                 icon={account.capabilities_granted.includes(scope) ? 'check' : 'schedule'}
                 iconStyle="bare"
               />

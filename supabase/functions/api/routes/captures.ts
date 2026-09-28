@@ -5,7 +5,10 @@
  * M§85). Pro (`capture`) is enforced by the route gate (discard stays open to owners) and the flag
  * `feature.capture` here. Files live in the private `captures` bucket under the caller's folder;
  * links are only fetched through the SSRF-safe fetcher; analysis runs in JOB-27 and the client
- * polls its `captures` row (R-19). Selected items become approvals in one batch.
+ * polls its `captures` row (R-19). Selected items become approvals in one batch. A mail attachment
+ * (`from_email_attachment`) is downloaded through the provider API of the message's own account
+ * (v2 refs from API-MAIL-09 name the stored metadata, v1 refs from API-MAIL-01 the fetched body),
+ * size-capped, magic-byte checked and stored under the caller's folder.
  */
 import {
   CaptureActionsBody,
@@ -42,6 +45,10 @@ import type { CaptureItemView } from '../../_shared/services/capture/extract.ts'
 import { assertLinkAllowed, linkPreview } from '../../_shared/services/capture/link.ts';
 import { isOn } from '../../_shared/services/flags.ts';
 import { providerContextFor } from '../../_shared/services/integrations/context.ts';
+import {
+  downloadStoredAttachment,
+  verifyStoredAttachmentRef,
+} from '../../_shared/services/integrations/attachments.ts';
 import { verifyAttachmentRef } from '../../_shared/services/integrations/mail-original.ts';
 import { togglesOf } from '../../_shared/services/integrations/status.ts';
 import { SIGNED_UPLOAD_TTL_S } from '../../_shared/services/storage.ts';
@@ -120,6 +127,28 @@ async function signedUpload(kit: RouteKit, row: CaptureRow) {
   };
 }
 
+/** Upload validation of an imported attachment: the bytes must be the declared capture type. */
+async function storeImported(
+  kit: RouteKit,
+  auth: UserAuth,
+  captureId: string,
+  file: { bytes: Uint8Array; mime: string; name: string },
+) {
+  const sniffed = sniffMime(file.bytes.subarray(0, 64));
+  if (sniffed !== file.mime && !(file.mime === 'image/heif' && sniffed === 'image/heic')) {
+    throw new AppError('UPLOAD_INVALID', { details: { reason: 'magic_mismatch' } });
+  }
+  const path = `${auth.userId}/${captureId}/${crypto.randomUUID()}.${extensionOf(file.mime)}`;
+  await assistOf(kit).assist.storage.upload('captures', path, file.bytes, file.mime);
+  return {
+    path,
+    mime: file.mime,
+    size: file.bytes.byteLength,
+    sha256: await sha256Hex(file.bytes),
+    name: file.name.slice(0, 200),
+  };
+}
+
 /** API-CAP-02 `file` source: the mail attachment is downloaded into the caller's folder. */
 async function importAttachment(
   kit: RouteKit,
@@ -134,6 +163,25 @@ async function importAttachment(
     throw new AppError('SERVICE_UNAVAILABLE', {
       details: { reason: 'integrations_not_configured' },
     });
+  const stored = await verifyStoredAttachmentRef(
+    rt.config.pepper,
+    source.attachment_ref,
+    kit.now(),
+  );
+  if (stored !== null) {
+    if (stored.messageId !== source.email_message_id)
+      throw new AppError('UPLOAD_INVALID', { details: { reason: 'attachment_ref_invalid' } });
+    const user = await assistOf(kit).intel.ai.users.load(auth.userId);
+    const file = await downloadStoredAttachment(rt, {
+      userId: auth.userId,
+      messageId: stored.messageId,
+      index: stored.index,
+      attachmentsAllowed: user.dataAccess.attachments,
+      correlationId,
+      log: c.get('log'),
+    });
+    return await storeImported(kit, auth, captureId, file);
+  }
   const ref = await verifyAttachmentRef(rt.config.pepper, source.attachment_ref, kit.now());
   if (ref === null || ref.messageId !== source.email_message_id) {
     throw new AppError('UPLOAD_INVALID', { details: { reason: 'attachment_ref_invalid' } });
@@ -180,21 +228,11 @@ async function importAttachment(
     attachment.providerAttachmentId,
     { maxBytes: limit },
   );
-  if (
-    sniffMime(file.bytes.subarray(0, 64)) !== mime &&
-    !(mime === 'image/heif' && sniffMime(file.bytes.subarray(0, 64)) === 'image/heic')
-  ) {
-    throw new AppError('UPLOAD_INVALID', { details: { reason: 'magic_mismatch' } });
-  }
-  const path = `${auth.userId}/${captureId}/${crypto.randomUUID()}.${extensionOf(mime)}`;
-  await assistOf(kit).assist.storage.upload('captures', path, file.bytes, mime);
-  return {
-    path,
+  return await storeImported(kit, auth, captureId, {
+    bytes: file.bytes,
     mime,
-    size: file.bytes.byteLength,
-    sha256: await sha256Hex(file.bytes),
-    name: attachment.filename.slice(0, 200),
-  };
+    name: attachment.filename,
+  });
 }
 
 export const registerCaptureRoutes: RouteRegistrar = (app, kit) => {

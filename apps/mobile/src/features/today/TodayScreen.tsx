@@ -1,7 +1,8 @@
 /**
  * M-TD-01 Today ("Bugün bilmen gerekenler"): RPC-04 `today_overview` + today's briefings,
  * rendered in the D-24 order — header (greeting, date, approval pill), one account alert, the hero
- * (Annex A modes) or its Pro gate, the weekly card, the announcement banner (R-25), ÖNCELİKLERİN
+ * (Annex A modes) or its Pro gate, the weekly card, the announcement banner (R-25), the calendar
+ * AI card (one conflict or schedule suggestion, DEV-68; not repeated below), ÖNCELİKLERİN
  * with swipe / "Tamamlandı" / "Ertele" / "Önemli değil" (R-06 undo) and the correction and
  * explain sheets, PROGRAMIN, SON TARİHLER, TAKİP and DİJİTAL HAYATIN. Every count comes from the
  * RPC; controls whose screen is not in this build are not rendered (R-24). Offline shows the
@@ -63,6 +64,7 @@ import { INSIGHT_WHY_SHEET } from './sheets/WhySheet';
 import { routeForEntity, routeForSource } from './sources';
 import { cardIntentActions } from './intents';
 import { useCardIntents } from './useCardIntents';
+import { aiInsightOf, TodayAiCard } from './TodayAiCard';
 
 export const MAX_PRIORITIES = 5;
 
@@ -725,7 +727,10 @@ export function TodayScreen() {
     );
   } else if (hero !== null) {
     const data = today.data;
-    const shown = data.overview.priorities.slice(0, MAX_PRIORITIES);
+    const ai = aiInsightOf(data.overview.priorities);
+    const listed = data.overview.priorities.filter((p) => p.id !== ai?.id);
+    const listedCount = Math.max(0, data.overview.hero_count - (ai === null ? 0 : 1));
+    const shown = listed.slice(0, MAX_PRIORITIES);
     const priorityIds = new Set(data.overview.priorities.map((p) => p.id));
     const deadlines = data.overview.deadlines
       .filter((d) => !priorityIds.has(d.insight_id))
@@ -773,13 +778,18 @@ export function TodayScreen() {
           </Card>
         )}
         <AnnouncementBanner data={bootstrap.data} />
+        {ai === null || hero.mode === 'no_sources' ? null : (
+          <TodayAiCard item={ai} localDate={localDate} />
+        )}
         {hero.mode === 'no_sources' ? null : (
           <View style={styles.section}>
-            <SectionHeader
-              title={evening ? t('sections.carryOver') : t('sections.priorities')}
-              count={t('sections.itemCount', { count: data.overview.hero_count })}
-            />
-            {shown.length === 0 ? (
+            {shown.length === 0 && ai !== null ? null : (
+              <SectionHeader
+                title={evening ? t('sections.carryOver') : t('sections.priorities')}
+                count={t('sections.itemCount', { count: listedCount })}
+              />
+            )}
+            {shown.length === 0 && ai !== null ? null : shown.length === 0 ? (
               <EmptyState
                 icon="check_circle"
                 tone="success"
@@ -797,7 +807,7 @@ export function TodayScreen() {
               shown.map((item) => <PriorityItem key={item.id} item={item} localDate={localDate} />)
             )}
             <View style={styles.footerActions}>
-              {data.overview.hero_count > MAX_PRIORITIES ? (
+              {listedCount > MAX_PRIORITIES ? (
                 <TextAction
                   label={t('footer.seeAllInFlow')}
                   onPress={() => {

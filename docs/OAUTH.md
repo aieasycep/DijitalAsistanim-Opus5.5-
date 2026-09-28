@@ -38,7 +38,8 @@ destructive privacy actions need a sign-in at most 10 minutes old
 ## Integration capabilities and scopes
 
 Capabilities (`@da/domain` `Capability`): `mail_read`, `mail_send`, `calendar_read`,
-`calendar_write`, `tasks_read`, `tasks_write`. A capability counts as granted only when every
+`calendar_write`, `tasks_read`, `tasks_write`, `calendar_freebusy` (attendee free/busy for conflict
+options, KNOWN_PLATFORM_LIMITATIONS KPL-46). A capability counts as granted only when every
 scope it needs appears in the granted scope string (Google) or one of its accepted scopes does
 (Microsoft); capabilities are always derived from what the provider returned, never assumed.
 
@@ -51,6 +52,7 @@ scope it needs appears in the granted scope string (Google) or one of its accept
 | `mail_send` | `gmail.send` | |
 | `calendar_read` | `calendar.events.readonly`, `calendar.calendarlist.readonly`, `calendar.settings.readonly` | `calendar.readonly`; `calendar` |
 | `calendar_write` | `calendar.events.owned` | `calendar.events`; `calendar` |
+| `calendar_freebusy` | `calendar.events.freebusy` | `calendar.readonly`; `calendar` |
 | `tasks_read` | `tasks.readonly` | `tasks` |
 | `tasks_write` | `tasks` | |
 
@@ -68,6 +70,7 @@ refresh token is returned on connect, reauth and upgrade) and the OIDC `nonce`.
 | `mail_send` | `Mail.Send` | |
 | `calendar_read` | `Calendars.Read` | `Calendars.ReadWrite` |
 | `calendar_write` | `Calendars.ReadWrite` | |
+| `calendar_freebusy` | `Calendars.Read` (`getSchedule`) | `Calendars.ReadWrite` |
 | `tasks_read` | `Tasks.Read` | `Tasks.ReadWrite` |
 | `tasks_write` | `Tasks.ReadWrite` | |
 
@@ -88,6 +91,12 @@ one is stored. The account identity is `oid:tid` from the id_token, confirmed wi
   (API-INT-02) with `resume.approval_id`, and after completion retries the approval with the same
   idempotency key. The capability map is `email_send → mail_send`, `calendar_create` /
   `calendar_update → calendar_write`, `task_create → tasks_write`.
+- **Attendee free/busy is requested on first use too.** When a Google account lacks
+  `calendar_freebusy`, `POST /plan/conflicts/:insightId/options` (API-PLAN-03) returns
+  `availability_upgrade` and the conflict screen offers "Uygunluğu göster", which runs the same
+  API-INT-02 upgrade without an approval; nothing asks for it silently. Microsoft accounts hold it
+  with `Calendars.Read` (existing accounts were backfilled by
+  `20260924003410_calendar_event_merge.sql`).
 - **Upgrade scopes:** Google requests only the missing scopes (`include_granted_scopes` keeps the
   rest); Microsoft and demo request the union of granted and new capabilities. Both always add the
   identity scopes so the callback can prove the same account consented.

@@ -108,9 +108,11 @@ Deno.test(
     );
     assertEquals((claims.exp ?? 0) - (claims.nbf ?? 0), 600);
     await jwtVerify(assertion, publicKey, { currentDate: NOW });
+    // Calendars.Read also covers getSchedule (calendar_freebusy, KPL-46).
     assertEquals(oauth.capabilitiesFromGrantedScope(tokens.grantedScope), [
       'mail_read',
       'calendar_read',
+      'calendar_freebusy',
     ]);
     const identity = await oauth.identify(tokens);
     assertEquals(identity.tenantType, 'personal');

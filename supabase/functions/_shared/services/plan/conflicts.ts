@@ -5,11 +5,13 @@
  * non-organizer gets "propose a new time" as a reply draft to the organizer's mail; a reminder and
  * "ignore" are always offered; "call" only when the source mail shows a phone number. Travel time
  * and third-party availability are never claimed: attendee availability is `unknown` unless a
- * real free/busy answer exists.
+ * real free/busy answer exists (`availability.ts`, KPL-46), and a move option names the slot the
+ * free-slot finder chose with the answering attendees' busy blocks considered.
  */
 import { routes } from '@da/domain';
 import type { MeetingEventRow, PlanInsightRow } from '../assist/store.ts';
 import { clip, copy, type CopyLocale, message } from '../copy.ts';
+import type { AttendeeLine, AvailabilityReason, OptionAvailability } from './availability.ts';
 
 export type OptionKind =
   | 'move_event'
@@ -24,7 +26,14 @@ export interface ConflictOption {
   kind: OptionKind;
   title: string;
   description: string;
-  feasibility: { organizer: boolean; attendee_availability: 'free' | 'busy' | 'unknown' };
+  feasibility: {
+    organizer: boolean;
+    attendee_availability: 'free' | 'busy' | 'unknown';
+    availability_reason?: AvailabilityReason;
+    attendees?: AttendeeLine[];
+  };
+  /** The new time of a move option (null when no free slot exists in the search window). */
+  proposed_slot?: { start: string; end: string } | null;
   side_effects: string[];
   requires_capability: 'calendar_write' | 'mail_send' | null;
   pro_required: boolean;
@@ -57,12 +66,15 @@ export function buildOptions(input: {
   const L = input.locale;
   const attendeesNotified = message(L, 'plan.conflict.attendeesNotified');
   const options: ConflictOption[] = [];
+  // Option ids name the pair position (`a` = the earlier event), not the event id: the resolve
+  // body caps `option_id` at 40 characters and the resolution data stays in the cached options.
+  const slot = (event: MeetingEventRow) => (event.id === input.events[0].id ? 'a' : 'b');
   for (const event of input.events) {
     const title = clip(event.title ?? '', 80);
     const organizer = canModify(event);
     if (organizer) {
       options.push({
-        option_id: `move:${event.id}`,
+        option_id: `move:${slot(event)}`,
         kind: 'move_event',
         title: message(L, 'plan.generated.options.move.title'),
         description: copy(L, 'plan.generated.options.move.description', { title }),
@@ -77,7 +89,7 @@ export function buildOptions(input: {
   const shortenable = input.events.find(canModify);
   if (shortenable !== undefined) {
     options.push({
-      option_id: `shorten:${shortenable.id}`,
+      option_id: `shorten:${slot(shortenable)}`,
       kind: 'shorten_event',
       title: message(L, 'plan.generated.options.shorten.title'),
       description: copy(L, 'plan.generated.options.shorten.description', {
@@ -93,7 +105,7 @@ export function buildOptions(input: {
   const foreign = input.events.find((e) => !canModify(e) && input.organizerMail.has(e.id));
   if (foreign !== undefined) {
     options.push({
-      option_id: `email:${foreign.id}`,
+      option_id: `email:${slot(foreign)}`,
       kind: 'propose_new_time_email',
       title: message(L, 'plan.generated.options.email.title'),
       description: message(L, 'plan.generated.options.email.description'),
@@ -140,6 +152,19 @@ export function buildOptions(input: {
     pro_required: false,
   });
   return options.slice(0, 6);
+}
+
+/** Sets an option's availability (the provider's answer, or why there is none). */
+export function withAvailability(option: ConflictOption, a: OptionAvailability): ConflictOption {
+  return {
+    ...option,
+    feasibility: {
+      organizer: option.feasibility.organizer,
+      attendee_availability: a.status,
+      availability_reason: a.reason,
+      ...(a.attendees.length === 0 ? {} : { attendees: a.attendees.slice(0, 20) }),
+    },
+  };
 }
 
 /** The option list the API returns (resolution data stays in the cache). */

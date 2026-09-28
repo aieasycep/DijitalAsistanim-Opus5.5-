@@ -6,6 +6,7 @@
 import type {
   BriefingKind,
   LearnedPreference,
+  MailAttachmentMeta,
   PriorityRule,
   Provider,
   TransientMailBody,
@@ -227,4 +228,16 @@ export interface MailBodySource {
     readonly correlationId: string;
     readonly signal?: AbortSignal;
   }): Promise<TransientMailBody | null>;
+  /**
+   * Attachment metadata only (no body, no content) for a kept message whose body was not fetched;
+   * null when the account cannot be read. Optional: without it no metadata is listed.
+   */
+  attachments?(input: {
+    readonly userId: string;
+    readonly accountId: string;
+    readonly provider: Provider;
+    readonly providerMessageId: string;
+    readonly correlationId: string;
+    readonly signal?: AbortSignal;
+  }): Promise<MailAttachmentMeta[] | null>;
 }

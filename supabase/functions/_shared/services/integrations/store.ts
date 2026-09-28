@@ -546,13 +546,21 @@ export function supabaseIntegrationStore(
       throwIf(error);
       return ((data ?? []) as { provider_message_id: string }[]).map((r) => r.provider_message_id);
     },
+    async setAttachmentMeta(messageId, meta) {
+      const res = await db
+        .from('email_messages')
+        .update({ attachment_meta: meta, has_attachments: meta.length > 0 })
+        .eq('id', messageId);
+      if (res.error !== null) throw mapDbError(res.error);
+    },
     async getMessage(id) {
       const row = await one<Row & { thread: { provider_thread_id: string } | null }>(
         db
           .from('email_messages')
           .select(
             'id,user_id,connected_account_id,provider_message_id,subject,from_email,from_name,to_emails,cc_emails,' +
-              'received_at,web_link,provider_deleted_at,thread:email_threads(provider_thread_id)',
+              'received_at,web_link,provider_deleted_at,has_attachments,attachment_meta,' +
+              'thread:email_threads(provider_thread_id)',
           )
           .eq('id', id)
           .maybeSingle(),

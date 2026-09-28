@@ -4,8 +4,13 @@
  * contacts, and the follow-ups `email_analysis` (Pro escalations), `insight_refresh` and
  * `embedding` (Pro). A budget refusal or a kill switch leaves the deterministic result with
  * `ai_status='skipped_budget'` / `'skipped_flag'`; messages are never blocked.
+ *
+ * Attachment metadata (DEV-41, M-CAP-03): for every kept message (not `low_priority`, not bulk)
+ * with attachments, while the `attachments` Data Source Control and the account's "Ekleri analiz
+ * et" toggle are on, the attachment list of the fetched body — or a metadata-only provider listing
+ * — is stored in `attachment_meta` (names, types, sizes and provider ids; never content).
  */
-import type { LearnedPreference, PriorityRule } from '@da/domain';
+import type { LearnedPreference, PriorityRule, TransientMailBody } from '@da/domain';
 import { emailDomain } from '@da/domain';
 import { Uuid } from '@da/validation';
 import { z } from 'zod';
@@ -25,6 +30,7 @@ import {
 import { resolveContacts } from '../../_shared/services/contacts/resolve.ts';
 import { refreshPersonStats } from '../../_shared/services/contacts/stats.ts';
 import { computeThreadState } from '../../_shared/services/followups.ts';
+import { toStoredAttachments } from '../../_shared/services/integrations/attachments.ts';
 import { lifeEventRow } from '../../_shared/services/life/classify.ts';
 import type { MailMessageRow, ThreadPatch } from '../../_shared/services/intel/types.ts';
 import {
@@ -129,6 +135,7 @@ export async function runEmailTriage(
   const unique = pending.filter((m) => !duplicates.has(m.id));
 
   const prepared: PreparedMessage[] = [];
+  const bodyAttachments = new Map<string, TransientMailBody['attachments']>();
   for (const m of unique) {
     const bulkHeaders = m.list_unsubscribe || m.precedence_bulk || m.auto_submitted;
     const body =
@@ -140,8 +147,11 @@ export async function runEmailTriage(
             providerMessageId: m.provider_message_id,
           })
         : null;
+    if (body !== null) bodyAttachments.set(m.id, body.attachments);
     prepared.push(prepareMessage(m, threads.get(m.thread_id) ?? null, body, tctx));
   }
+  const keepAttachments =
+    user.dataAccess.attachments && account.data_source_toggles.attachments_analyze !== false;
 
   const pipeline = pipelineFor(deps, user, ctx);
   const survivors = prepared.filter((m) => !m.t0Final && m.row.direction === 'inbound');
@@ -173,6 +183,10 @@ export async function runEmailTriage(
     const result = ai.get(m.row.id) ?? null;
     const final = finalClassification(m, result, tctx, ruleById);
     const status = result !== null ? 'classified' : (skipped.get(m.row.id) ?? 't0_final');
+    const attachmentPatch =
+      keepAttachments && final.category !== 'low_priority'
+        ? await attachmentMeta(deps, ctx, m.row, bodyAttachments.get(m.row.id))
+        : null;
     const evidence = [
       ...(result?.replyEvidence ? [result.replyEvidence] : []),
       ...(result?.deadlines.map((d) => d.evidence) ?? []),
@@ -196,6 +210,7 @@ export async function runEmailTriage(
         m.life.candidates[0]?.type === 'security'
           ? 'none'
           : (m.life.candidates[0]?.type ?? result?.item.life_signal ?? 'none'),
+      ...(attachmentPatch ?? {}),
     });
     if (m.row.direction === 'inbound') needsReply.set(m.row.id, final.needsReply);
     if (m.expectsReply !== null) expects.set(m.row.id, m.expectsReply);
@@ -327,6 +342,46 @@ export async function runEmailTriage(
     deduped: duplicates.size,
     life_events: life.length,
   };
+}
+
+/**
+ * The metadata patch of a kept message: the fetched body's list, else a metadata-only provider
+ * listing when the provider flagged attachments; null when there is nothing to store (a listing
+ * failure leaves the message as it is — API-MAIL-09 lists it on demand).
+ */
+async function attachmentMeta(
+  deps: IntelDeps,
+  ctx: JobContext<EmailTriagePayload>,
+  row: MailMessageRow,
+  fromBody: TransientMailBody['attachments'] | undefined,
+): Promise<{
+  attachment_meta: ReturnType<typeof toStoredAttachments>;
+  has_attachments: boolean;
+} | null> {
+  let list = fromBody;
+  if (list === undefined) {
+    // Bulk mail is never opened by triage; its attachments are not listed either.
+    const bulk = row.list_unsubscribe || row.precedence_bulk || row.auto_submitted;
+    if (!row.has_attachments || bulk || deps.bodies?.attachments === undefined) return null;
+    try {
+      list =
+        (await deps.bodies.attachments({
+          userId: row.user_id,
+          accountId: row.connected_account_id,
+          provider: row.provider,
+          providerMessageId: row.provider_message_id,
+          correlationId: ctx.correlationId,
+          ...(ctx.signal === undefined ? {} : { signal: ctx.signal }),
+        })) ?? undefined;
+    } catch {
+      ctx.log.warn('mail_attachments_unavailable');
+      return null;
+    }
+    if (list === undefined) return null;
+  }
+  const stored = toStoredAttachments(list);
+  if (stored.length === 0 && !row.has_attachments) return null;
+  return { attachment_meta: stored, has_attachments: stored.length > 0 };
 }
 
 export function emailTriageJob(deps: IntelDeps) {

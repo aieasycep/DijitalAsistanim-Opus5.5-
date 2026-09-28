@@ -20,6 +20,8 @@ export const CAPABILITY_VALUES = [
   'calendar_write',
   'tasks_read',
   'tasks_write',
+  /** Attendee availability (Google `calendar.events.freebusy`, Graph `Calendars.Read`); KPL-46. */
+  'calendar_freebusy',
 ] as const;
 export type Capability = (typeof CAPABILITY_VALUES)[number];
 

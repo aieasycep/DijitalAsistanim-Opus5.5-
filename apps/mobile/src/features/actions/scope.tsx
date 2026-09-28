@@ -1,6 +1,7 @@
 /**
- * M-REPLY-02 · progressive write-scope upgrade (ADR-07, API-INT-02, R-07), generic for
- * `mail_send | calendar_write | tasks_write`. "İzin Ver" → `POST /integrations/:accountId/upgrade`
+ * M-REPLY-02 · progressive scope upgrade (ADR-07, API-INT-02, R-07), generic for
+ * `mail_send | calendar_write | tasks_write` and the attendee availability permission
+ * `calendar_freebusy` (KPL-46, conflict options). "İzin Ver" → `POST /integrations/:accountId/upgrade`
  * (device-bound nonce hash) → the provider consent in an auth session → the callback's completion
  * code is finished with `POST /integrations/oauth/complete {completion_code, device_nonce}` → on
  * success the pending continuation (submit / approve with the same key) resumes exactly once.
@@ -25,7 +26,7 @@ import { base64Url } from '../../lib/storage';
 import { registerSheet, sheets, type SheetRenderProps } from '../../providers/SheetHost';
 import { mountSheet } from './mount';
 
-export type WriteCapability = 'mail_send' | 'calendar_write' | 'tasks_write';
+export type WriteCapability = 'mail_send' | 'calendar_write' | 'tasks_write' | 'calendar_freebusy';
 
 export interface ScopeParams {
   readonly accountId: string;

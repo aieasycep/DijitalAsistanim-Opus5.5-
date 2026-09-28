@@ -107,6 +107,7 @@ export function supabaseWidgetSources(user: DbClient, userId: string): WidgetSou
             .eq('all_day', false)
             .neq('status', 'cancelled')
             .is('provider_deleted_at', null)
+            .is('merged_into_id', null)
             .gt('end_at', from.toISOString())
             .lt('start_at', to.toISOString())
             .order('start_at')

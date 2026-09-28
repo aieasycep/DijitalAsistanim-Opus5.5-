@@ -2627,6 +2627,8 @@ export type Database = {
           id: string;
           is_online: boolean;
           location: string | null;
+          merge_sources: NonNullable<Json>;
+          merged_into_id: string | null;
           organizer_email: string | null;
           organizer_self: boolean;
           origin: string;
@@ -2664,6 +2666,8 @@ export type Database = {
           id?: string;
           is_online?: boolean;
           location?: string | null;
+          merge_sources?: NonNullable<Json>;
+          merged_into_id?: string | null;
           organizer_email?: string | null;
           organizer_self?: boolean;
           origin: string;
@@ -2701,6 +2705,8 @@ export type Database = {
           id?: string;
           is_online?: boolean;
           location?: string | null;
+          merge_sources?: NonNullable<Json>;
+          merged_into_id?: string | null;
           organizer_email?: string | null;
           organizer_self?: boolean;
           origin?: string;
@@ -2738,6 +2744,13 @@ export type Database = {
             columns: ['da_approval_id'];
             isOneToOne: false;
             referencedRelation: 'approval_actions';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'calendar_events_merged_into_id_fkey';
+            columns: ['merged_into_id'];
+            isOneToOne: false;
+            referencedRelation: 'calendar_events';
             referencedColumns: ['id'];
           },
         ];
@@ -6722,6 +6735,10 @@ export type Database = {
         Args: { p_briefing_id: string; p_now?: string; p_user: string };
         Returns: Json;
       };
+      calendar_event_canonical_id: {
+        Args: { p_event_id: string };
+        Returns: string;
+      };
       cancel_reminder: {
         Args: { p_id: string; p_reason?: string; p_user: string };
         Returns: {
@@ -7727,7 +7744,8 @@ export type Database = {
         | 'calendar_read'
         | 'calendar_write'
         | 'tasks_read'
-        | 'tasks_write';
+        | 'tasks_write'
+        | 'calendar_freebusy';
       capture_kind: 'photo' | 'screenshot' | 'pdf' | 'file' | 'link' | 'text' | 'share';
       capture_status:
         | 'pending_upload'
@@ -8093,6 +8111,7 @@ export const Constants = {
         'calendar_write',
         'tasks_read',
         'tasks_write',
+        'calendar_freebusy',
       ],
       capture_kind: ['photo', 'screenshot', 'pdf', 'file', 'link', 'text', 'share'],
       capture_status: [

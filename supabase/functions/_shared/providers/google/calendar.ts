@@ -10,7 +10,10 @@
  * - `events.watch` channels with token `base64url(HMAC-SHA256(WEBHOOK_HMAC_SECRET, channel id))`,
  *   `channels.stop` for the old channel on renewal;
  * - writes: insert with the deterministic event id (409 → `already_exists` after `events.get`),
- *   patch with `If-Match` (412 → `precondition_failed`), `da_last_approval_id` marker.
+ *   patch with `If-Match` (412 → `precondition_failed`), `da_last_approval_id` marker;
+ * - attendee availability with `freeBusy.query` (scope `calendar.events.freebusy`, capability
+ *   `calendar_freebusy`; KPL-46): per-calendar `notFound` (not shared / unknown) → `not_shared`,
+ *   `groupTooBig` / `tooManyCalendarsRequested` → `too_many`.
  */
 import {
   type CalendarChangeSet,
@@ -19,6 +22,9 @@ import {
   type CalendarWindow,
   checkConferencingUrl,
   type EventPatchSpec,
+  type FreeBusyAnswer,
+  type FreeBusyError,
+  type FreeBusyQuery,
   type EventTime,
   type EventWriteSpec,
   type IdempotencyMarker,
@@ -198,9 +204,69 @@ function toGoogleTime(time: EventTime): GTime {
     : { dateTime: time.dateTime, ...(time.timeZone ? { timeZone: time.timeZone } : {}) };
 }
 
+interface GFreeBusyCalendar {
+  readonly busy?: readonly { start?: string; end?: string }[];
+  readonly errors?: readonly { domain?: string; reason?: string }[];
+}
+
+function freeBusyError(calendar: GFreeBusyCalendar | undefined): FreeBusyError | null {
+  if (calendar === undefined) return 'unavailable';
+  const reason = calendar.errors?.[0]?.reason;
+  if (reason === undefined) return null;
+  if (reason === 'notFound') return 'not_shared';
+  if (reason === 'groupTooBig' || reason === 'tooManyCalendarsRequested') return 'too_many';
+  return 'unavailable';
+}
+
+/** `freeBusy.query` response → one answer per requested address (lower-case). */
+export function normalizeGoogleFreeBusy(
+  emails: readonly string[],
+  res: { calendars?: Record<string, GFreeBusyCalendar> },
+): FreeBusyAnswer[] {
+  const byKey = new Map(
+    Object.entries(res.calendars ?? {}).map(([key, value]) => [key.toLowerCase(), value] as const),
+  );
+  return emails.map((email) => {
+    const calendar = byKey.get(email.toLowerCase());
+    const error = freeBusyError(calendar);
+    const busy: CalendarWindow[] = [];
+    if (error === null) {
+      for (const b of calendar?.busy ?? []) {
+        const start = isoOrNull(b.start ?? null);
+        const end = isoOrNull(b.end ?? null);
+        if (start !== null && end !== null && Date.parse(end) > Date.parse(start))
+          busy.push({ start, end });
+      }
+    }
+    return { email: email.toLowerCase(), busy, error };
+  });
+}
+
 export class GoogleCalendarAdapter implements CalendarProvider {
   readonly provider = 'google' as const;
   constructor(private readonly config: GoogleCalendarConfig) {}
+
+  async freeBusy(ctx: ProviderContext, q: FreeBusyQuery): Promise<FreeBusyAnswer[]> {
+    const emails = [...new Set(q.emails.map((e) => e.trim().toLowerCase()))]
+      .filter((e) => e !== '')
+      .slice(0, 20);
+    if (emails.length === 0) return [];
+    const res = await this.request<{ calendars?: Record<string, GFreeBusyCalendar> }>(
+      ctx,
+      this.url('/freeBusy'),
+      {
+        method: 'POST',
+        body: {
+          timeMin: q.window.start,
+          timeMax: q.window.end,
+          timeZone: 'UTC',
+          items: emails.map((id) => ({ id })),
+        },
+        priority: 'interactive',
+      },
+    );
+    return normalizeGoogleFreeBusy(emails, res);
+  }
 
   private url(path: string, query: Record<string, string | null | undefined> = {}): string {
     const url = new URL(`${this.config.endpoints.calendar}/calendar/v3${path}`);

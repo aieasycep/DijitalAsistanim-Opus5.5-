@@ -5,6 +5,9 @@
  * (R-23: precomputed at T-60 for external or VIP meetings, otherwise on tap); the client polls
  * `meeting_preps` through PostgREST (R-19). Post-meeting commitments become pending
  * `commitment_create` approvals ("Kaydet" approves them with `approved_via='in_place'`).
+ * "İLGİLİ DOSYALAR" (DEV-41) lists the stored attachment metadata of the mails with the
+ * attendees, with fresh `attachment_ref`s, while the `attachments` Data Source Control is on. A
+ * path id that names a cross-source duplicate (KPL-15) stands for its canonical event.
  */
 import {
   MeetingNoteBody,
@@ -27,7 +30,11 @@ import {
 } from '../../_shared/http/validate.ts';
 import { withIdempotency } from '../../_shared/idempotency.ts';
 import { interactiveAiError, POLL_AFTER_MS } from '../../_shared/services/assist/common.ts';
-import type { MeetingEventRow, MeetingNoteRow } from '../../_shared/services/assist/store.ts';
+import type {
+  MeetingEventRow,
+  MeetingNoteRow,
+  MeetingPrepRow,
+} from '../../_shared/services/assist/store.ts';
 import { proposeApproval } from '../../_shared/services/approvals/propose.ts';
 import { toApprovalView } from '../../_shared/services/approvals/view.ts';
 import {
@@ -39,8 +46,10 @@ import {
 } from '../../_shared/services/briefings/audio.ts';
 import { isOn } from '../../_shared/services/flags.ts';
 import { extractPostMeeting } from '../../_shared/services/meetings/post.ts';
+import { signStoredAttachmentRef } from '../../_shared/services/integrations/attachments.ts';
 import {
   attendeesOf,
+  filePointers,
   loadPrepSources,
   PREP_FRESH_MS,
   prepView,
@@ -63,6 +72,36 @@ async function ownedEvent(
   const event = await assistOf(kit).assist.store.meetingEvent(userId, eventId);
   if (event === null) throw new AppError('NOT_FOUND', { details: { resource: 'calendar_event' } });
   return event;
+}
+
+/** The canonical id of a merged duplicate (KPL-15); any other id unchanged. */
+async function canonicalEventId(kit: RouteKit, userId: string, eventId: string): Promise<string> {
+  const event = await assistOf(kit).assist.store.meetingEvent(userId, eventId);
+  return event?.merged_into_id ?? eventId;
+}
+
+/** The prep view with its "İLGİLİ DOSYALAR" (signed refs, 1 h) when attachments may be used. */
+async function viewOf(kit: RouteKit, userId: string, row: MeetingPrepRow, event: MeetingEventRow) {
+  const pointers = filePointers(row);
+  const rt = kit.deps.integrations;
+  if (pointers.length === 0 || rt === undefined) return prepView(row, event);
+  const user = await assistOf(kit).intel.ai.users.load(userId);
+  if (!user.dataAccess.attachments) return prepView(row, event);
+  const now = kit.now();
+  const files = [];
+  for (const p of pointers) {
+    files.push({
+      name: p.name,
+      attachment_ref: await signStoredAttachmentRef(
+        rt.config.pepper,
+        p.email_message_id,
+        p.index,
+        now,
+      ),
+      email_message_id: p.email_message_id,
+    });
+  }
+  return prepView(row, event, files);
 }
 
 async function requireMeetingFlag(kit: RouteKit, userId: string) {
@@ -108,7 +147,10 @@ async function prep(
     existing.source_hash === sources.hash &&
     (fresh || !refresh)
   ) {
-    return { status: 200 as const, data: { prep: prepView(existing, event), job: null } };
+    return {
+      status: 200 as const,
+      data: { prep: await viewOf(kit, auth.userId, existing, event), job: null },
+    };
   }
   if (existing?.status === 'generating') {
     const running = await kit.deps
@@ -118,7 +160,7 @@ async function prep(
       return {
         status: 202 as const,
         data: {
-          prep: prepView(existing, event),
+          prep: await viewOf(kit, auth.userId, existing, event),
           job: { job_id: running.id, status: running.status, poll_after_ms: POLL_AFTER_MS },
         },
       };
@@ -167,7 +209,7 @@ async function prep(
   return {
     status: 202 as const,
     data: {
-      prep: prepView(row, event),
+      prep: await viewOf(kit, auth.userId, row, event),
       job: { job_id: jobId, status: 'queued', poll_after_ms: POLL_AFTER_MS },
     },
   };
@@ -302,7 +344,8 @@ export const registerMeetingRoutes: RouteRegistrar = (app, kit) => {
           return status;
         },
         async execute() {
-          const out = await prep(kit, auth, params.eventId, body.refresh, c.get('correlationId'));
+          const eventId = await canonicalEventId(kit, auth.userId, params.eventId);
+          const out = await prep(kit, auth, eventId, body.refresh, c.get('correlationId'));
           status = out.status;
           return {
             data: out.data,
@@ -312,10 +355,11 @@ export const registerMeetingRoutes: RouteRegistrar = (app, kit) => {
         },
         async replay() {
           const { assist } = assistOf(kit);
-          const event = await ownedEvent(kit, auth.userId, params.eventId);
-          const row = await assist.store.meetingPrep(auth.userId, params.eventId);
+          const eventId = await canonicalEventId(kit, auth.userId, params.eventId);
+          const event = await ownedEvent(kit, auth.userId, eventId);
+          const row = await assist.store.meetingPrep(auth.userId, eventId);
           if (row === null) throw new AppError('NOT_FOUND');
-          return { prep: prepView(row, event), job: null };
+          return { prep: await viewOf(kit, auth.userId, row, event), job: null };
         },
       });
     },
@@ -333,16 +377,17 @@ export const registerMeetingRoutes: RouteRegistrar = (app, kit) => {
       const params = validParams(c, notes.request.params);
       const body = validBody(c, MeetingNoteBody);
       const { assist, intel } = assistOf(kit);
-      await ownedEvent(kit, auth.userId, params.eventId);
+      const eventId = await canonicalEventId(kit, auth.userId, params.eventId);
+      await ownedEvent(kit, auth.userId, eventId);
       const existing = await assist.store.meetingNoteByClient(auth.userId, body.client_note_id);
       if (existing !== null) {
-        if (existing.calendar_event_id !== params.eventId) throw new AppError('NOT_FOUND');
+        if (existing.calendar_event_id !== eventId) throw new AppError('NOT_FOUND');
         c.header('Idempotency-Replayed', 'true');
         return sendData(c, noteView(existing), 201, { idempotency_replayed: true });
       }
       const note = await assist.store.insertMeetingNote({
         user_id: auth.userId,
-        calendar_event_id: params.eventId,
+        calendar_event_id: eventId,
         kind: 'prep_note',
         body: body.body,
         input: body.source === 'voice' ? 'voice_transcript' : 'text',
@@ -373,7 +418,8 @@ export const registerMeetingRoutes: RouteRegistrar = (app, kit) => {
       const auth = currentUser(c);
       const params = validParams(c, postRoute.request.params);
       const body = validBody(c, MeetingPostBody);
-      const data = await post(c, kit, auth, params.eventId, body);
+      const eventId = await canonicalEventId(kit, auth.userId, params.eventId);
+      const data = await post(c, kit, auth, eventId, body);
       return sendData(c, data, 201);
     },
   );
@@ -394,8 +440,9 @@ export const registerMeetingRoutes: RouteRegistrar = (app, kit) => {
       if (!isOn(user.flags, 'feature.voice')) {
         throw new AppError('FEATURE_DISABLED', { details: { feature: 'voice' } });
       }
-      await ownedEvent(kit, auth.userId, params.eventId);
-      const row = await assist.store.meetingPrep(auth.userId, params.eventId);
+      const eventId = await canonicalEventId(kit, auth.userId, params.eventId);
+      await ownedEvent(kit, auth.userId, eventId);
+      const row = await assist.store.meetingPrep(auth.userId, eventId);
       if (row === null) throw new AppError('NOT_FOUND', { details: { resource: 'meeting_prep' } });
       if (row.status !== 'ready' || row.source_hash !== body.prep_version_hash) {
         throw new AppError('STATE_CONFLICT', { details: { reason: 'prep_changed' } });

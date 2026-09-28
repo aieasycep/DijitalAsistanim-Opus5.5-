@@ -92,12 +92,24 @@ export type ReplyDraftPatch = Partial<
 >;
 
 // ── Meetings (API-MEET-01…04, JOB-15) ──────────────────────────────────────
+/** One source of a merged calendar event (`calendar_events.merge_sources`, KPL-15). */
+export interface EventMergeSource {
+  readonly event_id: string;
+  readonly provider: Provider;
+  readonly connected_account_id: string;
+  readonly calendar_id: string;
+}
+
 export interface MeetingEventRow extends CalendarEventRow {
   readonly user_id: string;
   readonly connected_account_id: string;
   readonly calendar_id: string;
   readonly conference_url: string | null;
   readonly organizer_email: string | null;
+  /** The canonical event when this row is a cross-source duplicate (KPL-15). */
+  readonly merged_into_id?: string | null;
+  /** On a canonical event: every source of its merge group, canonical first. */
+  readonly merge_sources?: readonly EventMergeSource[];
 }
 
 export interface MeetingPrepRow {

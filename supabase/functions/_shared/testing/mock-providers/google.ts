@@ -3,7 +3,10 @@
  * Pub/Sub push-token minter), and the Google APIs at their real paths under one base, because the
  * adapters share `GOOGLE_API_BASE_URL`: `/gmail/v1` (Gmail), `/calendar/v3` (the `/gcal` family),
  * `/tasks/v1` (the `/gtasks` family). State is one mailbox, calendar set and task set per server;
- * `POST /__reset` empties it and `POST /__google` seeds or mutates it.
+ * `POST /__reset` empties it and `POST /__google` seeds or mutates it. `freeBusy` answers the
+ * seeded calendars (`op: 'freebusy'`) and `notFound` for every other address, and refuses a grant
+ * without a free/busy-capable scope with 403 `insufficientPermissions` (KPL-46). Attachments are
+ * served per id (`op: 'attachment'` seeds bytes; otherwise a 5-byte PDF header).
  */
 import type { Hono } from 'hono';
 import { exportJWK, generateKeyPair, SignJWT } from 'jose';
@@ -103,6 +106,10 @@ interface GoogleState {
   channels: Map<string, { resourceId: string; calendarId: string; token: string | null }>;
   taskLists: { id: string; title: string; updated: string }[];
   tasks: Map<string, Map<string, Record<string, unknown>>>;
+  /** Busy blocks per address (lower case); unseeded addresses answer `notFound`. */
+  freebusy: Map<string, { start: string; end: string }[]>;
+  /** Attachment bytes (base64url) per attachment id. */
+  attachments: Map<string, string>;
 }
 
 function freshState(): GoogleState {
@@ -138,6 +145,8 @@ function freshState(): GoogleState {
     events: new Map([['primary', new Map()]]),
     eventSeq: 0,
     channels: new Map(),
+    freebusy: new Map(),
+    attachments: new Map(),
     taskLists: [
       {
         id: 'MDk4NjE1NzM0NTY3ODkwMTIzNDU6MDow',
@@ -300,6 +309,12 @@ export async function mountGoogle(app: Hono<MockEnv>, state: MockState): Promise
           id,
         });
       }
+    } else if (op === 'freebusy') {
+      const calendars = (body.calendars as Record<string, { start: string; end: string }[]>) ?? {};
+      for (const [email, busy] of Object.entries(calendars))
+        g.freebusy.set(email.toLowerCase(), busy);
+    } else if (op === 'attachment') {
+      g.attachments.set(String(body.id), String(body.data));
     } else if (op === 'pubsub_token') {
       const token = await new SignJWT({
         email: String(body.email),
@@ -480,9 +495,11 @@ export async function mountGoogle(app: Hono<MockEnv>, state: MockState): Promise
       resultSizeEstimate: list.length,
     });
   });
-  app.get(`${gmail}/messages/:id/attachments/:aid`, (c) =>
-    c.json({ size: 5, data: b64url('%PDF-') }),
-  );
+  app.get(`${gmail}/messages/:id/attachments/:aid`, (c) => {
+    const data = g.attachments.get(c.req.param('aid'));
+    if (data === undefined) return c.json({ size: 5, data: b64url('%PDF-') });
+    return c.json({ size: fromB64url(data).byteLength, data });
+  });
   app.get(`${gmail}/messages/:id`, (c) => {
     const message = g.mailbox.messages.get(c.req.param('id'));
     if (message === undefined)
@@ -547,6 +564,42 @@ export async function mountGoogle(app: Hono<MockEnv>, state: MockState): Promise
     if (!authorized(bearerOf(c)))
       return c.json(googleError(401, 'authError', 'Invalid Credentials'), 401);
     await next();
+  });
+  app.post(`${cal}/freeBusy`, (c) => {
+    const granted = g.grants.get(g.identity.sub) ?? new Set<string>();
+    const G = 'https://www.googleapis.com/auth/';
+    if (
+      ![`${G}calendar.events.freebusy`, `${G}calendar.readonly`, `${G}calendar`].some((s) =>
+        granted.has(s),
+      )
+    )
+      return c.json(
+        googleError(
+          403,
+          'insufficientPermissions',
+          'Request had insufficient authentication scopes.',
+        ),
+        403,
+      );
+    const body = jsonOf<{ timeMin: string; timeMax: string; items?: { id: string }[] }>(c);
+    const from = Date.parse(body.timeMin);
+    const to = Date.parse(body.timeMax);
+    const calendars: Record<string, unknown> = {};
+    for (const item of body.items ?? []) {
+      const busy = g.freebusy.get(item.id.toLowerCase());
+      calendars[item.id] =
+        busy === undefined
+          ? { errors: [{ domain: 'global', reason: 'notFound' }], busy: [] }
+          : {
+              busy: busy.filter((b) => Date.parse(b.end) > from && Date.parse(b.start) < to),
+            };
+    }
+    return c.json({
+      kind: 'calendar#freeBusy',
+      timeMin: body.timeMin,
+      timeMax: body.timeMax,
+      calendars,
+    });
   });
   app.get(`${cal}/users/me/calendarList`, (c) =>
     c.json({

@@ -43,7 +43,12 @@
     "denied": {
       "mail_send": "İzin verilmedi. Mail gönderilmedi; taslağın kaydedildi.",
       "calendar_write": "İzin verilmedi. Takvime yazılmadı; önerin kaydedildi.",
-      "tasks_write": "İzin verilmedi. Görev oluşturulmadı; önerin kaydedildi."
+      "tasks_write": "İzin verilmedi. Görev oluşturulmadı; önerin kaydedildi.",
+      "calendar_freebusy": "İzin verilmedi. Seçenekler katılımcı uygunluğu olmadan gösterilir."
+    },
+    "calendar_freebusy": {
+      "title": "Uygunluk izni gerekli",
+      "body": "Toplantı katılımcılarının dolu/boş saatlerini görebilmem için {service} hesabından uygunluk izni gerekiyor. Yalnızca dolu/boş saatler okunur; etkinlik ayrıntıları okunmaz ve hiçbir şey değiştirilmez."
     }
   },
   "screen": {

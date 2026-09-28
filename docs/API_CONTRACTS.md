@@ -334,6 +334,7 @@ export const ErrorBody = z.object({
 | Briefing retry (API-BRF-04) | briefing | 1 / 10 min |
 | Thread summary (API-MAIL-07) | user | 20 / 60 s |
 | Reply attachment upload URL (API-MAIL-08) | user | 20 / 60 s |
+| Mail attachment list (API-MAIL-09) | user | 60 / 60 s (the original-mail class, `mail_original`) |
 | Meeting-prep audio (API-MEET-04) | user | 10 / h |
 | Export download URL (API-PRV-04) | user | 20 / h |
 | Device execution (API-APR-05) | installation | 60 / 60 s |
@@ -599,7 +600,7 @@ export const Cursor = z.string().max(512).regex(/^[A-Za-z0-9_-]+$/);
 export const Email = z.email().max(254);
 export const Money = z.object({ value: z.string().regex(/^\d{1,12}(\.\d{1,2})?$/), currency: z.string().regex(/^[A-Z]{3}$/) });
 export const Provider = z.enum(D.provider);                // google|microsoft|apple_device|android_device|demo
-export const Capability = z.enum(D.capability);            // mail_read|mail_send|calendar_read|calendar_write|tasks_read|tasks_write
+export const Capability = z.enum(D.capability);            // mail_read|mail_send|calendar_read|calendar_write|tasks_read|tasks_write|calendar_freebusy
 export const ApprovalActionType = z.enum(D.approval_action_type);
 export const ApprovalStatus = z.enum(D.approval_status);
 
@@ -948,6 +949,7 @@ On expiry, the approval moves `pending → expired`. An `approval` notification 
 | `mail_send` | `…/auth/gmail.send` | `Mail.Send` |
 | `calendar_write` | `…/auth/calendar.events.owned` (flag payload `google.calendar_write_scope` may switch to `…/auth/calendar.events`) | `Calendars.ReadWrite` |
 | `tasks_write` | `…/auth/tasks` | `Tasks.ReadWrite` |
+| `calendar_freebusy` | `…/auth/calendar.events.freebusy` (also satisfied by `calendar.readonly` or `calendar`); requested only from the conflict options' `availability_upgrade` (API-PLAN-03), never in the connect bundle | `Calendars.Read` (held together with `calendar_read`; `getSchedule` needs nothing more) |
 
 `gmail.compose` is **never** requested; drafts live in `reply_drafts` (ADR-07, SREQ-16).
 
@@ -1249,7 +1251,7 @@ IntegrationStartResponse = Success(z.object({ state_id: Uuid, auth_url: z.url(),
 
 ```ts
 IntegrationUpgradeBody = z.strictObject({
-  capability: z.enum(['mail_send', 'calendar_write', 'tasks_write', 'calendar_read', 'tasks_read', 'mail_read']),
+  capability: z.enum(['mail_send', 'calendar_write', 'tasks_write', 'calendar_read', 'tasks_read', 'mail_read', 'calendar_freebusy']),
   resume: z.object({ approval_id: Uuid }).optional(),
   device_nonce_hash: z.string().regex(/^[a-f0-9]{64}$/),   // R-07
 });
@@ -1763,6 +1765,34 @@ ReplyAttachmentUploadResponse = Success(z.object({ upload: z.object({ signed_url
   - The signed path starts with the caller's user id.
   - A PNG renamed `.pdf` fails at submit.
 
+#### API-MAIL-09 · `GET /mail/:messageId/attachments`
+- **Capability:** the attachment list of a mail with capture references: the M-CAP-03 file sheet and the M-MAIL-03 "Ekle'ye gönder" import a PDF or image attachment through API-CAP-02 (DESIGN_MAPPING DEV-41, DEV-47). Metadata only; no attachment content is fetched here.
+- **Endpoint/trigger:** "Analiz Et" on a mail attachment row (the app lists the rows from `email_messages.attachment_meta` through PostgREST and asks for fresh refs on the tap).
+- **Auth requirement:** `user`.
+- **Role requirement:** end user · any plan (the import itself is Pro).
+
+```ts
+MessageIdParams = z.object({ messageId: Uuid });
+MailAttachmentView = z.object({ attachment_ref: z.string().max(200), name: z.string().max(255), mime: z.string().max(255),
+  size_bytes: z.int().min(0), capturable: z.boolean(),
+  blocked_reason: z.enum(['unsupported_type', 'too_large', 'not_a_file']).nullable() });
+MailAttachmentsResponse = Success(z.object({ message_id: Uuid, attachments: z.array(MailAttachmentView).max(20),
+  source: z.enum(['stored', 'provider']), refs_expire_at: IsoDateTime }));
+```
+
+- **Validation:**
+  - `ai_data_access.attachments` on, and the message's account has `mail_read` and "Ekleri analiz et" (`attachments_analyze`) on; otherwise `DATA_SOURCE_DISABLED` with the toggle in `details`.
+  - The message is owned and not provider-deleted (`SOURCE_GONE`); the account is not disconnected.
+  - `mime` is the attachment's type, or its extension's capture type when the provider reports a generic `application/octet-stream`. `capturable` is true only for a file attachment (Graph item and reference attachments are `not_a_file`) of a capture MIME within the capture caps (images 15 MB, PDF 20 MB).
+- **DB effects:** none when the metadata is stored (JOB-10 triage keeps it for kept mails, see [AI_PIPELINE.md](AI_PIPELINE.md)). A mail with `has_attachments` and no stored metadata (synced earlier) is listed from its provider once and `attachment_meta` is written (`source:'provider'`).
+- **External provider effects:** only in that fallback: Gmail `users.messages.get?format=full` with a parts-only field mask; Graph `GET /me/messages/{id}/attachments?$select=id,name,contentType,size,isInline` (no content bytes).
+- **`attachment_ref`:** `v2.{message_id}.{index}.{exp}.{sig}`, HMAC-SHA-256 of `HASH_PEPPER` over the index in the stored metadata, valid 1 hour (`refs_expire_at`). API-CAP-02 still accepts the v1 refs of API-MAIL-01.
+- **Idempotency:** GET; `Cache-Control: no-store`; the app keeps refs in memory only (never persisted).
+- **Error codes:** `NOT_FOUND`, `SOURCE_GONE`, `DATA_SOURCE_DISABLED`, `PROVIDER_REAUTH_REQUIRED`, `PROVIDER_RATE_LIMITED`, `PROVIDER_UNAVAILABLE`, `UPSTREAM_TIMEOUT`, `FEATURE_DISABLED`.
+- **Retry strategy:** client retries retryable codes 2×.
+- **Audit event:** none.
+- **Tests:** Deno (stored listing with refs, provider fallback stores metadata once, toggles, ref signing and expiry, capturability); IT-SYNC-20.
+
 ### 8.6 Approvals
 
 #### API-APR-01 · `POST /approvals` [IK]
@@ -2129,22 +2159,32 @@ ConflictOptionsResponse = Success(z.object({ conflict: z.object({ insight_id: Uu
   start: IsoDateTime, end: IsoDateTime, is_organizer: z.boolean(), attendee_count: z.int() })).length(2) }),
   options: z.array(z.object({ option_id: z.string(), kind: z.enum(['move_event','shorten_event','propose_new_time_email',
     'remind_me','contact_external','ignore']), title: z.string(), description: z.string(),
-    feasibility: z.object({ organizer: z.boolean(), attendee_availability: z.enum(['free','busy','unknown']) }),
-    side_effects: z.array(z.string()), requires_capability: Capability.nullable(), pro_required: z.boolean() })).max(6) }));
+    feasibility: z.object({ organizer: z.boolean(), attendee_availability: z.enum(['free','busy','unknown']),
+      availability_reason: z.enum(['checked','no_other_attendees','partial','not_shared','scope_missing','device_calendar',
+        'provider_unavailable','not_applicable']).optional(),
+      attendees: z.array(z.object({ email: z.string().max(320), name: z.string().max(200).nullable(),
+        status: z.enum(['free','busy','unknown']), reason: z.enum(['not_found','not_shared','too_many','unavailable']).nullable() })).max(20).optional() }),
+    proposed_slot: z.object({ start: IsoDateTime, end: IsoDateTime }).nullable().optional(),   // move options: the slot the approval will use
+    side_effects: z.array(z.string()), requires_capability: Capability.nullable(), pro_required: z.boolean() })).max(6),
+  availability_upgrade: z.object({ account_id: Uuid, provider: z.enum(['google','microsoft']),
+    capability: z.literal('calendar_freebusy') }).nullable().optional() }));
 ```
 
 - **Validation:** the insight is owned, `kind='conflict'`, `status='open'`.
 - **Option rules:**
   - `move_event` / `shorten_event` only if organizer.
-  - Attendee availability is only from a real free/busy query of the user's own calendars. External attendees are `unknown`, which is shown honestly.
+  - Attendee availability (KNOWN_PLATFORM_LIMITATIONS KPL-46) is only what the event's own account's provider answers for the other attendees (the user's address excluded, ≤ 20) over the 7-day search window: `free` only when every one of them answered free; `busy` names who is busy; everyone the provider did not answer for is `unknown` with its reason. Nothing is inferred from names, domains or history. Device events are `device_calendar` (no attendee identities).
+  - Without `calendar_freebusy` on a Google account the options carry `availability_reason:'scope_missing'` and `availability_upgrade` names the account; the app starts API-INT-02 with that capability (never silently) and reloads. Microsoft accounts hold `calendar_freebusy` with `calendar_read`.
+  - A move option's `proposed_slot` comes from the free-slot finder over the user's busy time plus the answering attendees' busy blocks (the moved event's own time is vacated); when no slot is free for everyone, the user's own free slot is proposed and its availability says who is busy. API-PLAN-04 uses that slot.
   - `contact_external` uses `tel:` only if a phone number appears in the source email.
-- **DB effects:** read-only; options cached in `insights.payload.options` (5 min).
-- **External provider effects:** Google `freebusy.query` for the user's calendars only (covered by `calendar.events.readonly` **[verify accepted scopes]**); Graph `POST /me/calendar/getSchedule` for the user's own mailbox.
+  - Option ids are short positional ids (`move:a`, `shorten:b`, `email:a`, …) within the 40-character `option_id` of API-PLAN-04.
+- **DB effects:** read-only; options cached in `insights.payload.options` (5 min). Options computed while an availability upgrade was pending are not reused.
+- **External provider effects:** Google `POST /calendar/v3/freeBusy` (`items` = the attendees' addresses; scope `calendar.events.freebusy`); Graph `POST /me/calendar/getSchedule` (`schedules` = the addresses, 15-minute interval, `Prefer: outlook.timezone="UTC"`; busy, tentative and out-of-office count as busy). A failed lookup degrades to `provider_unavailable`; it never fails the route.
 - **Idempotency:** safe (cached).
 - **Error codes:** `ENTITLEMENT_REQUIRED`, `NOT_FOUND`, `STATE_CONFLICT` (resolved), `PROVIDER_REAUTH_REQUIRED`.
 - **Retry strategy:** client retries 2×.
 - **Audit event:** none.
-- **Tests:** a non-organizer gets no move option but gets the email option; "Klinikte 15:45 boş görünüyor"-style claims are impossible (no external availability source).
+- **Tests:** a non-organizer gets no move option but gets the email option; without the grant the options say `scope_missing` and no free/busy request is made; after the grant the move slot avoids a busy attendee and unanswered attendees stay `unknown` (Deno; IT-PLAN-01 Google, IT-PLAN-02 Graph).
 
 #### API-PLAN-04 · `POST /plan/conflicts/:insightId/resolve` [IK]
 - **Capability:** apply the chosen option by creating the right approval / draft / reminder, or "Yoksay" (persisted dismissal per conflict pair).
@@ -2200,7 +2240,8 @@ MeetingPrepView = z.object({ id: Uuid, calendar_event_id: Uuid, status: z.enum([
 MeetingPrepResponse = Success(z.object({ prep: MeetingPrepView, job: JobRef.nullable() }));   // 200 fresh | 202 generating
 ```
 
-- **Validation:** the event is owned, not cancelled, and starts within [now − 2 h, now + 14 d].
+- **Validation:** the event is owned, not cancelled, and starts within [now − 2 h, now + 14 d]. An `eventId` that names a merged cross-source duplicate stands for its canonical event (KPL-15).
+- **Relevant files:** JOB-15 keeps up to 5 file pointers (mail id, index, name) from the stored attachment metadata of the recent mails with the attendees; the response signs a fresh v2 `attachment_ref` for each (1 h) and lists them only while `ai_data_access.attachments` is on (DEV-41).
 - **DB effects:**
   - A fresh cache (`source_hash` unchanged and generated < 30 min) returns 200 without a job.
   - Otherwise upsert `meeting_preps(status='generating')` and enqueue JOB-15.
@@ -2529,10 +2570,10 @@ CaptureCreateBody = z.strictObject({ client_capture_id: Uuid, share_origin: z.en
 
 - **Validation:**
   - Link: an SSRF pre-check of scheme and host literal (the full resolution check happens at fetch).
-  - Email attachment: `attachment_ref` HMAC valid and bound to the message; `attachments_analyze` toggle on; MIME in the allow-list; size ≤ 20 MiB.
+  - Email attachment: `attachment_ref` HMAC valid, unexpired and bound to the message (v2 refs of API-MAIL-09 name the index in the stored `attachment_meta`; v1 refs of API-MAIL-01 still work); `ai_data_access.attachments` and the account's `attachments_analyze` toggle on; a file attachment (never a Graph item or reference attachment) of a capture MIME; images ≤ 15 MB, PDF ≤ 20 MB (checked on the metadata and again on the downloaded bytes, with the magic-byte check of uploads).
 - **DB effects:**
   - Insert `captures` (`kind`; `status='uploaded'`; `link_url`; text stored in `captures.text_content`, retention-bound).
-  - Email attachment: the server downloads it (Gmail `users.messages.attachments.get` / Graph `/messages/{id}/attachments/{aid}/$value`) into Storage.
+  - Email attachment: the server downloads it through the account's provider API (Gmail `users.messages.attachments.get` / Graph `/me/messages/{id}/attachments/{aid}`; fixed provider hosts, never a URL from the mail) into Storage. A Gmail attachment id that changed since sync is re-listed once and the same file (name, type, size) is fetched.
 - **External provider effects:**
   - Link preview: SSRF-safe GET (§API-CAP-03 fetcher rules), first 64 KiB, `<title>`/`og:title` only, 5 s timeout. Failure → `link_preview=null` (no error).
   - Attachment download: provider API.

@@ -252,7 +252,9 @@ once per day and at 100 % switches off `ai.model.large.enabled` and `ai.model.op
 - **Data Source Controls** (`user_preferences.ai_data_access`, five booleans; changes are
   audited): with `mail_body` off no mail body reaches a model (triage uses headers and snippets,
   deep analysis is skipped, thread summaries and drafts answer `DATA_SOURCE_DISABLED`); with
-  `attachments` off file and photo captures answer `DATA_SOURCE_DISABLED`. `calendar`, `contacts`
+  `attachments` off file and photo captures answer `DATA_SOURCE_DISABLED`, triage stores no
+  attachment metadata, API-MAIL-09 and mail-attachment imports are refused and meeting prep lists
+  no files. `calendar`, `contacts`
   and `location_coarse` are stored but not checked by any model call at `ec14e92`
   ([Known gaps](#known-gaps)).
 - **Provider metadata:** requests carry an HMAC pseudonym of the user
@@ -323,7 +325,8 @@ once per day and at 100 % switches off `ai.model.large.enabled` and `ai.model.op
 | Morning briefing (JOB-14) | Code selects and ranks items; the model writes the narrative over item JSON only (T2 on `balanced`, T1 on `lean`); failure → template briefing (`narrative_mode = 'template'`) |
 | Midday and evening | Deterministic delta and lists (a midday with no meaningful change sends nothing); optional T1 polish behind `ai.feature.briefing_polish`, where numbers and times must survive unchanged |
 | Weekly review | Statistics computed in code; a ≤ 80-word narrative citing them; batch with synchronous fallback |
-| Meeting prep (JOB-15, Pro) | Precomputed 45–60 minutes ahead for meetings with external or VIP attendees, otherwise on request; regenerated only when the source set changes |
+| Meeting prep (JOB-15, Pro) | Precomputed 45–60 minutes ahead for meetings with external or VIP attendees, otherwise on request; regenerated only when the source set changes. "İlgili dosyalar" are up to 5 file attachments from the stored metadata of the recent mails with the attendees (names only; no attachment content reaches a model). A merged cross-source duplicate (KPL-15) gets no prep of its own |
+| Attachment metadata (JOB-10 triage) | Code only, no model: for each kept message (not `low_priority`, not bulk) with attachments, while `attachments` and the account's "Ekleri analiz et" are on, the fetched body's attachment list, or a metadata-only provider listing, is stored in `email_messages.attachment_meta` (name, type, size, provider id, kind; inline parts dropped; ≤ 20). Content is fetched only when the user imports a file into capture (API-CAP-02) |
 | Reply and follow-up drafts | `balanced` generates all tones in one call (level `l1` and `lean`: the requested tone only) |
 | Capture (JOB-27, Pro) | Text and links T1; photos T2 vision with a verbatim transcript first; text PDFs T2 over per-page blocks; scanned PDFs only with `ai.model.opus_escalation` on, on the same reasoning chain |
 | Assistant | T0 intent grammar first, T1 `assistant_intent` only when it misses (labels only: a write intent becomes a pending approval); grounded QA as above |
