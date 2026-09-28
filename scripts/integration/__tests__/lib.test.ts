@@ -1,10 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  describeJwks,
   formatSummary,
   mintHs256,
   parseArgs,
   parseStatusEnv,
+  redactSecrets,
   roleKey,
   summarizeDenoOutput,
   verifyHs256,
@@ -84,4 +86,22 @@ test('per-suite counts from the deno test reporter; steps and colours ignored', 
   });
   const table = formatSummary(suites);
   assert.match(table, /total\s+2\s+1\s+1/);
+});
+
+test('Auth diagnostics mask tokens and keys; JWKS keys are listed as alg/kid', () => {
+  const token = mintHs256({ sub: 'u1' }, 's'.repeat(40));
+  assert.equal(
+    redactSecrets(`{"msg":"bad ${token}","k":"sb_secret_N7UND0Ug-x_1","p":"sb_publishable_AbC"}`),
+    '{"msg":"bad <jwt>","k":"sb_secret_<redacted>","p":"sb_publishable_<redacted>"}',
+  );
+  assert.equal(
+    redactSecrets('HTTP 403 {"error_code":"bad_jwt"}'),
+    'HTTP 403 {"error_code":"bad_jwt"}',
+  );
+  assert.deepEqual(
+    describeJwks({ keys: [{ kty: 'EC', alg: 'ES256', kid: 'k1', x: 'x' }, { kty: 'RSA' }] }),
+    ['ES256/k1', 'RSA'],
+  );
+  assert.deepEqual(describeJwks({}), []);
+  assert.deepEqual(describeJwks(null), []);
 });

@@ -105,6 +105,24 @@ export function roleKey(role: 'anon' | 'service_role', secret: string, issuer: s
   return mintHs256({ iss: issuer, role, iat, exp: iat + 6 * 3600 }, secret);
 }
 
+/** Error bodies for logs: JWT-shaped values and `sb_secret_` / `sb_publishable_` keys masked. */
+export function redactSecrets(text: string): string {
+  return text
+    .replace(/eyJ[A-Za-z0-9_-]*\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*/g, '<jwt>')
+    .replace(/\bsb_(secret|publishable)_[A-Za-z0-9_-]+/g, 'sb_$1_<redacted>');
+}
+
+/** A JWKS document → `alg/kid` labels of its keys (public metadata only). */
+export function describeJwks(doc: unknown): string[] {
+  const keys = (doc as { keys?: unknown } | null)?.keys;
+  if (!Array.isArray(keys)) return [];
+  return keys.map((k) => {
+    const key = k as { alg?: unknown; kty?: unknown; kid?: unknown };
+    const alg = typeof key.alg === 'string' ? key.alg : typeof key.kty === 'string' ? key.kty : '?';
+    return typeof key.kid === 'string' ? `${alg}/${key.kid}` : alg;
+  });
+}
+
 /** `supabase status -o env` output → key/value map (quotes stripped). */
 export function parseStatusEnv(text: string): Map<string, string> {
   const out = new Map<string, string>();

@@ -9,7 +9,9 @@
  *      `gateway.ts` (`/rest/v1`, the GoTrue `getUser` contract, worker pokes);
  *   4. skips the suites tagged `needs:gotrue` / `needs:storage`.
  * Tier A (`--tier a`, CI; `pnpm test:integration`): `supabase db reset` on the running local stack
- * (`supabase start -x studio,imgproxy`), then every suite against its API (Kong on 54321).
+ * (`supabase start -x studio,imgproxy`), an Auth health / JWKS preflight, then every suite against
+ * its API (Kong on 54321); the suites' users and tokens come from the real Auth server
+ * (`supabase/tests/integration/_harness/auth.ts`).
  *
  * Both tiers start the mock provider server (`supabase/functions/_shared/testing/mock-providers`)
  * on 127.0.0.1:8788 and run `deno test --allow-net=127.0.0.1 --allow-env --allow-read` over
@@ -26,11 +28,13 @@ import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { startGateway, type Gateway } from './gateway.ts';
 import {
+  describeJwks,
   formatSummary,
   parseArgs,
   parseStatusEnv,
   randomKey32,
   randomSecret,
+  redactSecrets,
   roleKey,
   summarizeDenoOutput,
 } from './lib.ts';
@@ -205,6 +209,26 @@ function baseEnv(supabaseUrl: string, mockUrl: string): Record<string, string> {
   };
 }
 
+/**
+ * Tier A: the suites create their users through the real Auth server (admin API, password grant),
+ * so an unreachable or misconfigured Auth fails here with its status and (redacted) body.
+ */
+async function authPreflight(supabaseUrl: string, anonKey: string): Promise<void> {
+  const headers = { apikey: anonKey };
+  const health = await fetch(`${supabaseUrl}/auth/v1/health`, { headers });
+  const body = await health.text();
+  if (!health.ok)
+    throw new Error(
+      `Auth health check failed: HTTP ${health.status} ${redactSecrets(body).slice(0, 600)}`,
+    );
+  const jwks = await fetch(`${supabaseUrl}/auth/v1/.well-known/jwks.json`, { headers });
+  const keys = jwks.ok ? describeJwks(await jwks.json()) : [];
+  if (!jwks.ok) await jwks.arrayBuffer();
+  log(
+    `Auth is up; JWKS ${jwks.ok ? (keys.length === 0 ? 'has no asymmetric keys' : keys.join(', ')) : `HTTP ${jwks.status}`}`,
+  );
+}
+
 function cleanup(): void {
   for (const child of children) {
     try {
@@ -226,6 +250,7 @@ async function main(): Promise<number> {
   let secret = jwtSecret;
   let anonKey: string;
   let serviceKey: string;
+  let secretKey = '';
 
   if (args.tier === 'c') {
     if (!args.reuseDb) {
@@ -275,11 +300,14 @@ async function main(): Promise<number> {
     const status = parseStatusEnv(run(cli, ['status', '-o', 'env']));
     supabaseUrl = status.get('API_URL') ?? 'http://127.0.0.1:54321';
     dbUrl = status.get('DB_URL') ?? 'postgresql://postgres:postgres@127.0.0.1:54322/postgres';
+    // Tier A never mints user tokens (real Auth issues them); the secret is passed through only.
     secret = status.get('JWT_SECRET') ?? '';
     anonKey = status.get('ANON_KEY') ?? '';
     serviceKey = status.get('SERVICE_ROLE_KEY') ?? '';
-    if (secret === '' || anonKey === '' || serviceKey === '')
-      throw new Error('supabase status did not report JWT_SECRET / ANON_KEY / SERVICE_ROLE_KEY');
+    secretKey = status.get('SECRET_KEY') ?? '';
+    if (anonKey === '' || serviceKey === '')
+      throw new Error('supabase status did not report ANON_KEY / SERVICE_ROLE_KEY');
+    await authPreflight(supabaseUrl, anonKey);
   }
 
   const env = baseEnv(supabaseUrl, mockUrl);
@@ -291,6 +319,7 @@ async function main(): Promise<number> {
     DA_IT_TIER: args.tier,
     DA_IT_DB_URL: dbUrl,
     DA_IT_JWT_SECRET: secret,
+    DA_IT_SECRET_KEY: secretKey,
     DA_IT_SKIP_TAGS: args.tier === 'c' ? 'needs:gotrue,needs:storage' : '',
     DENO_NO_UPDATE_CHECK: '1',
     NO_COLOR: '1',
