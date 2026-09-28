@@ -196,6 +196,15 @@ describe('build guards', () => {
     }
   });
 
+  it('accepts the project root the Expo CLI sets during export:embed (Gradle / Xcode bundling)', () => {
+    const root = { EXPO_PUBLIC_PROJECT_ROOT: '/home/runner/work/app/apps/mobile' };
+    expect(() => config({ APP_ENV: 'e2e', ...root })).not.toThrow();
+    expect(() => config({ APP_ENV: 'production', ...root })).not.toThrow();
+    expect(() => config({ EXPO_PUBLIC_PROJECT_ROOT: 'sb_secret_abcdefghijklmnop' })).toThrow(
+      /secret-shaped/,
+    );
+  });
+
   it('requires EXPO_PUBLIC_APP_ENV to match APP_ENV', () => {
     expect(() => config({ APP_ENV: 'production', EXPO_PUBLIC_APP_ENV: 'development' })).toThrow(
       /EXPO_PUBLIC_APP_ENV/,

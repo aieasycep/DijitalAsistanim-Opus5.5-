@@ -79,6 +79,13 @@ export interface AppVariant {
 
 const SCHEME_PATTERN = /^[a-z][a-z0-9+.-]*$/;
 const EXPO_PUBLIC_ALLOW_LIST: ReadonlySet<string> = new Set(ENV_KEYS.expo_client);
+/**
+ * EXPO_PUBLIC_* keys the Expo CLI sets itself before it re-reads this config: Metro's multi-platform
+ * setup assigns `EXPO_PUBLIC_PROJECT_ROOT` (the project path, read by expo-router) during
+ * `export:embed`, which the Gradle and Xcode release builds run. Not ours to allow-list in §15, still
+ * checked for secret-shaped values.
+ */
+const EXPO_TOOLING_KEYS: ReadonlySet<string> = new Set(['EXPO_PUBLIC_PROJECT_ROOT']);
 
 function isSet(value: string | undefined): value is string {
   return value !== undefined && value.trim() !== '';
@@ -138,7 +145,7 @@ export function resolveVariant(env: Env): AppVariant {
 export function assertBuildEnv(env: Env, appEnv: AppEnv): void {
   for (const [key, value] of Object.entries(env)) {
     if (!key.startsWith('EXPO_PUBLIC_')) continue;
-    if (!EXPO_PUBLIC_ALLOW_LIST.has(key)) {
+    if (!EXPO_PUBLIC_ALLOW_LIST.has(key) && !EXPO_TOOLING_KEYS.has(key)) {
       fail(`${key} is not an allow-listed client-safe variable (INTEGRATION_PLAN §15).`);
     }
     if (isSet(value) && CLIENT_SECRET_SHAPES.some((shape) => shape.test(value.trim()))) {
