@@ -100,3 +100,19 @@ test('a YAML syntax error is reported instead of thrown', () => {
   lintFlow('bad.yaml', 'appId: [\n---\n- back', [], textContext(), problems);
   assert.match(problems[0]?.message ?? '', /^YAML:/);
 });
+
+test('setDarkMode takes enabled / disabled, as Maestro 2.10 parses it (a boolean fails)', () => {
+  const problems: Problem[] = [];
+  const flow = [
+    'appId: com.dijitalasistan.app.e2e',
+    'name: "x"',
+    '---',
+    '- setDarkMode: false',
+    '- setDarkMode: enabled',
+    '- setDarkMode: { value: disabled }',
+  ].join('\n');
+  lintFlow('flows/m102/x.yaml', flow, [], textContext(), problems);
+  const dark = problems.filter((p) => p.message.includes('setDarkMode'));
+  assert.equal(dark.length, 1);
+  assert.match(dark[0]?.message ?? '', /\[0\]\.setDarkMode: expected enabled or disabled/);
+});

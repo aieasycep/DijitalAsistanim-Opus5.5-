@@ -32,9 +32,9 @@ onFlowStart:
 - assertDarkMode
 - openLink: 'dijitalasistan-e2e://settings/appearance'
 - tapOn: { id: 'appearance.theme.system' }
-- setDarkMode: false
+- setDarkMode: disabled
 - assertLightMode
 - runFlow: { file: ../../subflows/open-tab.yaml, env: { TAB: today } }
 - takeScreenshot: vis-today-light
-- setDarkMode: true
+- setDarkMode: enabled
 - assertDarkMode

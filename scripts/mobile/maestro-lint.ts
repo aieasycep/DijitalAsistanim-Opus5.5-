@@ -291,6 +291,13 @@ function checkCommands(list: unknown, where: string, visit: Visit): void {
     if (name === 'runScript') {
       checkFileRef(typeof args === 'string' ? args : record.file, `${at}.runScript`, visit);
     }
+    // Maestro 2.10 parses `setDarkMode` as enabled / disabled (a bare boolean fails to parse).
+    if (name === 'setDarkMode') {
+      const mode = typeof args === 'string' ? args : record.value;
+      if (mode !== 'enabled' && mode !== 'disabled') {
+        report(visit, `${at}.setDarkMode: expected enabled or disabled`);
+      }
+    }
     if (name === 'addMedia') {
       const media = Array.isArray(args) ? args : [];
       media.forEach((m, i) => {
