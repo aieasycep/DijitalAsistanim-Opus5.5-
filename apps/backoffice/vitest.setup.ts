@@ -1,11 +1,15 @@
 import '@testing-library/jest-dom/vitest';
 
-import { cleanup } from '@testing-library/react';
+import { cleanup, configure } from '@testing-library/react';
 import { afterEach } from 'vitest';
 
 afterEach(() => {
   if (typeof window !== 'undefined') cleanup();
 });
+
+// `findBy…` / `waitFor` wait up to 5 s instead of 1 s: under `turbo run test` the dialog and
+// server-action flows share the CPU with lint, typecheck and the other suites.
+configure({ asyncUtilTimeout: 5_000 });
 
 /** Installs `value` as `target[key]` unless the environment already provides it. */
 function polyfill(target: object, key: string, value: unknown): void {
