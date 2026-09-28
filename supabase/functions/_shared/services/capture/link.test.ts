@@ -3,7 +3,6 @@
  * entity-decoded in one pass, so `&amp;lt;` stays the text `&lt;` instead of turning into `<`.
  */
 import { assert, assertEquals } from '@std/assert';
-import process from 'node:process';
 import type { DnsResolver } from '../../security/ssrf-fetch.ts';
 import { stubFetch } from '../../testing/fetch.ts';
 import { decodeTitleEntities, linkPreview, titleOf } from './link.ts';
@@ -61,17 +60,17 @@ Deno.test('titleOf: og:title in either attribute order, case-insensitive, else <
 });
 
 /**
- * Growth-rate check (the helpers of packages/domain/test/security/codeql-remediation.test.ts): CPU
- * time (a busy runner preempts long runs more than short ones), best of three at N / 4 and at N
- * taken in turn; a linear scan grows about 4×, the former `<meta[^>]+…` and `<title[^>]*>` regexes
- * grew quadratically on unclosed openers. A run under 100 ms passes outright.
+ * Growth-rate check (the helpers of packages/domain/test/security/codeql-remediation.test.ts): best
+ * of three at N / 4 and at N, the two sizes taken in turn so a load spike slows both; a linear scan
+ * grows about 4×, the former `<meta[^>]+…` and `<title[^>]*>` regexes grew quadratically on
+ * unclosed openers. A run under 100 ms passes outright. Wall-clock time: Deno 2.1 has no per-thread
+ * CPU clock without `node:process` (which would add `@types/node` to the frozen lock).
  */
 function assertLinear(run: (n: number) => void, n = 16_000): void {
   const timed = (size: number): number => {
-    const start = process.cpuUsage();
+    const start = performance.now();
     run(size);
-    const used = process.cpuUsage(start);
-    return (used.user + used.system) / 1000;
+    return performance.now() - start;
   };
   let small = Infinity;
   let large = Infinity;
