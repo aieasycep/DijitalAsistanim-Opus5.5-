@@ -71,6 +71,10 @@ export const ADMIN_API_FN = {
     'ai_feedback_reveal_comment',
     '(p_id uuid, p_reason text) returns jsonb',
   ),
+  ai_eval_request: fn(
+    'ai_eval_request',
+    '(p_key text, p_version integer, p_reason text) returns jsonb',
+  ),
   ai_metrics: fn('ai_metrics', "(p_range text, p_group text default 'feature') returns jsonb"),
   ai_model_config_list: fn('ai_model_config_list', '() returns jsonb'),
   ai_model_config_update: fn(

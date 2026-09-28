@@ -43,7 +43,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
  * W-REF-01 · referral landing. The code is normalised (upper case, no spaces or hyphens; a
  * different spelling gets a 308 to the canonical URL), checked locally (length, alphabet, check
  * character) and only then resolved through `GET /referrals/:code` (PUB-04). The page never shows
- * who sent the invite, and never promises a reward it could not confirm.
+ * who sent the invite, and never promises a reward it could not confirm or that is switched off
+ * (`rewards_enabled:false`, the STORE_CHECKLIST 3.1.1 kill switch: "rewards are paused" instead).
  */
 export default async function ReferralPage({ params }: Props): Promise<ReactNode> {
   await connection();
@@ -66,6 +67,9 @@ export default async function ReferralPage({ params }: Props): Promise<ReactNode
       : 'unverified';
   const rewardDays =
     lookup?.kind === 'resolved' ? lookup.value.reward_days : REFERRAL_TERMS.rewardDays;
+  // The reward kill switch: while it is off the page states that rewards are paused, never the
+  // Pro days; the code still applies in the app.
+  const rewardsOn = lookup?.kind !== 'resolved' || lookup.value.rewards_enabled !== false;
   const windowDays =
     lookup?.kind === 'resolved'
       ? (lookup.value.apply_window_days ?? REFERRAL_TERMS.applyWindowDays)
@@ -138,10 +142,21 @@ export default async function ReferralPage({ params }: Props): Promise<ReactNode
         ))}
       </ol>
       <p className="mt-5 text-secondary text-ink-2">{t('referral.android')}</p>
-      {state === 'valid' ? (
+      {state === 'valid' && rewardsOn ? (
         <p className="mt-5 text-body" data-testid="referral-reward">
           {t.rich('referral.reward', {
             days: rewardDays,
+            terms: (chunks) => (
+              <Link href="/terms#davet" className="text-text-link underline underline-offset-4">
+                {chunks}
+              </Link>
+            ),
+          })}
+        </p>
+      ) : null}
+      {state === 'valid' && !rewardsOn ? (
+        <p className="mt-5 text-body" data-testid="referral-reward-paused">
+          {t.rich('referral.rewardPaused', {
             terms: (chunks) => (
               <Link href="/terms#davet" className="text-text-link underline underline-offset-4">
                 {chunks}

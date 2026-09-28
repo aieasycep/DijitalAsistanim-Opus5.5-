@@ -722,6 +722,15 @@ export const adminRoutes = {
     { params: prompts.PromptVersionParams, body: prompts.PromptTestBody },
     prompts.PromptTestResponse,
   ),
+  'POST /ai/prompts/:key/versions/:v/eval': write(
+    'ADM-09',
+    'POST',
+    '/ai/prompts/:key/versions/:v/eval',
+    perm('prompts.write'),
+    { params: prompts.PromptVersionParams, body: prompts.PromptEvalBody },
+    prompts.PromptEvalResponse,
+    { status: 202, audit: 'prompt.tested' },
+  ),
   'POST /ai/prompts/:key/versions/:v/activate': write(
     'ADM-09',
     'POST',

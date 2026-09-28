@@ -75,6 +75,31 @@ describe('check-secrets (T-12.03)', () => {
     assert.ok(!result.text.includes('digest'));
   });
 
+  it('a set SIWA key stands in for a stored Apple client secret (the deploy mints one)', () => {
+    const plan = buildPlan(sources);
+    const allButApple = Object.fromEntries(
+      DEPLOY_JOB_KEYS.filter((k) => k !== 'SUPABASE_AUTH_EXTERNAL_APPLE_SECRET').map((k) => [
+        k,
+        'set',
+      ]),
+    );
+    assert.deepEqual(report(plan, new Set(), allButApple).missingDeployJob, [
+      'SUPABASE_AUTH_EXTERNAL_APPLE_SECRET',
+    ]);
+    const siwa = {
+      APPLE_TEAM_ID: 'set',
+      APPLE_SIWA_KEY_ID: 'set',
+      APPLE_SIWA_PRIVATE_KEY: 'set',
+      APPLE_SIWA_SERVICES_ID: 'set',
+    };
+    assert.deepEqual(report(plan, new Set(), { ...allButApple, ...siwa }).missingDeployJob, []);
+    assert.deepEqual(
+      report(plan, new Set(), { ...allButApple, ...siwa, APPLE_SIWA_PRIVATE_KEY: ' ' })
+        .missingDeployJob,
+      ['SUPABASE_AUTH_EXTERNAL_APPLE_SECRET'],
+    );
+  });
+
   it('rejects a secrets list that is not an array', () => {
     assert.throws(() => secretNames('{"name":"X"}'), /expected a JSON array/);
   });

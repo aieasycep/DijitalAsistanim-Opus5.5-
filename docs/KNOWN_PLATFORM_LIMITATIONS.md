@@ -504,10 +504,10 @@ iOS deployment target **16.4** (iPhone only); Android min SDK **24**, compile an
 
 - **Limitation.** The name arrives only on the first authorisation; the authorisation code is single-use for 5 minutes; relay mail needs registered domains; Android needs the web flow whose client secret expires every 6 months; Guideline 4.8.
 - **Evidence.** [OFF] https://supabase.com/docs/guides/auth/social-login/auth-apple ; [OFF] https://developer.apple.com/documentation/signinwithapplerestapi/generate-and-validate-tokens ; [OFF] https://developer.apple.com/documentation/signinwithapplerestapi/revoke-tokens ; [OFF] https://developer.apple.com/app-store/review/guidelines/#login-services
-- **As built.** The name is saved on first sign-in; `POST /auth/apple/exchange` stores the Apple refresh token encrypted for revocation at deletion (retried on the next Apple sign-in if it fails); Android uses the web flow when the Supabase Apple provider is enabled.
+- **As built.** The name is saved on first sign-in; `POST /auth/apple/exchange` stores the Apple refresh token encrypted for revocation at deletion (retried on the next Apple sign-in if it fails); Android uses the web flow when the Supabase Apple provider is enabled. The web client secret is minted from the SIWA key by `scripts/deploy/siwa-client-secret.ts` (ES256, exp ≤ 180 days) in every deploy and by `rotate-siwa-secret.yml` on 1 January, 1 June and 1 November, which sets it on the hosted Auth config through the Management API ([DEPLOYMENT.md](DEPLOYMENT.md#sign-in-with-apple-client-secret)).
 - **User sees.** The relay email as-is in the profile.
-- **Verified.** unit (Deno Apple exchange and revoke with a mocked Apple endpoint); owner (keys, Services ID, relay domain).
-- **Plan difference.** No `rotate-siwa-secret` workflow; regenerating the web client secret is an owner step.
+- **Verified.** unit (Deno Apple exchange and revoke with a mocked Apple endpoint; `node --test` for the client-secret signature, claims, 180-day cap and Management API calls); owner (keys, Services ID, relay domain, the `production` environment secrets).
+- **Plan difference.** The rotation runs three times a year (gaps ≤ five months) rather than on a fixed five-month interval, which cron cannot express.
 
 ## 6. Register: stores and subscriptions
 

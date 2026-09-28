@@ -19,6 +19,7 @@
     "@da/domain": "workspace:*",
     "@da/i18n": "workspace:*",
     "@da/validation": "workspace:*",
+    "@sentry/nextjs": "catalog:",
     "@supabase/ssr": "catalog:",
     "@supabase/supabase-js": "catalog:",
     "@t3-oss/env-nextjs": "catalog:",

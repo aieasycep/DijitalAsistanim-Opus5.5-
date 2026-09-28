@@ -62,4 +62,24 @@ test.describe('AI operations', () => {
     await page.goto('/ai/prompts/briefing_morning?version=2');
     await expect(page.getByTestId('prompt-rollback').first()).toBeVisible();
   });
+
+  test('an eval gate run is queued with a reason next to the last report', async ({
+    page,
+    request,
+  }) => {
+    await signInAs(page, request, 'ai_ops');
+    await page.goto('/ai/prompts/post_meeting?version=2');
+    const panel = page.getByTestId('prompt-version');
+    await expect(panel.getByTestId('prompt-eval-report')).toContainText('anthropic · mock-primary');
+    await panel.getByTestId('prompt-eval').click();
+    await confirmDialog(page, 'v2 için değerlendirme çalıştırılsın mı?', {
+      reason: 'Model yönlendirmesi değişti, kapı yeniden çalışsın',
+    });
+    await expect(page.getByText('Değerlendirme kuyruğa alındı.', { exact: false })).toBeVisible();
+    expect(
+      (await mockCalls(request)).some(
+        (c) => c.method === 'POST' && c.path === '/ai/prompts/post_meeting/versions/2/eval',
+      ),
+    ).toBe(true);
+  });
 });

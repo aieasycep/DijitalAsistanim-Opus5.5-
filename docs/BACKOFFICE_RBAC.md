@@ -129,7 +129,7 @@ Every admin, whatever the role, can use the own-account routes (`/me*`, `/sessio
 
 ### admin-api route guards
 
-145 routes, in registry order. "Guard" is the permission the route requires (`or`: any one of the listed permissions is enough; `and`: every listed permission is needed as well). "Step-up" means a TOTP re-check within the last 10 minutes.
+146 routes, in registry order. "Guard" is the permission the route requires (`or`: any one of the listed permissions is enough; `and`: every listed permission is needed as well). "Step-up" means a TOTP re-check within the last 10 minutes.
 
 | Route | Contract | Guard | Step-up | Audit action |
 | --- | --- | --- | --- | --- |
@@ -215,6 +215,7 @@ Every admin, whatever the role, can use the own-account routes (`/me*`, `/sessio
 | `POST /ai/prompts/:key/versions` | ADM-09 | `prompts.write` | — | `prompt.draft_created` |
 | `PATCH /ai/prompts/:key/versions/:v` | ADM-09 | `prompts.write` | — | `prompt.draft_updated` |
 | `POST /ai/prompts/:key/versions/:v/test` | ADM-09 | `prompts.write` | — | — |
+| `POST /ai/prompts/:key/versions/:v/eval` | ADM-09 | `prompts.write` | — | `prompt.tested` |
 | `POST /ai/prompts/:key/versions/:v/activate` | ADM-09 | `prompts.activate` | — | `prompt.activated` |
 | `POST /ai/prompts/:key/rollback` | ADM-09 | `prompts.activate` | — | `prompt.rolled_back` |
 | `POST /ai/prompts/:key/versions/:v/archive` | ADM-09 | `prompts.activate` | — | `prompt.archived` |

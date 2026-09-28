@@ -72,6 +72,11 @@ export const PublicReferralResolve = z.strictObject({
   valid: z.boolean(),
   reward_days: z.int().min(0),
   apply_window_days: z.int().min(0),
+  /**
+   * `app_settings.referral.rewards_enabled` (the reward kill switch, STORE_CHECKLIST 3.1.1): the
+   * landing states the Pro reward only while it is true; the code applies either way.
+   */
+  rewards_enabled: z.boolean(),
   store_urls: z.strictObject({ ios: z.url(), android: z.url() }),
   deep_link: z
     .string()

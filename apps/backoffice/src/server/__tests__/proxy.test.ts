@@ -39,6 +39,13 @@ describe('proxy.ts (BACKOFFICE_PLAN §2.4)', () => {
     expect(response.headers.get('x-robots-tag')).toBe('noindex, nofollow');
   });
 
+  it('isolates every response (COOP, COEP, CORP; ZAP 90004)', async () => {
+    const response = await run('/login');
+    expect(response.headers.get('cross-origin-opener-policy')).toBe('same-origin');
+    expect(response.headers.get('cross-origin-embedder-policy')).toBe('require-corp');
+    expect(response.headers.get('cross-origin-resource-policy')).toBe('same-origin');
+  });
+
   it('refuses a foreign Origin and a cross-site fetch', async () => {
     expect(
       (await run('/login', { method: 'POST', headers: { origin: 'https://evil.example' } })).status,

@@ -393,9 +393,51 @@ once per day and at 100 % switches off `ai.model.large.enabled` and `ai.model.op
   carry the fixture baseline report.
 - **Synthetic checks from the backoffice** (ADM-08/09, `admin-api/services/ai-probe.ts`) call the
   configured target with fictional cases only and check schema and grounding guards.
-- **Owner-run live evals:** running the same sets against the real providers
-  (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `VOYAGE_API_KEY`) and the Turkish speech WER set is a
-  manual owner step; the repository runs no live-provider call in CI.
+- **Gate runs (`ai_eval`, AI_PIPELINE_PLAN §5.4, §16.3):** six suites
+  ([`evals/suites.ts`](../supabase/functions/_shared/ai/evals/suites.ts)) replay the golden sets
+  through the production services on a *pinned* route per configured target — the primary and
+  every fallback of the key's `balanced` and `lean` rows, one target at a time, without budget or
+  cache, telemetry rows with `user_id = null` and `feature_variant = 'eval'`:
+
+| Suite (prompt key) | Feature | Sets | Gates per target |
+|---|---|---|---|
+| `email_classification` | `email_triage` | triage, injection | macro-F1 ≥ 0.85, injection flagged ≥ 0.75, no unserved batch |
+| `post_meeting` | `post_meeting_parse` | post-meeting | exact proposal count ≥ 0.85, no negation false positive, quotes verbatim |
+| `meeting_prep` | `meeting_prep` | meeting-prep | citation validity 100 %, no empty prep |
+| `assistant_intent` | `assistant_intent` | assistant-intent | accuracy ≥ 0.9, no read labelled as a write |
+| `reply_draft` | `reply_draft` | reply-draft, injection | validators agree, tones complete, word caps, nothing invented, no echoed contact |
+| `capture` | `capture_extract` | capture, injection | item kinds ≥ 0.9, quotes verbatim, injection caught ≥ 0.9, nothing pre-selected |
+
+  Every suite also fails a target that left a case unserved (provider unavailable or refused).
+  - *Worker job* ([`worker/handlers/ai_eval.ts`](../supabase/functions/worker/handlers/ai_eval.ts)):
+    payload `{prompt_key, prompt_version_id?, trigger}`; the version under test (a draft too) is
+    loaded with the key's model rows, the job works for ≤ 110 s and continues in a follow-up job
+    (key `ai_eval:{feature}:{iso_week}:v{n}:{run}:{step}`, counters in the ≤ 8 KiB payload), and
+    the final report is written through `public.ai_eval_record` (migration `20260924003510`):
+    `prompt_versions.eval_report / eval_passed / eval_dataset_version` (`sha256:` of the sets) on
+    the evaluated version and, only when that version is active, `ai_model_config.eval_status` of
+    the rows whose primary was evaluated (`private.model_eval_passed` reads the recorded targets);
+    audited as `system.ai_eval.recorded`. With `AI_FIXTURE_PROVIDER_ENABLED=true` the run uses the
+    fixture provider and the report says `mode: fixture`. Setup failures (no set for the key,
+    unknown version, no model row) end the job without retries.
+  - *Producer:* the backoffice "Değerlendirme çalıştır" on `/ai/prompts/[key]` (ADM-09
+    `POST /ai/prompts/:key/versions/:v/eval`, `prompts.write`, reason required, 202 with the job;
+    `admin_api.ai_eval_request` coalesces one queued run per version and ISO week under
+    `ai_eval:{feature}:{iso_week}:v{n}:pending` and audits `prompt.tested` with `details.run = 'eval'`).
+    The version panel shows the last report (result, mode, dataset version, finish time, per-target
+    pass/fail); keys without a set (`briefing_*`, `thread_summary`, …) show neither.
+  - *Nightly* ([`.github/workflows/ai-eval.yml`](../.github/workflows/ai-eval.yml), 01:37 UTC and
+    manual): `pnpm ai:eval` (fixture baseline) then `pnpm ai:eval:live`
+    ([`_shared/system/ai-eval-cli.ts`](../supabase/functions/_shared/system/ai-eval-cli.ts)) against
+    the `staging` environment's routes with the real providers, recording through the same RPC. A
+    missing `SUPABASE_URL` / `SUPABASE_SECRET_KEY` or a provider key the configured routes need
+    fails the job with "External credential required: …" before any provider call (exit 2); a
+    failed gate fails it with exit 1. `AI_EVAL_SUITES` narrows the suites, `AI_EVAL_DRY_RUN=true`
+    skips the write.
+- **Not in the gate job:** the retrieval set (`embedding_doc` / `embedding_query` have no prompt
+  version to record on), the cross-feature grounding set and the assistant-claims set (`assistant`
+  / `assistant_qa`) stay fixture-only in `pnpm ai:eval`; the Turkish speech WER set remains an owner
+  step.
 
 ## Fixture provider and demo
 
@@ -410,7 +452,6 @@ fixture transcript and silent audio.
 
 Observed at `ec14e92`; not deliberate differences:
 
-- **`ai_eval`** exists in `job_type` without a handler or producer.
 - `commitment_extract` "escalation" uses the chain's first fallback (`skipPrimary`); its routes
   have no T3 target.
 
@@ -421,6 +462,9 @@ Observed at `ec14e92`; not deliberate differences:
 | Non-urgent triage and backfill through Message Batches (AI_PIPELINE_PLAN §1.5, §8.8; `batch_policy = non_urgent` rows) | Only the weekly review uses `ai_batch`; triage and backfill run in real time (micro-batches of ≤ 5) | Integration notes D1; the `batch_policy` column is kept for later use |
 | Org ceiling tripped by the `health_check` job | Evaluated every 5 minutes from `scheduler_tick` step 14 | Keeps the eight pg_cron jobs ([ARCHITECTURE.md](ARCHITECTURE.md#differences-from-the-plan)) |
 | `AI_PROVIDER_OVERRIDE=fixture` | `AI_FIXTURE_PROVIDER_ENABLED=true` | `.env.example` key set (integration notes I) |
-| Live-provider eval runs in the pipeline | Fixture baseline in CI; live runs are an owner step | No provider credentials or network in CI (integration notes D1/D2; `evals.test.ts` header) |
+| Live-provider eval runs in the pipeline | Fixture baseline on every CI run; the live gate runs nightly in `ai-eval.yml` against `staging` and fails with "External credential required" until the owner adds the credentials | PR CI has no provider credentials or network (integration notes D1/D2); the nightly workflow is the credentialed path (GAP-4) |
+| Eval results in their own table | Stored on `prompt_versions.eval_*` and `ai_model_config.eval_status`, eval calls as `ai_requests` rows with `feature_variant = 'eval'` | DATABASE_AND_RLS_PLAN §4.4 names these columns and no eval table (GAP-4) |
+| TEST_PLAN §13 `ai-eval` pass rule: `injection_suspected` recall ≥ 0.9 and triage macro-F1 not below the previous active version | Absolute gates: macro-F1 ≥ 0.85 and injection flagged ≥ 0.75 (the T0 prescan, the same in fixture and live runs) | The gates are the ones the fixture baseline already enforces (`evals.test.ts`), so fixture and live runs share one threshold set; the relative macro-F1 rule was not built in GAP-4 (each stored report keeps its gate values, which such a rule would compare) |
+| Every golden set gates model changes (§16.3) | Six prompt-keyed suites run in the `ai_eval` job; retrieval, grounding, assistant-claims and speech sets do not | Embedding and speech routes have no prompt version to record a report on; the grounding and claims sets need an `assistant` suite, not built in GAP-4 (they keep their fixture gates) |
 | `GET /ai/models` without the voice rows (first admin build) | Voice rows (`stt`, `tts`) with role and per-profile cost estimate are returned | Closed in the backoffice gap pass (commit `4829722`, integration notes G2) |
 | `ANTHROPIC_API_BASE_URL`, `OPENAI_API_BASE_URL`, `VOYAGE_API_BASE_URL` not specified | Test-only overrides for the mock provider server, refused in preview and production | Integration tier (commits `85bb05c`, `0303b2c`) |

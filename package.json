@@ -48,6 +48,7 @@
     "functions:lock": "node scripts/functions/deno-tasks.ts lock",
     "ai:prompts": "node scripts/gen-prompt-migration.ts",
     "ai:eval": "node scripts/gen-prompt-migration.ts --check && deno test --config supabase/functions/deno.json --allow-env --allow-read --no-prompt supabase/functions/_shared/ai/evals",
+    "ai:eval:live": "deno run --config supabase/functions/deno.json --lock=supabase/functions/deno.lock --frozen --allow-env --allow-read --allow-net --no-prompt supabase/functions/_shared/system/ai-eval-cli.ts",
     "docs:generate": "node scripts/docs/gen-db-reference.ts && node scripts/docs/gen-ai-prompts.ts && node scripts/docs/gen-ai-routing.ts",
     "docs:check": "node scripts/docs/gen-db-reference.ts --check && node scripts/docs/gen-ai-prompts.ts --check && node scripts/docs/gen-ai-routing.ts --check"
   },

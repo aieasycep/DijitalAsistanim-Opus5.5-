@@ -136,7 +136,19 @@ export interface MockPromptVersion {
   requests: number;
   error_rate: number;
   feedback_positive_rate: number | null;
+  /** The last eval gate run (`GET /ai/prompts/:key/versions/:v` → `eval`). */
+  eval?: Row<typeof A.PromptEvalSummary> | null;
 }
+
+/** The prompt keys with a golden eval set (`_shared/ai/evals/keys.ts`). */
+export const EVAL_PROMPT_KEYS: ReadonlySet<string> = new Set([
+  'email_classification',
+  'post_meeting',
+  'meeting_prep',
+  'assistant_intent',
+  'reply_draft',
+  'capture',
+]);
 
 export interface MockFlag {
   row: Row<typeof A.FlagRow>;
@@ -547,6 +559,18 @@ function buildPrompts(now: number): Dataset['prompts'] {
         requests: 42_310,
         error_rate: 0.009,
         feedback_positive_rate: 0.87,
+        eval: EVAL_PROMPT_KEYS.has(key)
+          ? {
+              passed: true,
+              mode: 'live',
+              dataset_version: 'sha256:5f0c2a91d4e7b836',
+              finished_at: at(now, -1 * DAY),
+              targets: [
+                { provider: 'anthropic', model: 'mock-primary', passed: true },
+                { provider: 'openai', model: 'mock-fallback', passed: true },
+              ],
+            }
+          : null,
       },
     ];
     if (key === 'briefing_morning') {

@@ -1632,6 +1632,14 @@ export const adminFixtures = {
         output_schema: 'ReplyDraftsV1',
         schema_hash: SHA,
         notes: null,
+        eval: {
+          passed: true,
+          mode: 'live',
+          dataset_version: 'sha256:0123456789abcdef',
+          finished_at: '2026-09-28T01:52:00Z',
+          targets: [{ provider: 'anthropic', model: 'primary', passed: true }],
+        },
+        eval_available: true,
       }),
     },
     invalid: [
@@ -1689,6 +1697,25 @@ export const adminFixtures = {
     invalid: [
       { part: 'body', why: 'fixture set required', value: {} },
       response(ok({ cases: 20, schema_pass_rate: 1.5, grounding_pass_rate: 1 }), 'rate above 1'),
+    ],
+  },
+  'POST /ai/prompts/:key/versions/:v/eval': {
+    valid: {
+      params: { key: 'reply_draft', v: '3' },
+      body: { reason: REASON },
+      response: ok({
+        key: 'reply_draft',
+        version: 3,
+        job: {
+          job_id: '0190f5e0-0000-7000-8000-00000000e003',
+          status: 'queued',
+          poll_after_ms: 1500,
+        },
+      }),
+    },
+    invalid: [
+      { part: 'body', why: 'reason required', value: {} },
+      response(ok({ key: 'reply_draft', version: 3 }), 'job missing'),
     ],
   },
   'POST /ai/prompts/:key/versions/:v/activate': {

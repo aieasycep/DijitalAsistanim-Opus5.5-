@@ -114,6 +114,28 @@ describe('W-REF-01 referral landing (PUB-04)', () => {
     expect(String(fetch.mock.calls[0]?.[0])).toContain(`/referrals/${VALID}`);
   });
 
+  it('says rewards are paused instead of promising Pro while the reward kill switch is off', async () => {
+    stubReferral(200, { ...referralData(true), rewards_enabled: false });
+    const root = await renderServer(await referralPage(VALID));
+    expect(root.querySelector('[data-testid="referral-reward"]')).toBeNull();
+    const paused = root.querySelector('[data-testid="referral-reward-paused"]');
+    expect(textOf(paused)).toContain('Davet ödülleri şu anda verilmiyor.');
+    expect(textOf(paused)).not.toMatch(/Pro/);
+    expect(paused?.querySelector('a')?.getAttribute('href')).toBe('/terms#davet');
+    // The code still applies: the code card, the steps and the store links stay.
+    expect(textOf(root.querySelector('[data-testid="referral-code"]'))).toContain(VALID);
+    expect(root.querySelectorAll('ol li')).toHaveLength(3);
+    expect(EN.webPages.referral.rewardPaused).toContain('Referral rewards are paused right now.');
+    expect(EN.webPages.referral.rewardPaused).not.toMatch(/Pro/);
+  });
+
+  it('an explicit rewards_enabled:true keeps the reward line', async () => {
+    stubReferral(200, { ...referralData(true), rewards_enabled: true });
+    const root = await renderServer(await referralPage(VALID));
+    expect(textOf(root.querySelector('[data-testid="referral-reward"]'))).toContain('14 gün Pro');
+    expect(root.querySelector('[data-testid="referral-reward-paused"]')).toBeNull();
+  });
+
   it('offers an Android intent link on Android and never promises a reward it could not confirm', async () => {
     requestHeaders.current = new Headers({ 'user-agent': ANDROID_UA });
     stubReferral(503);

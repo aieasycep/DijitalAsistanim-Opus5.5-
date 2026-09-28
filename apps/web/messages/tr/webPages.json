@@ -613,6 +613,7 @@
     },
     "android": "Android'de bu sayfadaki Google Play bağlantısıyla indirirsen kod uygulamada hazır gelir.",
     "reward": "Koşullar sağlandığında ikiniz de {days} gün Pro kazanırsınız. <terms>Davet koşulları</terms>",
+    "rewardPaused": "Davet ödülleri şu anda verilmiyor. Kodu uygulamada yine de ekleyebilirsin. <terms>Davet koşulları</terms>",
     "unverified": "Davet kodun: {code}. Kodu uygulamada eklediğinde geçerliliği kontrol edilir.",
     "openInApp": "Uygulamada aç",
     "invalidTitle": "Bu davet bağlantısı geçerli değil.",

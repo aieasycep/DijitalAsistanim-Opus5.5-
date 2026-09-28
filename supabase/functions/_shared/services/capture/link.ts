@@ -54,14 +54,99 @@ export function decodeTitleEntities(value: string): string {
   });
 }
 
-function titleOf(html: string): string | null {
-  const og =
-    /<meta[^>]+property=["']og:title["'][^>]*content=["']([^"']{1,300})["']/i.exec(html) ??
-    /<meta[^>]+content=["']([^"']{1,300})["'][^>]*property=["']og:title["']/i.exec(html);
-  const title = og?.[1] ?? /<title[^>]*>([^<]{1,300})<\/title>/i.exec(html)?.[1];
+const TITLE_MAX = 300;
+
+/** ASCII-only lower case: the same length as the input, so indices stay aligned. */
+function asciiLower(value: string): string {
+  return value.replace(/[A-Z]/g, (c) => c.toLowerCase());
+}
+
+const SPACE = new Set([' ', '\t', '\n', '\f', '\r']);
+const NAME_END = new Set([...SPACE, '"', "'", '<', '>', '/', '=']);
+
+/**
+ * One tag's attributes (names lower-cased, first occurrence wins) by a single forward pass over
+ * the tag text: no regex, so no backtracking on a long attribute-free run.
+ */
+function tagAttributes(tag: string): Map<string, string> {
+  const out = new Map<string, string>();
+  const n = tag.length;
+  const skipSpace = (from: number): number => {
+    let i = from;
+    while (i < n && SPACE.has(tag[i] ?? '')) i++;
+    return i;
+  };
+  let i = 0;
+  while (i < n) {
+    while (i < n && (SPACE.has(tag[i] ?? '') || tag[i] === '/')) i++;
+    const start = i;
+    while (i < n && !NAME_END.has(tag[i] ?? '')) i++;
+    if (i === start) {
+      i++;
+      continue;
+    }
+    const name = asciiLower(tag.slice(start, i));
+    i = skipSpace(i);
+    let value = '';
+    if (tag[i] === '=') {
+      i = skipSpace(i + 1);
+      const quote = tag[i];
+      if (quote === '"' || quote === "'") {
+        const end = tag.indexOf(quote, i + 1);
+        value = end === -1 ? tag.slice(i + 1) : tag.slice(i + 1, end);
+        i = end === -1 ? n : end + 1;
+      } else {
+        const from = i;
+        while (i < n && !SPACE.has(tag[i] ?? '')) i++;
+        value = tag.slice(from, i);
+      }
+    }
+    if (!out.has(name)) out.set(name, value);
+  }
+  return out;
+}
+
+/**
+ * The `og:title` meta content, else the `<title>` text (each ≤ 300 characters). A single forward
+ * scan: every `<meta` / `<title` start is found with `indexOf` and the scan resumes after that
+ * tag's `>`, so a crafted page (thousands of unclosed `<meta` or `<title` openers in the 64 KiB
+ * preview) costs linear time; the former `<meta[^>]+…` regexes backtracked quadratically there.
+ */
+export function titleOf(html: string): string | null {
+  const lower = asciiLower(html);
+  let og: string | undefined;
+  for (let at = lower.indexOf('<meta'); at !== -1;) {
+    const close = lower.indexOf('>', at);
+    if (close === -1) break;
+    const attrs = tagAttributes(html.slice(at + 5, close));
+    const content = attrs.get('content');
+    if (
+      asciiLower(attrs.get('property') ?? '') === 'og:title' &&
+      content !== undefined &&
+      content.length >= 1 &&
+      content.length <= TITLE_MAX
+    ) {
+      og = content;
+      break;
+    }
+    at = lower.indexOf('<meta', close);
+  }
+  let title = og;
+  for (let at = title === undefined ? lower.indexOf('<title') : -1; at !== -1;) {
+    const close = lower.indexOf('>', at);
+    if (close === -1) break;
+    const end = html.indexOf('<', close + 1);
+    if (end === -1) break;
+    const text = html.slice(close + 1, end);
+    if (text.length >= 1 && text.length <= TITLE_MAX && lower.startsWith('</title>', end)) {
+      title = text;
+      break;
+    }
+    at = lower.indexOf('<title', end);
+  }
   if (title === undefined) return null;
   const clean = decodeTitleEntities(title).replace(/\s+/g, ' ').trim();
-  return clean === '' ? null : clean.slice(0, 300);
+  return clean === '' ? null : clean.slice(0, TITLE_MAX);
 }
 
 /** Title and domain only; any failure is `null` (never an error). */

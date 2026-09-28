@@ -414,3 +414,44 @@ describe('acceptInviteAction (§3.5)', () => {
     );
   });
 });
+
+/*
+ * ZAP 10202 "Absence of Anti-CSRF Tokens" on the login form (security-nightly): the sign-in forms
+ * carry no token because every sign-in action re-checks the Origin itself (the proxy checks it
+ * first) and the auth cookies are `SameSite=Strict`. A foreign or missing Origin must be refused
+ * by the action alone, even when no `Sec-Fetch-Site` header is sent (older browsers, scripted
+ * clients), before any admin-api or Supabase Auth call.
+ */
+describe('Origin re-check on every sign-in action (CSRF without a form token)', () => {
+  const actions: readonly [string, () => Promise<AuthFormState>][] = [
+    ['requestCodeAction', () => requestCodeAction(idle, form({ email: 'ops@dijitalasistan.app' }))],
+    ['resendCodeAction', () => resendCodeAction(idle)],
+    ['verifyCodeAction', () => verifyCodeAction(idle, form({ code: '123456' }))],
+    ['verifyMfaAction', () => verifyMfaAction(idle, form({ code: '123456' }))],
+    ['retryRecoveryCodesAction', () => retryRecoveryCodesAction(idle, form({ next: '/' }))],
+    [
+      'redeemRecoveryCodeAction',
+      () => redeemRecoveryCodeAction(idle, form({ code: 'ABCD-EFGH-IJKL' })),
+    ],
+    ['acceptInviteAction', () => acceptInviteAction(idle, form({ token: 'x'.repeat(43) }))],
+  ];
+  const origins: readonly [string, Headers][] = [
+    ['a foreign Origin', new Headers({ origin: 'https://evil.example' })],
+    ['a look-alike Origin', new Headers({ origin: 'http://localhost:3100.evil.example' })],
+    ['an opaque Origin', new Headers({ origin: 'null' })],
+    ['no Origin', new Headers()],
+  ];
+  const cases = actions.flatMap(([name, run]) =>
+    origins.map(([label, headers]) => [name, label, run, headers] as const),
+  );
+
+  it.each(cases)('%s refuses %s', async (_name, _label, run, headers) => {
+    request.headers = headers;
+    await writeLoginStep({ email: 'ops@dijitalasistan.app', sentAt: Date.now(), next: '/' });
+    expect(await run()).toEqual({ status: 'error', messageKey: 'errors.csrf' });
+    expect(api.calls).toEqual([]);
+    expect(auth.signInWithOtp).not.toHaveBeenCalled();
+    expect(auth.verifyOtp).not.toHaveBeenCalled();
+    expect(auth.mfa.challengeAndVerify).not.toHaveBeenCalled();
+  });
+});

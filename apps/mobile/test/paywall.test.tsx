@@ -321,6 +321,94 @@ describe('M-REF-01 / M-REF-02 referral', () => {
     });
     expect(events('referral_code_applied').map((e) => e.props.result)).toEqual(['self', 'applied']);
   });
+
+  const rewardsOff = (created?: string) => {
+    const base = bootstrap();
+    return bootstrap({
+      config: { ...base.config, referral_rewards_enabled: false },
+      ...(created === undefined ? {} : { profile: { ...base.profile, created_at: created } }),
+    });
+  };
+
+  it('promises no Pro reward while referral rewards are off; the code still applies', async () => {
+    const share = jest.spyOn(Share, 'share').mockResolvedValue({ action: Share.sharedAction });
+    await openApp({
+      path: '/settings/referral',
+      data: rewardsOff(),
+      routes: {
+        'GET /referrals/me': () =>
+          json(200, ok({ ...REFERRAL_ME, referred_by: { status: 'pending' } })),
+      },
+    });
+    expect(await screen.findByText('dijitalasistan.app/r/K7M2P9Q')).toBeTruthy();
+    expect(screen.getByText(/Dijital Asistan'ı arkadaşlarınla paylaş\./)).toBeTruthy();
+    expect(screen.getByText(/Davet ödülleri şu anda verilmiyor\. Arkadaşın/)).toBeTruthy();
+    expect(screen.queryByText(/İkiniz de 14 gün Pro kazanın/)).toBeNull();
+    expect(screen.getByText('Katıldı')).toBeTruthy();
+    expect(
+      screen.getByText('Toplam kazanılan: 14 gün Pro · Davet ödülleri şu anda verilmiyor.'),
+    ).toBeTruthy();
+    expect(
+      screen.getByText('Davet ödülleri şu anda verilmiyor; davet kodun hesabında kayıtlı.'),
+    ).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('referral.share'));
+    await waitFor(() => {
+      expect(share).toHaveBeenCalled();
+    });
+    const message = (share.mock.calls[0]?.[0] as { message: string }).message;
+    expect(message).toContain('https://dijitalasistan.app/r/K7M2P9Q');
+    expect(message).not.toMatch(/Pro/);
+  });
+
+  it('applies a code with rewards off and confirms it without a Pro promise', async () => {
+    const created = new Date(Date.now() - 2 * 86_400_000).toISOString();
+    await openApp({
+      path: '/settings/referral?code=K7M2P9Q',
+      data: rewardsOff(created),
+      routes: {
+        'GET /referrals/me': () => json(200, ok(REFERRAL_ME)),
+        'POST /referrals/apply': () =>
+          json(
+            201,
+            ok({
+              referral_id: uuid(703),
+              status: 'pending',
+              reward_days: 14,
+              qualification: {
+                onboarding_completed: true,
+                account_connected: true,
+                first_briefing_delivered: false,
+                eligible_after: '2026-09-26T08:00:00Z',
+              },
+            }),
+          ),
+      },
+    });
+    expect(await screen.findByTestId('sheet.referralCode')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('referralCode.apply'));
+    expect(await screen.findByText('Davet kodu eklendi.')).toBeTruthy();
+    expect(screen.queryByText(/ikiniz de Pro kazanacaksınız/)).toBeNull();
+  });
+
+  it('the Settings hub referral row shows "+14 gün" while rewards are on', async () => {
+    await openApp({ path: '/settings' });
+    await screen.findByTestId('screen.settings');
+    expect(await screen.findByText(/\+14 gün/i)).toBeTruthy();
+  });
+
+  it('the Settings hub referral row drops "+14 gün" while rewards are off', async () => {
+    await openApp({ path: '/settings', data: rewardsOff() });
+    await screen.findByTestId('screen.settings');
+    expect(await screen.findByTestId('hub.row.referral')).toBeTruthy();
+    expect(screen.queryByText(/\+14 gün/i)).toBeNull();
+  });
+
+  it('Help answers the referral question without the reward while rewards are off', async () => {
+    await openApp({ path: '/settings/help?faq=referral', data: rewardsOff() });
+    await screen.findByTestId('screen.settings.help');
+    expect(await screen.findByText(/Davet ödülleri şu anda verilmiyor\./)).toBeTruthy();
+    expect(screen.queryByText(/ikiniz de 14 gün Pro kazanırsınız/)).toBeNull();
+  });
 });
 
 describe('pending referral codes', () => {

@@ -232,6 +232,10 @@ const WRITES: [RouteKey, Sample][] = [
     { params: { key: 'briefing_morning', v: '3' }, body: { fixture_set: 'golden' } },
   ],
   [
+    'POST /ai/prompts/:key/versions/:v/eval',
+    { params: { key: 'post_meeting', v: '2' }, body: { reason: REASON } },
+  ],
+  [
     'POST /ai/prompts/:key/versions/:v/activate',
     { params: { key: 'briefing_morning', v: '3' }, body: { reason: REASON, confirm: true } },
   ],

@@ -14,6 +14,7 @@ import { isForbiddenModel } from '@da/validation/admin/ai';
 
 import { ADMIN_EMAIL, ADMIN_ID, chartPoints, dashboardMetrics, searchResults } from './fixtures.ts';
 import {
+  EVAL_PROMPT_KEYS,
   MAIN_USER_ID,
   buildDataset,
   displayName,
@@ -1534,6 +1535,8 @@ const handlers: Partial<Record<RouteKey, Handler>> = {
       output_schema: version.output_schema,
       schema_hash: 'c'.repeat(64),
       notes: version.notes,
+      eval: version.eval ?? null,
+      eval_available: EVAL_PROMPT_KEYS.has(params.key ?? ''),
     });
   },
   'POST /ai/prompts/:key/versions': ({ params, body, now }) => {
@@ -1574,6 +1577,18 @@ const handlers: Partial<Record<RouteKey, Handler>> = {
       ?.some((v) => v.version === Number(params.v)) === true
       ? ok({ cases: 24, schema_pass_rate: 1, grounding_pass_rate: 0.958 })
       : notFound(),
+  'POST /ai/prompts/:key/versions/:v/eval': ({ params, now }) => {
+    const version = d()
+      .prompts.get(params.key ?? '')
+      ?.find((v) => v.version === Number(params.v));
+    if (version === undefined) return notFound();
+    if (!EVAL_PROMPT_KEYS.has(params.key ?? '')) return conflict('no_eval_set');
+    if (version.status === 'archived') return conflict('archived');
+    return ok(
+      { key: params.key, version: version.version, job: jobRef(now, 'ai_eval', null) },
+      202,
+    );
+  },
   'POST /ai/prompts/:key/versions/:v/activate': ({ params, now }) => {
     const versions = d().prompts.get(params.key ?? '');
     const version = versions?.find((v) => v.version === Number(params.v));

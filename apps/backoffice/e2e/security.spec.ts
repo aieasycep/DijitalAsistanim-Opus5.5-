@@ -46,6 +46,9 @@ test.describe('security boundary', () => {
     expect(headers['x-frame-options']).toBe('DENY');
     expect(headers['x-content-type-options']).toBe('nosniff');
     expect(headers['referrer-policy']).toBe('no-referrer');
+    expect(headers['cross-origin-opener-policy']).toBe('same-origin');
+    expect(headers['cross-origin-embedder-policy']).toBe('require-corp');
+    expect(headers['cross-origin-resource-policy']).toBe('same-origin');
     expect(headers['cache-control']).toContain('no-store');
     const html = await response.text();
     const nonce = /'nonce-([^']+)'/.exec(csp)?.[1] ?? '';

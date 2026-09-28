@@ -57,5 +57,28 @@
     "windowClosed": "An invite code can only be added within 7 days of signing up.",
     "alreadyApplied": "You already used an invite code.",
     "failed": "The code could not be applied. Try again."
+  },
+  "rewardsOff": {
+    "headline": "Share Dijital Asistan with your friends.",
+    "body": "Referral rewards are paused right now. Your friend can still join with your link and add your code.",
+    "shareMessage": "Dijital Asistan tells you what you need to know today, before you ask. Join with this link: {url}",
+    "refereeReward": "Referral rewards are paused right now; your invite code is saved on your account.",
+    "codeSheetSuccess": "Invite code added.",
+    "footer": "Earned in total: {days} days of Pro · Referral rewards are paused right now.",
+    "faqAnswer": "You can share your invite link; your friend can add your code within {window, plural, one {# day} other {# days}} of signing up. Referral rewards are paused right now.",
+    "statusMeta": {
+      "pending": "Joined",
+      "flagged": "Under review",
+      "qualified": "Conditions met",
+      "rewarded": "Reward granted",
+      "rejected": "Conditions not met"
+    },
+    "badges": {
+      "pending": "Pending",
+      "flagged": "Pending",
+      "qualified": "Completed",
+      "rewarded": "+{days} days",
+      "rejected": "Not valid"
+    }
   }
 }

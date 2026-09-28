@@ -1,5 +1,6 @@
 /**
- * Quality gate (DELIVERY_CHECKLIST §5, QG-01…QG-27, SG-1…SG-2 source checks; M§100, M§133, R-17).
+ * Quality gate (DELIVERY_CHECKLIST §5, QG-01…QG-27 with QG-16b, SG-1…SG-2 source checks; M§100,
+ * M§133, R-17).
  * Runs every module in `checks/`, prints a console report and writes `quality-gate.json`
  * (`[{id, file, line, match}]`). Exits 1 when anything is found.
  *
@@ -17,6 +18,7 @@ import { copy } from './checks/copy.ts';
 import { database } from './checks/database.ts';
 import { enforcement } from './checks/enforcement.ts';
 import { i18nKeys } from './checks/i18n-keys.ts';
+import { inventoryCheck } from './checks/inventory.ts';
 import { markers } from './checks/markers.ts';
 import { product } from './checks/product.ts';
 import { repo } from './checks/repo.ts';
@@ -42,6 +44,7 @@ export const CHECKS: readonly Check[] = [
   product,
   retired,
   i18nKeys,
+  inventoryCheck,
 ];
 
 /** Every finding of every check over the repository at `root`, sorted by id, file, line. */

@@ -112,7 +112,7 @@ What blocks a merge at `ec14e92` (CI [`ci.yml`](../.github/workflows/ci.yml); co
 | Edge security suite | `pnpm functions:test`, `pnpm functions:coverage` | `supabase/functions/tests/security/*.test.ts` (the checklist above) without network permission; the `_shared` line-coverage gate |
 | SQL threat suite | Tier A in CI, `bash scripts/db/tier-c.sh` locally | `300_threats_*.test.sql` and the RLS and privilege invariants (`002_global_invariants`, `150_column_grants`, `120_admin_rbac`) |
 | Migration lint | `pnpm db:lint`; `supabase db lint` in tier A | squawk rules; `plpgsql_check` errors |
-| Env split and headers | `pnpm check:env-split` ([`check-env-split.ts`](../scripts/security/check-env-split.ts)) | `EXPO_PUBLIC_*` / `NEXT_PUBLIC_*` keys tagged server-only, client schemas or client code naming a server-only key, missing security headers (HSTS, `nosniff`, frame denial, COOP, Permissions-Policy, Referrer-Policy, CSP `frame-ancestors 'none'`; for the backoffice also `noindex`, `no-store` and CORP) |
+| Env split and headers | `pnpm check:env-split` ([`check-env-split.ts`](../scripts/security/check-env-split.ts)) | `EXPO_PUBLIC_*` / `NEXT_PUBLIC_*` keys tagged server-only, client schemas or client code naming a server-only key, missing security headers (HSTS, `nosniff`, frame denial, COOP, Permissions-Policy, Referrer-Policy, CSP `frame-ancestors 'none'`; for the backoffice also `noindex`, `no-store`, CORP and COEP `require-corp`) |
 | Bundle scan | `pnpm scan:bundles` (CI `security` job after building web and backoffice and exporting the mobile bundle) | Secret-shaped values in browser bundles and prerendered server output; server-only key names in browser code |
 | Integration | `pnpm test:integration` (CI) | OAuth, webhook, approval, privacy and AI flows through the real functions against mock providers |
 | Deploy | [`scripts/deploy/check-secrets.ts`](../scripts/deploy/check-secrets.ts) in `deploy-supabase.yml` | Missing boot, production or deploy-job secret names on the hosted project (names only, never values) |
@@ -146,7 +146,9 @@ What blocks a merge at `ec14e92` (CI [`ci.yml`](../.github/workflows/ci.yml); co
   admin recovery codes are stored as HMAC hashes only.
 - **Rotation:** token keys are versioned (`TOKEN_ENC_KEY_V{n}` + `TOKEN_ENC_ACTIVE_VERSION`) and
   `credential_reencrypt` moves rows to the active key; other secrets are replaced in the secret store
-  and redeployed (`CRON_SECRET` also in Vault through the deploy job). `MICROSOFT_CERT_NOT_AFTER`,
+  and redeployed (`CRON_SECRET` also in Vault through the deploy job). The Sign in with Apple web
+  client secret is minted from the SIWA key and rotated on a schedule (`rotate-siwa-secret.yml`,
+  exp ≤ 180 days; the key and token are never printed). `MICROSOFT_CERT_NOT_AFTER`,
   `MICROSOFT_LOGIN_SECRET_NOT_AFTER` and `APPLE_SIWA_WEB_SECRET_NOT_AFTER` appear as expiry cards
   on the backoffice health summary, and the `microsoft_oauth` probe turns `degraded` 30 days before
   the certificate expires. Procedures: [DEPLOYMENT.md](DEPLOYMENT.md).
@@ -158,4 +160,5 @@ What blocks a merge at `ec14e92` (CI [`ci.yml`](../.github/workflows/ci.yml); co
 | Plan | As built | Reason (source) |
 |---|---|---|
 | `pnpm audit` gate, Dependabot, SHA-pinned Actions, a `deno.lock` per function and gitleaks on history (CTL-3.19, THR-16, THR-17) | The audit gate (nightly, dated allow-list), Dependabot version updates, SHA-pinned Actions and the gitleaks history scan are in place; one committed `supabase/functions/deno.lock` covers every function (their graphs are subsets of the workspace graph) and the generated per-function `deno.json` files stay lock-free | The audit gate runs nightly rather than per PR so a newly published advisory does not block unrelated changes (TEST_PLAN §18 `security-nightly`); one lock keeps the nine functions on the same resolved versions, and the deployed configs stay free of a lock path the hosted bundler would have to read (`scripts/functions/sync-import-maps.ts`) |
+| Backoffice CSRF token on the login form (ZAP baseline "Absence of Anti-CSRF Tokens") | No form token: `SameSite=Strict` auth cookies plus the `Origin` / `Sec-Fetch-Site` check in `proxy.ts` and again in every server action, sign-in steps included | Server actions carry no form token; the double Origin check is the control CTL-3.8 names, and a test rejects foreign, look-alike, opaque and missing origins on all sign-in actions ([BACKOFFICE.md](BACKOFFICE.md#cookies-and-headers)) |
 | The SSRF fetcher connects to the vetted address | The runtime `fetch` resolves the name again (Deno cannot pin an IP while keeping SNI) | Platform limit; residual DNS-rebinding window (THR-07) |

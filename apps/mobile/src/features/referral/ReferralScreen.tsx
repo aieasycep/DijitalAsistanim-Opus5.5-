@@ -4,6 +4,8 @@
  * referral statuses with masked labels, rewards and the yearly cap; a new user (≤ 7 days, not yet
  * referred) can enter a code (`POST /referrals/apply`), prefilled from a deep link or a pending
  * install-referrer code. Copy and share work offline from the cached link; applying is blocked.
+ * With `config.referral_rewards_enabled` off (the reward kill switch) the headline, share text,
+ * statuses, badges, footer and toast use the `referral.rewardsOff.*` copy: no Pro promise.
  */
 import { referralMeQueryOptions, useBootstrap } from '@da/api-client/react';
 import { REFERRAL_CODE_PATTERN } from '@da/validation/api/business';
@@ -56,10 +58,13 @@ export function CodeSheet({
   initialCode,
   source,
   onDismiss,
+  rewardsOn = true,
 }: {
   readonly initialCode: string;
   readonly source: ReferralSource;
   readonly onDismiss: () => void;
+  /** `config.referral_rewards_enabled`: off → no Pro promise in the success toast. */
+  readonly rewardsOn?: boolean;
 }) {
   const t = useTranslations();
   const online = useOnline();
@@ -106,7 +111,14 @@ export function CodeSheet({
               void applyReferralCode(code, source, key).then((result) => {
                 setBusy(false);
                 if (result === 'applied') {
-                  showToast({ message: t('referral.codeSheet.success'), kind: 'success' });
+                  showToast({
+                    message: t(
+                      rewardsOn
+                        ? 'referral.codeSheet.success'
+                        : 'referral.rewardsOff.codeSheetSuccess',
+                    ),
+                    kind: 'success',
+                  });
                   onDismiss();
                 } else setError(messageOf(result));
               });
@@ -153,6 +165,9 @@ export function ReferralScreen() {
   const t = useTranslations();
   const params = useLocalSearchParams<{ code?: string }>();
   const bootstrap = useBootstrap();
+  // The reward kill switch (`app_settings.referral.rewards_enabled`, STORE_CHECKLIST 3.1.1): when it
+  // is off nothing on this screen promises Pro; codes still apply and the statuses stay real.
+  const rewardsOn = bootstrap.data?.config.referral_rewards_enabled !== false;
   const query = useQuery(referralMeQueryOptions(getApiClient()));
   const data = query.data;
   const [sheet, setSheet] = useState<{ code: string; source: ReferralSource } | null>(() => {
@@ -189,7 +204,9 @@ export function ReferralScreen() {
 
   const share = () => {
     if (data === undefined) return;
-    const message = t('referral.shareMessage', { days: data.reward_days, url: data.share_url });
+    const message = rewardsOn
+      ? t('referral.shareMessage', { days: data.reward_days, url: data.share_url })
+      : t('referral.rewardsOff.shareMessage', { url: data.share_url });
     void Share.share(Platform.OS === 'ios' ? { message, url: data.share_url } : { message })
       .then((result) => {
         track('referral_shared', { completed: result.action === Share.sharedAction });
@@ -197,7 +214,10 @@ export function ReferralScreen() {
       .catch(() => undefined);
   };
 
-  const statusMeta = (status: Status) => t(`referral.statusMeta.${status}`);
+  const statusMeta = (status: Status) =>
+    t(rewardsOn ? `referral.statusMeta.${status}` : `referral.rewardsOff.statusMeta.${status}`);
+  const badge = (status: Status, days: number) =>
+    t(rewardsOn ? `referral.badges.${status}` : `referral.rewardsOff.badges.${status}`, { days });
 
   let body;
   if (data === undefined) {
@@ -242,7 +262,9 @@ export function ReferralScreen() {
           <View style={styles.referee} testID="referral.referee">
             <Text variant="rowTitle">{t('referral.referee.title')}</Text>
             <Text variant="bodySm" tone="secondary">
-              {t('referral.referee.reward', { days: data.reward_days })}
+              {rewardsOn
+                ? t('referral.referee.reward', { days: data.reward_days })
+                : t('referral.rewardsOff.refereeReward')}
             </Text>
           </View>
         )}
@@ -278,7 +300,7 @@ export function ReferralScreen() {
                 name={referral.label}
                 status={statusMeta(referral.status)}
                 pill={{
-                  label: t(`referral.badges.${referral.status}`, { days: data.reward_days }),
+                  label: badge(referral.status, data.reward_days),
                   tone: PILL[referral.status],
                 }}
                 testID={`referral.invite.${referral.id}`}
@@ -287,9 +309,11 @@ export function ReferralScreen() {
           </SettingsGroup>
         )}
         <Caption testID="referral.footer">
-          {data.remaining_this_year === 0
-            ? t('referral.capReached')
-            : t('referral.footer', { days: data.earned_days_total, cap: data.cap_per_year })}
+          {!rewardsOn
+            ? t('referral.rewardsOff.footer', { days: data.earned_days_total })
+            : data.remaining_this_year === 0
+              ? t('referral.capReached')
+              : t('referral.footer', { days: data.earned_days_total, cap: data.cap_per_year })}
         </Caption>
       </>
     );
@@ -298,7 +322,11 @@ export function ReferralScreen() {
   return (
     <SettingsPage
       title={t('referral.title')}
-      subtitle={`${t('referral.headline', { days: data?.reward_days ?? bootstrap.data?.config.referral_reward_days ?? 14 })} ${t('referral.body')}`}
+      subtitle={
+        rewardsOn
+          ? `${t('referral.headline', { days: data?.reward_days ?? bootstrap.data?.config.referral_reward_days ?? 14 })} ${t('referral.body')}`
+          : `${t('referral.rewardsOff.headline')} ${t('referral.rewardsOff.body')}`
+      }
       refreshing={query.isRefetching}
       onRefresh={() => {
         void query.refetch();
@@ -310,6 +338,7 @@ export function ReferralScreen() {
         <CodeSheet
           initialCode={shown.code}
           source={shown.source}
+          rewardsOn={rewardsOn}
           onDismiss={() => {
             setSheet(null);
             setPendingHandled(true);

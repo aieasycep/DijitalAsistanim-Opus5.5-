@@ -292,7 +292,7 @@ sequenceDiagram
 | `credential_reencrypt` | – | `da_reconciliation` once a day (00:00–06:00 UTC run) | [`_shared/services/credentials.ts`](../supabase/functions/_shared/services/credentials.ts) |
 | `health_check` | JOB-26 | `da_health_check` every 5 min | [`worker/handlers/health_check.ts`](../supabase/functions/worker/handlers/health_check.ts): runs the probes of `POST /health/run` in process (`checked_by = 'cron'`), writes `system_health_checks` and completes; a bucket older than 10 minutes completes without probing; a `down` probe is logged and reported to Sentry; only a failed write retries |
 | `embedding {mode:'reembed'}` | JOB-16 (DR) | Turning `ai.embedding_dr.reembed` on (trigger); each batch queues the next | [`worker/handlers/embedding_dr.ts`](../supabase/functions/worker/handlers/embedding_dr.ts) ([AI_PIPELINE.md](AI_PIPELINE.md#embeddings-and-retrieval)) |
-| `ai_eval` | – | Nothing | No worker definition (see [Known gaps](#known-gaps)) |
+| `ai_eval` | – (AI_PIPELINE_PLAN §5.4) | Backoffice "Değerlendirme çalıştır" (`admin_api.ai_eval_request`, one queued run per version and ISO week); each job queues its own continuation | [`worker/handlers/ai_eval.ts`](../supabase/functions/worker/handlers/ai_eval.ts): replays the key's golden sets on every configured target (pinned route, no budget or cache), ≤ 110 s per job, the report written through `public.ai_eval_record` ([AI_PIPELINE.md](AI_PIPELINE.md#evaluation)); the nightly `ai-eval.yml` runs the same suites from CI through `pnpm ai:eval:live` |
 
 ## Provider registry
 
@@ -330,7 +330,7 @@ back to its deterministic path. Details: [AI_PIPELINE.md](AI_PIPELINE.md).
 |---|---|---|
 | Structured logs | One JSON line per event from every function ([`_shared/logging/logger.ts`](../supabase/functions/_shared/logging/logger.ts)): `ts, level, fn, msg, correlation_id, request_id, job_id, user_hash` | E-mail addresses masked; tokens, JWTs, keys, PEM blocks and long base64 redacted; content-named fields dropped; bodies never logged |
 | Correlation | `X-Correlation-Id` accepted or generated per request; propagated into jobs and webhook-triggered jobs | Ids only |
-| Errors | Edge: a fetch-based Sentry adapter ([`_shared/observability/sentry.ts`](../supabase/functions/_shared/observability/sentry.ts)), no-op without `SENTRY_DSN`. Mobile: `@sentry/react-native` | Error type, scrubbed message, frames and tags; no bodies, headers or user identifiers |
+| Errors | Edge: a fetch-based Sentry adapter ([`_shared/observability/sentry.ts`](../supabase/functions/_shared/observability/sentry.ts)), no-op without `SENTRY_DSN`. Mobile: `@sentry/react-native`. Backoffice: `@sentry/nextjs` from `instrumentation.ts` (server, `SENTRY_DSN`) and the root layout (browser, `NEXT_PUBLIC_SENTRY_DSN`), both off without a DSN, scrubbed by [`lib/sentry-scrub.ts`](../apps/backoffice/src/lib/sentry-scrub.ts) | Error type, scrubbed message, frames and tags; no bodies, headers, cookies, e-mail addresses or user identifiers (ids masked); backoffice error boundaries tag the correlation id (digest) |
 | AI telemetry | `ai_requests` (one row per attempt), `ai_usage_daily`, `ai_metrics_daily` | Counts, costs, hashes and ids only |
 | Health | `health` probes write `system_health_checks` (database, storage, auth, cron, push, providers, AI, RevenueCat, webhooks, audit chain, …); the backoffice System Health page reads them | Status, latency and a detail code |
 | Product metrics | `analytics_events` (catalogue-validated, opt-out honoured): app events through API-ANL-01 and the API_CONTRACTS §17.1 backend events through the one server emitter ([`_shared/services/analytics/emit.ts`](../supabase/functions/_shared/services/analytics/emit.ts)); `metrics_daily` rollups every 15 minutes from `scheduler_tick` | No free text ([PRIVACY.md](PRIVACY.md#analytics)) |
@@ -340,11 +340,10 @@ back to its deterministic path. Details: [AI_PIPELINE.md](AI_PIPELINE.md).
 
 Observed in the code at `ec14e92`; they are not deliberate differences:
 
-- **`ai_eval`** exists in `job_type` but has no handler and no producer; evals run as tests
-  ([AI_PIPELINE.md](AI_PIPELINE.md#evaluation)). The `cron` health probe measures queue lag over the
-  job types the worker claims only
-  ([`_shared/jobs/worker-types.ts`](../supabase/functions/_shared/jobs/worker-types.ts); a registry
-  test keeps that list equal to the registered definitions), so an unclaimed type cannot inflate it.
+- None open for the job registry: every `job_type` has a worker definition since GAP-4 added
+  `ai_eval`. The `cron` health probe still measures queue lag over the claimed types only
+  ([`_shared/jobs/worker-types.ts`](../supabase/functions/_shared/jobs/worker-types.ts),
+  `UNCLAIMED_JOB_TYPES` is empty; a registry test keeps the list equal to the definitions).
 
 ## Differences from the plan
 

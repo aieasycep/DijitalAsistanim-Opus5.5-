@@ -1927,7 +1927,27 @@
       "archive": "Archive",
       "archiveTitle": "Archive draft v{v}?",
       "archiveEffects": "The draft moves to the archive; you can roll back to it later.",
-      "archived": "Draft archived."
+      "archived": "Draft archived.",
+      "runEval": "Run evaluation",
+      "evalTitle": "Run the evaluation for v{v}?",
+      "evalEffects": "The golden evaluation set runs on every configured model target and incurs provider cost. The result is stored on this version; for the active version the route status is updated too.",
+      "evalQueued": "Evaluation queued. The result appears on this page when it finishes."
+    },
+    "eval": {
+      "title": "Evaluation",
+      "never": "This version has not been evaluated yet.",
+      "result": "Result",
+      "passed": "Passed",
+      "failed": "Failed",
+      "mode": "Mode",
+      "modes": {
+        "live": "Live providers",
+        "fixture": "Fixed responses",
+        "fixture_baseline": "Fixed-response baseline"
+      },
+      "dataset": "Dataset version",
+      "finished": "Finished",
+      "targets": "Model targets"
     }
   },
   "aiFeedback": {

@@ -573,3 +573,36 @@ Deno.test(
     assert(!h.rpcNames().includes('settings_update'));
   },
 );
+
+// ── AI eval gate runs (ADM-09, AI_PIPELINE_PLAN §5.4) ────────────────────────
+
+Deno.test('eval: a prompt key without a golden set is a conflict before any SQL call', async () => {
+  const h = await createHarness();
+  const err = await errorOf(
+    await h.request('POST', '/ai/prompts/thread_summary/versions/2/eval', {
+      body: { reason: REASON },
+    }),
+  );
+  assertEquals([err.status, err.code], [409, 'STATE_CONFLICT']);
+  assert(!h.rpcNames().includes('ai_eval_request'));
+});
+
+Deno.test('eval: an archived or unknown version maps the SQL refusal', async () => {
+  for (const [sqlCode, message, status] of [
+    ['55000', 'STATE_CONFLICT', 409],
+    ['P0002', 'NOT_FOUND', 404],
+  ] as const) {
+    const h = await createHarness({
+      sql: {
+        ai_eval_request: () => {
+          throw new SqlError(sqlCode, message);
+        },
+      },
+    });
+    const res = await h.request('POST', '/ai/prompts/capture/versions/1/eval', {
+      body: { reason: REASON },
+    });
+    assertEquals(res.status, status);
+    assert(!h.calls.some((c) => c.url.includes('/functions/v1/worker/run')), 'no worker poke');
+  }
+});

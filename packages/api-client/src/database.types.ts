@@ -93,6 +93,10 @@ export type Database = {
         Args: { p_range: string; p_split?: string };
         Returns: Json;
       };
+      ai_eval_request: {
+        Args: { p_key: string; p_reason: string; p_version: number };
+        Returns: Json;
+      };
       ai_feedback_aggregate: {
         Args: { p_group?: string; p_range: string };
         Returns: Json;
@@ -6645,6 +6649,16 @@ export type Database = {
         Returns: undefined;
       };
       ai_cost_by_model: { Args: { p_day: string }; Returns: Json };
+      ai_eval_record: {
+        Args: {
+          p_dataset_version: string;
+          p_features: Database['public']['Enums']['ai_feature'][];
+          p_passed: boolean;
+          p_report: Json;
+          p_version: string;
+        };
+        Returns: Json;
+      };
       ai_org_budget_evaluate: { Args: { p_now?: string }; Returns: Json };
       apply_device_snapshot: {
         Args: { p_account: string; p_snapshot: Json };

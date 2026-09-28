@@ -52,9 +52,13 @@ export interface PublicRepo {
     pricing: unknown;
     updated_at: string | null;
   }>;
-  referralResolve(
-    code: string,
-  ): Promise<{ valid: boolean; reward_days: number; apply_window_days: number }>;
+  referralResolve(code: string): Promise<{
+    valid: boolean;
+    reward_days: number;
+    apply_window_days: number;
+    /** `referral.rewards_enabled` (migration 20260924003500); absent from an older database → on. */
+    rewards_enabled?: boolean;
+  }>;
   webAnalyticsIncrement(
     day: string,
     event: string,

@@ -105,10 +105,42 @@ export function roleKey(role: 'anon' | 'service_role', secret: string, issuer: s
   return mintHs256({ iss: issuer, role, iat, exp: iat + 6 * 3600 }, secret);
 }
 
+/**
+ * JWT-shaped values inside one run of `[A-Za-z0-9_.-]` characters, matched as the former global
+ * regex did: `eyJ`, a header up to the first dot, a non-empty payload up to the second dot, and a
+ * signature up to the next dot or the end of the run. `indexOf` steps visit each dot-delimited
+ * segment a constant number of times; the regex backtracked over every `eyJ` of a dot-free run,
+ * which is quadratic.
+ */
+function redactJwtRun(run: string): string {
+  let out = '';
+  let copied = 0;
+  let from = 0;
+  for (;;) {
+    const start = run.indexOf('eyJ', from);
+    if (start === -1) break;
+    const dot1 = run.indexOf('.', start + 3);
+    if (dot1 === -1) break;
+    const dot2 = run.indexOf('.', dot1 + 1);
+    if (dot2 === -1) break;
+    if (dot2 === dot1 + 1) {
+      // Empty payload: every `eyJ` before this dot fails the same way.
+      from = dot1 + 1;
+      continue;
+    }
+    const dot3 = run.indexOf('.', dot2 + 1);
+    const end = dot3 === -1 ? run.length : dot3;
+    out += `${run.slice(copied, start)}<jwt>`;
+    copied = end;
+    from = end;
+  }
+  return out + run.slice(copied);
+}
+
 /** Error bodies for logs: JWT-shaped values and `sb_secret_` / `sb_publishable_` keys masked. */
 export function redactSecrets(text: string): string {
   return text
-    .replace(/eyJ[A-Za-z0-9_-]*\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*/g, '<jwt>')
+    .replace(/[A-Za-z0-9_.-]+/g, redactJwtRun)
     .replace(/\bsb_(secret|publishable)_[A-Za-z0-9_-]+/g, 'sb_$1_<redacted>');
 }
 
