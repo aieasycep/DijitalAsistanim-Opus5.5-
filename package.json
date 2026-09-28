@@ -56,12 +56,12 @@
     "@da/config": "workspace:*",
     "@supabase/postgres-meta": "0.99.0",
     "@types/node": "24.13.6",
-    "deno": "2.1.4",
+    "deno": "2.9.6",
     "eslint": "9.39.5",
     "prettier": "3.9.9",
-    "squawk-cli": "2.65.0",
-    "supabase": "2.117.0",
-    "turbo": "2.11.3",
+    "squawk-cli": "2.66.0",
+    "supabase": "2.118.0",
+    "turbo": "2.11.4",
     "typescript": "catalog:",
     "yaml": "2.9.1"
   }
