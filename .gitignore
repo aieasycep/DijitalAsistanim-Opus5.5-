@@ -21,8 +21,7 @@ apps/mobile/android/
 *.ipa
 
 # env & credentials — never commit real secrets
-.env
-.env.*
+.env*
 !.env.example
 *.p8
 *.pem
@@ -40,6 +39,7 @@ supabase/.temp/
 supabase/.branches/
 
 # test output
+quality-gate.json
 playwright-report/
 test-results/
 blob-report/

@@ -1,0 +1,5 @@
+{
+  "scripts": {
+    "secret-scan": "node scripts/security/secret-scan.ts"
+  }
+}

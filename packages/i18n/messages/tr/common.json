@@ -237,5 +237,28 @@
     "proFeature": "Pro özelliği",
     "microphone": "Mikrofon",
     "decorative": "Görsel"
+  },
+  "source": {
+    "gmail": "Gmail",
+    "outlook": "Outlook",
+    "google_calendar": "Google Takvim",
+    "outlook_calendar": "Outlook Takvim",
+    "apple_calendar": "Apple Takvim",
+    "device_calendar": "Cihaz takvimi",
+    "google_tasks": "Google Görevler",
+    "microsoft_todo": "Microsoft To Do",
+    "apple_reminders": "Apple Anımsatıcılar",
+    "in_app": "Dijital Asistan",
+    "demo": "Demo",
+    "capture": "Yakalama",
+    "meeting_note": "Toplantı notu",
+    "phone_notification": "Telefon bildirimi",
+    "assistant": "Asistan",
+    "user": "Sen",
+    "commitment": "Taahhüt",
+    "life": "Kişisel",
+    "contact": "Kişi",
+    "briefing": "Brifing",
+    "feedback": "Geri bildirim"
   }
 }

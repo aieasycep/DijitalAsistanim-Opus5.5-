@@ -50,7 +50,8 @@ export function calibrateConfidence(f: CalibrationFeatures): number {
   return round3(Math.min(c, 0.99));
 }
 
-export type ConfidenceWording = 'assertive' | 'probably' | 'uncertain';
+export const CONFIDENCE_WORDING_VALUES = ['assertive', 'probably', 'uncertain'] as const;
+export type ConfidenceWording = (typeof CONFIDENCE_WORDING_VALUES)[number];
 
 /** ≥0.85 assertive; 0.70–0.85 "muhtemelen"; <0.70 "Emin değilim" / "Kaynakta kesinleşmiyor". */
 export function confidenceWording(confidence: number): ConfidenceWording {
@@ -59,9 +60,9 @@ export function confidenceWording(confidence: number): ConfidenceWording {
   return 'uncertain';
 }
 
-/** i18n key of the wording (`explain.confidence.*`). */
+/** i18n key of the wording (`explain.confidenceWording.*`). */
 export function confidenceWordingKey(confidence: number): string {
-  return `explain.confidence.${confidenceWording(confidence)}`;
+  return `explain.confidenceWording.${confidenceWording(confidence)}`;
 }
 
 /** Whether an actionable item may be created without confirmation. */

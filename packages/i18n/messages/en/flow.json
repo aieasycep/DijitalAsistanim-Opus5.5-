@@ -59,6 +59,9 @@
         "transactional": "A transactional notice (order, payment or reservation).",
         "security_unverified": "This security notice could not be verified; do not tap its links.",
         "awaiting_my_reply": "A reply is expected from you.",
+        "pending_ai": "No clear signal yet; waiting for the AI assessment.",
+        "bulk": "Marked as bulk mail.",
+        "informational": "An informational message.",
         "other": "Classified by deterministic signals."
       },
       "kind": {

@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { NOTIFICATION_CATEGORY_VALUES } from '../../src/enums.ts';
 import type { MessageParams } from '../../src/entities/message.ts';
@@ -10,6 +12,7 @@ import {
   ttlSecondsFor,
 } from '../../src/notifications/channels.ts';
 import {
+  PUSH_VARIANTS,
   pushData,
   pushMessageKeys,
   type PushTemplate,
@@ -22,20 +25,40 @@ const ID = '5b3a1c9e-2f4d-4a8b-9c7e-1d2f3a4b5c6d';
 
 /** A catalog stand-in: interpolates `{param}` into a fixed Turkish template per key. */
 const CATALOG: Record<string, string> = {
-  'push.generic.title': 'Dijital Asistan',
-  'push.generic.body': 'Yeni bir güncellemen var.',
-  'push.critical_email.full.title': '{sender} · {subject}',
-  'push.critical_email.full.body': '{action}',
-  'push.critical_email.title_only.title': 'Önemli e-posta',
-  'push.critical_email.title_only.body': 'Bugün cevaplaman gereken önemli bir mail var.',
-  'push.meeting.title_only.body': 'Toplantına {minutes} dakika kaldı.',
+  'push.critical_email.reply_needed.generic.title': 'Dijital Asistan',
+  'push.critical_email.reply_needed.generic.body': 'Yeni bir güncellemen var.',
+  'push.critical_email.reply_needed.full.title': '{sender} · {subject}',
+  'push.critical_email.reply_needed.full.body': '{action}',
+  'push.critical_email.reply_needed.title_only.title': 'Önemli e-posta',
+  'push.critical_email.reply_needed.title_only.body':
+    'Bugün cevaplaman gereken önemli bir mail var.',
+  'push.meeting.upcoming.title_only.body': 'Toplantına {minutes} dakika kaldı.',
 };
+
+/** The real `@da/i18n` push catalogs, flattened to dotted keys. */
+function catalogKeys(locale: 'tr' | 'en'): Set<string> {
+  const json = JSON.parse(
+    readFileSync(
+      fileURLToPath(new URL(`../../../i18n/messages/${locale}/push.json`, import.meta.url)),
+      'utf8',
+    ),
+  ) as Record<string, unknown>;
+  const out = new Set<string>();
+  const walk = (node: unknown, prefix: string): void => {
+    if (typeof node === 'string') out.add(prefix);
+    else if (typeof node === 'object' && node !== null)
+      for (const [k, v] of Object.entries(node)) walk(v, `${prefix}.${k}`);
+  };
+  walk(json, 'push');
+  return out;
+}
 const resolve = (key: string, params: MessageParams): string =>
   (CATALOG[key] ?? key).replace(/\{(\w+)\}/g, (_m, p: string) => String(params[p] ?? ''));
 
 describe('render() per detail mode (C-14)', () => {
   const input = {
     template: 'critical_email' as const,
+    variant: 'reply_needed',
     publicParams: { time: '17:00' },
     sensitiveParams: {
       sender: 'Ahmet Yılmaz',
@@ -54,7 +77,7 @@ describe('render() per detail mode (C-14)', () => {
   it('UT-NTF-11: title_only has no personal data', () => {
     const r = render({ ...input, mode: 'title_only' });
     expect(r.title).toEqual({
-      key: 'push.critical_email.title_only.title',
+      key: 'push.critical_email.reply_needed.title_only.title',
       params: { time: '17:00' },
     });
     const t = renderText({ ...input, mode: 'title_only' }, resolve);
@@ -64,8 +87,8 @@ describe('render() per detail mode (C-14)', () => {
 
   it('UT-NTF-12: generic is fixed copy with no params', () => {
     const r = render({ ...input, mode: 'generic' });
-    expect(r.title).toEqual({ key: 'push.generic.title', params: {} });
-    expect(r.body).toEqual({ key: 'push.generic.body', params: {} });
+    expect(r.title).toEqual({ key: 'push.critical_email.reply_needed.generic.title', params: {} });
+    expect(r.body).toEqual({ key: 'push.critical_email.reply_needed.generic.body', params: {} });
     const t = renderText({ ...input, mode: 'generic' }, resolve);
     expect([t.title, t.body]).toEqual(['Dijital Asistan', 'Yeni bir güncellemen var.']);
   });
@@ -86,6 +109,7 @@ describe('render() per detail mode (C-14)', () => {
         const t = renderText(
           {
             template,
+            variant: PUSH_VARIANTS[template][0] ?? '',
             mode,
             publicParams: { count: 3 },
             sensitiveParams: {
@@ -112,6 +136,7 @@ describe('render() per detail mode (C-14)', () => {
     const long = 'x'.repeat(80);
     const r = render({
       template: 'critical_email',
+      variant: 'reply_needed',
       mode: 'full',
       sensitiveParams: { subject: long },
       entityId: ID,
@@ -121,6 +146,7 @@ describe('render() per detail mode (C-14)', () => {
     const t = renderText(
       {
         template: 'critical_email',
+        variant: 'reply_needed',
         mode: 'full',
         sensitiveParams: { action: 'y'.repeat(500) },
         entityId: ID,
@@ -133,19 +159,30 @@ describe('render() per detail mode (C-14)', () => {
 
   it('public params appear in title_only (counts, minutes)', () => {
     const t = renderText(
-      { template: 'meeting', mode: 'title_only', publicParams: { minutes: 10 }, entityId: ID },
+      {
+        template: 'meeting',
+        variant: 'upcoming',
+        mode: 'title_only',
+        publicParams: { minutes: 10 },
+        entityId: ID,
+      },
       resolve,
     );
     expect(t.body).toBe('Toplantına 10 dakika kaldı.');
   });
 
-  it('lists every key render() can produce', () => {
+  it('lists every key render() can produce, each present in the tr and en catalogs', () => {
     const keys = pushMessageKeys();
-    expect(keys).toContain('push.generic.title');
-    expect(keys).toContain('push.weekly.full.body');
-    expect(keys).toContain('push.reminder.title_only.title');
+    expect(keys).toContain('push.critical_email.reply_needed.generic.title');
+    expect(keys).toContain('push.weekly.ready.full.body');
+    expect(keys).toContain('push.reminder.local.title_only.title');
     expect(new Set(keys).size).toBe(keys.length);
-    expect(keys).toHaveLength(2 + 12 * 4);
+    const variants = Object.values(PUSH_VARIANTS).reduce((n, v) => n + v.length, 0);
+    expect(keys).toHaveLength(variants * 6);
+    for (const locale of ['tr', 'en'] as const) {
+      const catalog = catalogKeys(locale);
+      expect(keys.filter((k) => !catalog.has(k))).toEqual([]);
+    }
   });
 });
 
@@ -210,7 +247,7 @@ describe('channels and interruption levels (R-12, UT-NTF-14)', () => {
     ]);
     for (const c of ANDROID_CHANNELS) {
       expect(c.lockscreenVisibility).toBe('private');
-      expect(c.nameKey).toBe(`notifications.channel.${c.id}`);
+      expect(c.nameKey).toBe(`push.channels.${c.id}.name`);
     }
     expect(ANDROID_CHANNELS.find((c) => c.id === 'critical_email')?.importance).toBe('high');
   });

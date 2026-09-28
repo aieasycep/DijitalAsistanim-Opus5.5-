@@ -78,5 +78,12 @@
     "remind": "Hatırlatıcıyı Kur · {time}"
   },
   "snoozeNotify": "Zamanı gelince bildir",
-  "permissionDenied": "Bildirim izni kapalı; hatırlatıcı kaydedilir ama bu cihazda bildirim gösterilemez."
+  "permissionDenied": "Bildirim izni kapalı; hatırlatıcı kaydedilir ama bu cihazda bildirim gösterilemez.",
+  "reason": {
+    "before_anchor": "{minutes} dakika önce · başlangıç {anchor_time}",
+    "evening_time": "Bu akşam · {time}",
+    "morning_time": "Yarın sabah · {time}",
+    "calendar_slot": "Takvimine göre: {time}",
+    "custom": "Seçtiğin zaman · {time}"
+  }
 }

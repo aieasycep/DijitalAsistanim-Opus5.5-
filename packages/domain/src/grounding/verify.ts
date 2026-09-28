@@ -219,7 +219,10 @@ export const DATE_WINDOW_PAST_DAYS = 365;
 export const DATE_WINDOW_FUTURE_DAYS = 730;
 export const AMOUNT_MAX_MINOR = 1_000_000_000_000;
 
-/** i18n key of the "Kaynakta kesinleşmiyor." copy for a dropped field. */
+/**
+ * i18n key of the "Kaynakta kesinleşmiyor." copy for a dropped field (AI_PIPELINE_PLAN §6.6): the
+ * field-specific `explain.unverified.*` sentence, or the generic `common.provenance.notConfirmed`.
+ */
 export function unverifiedMessage(field: string, kind: FieldKind): MessageRef {
   if (/^(due|deadline)/.test(field) || (kind === 'date' && /date|due|at$/.test(field))) {
     return messageRef('explain.unverified.due_at');
@@ -227,7 +230,7 @@ export function unverifiedMessage(field: string, kind: FieldKind): MessageRef {
   if (kind === 'amount' || field.includes('amount')) return messageRef('explain.unverified.amount');
   if (field.includes('time')) return messageRef('explain.unverified.time');
   if (/person|counterparty|contact/.test(field)) return messageRef('explain.unverified.person');
-  return messageRef('explain.unverified.generic');
+  return messageRef('common.provenance.notConfirmed');
 }
 
 function dropped<K extends FieldKind>(

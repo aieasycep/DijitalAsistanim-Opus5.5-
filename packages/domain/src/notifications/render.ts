@@ -2,8 +2,8 @@
  * Server-side push rendering per detail mode (M§86, C-14, INTEGRATION_PLAN §9.5). Returns i18n
  * keys of the `push` namespace plus ICU params — never hard-coded copy:
  *
- *   full / title_only → `push.<template>.<mode>.title|body`
- *   generic           → `push.generic.title|body` (no params at all)
+ *   full / title_only → `push.<template>.<variant>.<mode>.title|body`
+ *   generic           → `push.<template>.<variant>.generic.title|body` (no params at all)
  *
  * Names and subjects (sensitive params) are passed only in `full`; counts and times (public params)
  * in `full` and `title_only`; `generic` carries nothing, so it can never contain a name or subject.
@@ -35,8 +35,47 @@ export const SENSITIVE_PARAM_LIMITS: Readonly<Record<string, number>> = {
 export const TITLE_MAX = 120;
 export const BODY_MAX = 240;
 
+/** The catalog variants of every template (`push.<template>.<variant>.*` in `@da/i18n`). */
+export const PUSH_VARIANTS: Readonly<Record<PushTemplate, readonly string[]>> = {
+  morning: ['ready', 'calm'],
+  midday: ['ready'],
+  evening: ['ready', 'clear'],
+  weekly: ['ready'],
+  critical_email: ['reply_needed', 'vip', 'rule'],
+  meeting: ['prep_ready', 'upcoming', 'post', 'conflict'],
+  deadline: ['due_soon', 'commitment_due'],
+  follow_up: ['no_reply'],
+  life_intel: [
+    'shipment',
+    'flight',
+    'payment',
+    'subscription',
+    'reservation',
+    'security',
+    'phone_digest',
+  ],
+  approval: ['pending', 'expiring', 'failed'],
+  account: [
+    'reauth_needed',
+    'admin_consent',
+    'trial_ending',
+    'billing_issue',
+    'pro_ended',
+    'grant_started',
+    'referral_reward',
+    'export_ready',
+    'export_failed',
+    'history_deleted',
+    'disconnected_by_support',
+    'support_ticket_updated',
+  ],
+  reminder: ['local'],
+};
+
 export interface RenderInput {
   readonly template: PushTemplate;
+  /** Catalog variant of the template (one of `PUSH_VARIANTS[template]`). */
+  readonly variant: string;
   readonly mode: NotificationDetail;
   /** Counts, times, minutes — allowed in `full` and `title_only`. */
   readonly publicParams?: MessageParams;
@@ -92,9 +131,10 @@ export function pushData(
 export function render(input: RenderInput): RenderedPush {
   const data = pushData(input.template, input.entityId, input.deeplink, input.webOrigin);
   if (input.mode === 'generic') {
+    const generic = `push.${input.template}.${input.variant}.generic`;
     return {
-      title: { key: 'push.generic.title', params: {} },
-      body: { key: 'push.generic.body', params: {} },
+      title: { key: `${generic}.title`, params: {} },
+      body: { key: `${generic}.body`, params: {} },
       data,
     };
   }
@@ -104,7 +144,7 @@ export function render(input: RenderInput): RenderedPush {
       params[k] = truncateParam(v, SENSITIVE_PARAM_LIMITS[k] ?? 60);
     }
   }
-  const prefix = `push.${input.template}.${input.mode}`;
+  const prefix = `push.${input.template}.${input.variant}.${input.mode}`;
   return {
     title: { key: `${prefix}.title`, params },
     body: { key: `${prefix}.body`, params },
@@ -130,24 +170,15 @@ export function renderText(input: RenderInput, resolve: MessageResolver): Render
 
 /** Every catalog key `render()` can produce (checked against `packages/i18n` push namespace). */
 export function pushMessageKeys(): string[] {
-  const templates: PushTemplate[] = [
-    'morning',
-    'midday',
-    'evening',
-    'weekly',
-    'critical_email',
-    'meeting',
-    'deadline',
-    'follow_up',
-    'life_intel',
-    'approval',
-    'account',
-    'reminder',
-  ];
-  const keys = ['push.generic.title', 'push.generic.body'];
-  for (const t of templates) {
-    for (const mode of ['full', 'title_only'] as const) {
-      keys.push(`push.${t}.${mode}.title`, `push.${t}.${mode}.body`);
+  const keys: string[] = [];
+  for (const [template, variants] of Object.entries(PUSH_VARIANTS)) {
+    for (const variant of variants) {
+      for (const mode of ['full', 'title_only', 'generic'] as const) {
+        keys.push(
+          `push.${template}.${variant}.${mode}.title`,
+          `push.${template}.${variant}.${mode}.body`,
+        );
+      }
     }
   }
   return keys;

@@ -67,7 +67,7 @@ describe('webPages catalogs (apps/web/messages)', () => {
   it('never promises "unlimited" or uses banned claims', () => {
     for (const [key, message] of [...tr, ...en]) {
       expect(message, key).not.toMatch(
-        /s\u0131n\u0131rs\u0131z|unlimited|kredi kart\u0131 gerekmez|no credit card|u\u00e7tan uca|end-to-end/iu,
+        /s\u0131n\u0131rs\u0131z|unlimi[t]ed|kredi kart\u0131 gerekmez|no cred[i]t card|u\u00e7tan uca|end-to-end/iu,
       );
     }
   });

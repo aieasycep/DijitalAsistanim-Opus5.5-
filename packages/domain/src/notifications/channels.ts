@@ -19,7 +19,7 @@ export interface AndroidChannelSpec {
 const spec = (id: AndroidChannelId, importance: ChannelImportance): AndroidChannelSpec => ({
   id,
   importance,
-  nameKey: `notifications.channel.${id}`,
+  nameKey: `push.channels.${id}.name`,
   lockscreenVisibility: 'private',
 });
 

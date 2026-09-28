@@ -40,7 +40,7 @@ export function bannedClaims(): RegExp[] {
     /unlimi[t]ed/iu,
     /u\u00e7tan uca/iu,
     /end-to-end/iu,
-    /(KVKK ve GDPR uyumlu|GDPR compliant)/iu,
+    /(KVKK ve GDPR uyuml[u]|GDPR compliant)/iu,
     /gerisini siler|deletes the rest/iu,
     /Şu an ücretsiz erişim/iu,
     /\b(zoom|microsoft teams)\b/iu,

@@ -26,7 +26,7 @@ import { codeChallengeS256, createCodeVerifier } from '../../crypto/pkce.ts';
 import { decryptToken, encryptToken, type TokenKeyring } from '../../crypto/token-cipher.ts';
 import { AppError, fieldError, isAppError } from '../../errors.ts';
 import { GoogleOAuth } from '../../providers/google/auth.ts';
-import { demoFlavorScope } from '../../providers/demo/auth.ts';
+import { demoFlavorScope } from '../../providers/demo/index.ts';
 import { microsoftAuthorizeOutcome } from '../../providers/microsoft/errors.ts';
 import {
   enqueueInitialSync,

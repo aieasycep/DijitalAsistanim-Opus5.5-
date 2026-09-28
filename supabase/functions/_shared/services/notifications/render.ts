@@ -41,21 +41,15 @@ export function renderNotification(
 ): RenderedNotification {
   const rendered = render({
     template: spec.template,
+    variant: spec.variant,
     mode,
     publicParams: spec.paramsPublic,
     sensitiveParams: spec.paramsSensitive,
     entityId: spec.entityId,
     deeplink: spec.deeplink,
   });
-  const keyFor = (key: string): string =>
-    mode === 'generic'
-      ? `push.${spec.template}.${spec.variant}.generic.${key.endsWith('.title') ? 'title' : 'body'}`
-      : key.replace(
-          `push.${spec.template}.${mode}.`,
-          `push.${spec.template}.${spec.variant}.${mode}.`,
-        );
-  let title = translate(locale, keyFor(rendered.title.key), rendered.title.params);
-  const body = translate(locale, keyFor(rendered.body.key), rendered.body.params);
+  let title = translate(locale, rendered.title.key, rendered.title.params);
+  const body = translate(locale, rendered.body.key, rendered.body.params);
   if (spec.userTest && mode !== 'generic') title = withTestPrefix(locale, title);
   return {
     title: truncateParam(title, TITLE_MAX),

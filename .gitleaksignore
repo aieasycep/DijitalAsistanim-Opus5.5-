@@ -1,0 +1,17 @@
+# Verified false positives in existing history (`pnpm secret-scan`, SG-2). One fingerprint per line
+# (commit:file:rule:line); each was reviewed and holds no credential:
+# - Google Calendar sync tokens in a recorded provider fixture (opaque paging cursors, test data)
+9f2ff361d7a9355448866b62b8ed4fa9c8cbdfff:supabase/functions/_shared/providers/google/__fixtures__/calendar.json:generic-api-key:111
+9f2ff361d7a9355448866b62b8ed4fa9c8cbdfff:supabase/functions/_shared/providers/google/__fixtures__/calendar.json:generic-api-key:136
+# - backoffice e2e mock server documentation comment (no value)
+c42e77767173ddd2b1a165cefc5bc274ca935df7:apps/backoffice/e2e/mock-server.ts:generic-api-key:6
+# - bundle-scan unit test: a synthetic secret-shaped string the scanner must catch
+c42e77767173ddd2b1a165cefc5bc274ca935df7:scripts/security/__tests__/scan-bundles.test.ts:generic-api-key:9
+# - idempotency test key (a UUID) and a logger test JWT with role "authenticated" and a dummy signature
+11a5ed259c4383f767aff18986d93b2efa29336a:supabase/functions/_shared/idempotency.test.ts:generic-api-key:19
+11a5ed259c4383f767aff18986d93b2efa29336a:supabase/functions/_shared/logging/logger.test.ts:jwt:6
+# - admin fixture model identifier (a public model name, not a key)
+39e030c4cd2924426e4e823a6a0b644c890b9d94:packages/validation/test/fixtures/admin-fixtures.ts:generic-api-key:1351
+# - planning documents quoting OAuth scope URLs and design copy
+6dd99081a30d915d4dc3dfc1d60922b807a4afe5:docs/DESIGN_AUDIT.md:generic-api-key:832
+6dd99081a30d915d4dc3dfc1d60922b807a4afe5:docs/plan-audits/design-onboarding-today.md:generic-api-key:292

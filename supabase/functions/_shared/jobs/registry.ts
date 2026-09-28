@@ -1,7 +1,7 @@
 /**
  * Job handler registry (IMPLEMENTATION_PLAN T-3.06). Each `job_type` has at most one definition with
  * its payload schema and timeout; `worker/handlers/index.ts` builds the registry the runner uses.
- * Later tasks add their handlers there.
+ * Every job type's handler is registered there.
  */
 import type { JobType } from '@da/domain';
 import { z } from 'zod';

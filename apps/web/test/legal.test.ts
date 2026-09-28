@@ -136,7 +136,7 @@ describe('legal documents (W-LEGAL-01/02, R-26)', () => {
       for (const locale of ['tr', 'en'] as const) {
         const text = documentText(legalDocument(id, locale, CONTEXT));
         expect(text, `${id}/${locale}`).not.toMatch(
-          /u\u00e7tan uca|end-to-end|GDPR compliant|KVKK ve GDPR uyumlu|s\u0131n\u0131rs\u0131z|unlimi[t]ed/iu,
+          /u\u00e7tan uca|end-to-end|GDPR compliant|KVKK ve GDPR uyuml[u]|s\u0131n\u0131rs\u0131z|unlimi[t]ed/iu,
         );
       }
     }

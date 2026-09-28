@@ -237,5 +237,28 @@
     "proFeature": "Pro feature",
     "microphone": "Microphone",
     "decorative": "Illustration"
+  },
+  "source": {
+    "gmail": "Gmail",
+    "outlook": "Outlook",
+    "google_calendar": "Google Calendar",
+    "outlook_calendar": "Outlook Calendar",
+    "apple_calendar": "Apple Calendar",
+    "device_calendar": "Device calendar",
+    "google_tasks": "Google Tasks",
+    "microsoft_todo": "Microsoft To Do",
+    "apple_reminders": "Apple Reminders",
+    "in_app": "Dijital Asistan",
+    "demo": "Demo",
+    "capture": "Capture",
+    "meeting_note": "Meeting note",
+    "phone_notification": "Phone notification",
+    "assistant": "Assistant",
+    "user": "You",
+    "commitment": "Commitment",
+    "life": "Personal",
+    "contact": "Contact",
+    "briefing": "Briefing",
+    "feedback": "Feedback"
   }
 }

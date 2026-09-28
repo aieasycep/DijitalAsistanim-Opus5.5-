@@ -112,7 +112,7 @@ export function scrubValue(value: unknown, depth = 0): LogValue {
 export type LogSink = (line: string) => void;
 
 // deno-lint-ignore no-console
-const consoleSink: LogSink = (line) => console.log(line);
+const consoleSink: LogSink = (line) => console.info(line);
 
 export interface LoggerOptions {
   fn: string;
