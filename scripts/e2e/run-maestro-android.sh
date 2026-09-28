@@ -23,7 +23,18 @@ done
 
 mapfile -t SERIALS < <(for ((i = 0; i < SHARDS; i++)); do echo "emulator-$((5554 + 2 * i))"; done)
 bash scripts/e2e/prepare-emulator.sh "${SERIALS[@]}"
-for serial in "${SERIALS[@]}"; do adb -s "$serial" install -r -g "$APK"; done
+# The package manager can still drop the streamed install right after it first answers: retry a
+# failed install a few times with a growing pause before giving up.
+install_apk() {
+  local serial="$1"
+  for attempt in 1 2 3 4; do
+    adb -s "$serial" install -r -g "$APK" && return 0
+    echo "run-maestro-android: install on $serial failed (attempt $attempt)" >&2
+    sleep $((attempt * 10))
+  done
+  return 1
+}
+for serial in "${SERIALS[@]}"; do install_apk "$serial"; done
 
 collect() {
   for serial in "${SERIALS[@]}"; do adb -s "$serial" logcat -d >"$OUT/logcat-$serial.txt" 2>&1 || true; done

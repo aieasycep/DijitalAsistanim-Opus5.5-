@@ -11,6 +11,13 @@ fi
 for serial in "${SERIALS[@]}"; do
   adb -s "$serial" wait-for-device
   until [[ "$(adb -s "$serial" shell getprop sys.boot_completed | tr -d '\r')" == "1" ]]; do sleep 2; done
+  # sys.boot_completed can precede the package manager service; an install then fails with
+  # "Failure calling service package: Broken pipe". Wait until it answers (at most 3 minutes).
+  for ((tries = 0; ; tries++)); do
+    adb -s "$serial" shell pm path android 2>/dev/null | grep -q '^package:' && break
+    ((tries < 90)) || { echo "prepare-emulator: $serial package manager not ready" >&2; exit 1; }
+    sleep 2
+  done
   for key in window_animation_scale transition_animation_scale animator_duration_scale; do
     adb -s "$serial" shell settings put global "$key" 0
   done

@@ -76,6 +76,10 @@ test('mobile-e2e.yml: PR, manual and nightly only; emulator API 35 x86_64 google
   assert.match(script, /--shard-split/);
   assert.match(script, /--format junit/);
   assert.match(script, /logcat/);
+  // Installs wait for the package manager, not only sys.boot_completed, and retry a dropped stream.
+  const prepare = readFileSync(join(ROOT, 'scripts/e2e/prepare-emulator.sh'), 'utf8');
+  assert.match(prepare, /pm path android/);
+  assert.match(script, /install_apk\(\)/);
 });
 
 test('EAS workflows build the existing profiles and run Maestro 2.10.0 per platform tag', () => {
