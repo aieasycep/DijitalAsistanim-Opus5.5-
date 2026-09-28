@@ -56,7 +56,7 @@
     "@supabase/postgres-meta": "0.99.0",
     "@types/node": "24.13.6",
     "deno": "2.1.4",
-    "eslint": "9.39.5",
+    "eslint": "10.11.0",
     "prettier": "3.9.9",
     "squawk-cli": "2.65.0",
     "supabase": "2.117.0",
