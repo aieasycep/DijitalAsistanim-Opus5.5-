@@ -81,6 +81,10 @@ test('mobile-e2e.yml: PR, manual and nightly only; emulator API 35 x86_64 google
   assert.match(prepare, /pm path android/);
   assert.match(prepare, /am get-current-user/);
   assert.match(script, /install_apk\(\)/);
+  // Failure reasons reach the job log; artifact paths avoid the characters the upload refuses.
+  assert.match(script, /junit-failures\.ts/);
+  assert.match(script, /tr '":<>\|\*\?'/);
+  assert.equal(String((wf.env as Record<string, unknown>).MAESTRO_SHARDS), '1');
 });
 
 test('EAS workflows build the existing profiles and run Maestro 2.10.0 per platform tag', () => {

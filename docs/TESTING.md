@@ -67,7 +67,7 @@ Rules that hold across tiers:
 
 | Other pipeline | Trigger | Runs |
 | --- | --- | --- |
-| [`mobile-e2e.yml`](../.github/workflows/mobile-e2e.yml) `e2e-mobile-android` | pull requests, nightly, manual | Tier-A stack with `APP_ENV=e2e`, demo mode, fixture AI and a fixed seeding anchor ([`scripts/e2e/start-stack.sh`](../scripts/e2e/start-stack.sh)); `expo prebuild` + Gradle release build of the `e2e` APK; emulator API 35 (`tr-TR`, `Europe/Istanbul`); Maestro sharded over the `android` tag; JUnit, screenshots and logcat as artefacts |
+| [`mobile-e2e.yml`](../.github/workflows/mobile-e2e.yml) `e2e-mobile-android` | pull requests, nightly, manual | Tier-A stack with `APP_ENV=e2e`, demo mode, fixture AI and a fixed seeding anchor ([`scripts/e2e/start-stack.sh`](../scripts/e2e/start-stack.sh)); `expo prebuild` + Gradle release build of the `e2e` APK; emulator API 35 (`tr-TR`, `Europe/Istanbul`); Maestro on one emulator over the `android` tag; JUnit, screenshots and logcat as artefacts, and the failed flows' reasons, the harness log and logcat errors printed in the job log |
 | EAS [`e2e-ios.yml`](../apps/mobile/.eas/workflows/e2e-ios.yml) | push to `main`, nightly | `e2e` simulator build + Maestro over the `ios` tag against the staging E2E project (harness in staging mode). External credential required: `EXPO_TOKEN` and the staging secrets |
 | [`security-nightly.yml`](../.github/workflows/security-nightly.yml) | nightly, manual | `pnpm security:audit` (high/critical advisories against `security/audit-allowlist.json`, expiry enforced), CodeQL `security-extended` with `scripts/security/sarif-gate.ts` (security-severity ≥ 7.0), ZAP baseline against the web and backoffice builds (`e2e/dast.spec.ts` with `DA_DAST=1`); must be green before a release tag |
 | EAS [`e2e-android.yml`](../apps/mobile/.eas/workflows/e2e-android.yml) | manual | The Android equivalent on EAS |
@@ -107,7 +107,7 @@ Every workspace suite runs with coverage on and fails below its threshold. The t
 
 - Unit, contract, pgTAP and integration suites run with zero retries. A failure is fixed at its root cause in product or test code, never with a sleep; tests wait on state (Playwright web-first assertions, Maestro `extendedWaitUntil`).
 - Playwright: web retries once in CI (`retries: 1`, trace kept on failure) and never locally; the backoffice never retries. `forbidOnly` fails a CI run that contains `.only`.
-- Maestro: no retries; the run continues after a failed flow (`continueOnFailure`) so every failure is reported, and the job fails if any flow failed. Every flow seeds its own user through the harness, so shards share no state.
+- Maestro: no retries; the run continues after a failed flow (`continueOnFailure`) so every failure is reported, and the job fails if any flow failed. Every flow seeds its user through the harness, which also clears that user's Auth code-send timer and mailbox so the flow's own code is read; the m102 flows share the demo canon users, so the Android run uses one device.
 - A test that cannot be made deterministic is rewritten at a lower tier with the same assertion; there is no quarantine list.
 - Known causes fixed so far are recorded in the commit history (for example the scheduler-tick race in `090_jobs_scheduler`, fixed by taking the scheduler advisory lock before the table lock, and the backoffice dashboard range race, fixed by polling on the query state).
 
@@ -143,5 +143,6 @@ The Maestro harness ([`scripts/e2e/harness-server.ts`](../scripts/e2e/harness-se
 | §16 `_shared` 90/85/90 and per function 85/75/85 | `_shared` lines ≥ 80 (IMPLEMENTATION_PLAN T-12.04); no per-function gate | T-12.04 sets the Edge gate at 80 % lines. |
 | §16 mobile 75/65/75 | Regression floor below the target | See [Coverage](#coverage). |
 | §17 `fail-on-flaky` reporter | Web retries once in CI without that reporter | A retried pass still shows in the Playwright report; the reporter was not added. |
+| §9.1 `--shard-split 4` with a distinct user key per shard | One emulator, no sharding | The m102 flows sign in as the demo canon users (`u_pro`, `u_free`), and each canon seed resets their data; parallel shards reset each other's users mid-flow. Per-shard canon copies would allow sharding again. |
 | §9 E2E build uses the production app id and `APP_ENV=ci` | `com.dijitalasistan.app.e2e` and `APP_ENV=e2e` | `ci` is not an `APP_ENV` value; a separate id keeps the E2E build installable next to other variants. |
 | §12.4: `DA_FIXED_NOW` turns the Edge Functions' domain clock into an offset clock | `DA_FIXED_NOW` is the harness's seeding anchor; Edge Functions run on the real clock and scheduled work is driven with `scheduler_tick(p_now)` | The server env schema treats `DA_FIXED_NOW` as a test-only key and no Edge code reads it. |

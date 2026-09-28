@@ -3,13 +3,16 @@
 # reactivecircus/android-emulator-runner, whose emulator (emulator-5554, read-only) is shard 1;
 # MAESTRO_SHARDS-1 more read-only instances of the same AVD are booted so `--shard-split` has a
 # device per shard. Installs the e2e APK on each, prepares them, runs the `android` flows and keeps
-# JUnit, screenshots and logcat under build/maestro.
+# JUnit, screenshots and logcat under build/maestro. One shard by default: the m102 flows sign in
+# as the shared demo canon users, whose data every canon seed resets.
+# After the run it prints each failed flow's reason, the harness log and the app's logcat errors
+# into the job log, and renames output folders the artifact upload refuses (" : < > | * ?).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
 APK="${E2E_APK:?E2E_APK must point at the e2e release APK}"
-SHARDS="${MAESTRO_SHARDS:-2}"
+SHARDS="${MAESTRO_SHARDS:-1}"
 AVD="${AVD_NAME:-test}"
 OUT="$ROOT/build/maestro"
 mkdir -p "$OUT"
@@ -38,11 +41,37 @@ for serial in "${SERIALS[@]}"; do install_apk "$serial"; done
 
 collect() {
   for serial in "${SERIALS[@]}"; do adb -s "$serial" logcat -d >"$OUT/logcat-$serial.txt" 2>&1 || true; done
+  # Flow names become folder names; actions/upload-artifact refuses " : < > | * ? in paths.
+  find "$OUT" -depth -name '*[":<>|*?]*' -print0 | while IFS= read -r -d '' path; do
+    mv -- "$path" "$(dirname -- "$path")/$(basename -- "$path" | tr '":<>|*?' '_______')"
+  done
 }
 trap collect EXIT
 
+sharding=()
+((SHARDS > 1)) && sharding=(--shard-split "$SHARDS")
+status=0
 "$HOME/.maestro/bin/maestro" test apps/mobile/.maestro \
   --include-tags android \
   --format junit --output "$OUT/junit.xml" \
   --test-output-dir "$OUT" \
-  --shard-split "$SHARDS"
+  "${sharding[@]}" || status=$?
+
+if ((status != 0)); then
+  # Artifacts cannot always be downloaded: the reasons go into the job log as well.
+  echo "::group::Failed flows (JUnit)"
+  node scripts/e2e/junit-failures.ts "$OUT"/junit*.xml || true
+  echo "::endgroup::"
+  echo "::group::Harness and functions log (tail)"
+  tail -n 80 "$ROOT/build/e2e/harness.log" 2>/dev/null || true
+  grep -E '"level":"(error|warn)"' "$ROOT/build/e2e/functions.log" 2>/dev/null | tail -n 40 || true
+  echo "::endgroup::"
+  echo "::group::App errors in logcat"
+  for serial in "${SERIALS[@]}"; do
+    adb -s "$serial" logcat -d 2>/dev/null |
+      grep -E 'FATAL EXCEPTION|AndroidRuntime|ReactNativeJS.*(Error|error|Warning)|E ReactNative' |
+      tail -n 60 || true
+  done
+  echo "::endgroup::"
+fi
+exit "$status"

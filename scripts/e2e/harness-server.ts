@@ -263,6 +263,7 @@ async function seed(env: Env, body: { userKey?: string; scenario?: string }, sta
     });
   }
   const id = await ensureUser(env, email);
+  await releaseSignIn(env, id, email);
   let scenarioIds: Record<string, unknown> = {};
   if (!(canonUser && (scenario === 'canon' || scenario === 'canon_send_granted'))) {
     const seeded = seedScenario(env, id, scenario, anchor);
@@ -280,8 +281,44 @@ async function seed(env: Env, body: { userKey?: string; scenario?: string }, sta
   };
 }
 
-/** Mailpit (`/api/v1/messages`) or Inbucket (`/api/v1/mailbox/<name>`), probed in that order. */
+/**
+ * Flows reuse the canon addresses, but Auth sends one code per address per `max_frequency` (60 s,
+ * tracked in `recovery_sent_at` / `confirmation_sent_at`) and the mail sink keeps earlier codes:
+ * every seed starts the user with no send timer and an empty mailbox, so the flow's code request is
+ * accepted and `/otp` can only return the code of that request.
+ */
+async function releaseSignIn(env: Env, id: string, email: string): Promise<void> {
+  psql(
+    env,
+    "update auth.users set recovery_sent_at = null, confirmation_sent_at = null where id = :'p1'::uuid",
+    [id],
+  );
+  const base = env.INBUCKET_URL ?? 'http://127.0.0.1:54324';
+  const mailpit = await fetch(`${base}/api/v1/search?query=${encodeURIComponent(`to:${email}`)}`, {
+    method: 'DELETE',
+  }).catch(() => null);
+  if (mailpit?.ok) return;
+  const box = email.split('@')[0] ?? email;
+  await fetch(`${base}/api/v1/mailbox/${encodeURIComponent(box)}`, { method: 'DELETE' }).catch(
+    () => null,
+  );
+}
+
+/** The code of the newest mail, waiting up to OTP_WAIT_MS for it to arrive. */
+const OTP_WAIT_MS = 15_000;
+
 async function otp(env: Env, email: string, staging: boolean): Promise<string> {
+  if (staging) return otpOnce(env, email, true);
+  const until = Date.now() + OTP_WAIT_MS;
+  for (;;) {
+    const code = await otpOnce(env, email, false);
+    if (code !== '' || Date.now() >= until) return code;
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+}
+
+/** Mailpit (`/api/v1/messages`) or Inbucket (`/api/v1/mailbox/<name>`), probed in that order. */
+async function otpOnce(env: Env, email: string, staging: boolean): Promise<string> {
   if (staging) {
     const res = await admin(env, '/auth/v1/admin/generate_link', {
       method: 'POST',
