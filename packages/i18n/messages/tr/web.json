@@ -118,6 +118,21 @@
     "openApp": "Uygulamayı Aç",
     "adminInfo": "Yöneticin için bilgi"
   },
+  "demoConsent": {
+    "title": "Demo hesabı bağla",
+    "body": "Dijital Asistan aşağıdaki izinleri istiyor. Vermek istemediğin iznin işaretini kaldırabilirsin.",
+    "note": "Bu bir demo bağlantısıdır; gerçek bir hesaba erişilmez.",
+    "allow": "İzin Ver",
+    "deny": "Reddet",
+    "capabilities": {
+      "mail_read": "Mailleri okuma",
+      "mail_send": "Mail gönderme",
+      "calendar_read": "Takvimi okuma",
+      "calendar_write": "Takvime etkinlik ekleme",
+      "tasks_read": "Görevleri okuma",
+      "tasks_write": "Görev ekleme"
+    }
+  },
   "footer": {
     "privacy": "Gizlilik Politikası",
     "terms": "Kullanım Koşulları",

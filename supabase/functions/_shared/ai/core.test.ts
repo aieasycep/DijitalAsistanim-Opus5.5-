@@ -22,7 +22,13 @@ import {
 } from './pricing.ts';
 import { cachedPromptSource, FEATURE_PROMPT_KEY, promptCanary } from './prompts/registry.ts';
 import { withRetry } from './retry.ts';
-import { AI_REQUEST_COLUMNS, buildAiRequestRow, recordAttempt } from './telemetry.ts';
+import {
+  AI_REQUEST_COLUMNS,
+  buildAiRequestRow,
+  recordAttempt,
+  recordGrounding,
+  supabaseTelemetrySink,
+} from './telemetry.ts';
 import { emptyUsage } from './types.ts';
 
 const USER = '11111111-1111-4111-8111-111111111111';
@@ -325,3 +331,33 @@ Deno.test(
     assertEquals(await prices.price('openai', 'unknown'), null);
   },
 );
+
+Deno.test('grounding counters land on the served ai_requests row (IT-AI-03)', async () => {
+  const stub = stubFetch((call) =>
+    call.url.includes('id=eq.bad')
+      ? jsonResponse({ code: '42501', message: 'denied' }, 403)
+      : jsonResponse([], 200),
+  );
+  const sink = supabaseTelemetrySink(testDb(stub.fetch));
+  assert(await recordGrounding(sink, 'req-1', { proposed: 3, verified: 2, dropped: 1 }));
+  assertEquals(stub.calls[0]?.method, 'PATCH');
+  assert(stub.calls[0]?.url.includes('/ai_requests?id=eq.req-1'));
+  assertEquals(JSON.parse(stub.calls[0]?.body ?? '{}'), {
+    grounding_proposed: 3,
+    grounding_verified: 2,
+    grounding_dropped: 1,
+  });
+  // Nothing to record, no row, or a failing write: the caller is never broken.
+  assertFalse(await recordGrounding(sink, null, { proposed: 1, verified: 1, dropped: 0 }));
+  assertFalse(await recordGrounding(sink, 'req-2', { proposed: 0, verified: 0, dropped: 0 }));
+  assertFalse(await recordGrounding(sink, 'bad', { proposed: 99_999, verified: 0, dropped: 1 }));
+  assertEquals(JSON.parse(stub.calls[1]?.body ?? '{}').grounding_proposed, 32_767);
+  assertFalse(
+    await recordGrounding({ insert: () => Promise.resolve('x') }, 'req-3', {
+      proposed: 1,
+      verified: 0,
+      dropped: 1,
+    }),
+  );
+  assertEquals(stub.calls.length, 2);
+});

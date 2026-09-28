@@ -19,24 +19,15 @@ import {
 import type { GenerateStructuredParams } from '../types.ts';
 import { parseUntrusted } from '../prompts/assemble.ts';
 import { PART2_GENERATORS } from './generate-part2.ts';
+import { sentences } from './sentences.ts';
 
 type Doc = { ref: string; kind: string; text: string };
 
 const ANCHOR = new Date('2026-01-01T09:00:00.000Z');
 const TZ = 'Europe/Istanbul';
 
-/** Sentences with their offsets (quotes are exact substrings). */
-export function sentences(text: string): { text: string; start: number }[] {
-  const out: { text: string; start: number }[] = [];
-  const re = /[^.!?\n]+[.!?]*/g;
-  for (const m of text.matchAll(re)) {
-    const raw = m[0];
-    const lead = raw.length - raw.trimStart().length;
-    const trimmed = raw.trim();
-    if (trimmed.length >= 3) out.push({ text: trimmed, start: (m.index ?? 0) + lead });
-  }
-  return out;
-}
+/** Sentences with their offsets (quotes are exact substrings; amounts and dates stay whole). */
+export { sentences };
 
 const cap = (s: string, n: number) => (s.length <= n ? s : s.slice(0, n));
 const fold = (s: string) => foldTR(normalizeTR(s));

@@ -3,9 +3,11 @@
  * - `/apple/auth/token` (authorization_code → a refresh token; the ES256 client secret is decoded
  *   and recorded) and `/apple/auth/revoke`;
  * - `/revenuecat/v2/projects/{p}` (entitlements, customers, subscriptions, products, DELETE customer)
- *   answered from `POST /__revenuecat {op:'customer', id, fixture}` seeds (`customer_v2_*.json`)
- *   and from `POST /revenuecat/__activate {app_user_id, product}` (the Maestro harness: the store
- *   reports `product` active for a year, `product` being the store identifier the mirror reads);
+ *   answered from `POST /__revenuecat {op:'customer', id, fixture}` seeds (`customer_v2_*.json`);
+ * - `POST /revenuecat/__activate {app_user_id, product}` (also `POST /__revenuecat {op:'activate'}`):
+ *   a completed store purchase, as the E2E paywall flow simulates it through the harness — the next
+ *   REST v2 customer read answers an active `pro` entitlement for that product, so the app's
+ *   `POST /purchases/sync` mirrors it;
  * - `/expo/--/api/v2/push/send` (≤ 100 messages, bearer `EXPO_ACCESS_TOKEN`, gzip bodies) and
  *   `/expo/--/api/v2/push/getReceipts` (per-ticket outcomes seeded by `POST /__expo`);
  * - `/voyage/v1/embeddings` (deterministic unit vectors of `output_dimension`, from SHA-256 of the
@@ -38,7 +40,6 @@ export function mountServices(app: Hono<MockEnv>, state: MockState): void {
   let rc = {
     customers: new Map<string, RcCustomer>(),
     deleted: [] as string[],
-    /** Store identifiers of the products `__activate` created, by product id. */
     products: new Map<string, string>(),
   };
   let expo = {
@@ -101,57 +102,77 @@ export function mountServices(app: Hono<MockEnv>, state: MockState): void {
 
   // ── RevenueCat v2 ─────────────────────────────────────────────────────────────────────────
   const rcBase = '/revenuecat/v2/projects/:project';
-  const seedCustomer = (
-    id: string,
-    name: string,
-    options: { expiresInMs?: unknown; environment?: unknown } = {},
-  ): RcCustomer => {
-    const seed = fixture<RcCustomer>(name);
-    seed.customer.id = id;
-    // Relative expiry (the fixtures carry absolute epochs) and the store environment.
-    if (typeof options.expiresInMs === 'number') {
-      const at = Date.now() + options.expiresInMs;
-      for (const sub of seed.subscriptions) sub.current_period_ends_at = at;
-      const active = seed.customer.active_entitlements as
-        { items?: { expires_at?: number }[] } | undefined;
-      for (const item of active?.items ?? []) item.expires_at = at;
-    }
-    if (typeof options.environment === 'string')
-      for (const sub of seed.subscriptions) sub.environment = options.environment;
+  /** A completed purchase of `product` (`da_pro_annual` | `da_pro_monthly`) for `appUserId`. */
+  const activate = (body: Record<string, unknown>): { ok: true; product_id: string } | null => {
+    const appUserId = typeof body.app_user_id === 'string' ? body.app_user_id : '';
+    const product = typeof body.product === 'string' ? body.product : 'da_pro_annual';
+    if (!/^[0-9a-f-]{36}$/i.test(appUserId) || !/^da_pro_(annual|monthly)$/.test(product))
+      return null;
+    const monthly = product === 'da_pro_monthly';
+    const seed = fixture<RcCustomer>('revenuecat/customer_v2_active.json');
+    const now = Date.now();
+    const ends = now + (monthly ? 30 : 365) * 86_400_000;
+    const productId = `prod_${product}`;
+    rc.products.set(productId, `${product}:${monthly ? 'monthly' : 'annual'}`);
+    seed.customer.id = appUserId;
+    seed.customer.first_seen_at = now;
+    seed.customer.last_seen_at = now;
+    const active = seed.customer.active_entitlements as { items?: { expires_at?: number }[] };
+    for (const item of active.items ?? []) item.expires_at = ends;
     for (const sub of seed.subscriptions) {
-      sub.customer_id = id;
-      sub.original_customer_id = id;
+      Object.assign(sub, {
+        id: `sub_${randomId()}`,
+        customer_id: appUserId,
+        original_customer_id: appUserId,
+        product_id: productId,
+        starts_at: now,
+        current_period_starts_at: now,
+        current_period_ends_at: ends,
+        store_subscription_identifier: String(now),
+        ...(typeof body.environment === 'string' ? { environment: body.environment } : {}),
+      });
     }
-    rc.customers.set(id, seed);
-    return seed;
+    rc.customers.set(appUserId, seed);
+    return { ok: true, product_id: productId };
   };
+  app.post('/revenuecat/__activate', (c) => {
+    const out = activate(jsonOf(c));
+    return out === null
+      ? c.json({ error: 'app_user_id and product are required' }, 400)
+      : c.json(out);
+  });
   app.post('/__revenuecat', async (c) => {
     const body = (await c.req.json()) as Record<string, unknown>;
+    if (body.op === 'activate') {
+      const out = activate(body);
+      return out === null
+        ? c.json({ error: 'app_user_id and product are required' }, 400)
+        : c.json(out);
+    }
     if (body.op === 'customer') {
-      seedCustomer(String(body.id), String(body.fixture), {
-        expiresInMs: body.expires_in_ms,
-        environment: body.environment,
-      });
+      const seed = fixture<RcCustomer>(String(body.fixture));
+      const id = String(body.id);
+      seed.customer.id = id;
+      // Relative expiry (the fixtures carry absolute epochs) and the store environment.
+      if (typeof body.expires_in_ms === 'number') {
+        const at = Date.now() + body.expires_in_ms;
+        for (const sub of seed.subscriptions) sub.current_period_ends_at = at;
+        const active = seed.customer.active_entitlements as
+          { items?: { expires_at?: number }[] } | undefined;
+        for (const item of active?.items ?? []) item.expires_at = at;
+      }
+      if (typeof body.environment === 'string')
+        for (const sub of seed.subscriptions) sub.environment = body.environment;
+      for (const sub of seed.subscriptions) {
+        sub.customer_id = id;
+        sub.original_customer_id = id;
+      }
+      rc.customers.set(id, seed);
       return c.json({ ok: true });
     }
     if (body.op === 'state')
       return c.json({ customers: [...rc.customers.keys()], deleted: rc.deleted });
     return c.json({ error: 'unknown op' }, 400);
-  });
-  // Control endpoint of the Maestro harness; registered before the bearer check below.
-  app.post('/revenuecat/__activate', (c) => {
-    const body = jsonOf<Record<string, unknown>>(c);
-    const appUserId = typeof body.app_user_id === 'string' ? body.app_user_id.trim() : '';
-    const product = typeof body.product === 'string' ? body.product.trim() : '';
-    if (appUserId === '' || product === '')
-      return c.json({ error: 'app_user_id and product are required' }, 400);
-    const productId = `prod_${product.replace(/[^A-Za-z0-9_]/g, '_')}`;
-    const seed = seedCustomer(appUserId, 'revenuecat/customer_v2_active.json', {
-      expiresInMs: 365 * 86_400_000,
-    });
-    for (const sub of seed.subscriptions) sub.product_id = productId;
-    rc.products.set(productId, product);
-    return c.json({ ok: true, app_user_id: appUserId, product });
   });
   app.use('/revenuecat/*', async (c, next) => {
     if (bearerOf(c) !== Deno.env.get('REVENUECAT_API_V2_SECRET_KEY'))

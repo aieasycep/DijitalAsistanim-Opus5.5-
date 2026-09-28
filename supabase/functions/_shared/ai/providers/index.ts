@@ -5,6 +5,10 @@
  * targets and the feature reports `external_credential_required`. Premium voice adapters are
  * selected by `STT_SERVER_PROVIDER` / `TTS_PREMIUM_PROVIDER`. In fixture mode (tests, CI, allowed
  * demo) the fixture provider serves every target and no vendor is called.
+ *
+ * Test-only base-URL overrides (`ANTHROPIC_API_BASE_URL`, `OPENAI_API_BASE_URL`,
+ * `VOYAGE_API_BASE_URL`; the mock provider server of the integration tier) are honoured only outside
+ * preview and production, where the env schema also refuses them.
  */
 import { credentialStatus, type RawEnv } from '../../env.ts';
 import type { LLMProvider, ProviderId } from '../types.ts';
@@ -23,6 +27,14 @@ export interface AiProviderSet {
   available(id: ProviderId): boolean;
 }
 
+/** A test-only `*_BASE_URL` override, or undefined (always undefined in preview/production). */
+export function testBaseUrl(raw: RawEnv, key: string): string | undefined {
+  const appEnv = raw.APP_ENV?.trim();
+  if (appEnv === 'production' || appEnv === 'preview') return undefined;
+  const value = raw[key]?.trim() ?? '';
+  return value === '' ? undefined : value;
+}
+
 function merge(a: LLMProvider, b: LLMProvider): LLMProvider {
   return { ...b, ...a, id: a.id } as LLMProvider;
 }
@@ -39,31 +51,40 @@ export function createAiProviders(
   if (!fixtureMode) {
     const anthropicKey = raw.ANTHROPIC_API_KEY?.trim();
     if (anthropicKey !== undefined && anthropicKey !== '') {
-      adapters.set('anthropic', createAnthropicProvider({ apiKey: anthropicKey, ...fetchOpt }));
+      const baseURL = testBaseUrl(raw, 'ANTHROPIC_API_BASE_URL');
+      adapters.set(
+        'anthropic',
+        createAnthropicProvider({
+          apiKey: anthropicKey,
+          ...fetchOpt,
+          ...(baseURL === undefined ? {} : { baseURL }),
+        }),
+      );
     }
     const openaiKey = raw.OPENAI_API_KEY?.trim();
     if (openaiKey !== undefined && openaiKey !== '') {
+      const baseURL = testBaseUrl(raw, 'OPENAI_API_BASE_URL');
       adapters.set(
         'openai',
         merge(
-          createOpenAIProvider({ apiKey: openaiKey, ...fetchOpt }),
+          createOpenAIProvider({
+            apiKey: openaiKey,
+            ...fetchOpt,
+            ...(baseURL === undefined ? {} : { baseURL }),
+          }),
           createOpenAIAudioProvider({ apiKey: openaiKey, ...fetchOpt }),
         ),
       );
     }
     const voyageKey = raw.VOYAGE_API_KEY?.trim();
     if (voyageKey !== undefined && voyageKey !== '') {
-      const appEnv = raw.APP_ENV?.trim();
-      const voyageBase =
-        appEnv === 'production' || appEnv === 'preview'
-          ? ''
-          : (raw.VOYAGE_API_BASE_URL?.trim() ?? '');
+      const voyageBase = testBaseUrl(raw, 'VOYAGE_API_BASE_URL');
       adapters.set(
         'voyage',
         createVoyageProvider({
           apiKey: voyageKey,
           ...fetchOpt,
-          ...(voyageBase === '' ? {} : { baseUrl: voyageBase }),
+          ...(voyageBase === undefined ? {} : { baseUrl: voyageBase }),
         }),
       );
     }

@@ -20,6 +20,7 @@ import {
   type PnrMatch,
 } from '@da/domain';
 import { LifeIntelV1, type LifeIntelEvent, refineLifeIntelV1 } from '@da/validation';
+import { recordGrounding } from '../../ai/telemetry.ts';
 import type { UntrustedDoc } from '../../ai/untrusted.ts';
 import { clip, copy, type CopyLocale } from '../copy.ts';
 import {
@@ -366,6 +367,7 @@ export async function lifeFromModel(
       if (c !== null) candidates.push(c);
     }
   }
+  await recordGrounding(ctx.runtime.telemetry, result.aiRequestId, tally);
   return { kind: 'ai', candidates, tally, injectionSuspected: injection };
 }
 

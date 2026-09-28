@@ -164,6 +164,25 @@ describe('serverEnv', () => {
     ).toBe(true);
   });
 
+  it('accepts the LLM base-URL overrides as URLs only outside preview/production (UT-ENV-05)', () => {
+    for (const key of ['ANTHROPIC_API_BASE_URL', 'OPENAI_API_BASE_URL'] as const) {
+      const url = 'http://127.0.0.1:8788/anthropic';
+      const dev = serverEnv.safeParse({ ...baseServer, APP_ENV: 'development', [key]: url });
+      expect(dev.success, key).toBe(true);
+      expect(dev.success && dev.data[key], key).toBe(url);
+      expect(
+        serverEnv.safeParse({ ...baseServer, APP_ENV: 'development', [key]: 'not a url' }).success,
+        key,
+      ).toBe(false);
+      for (const appEnv of ['preview', 'production']) {
+        expect(
+          serverEnv.safeParse({ ...baseServer, APP_ENV: appEnv, [key]: url }).success,
+          `${key} ${appEnv}`,
+        ).toBe(false);
+      }
+    }
+  });
+
   it('requires https URLs in production (UT-ENV-06)', () => {
     const httpLocal = { ...baseServer, SUPABASE_URL: 'http://127.0.0.1:54321' };
     expect(serverEnv.safeParse(httpLocal).success).toBe(true);

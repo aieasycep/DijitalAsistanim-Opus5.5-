@@ -3,7 +3,7 @@ name: 'E2E-S-21 · Demo OAuth binding (R-07)'
 tags: [screens, android, ios, free]
 env:
   USER_KEY: u_empty
-  SCENARIO: none
+  SCENARIO: empty_accounts
 onFlowStart:
   - runScript:
       file: ../../scripts/harness.js

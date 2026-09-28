@@ -6,14 +6,18 @@
  *   answered it.
  * - `POST /__script {route, responses}` queues responses for a route key `"<METHOD> <path>"`, where
  *   the path may end with `*` (prefix match) or contain `:param` segments. Each response is
- *   `{status, headers?, body?, fixture?, delay_ms?, times?}` or `{passthrough: true}` (let the
- *   emulator answer this call). Queued responses are consumed in order; unmatched calls fall
- *   through to the provider emulators.
+ *   `{status, headers?, body?, fixture?, delay_ms?, times?, match?}` or `{passthrough: true, body?}`
+ *   (let the emulator answer this call; emulators that build a provider envelope around scripted
+ *   content, like the AI routes, read the entry's `body`). `match` restricts an entry to calls whose
+ *   request body contains that substring. Queued responses are consumed in order; unmatched calls
+ *   fall through to the provider emulators.
  * - `POST /__reset` clears the recordings, the scripts and every emulator state.
  */
 import type { Context, Hono } from 'hono';
 
-export type MockEnv = { Variables: { mockBody: string } };
+export type MockEnv = {
+  Variables: { mockBody: string; mockScripted: ScriptedResponse | undefined };
+};
 type Ctx = Context<MockEnv>;
 
 export interface RecordedRequest {
@@ -37,6 +41,8 @@ export interface ScriptedResponse {
   readonly delay_ms?: number;
   readonly times?: number;
   readonly passthrough?: boolean;
+  /** Only calls whose request body contains this substring consume the entry. */
+  readonly match?: string;
 }
 
 interface QueueItem {
@@ -99,11 +105,12 @@ export class MockState {
   }
 
   /** The next scripted response for this call, or null (emulator answers). */
-  take(method: string, path: string): ScriptedResponse | null {
+  take(method: string, path: string, body = ''): ScriptedResponse | null {
     for (const entry of this.scripts) {
       if (!matches(entry.route, method, path)) continue;
       const head = entry.queue[0];
       if (head === undefined) continue;
+      if (head.response.match !== undefined && !body.includes(head.response.match)) continue;
       head.remaining -= 1;
       if (head.remaining <= 0) entry.queue.shift();
       return head.response;
@@ -213,7 +220,7 @@ export function mountCore(app: Hono<MockEnv>, state: MockState): void {
     const family = url.pathname.split('/')[1] ?? '';
     state.enter(family);
     try {
-      const scripted = state.take(c.req.method, url.pathname);
+      const scripted = state.take(c.req.method, url.pathname, body);
       if (scripted !== null && scripted.passthrough !== true) {
         if (scripted.delay_ms !== undefined)
           await new Promise((r) => setTimeout(r, scripted.delay_ms));
@@ -222,8 +229,11 @@ export function mountCore(app: Hono<MockEnv>, state: MockState): void {
         recorded.status = response.status;
         return response;
       }
-      if (scripted?.passthrough === true && scripted.delay_ms !== undefined)
-        await new Promise((r) => setTimeout(r, scripted.delay_ms));
+      if (scripted?.passthrough === true) {
+        c.set('mockScripted', scripted);
+        if (scripted.delay_ms !== undefined)
+          await new Promise((r) => setTimeout(r, scripted.delay_ms));
+      }
       await next();
       recorded.status = c.res.status;
     } finally {

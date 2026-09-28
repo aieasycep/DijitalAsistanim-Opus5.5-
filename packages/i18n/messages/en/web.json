@@ -118,6 +118,21 @@
     "openApp": "Open the app",
     "adminInfo": "Information for your admin"
   },
+  "demoConsent": {
+    "title": "Connect a demo account",
+    "body": "Dijital Asistan is asking for the permissions below. Untick any permission you do not want to give.",
+    "note": "This is a demo connection; no real account is accessed.",
+    "allow": "Allow",
+    "deny": "Deny",
+    "capabilities": {
+      "mail_read": "Read mail",
+      "mail_send": "Send mail",
+      "calendar_read": "Read the calendar",
+      "calendar_write": "Add calendar events",
+      "tasks_read": "Read tasks",
+      "tasks_write": "Add tasks"
+    }
+  },
   "footer": {
     "privacy": "Privacy Policy",
     "terms": "Terms of Use",

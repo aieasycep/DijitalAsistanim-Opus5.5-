@@ -202,6 +202,8 @@ export const serverEnvShape = {
   APPLE_ID_BASE_URL: HttpUrl.optional(),
   REVENUECAT_API_BASE_URL: HttpUrl.optional(),
   VOYAGE_API_BASE_URL: HttpUrl.optional(),
+  ANTHROPIC_API_BASE_URL: HttpUrl.optional(),
+  OPENAI_API_BASE_URL: HttpUrl.optional(),
 };
 
 const SERVER_HTTPS_KEYS = [

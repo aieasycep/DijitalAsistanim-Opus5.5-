@@ -4,12 +4,13 @@ import { createHash } from 'node:crypto';
 
 import {
   DEFAULT_ANCHOR,
-  activationRequest,
   assertSafeEnv,
   canonExpect,
   canonIds,
   demoId,
   emailFor,
+  mergeIds,
+  seedAppEnv,
   trCatalog,
 } from '../harness-server.ts';
 import { PROBES } from '../probes.ts';
@@ -33,17 +34,29 @@ test('the RevenueCat mock is reached on loopback or the Docker bridge, never bey
   }
 });
 
-test('activation posts {app_user_id, product} to the mock /revenuecat/__activate', () => {
-  const user = '11111111-1111-4111-8111-111111111111';
-  const call = activationRequest({}, user, 'da_pro_annual');
-  assert.equal(call.url, 'http://127.0.0.1:8788/revenuecat/__activate');
-  assert.deepEqual(JSON.parse(call.body), { app_user_id: user, product: 'da_pro_annual' });
-  const bridge = activationRequest(
-    { REVENUECAT_MOCK_URL: 'http://172.17.0.1:8788/revenuecat/' },
-    user,
-    'da_pro_monthly',
+test('the seed session targets a loopback database with app.env ci | local (TEST_PLAN §12.2)', () => {
+  const ok = { APP_ENV: 'e2e', SUPABASE_URL: 'http://127.0.0.1:54321', SUPABASE_SECRET_KEY: 'k' };
+  const db = 'postgresql://postgres:postgres@127.0.0.1:54322/postgres';
+  assert.deepEqual(assertSafeEnv({ ...ok, DA_E2E_DB_URL: db }), { staging: false });
+  assert.throws(
+    () =>
+      assertSafeEnv({
+        ...ok,
+        DA_E2E_DB_URL: 'postgresql://u:p@db.example.supabase.co:5432/postgres',
+      }),
+    /DA_E2E_DB_URL/,
   );
-  assert.equal(bridge.url, 'http://172.17.0.1:8788/revenuecat/__activate');
+  assert.equal(seedAppEnv({ CI: 'true' }), 'ci');
+  assert.equal(seedAppEnv({}), 'local');
+});
+
+test('scenario ids from e2e.seed_user override the canon ids', () => {
+  const canon = canonIds();
+  const ids = mergeIds({ messageAhmet: 'e2e-ahmet', referralCode: 'ABCDEFG', ignored: 3 });
+  assert.equal(ids.messageAhmet, 'e2e-ahmet');
+  assert.equal(ids.referralCode, 'ABCDEFG');
+  assert.equal(ids.approvalCalendar, canon.approvalCalendar);
+  assert.equal('ignored' in ids, false);
 });
 
 test('demo ids equal the seed formula md5(da-demo:entity:slug)::uuid', () => {

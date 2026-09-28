@@ -201,10 +201,22 @@ export function buildAiRequestRow(record: AiAttemptRecord): AiRequestRow {
   return row;
 }
 
+/** Grounding verifier counters of one served output (AI_PIPELINE_PLAN §11; IT-AI-03). */
+export interface GroundingCounts {
+  readonly proposed: number;
+  readonly verified: number;
+  readonly dropped: number;
+}
+
 export interface TelemetrySink {
   /** Inserts one row and returns its id. */
   insert(row: AiRequestRow): Promise<string>;
+  /** Writes `grounding_*` on the row of the attempt that served the output (after verification). */
+  annotate?(id: string, counts: GroundingCounts): Promise<void>;
 }
+
+const SMALLINT_MAX = 32_767;
+const small = (n: number) => Math.max(0, Math.min(SMALLINT_MAX, Math.round(n)));
 
 export function supabaseTelemetrySink(client: DbClient): TelemetrySink {
   return {
@@ -213,7 +225,33 @@ export function supabaseTelemetrySink(client: DbClient): TelemetrySink {
       if (error !== null) throw mapDbError(error);
       return (data as { id: string }).id;
     },
+    async annotate(id, counts) {
+      const { error } = await client
+        .from('ai_requests')
+        .update({
+          grounding_proposed: small(counts.proposed),
+          grounding_verified: small(counts.verified),
+          grounding_dropped: small(counts.dropped),
+        })
+        .eq('id', id);
+      if (error !== null) throw mapDbError(error);
+    },
   };
+}
+
+/** Records the grounding counters; like every telemetry write it never breaks the caller. */
+export async function recordGrounding(
+  sink: TelemetrySink,
+  id: string | null,
+  counts: GroundingCounts,
+): Promise<boolean> {
+  if (id === null || sink.annotate === undefined || counts.proposed === 0) return false;
+  try {
+    await sink.annotate(id, counts);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /** Records an attempt; telemetry failures never break the AI call (they are logged by the caller). */

@@ -18,6 +18,7 @@ import {
   EmailDeepExtractV1,
   refineEmailDeepExtractV1,
 } from '@da/validation';
+import { recordGrounding } from '../../ai/telemetry.ts';
 import type { UntrustedDoc } from '../../ai/untrusted.ts';
 import { clip } from '../copy.ts';
 import type { MailMessageRow, MailThreadRow } from '../intel/types.ts';
@@ -227,6 +228,7 @@ export async function deepExtract(
   const trusted = [pipeline.user.displayName ?? '', m.from_name ?? ''].filter((n) => n !== '');
   const summary = guardSummary(data.summary_tr, [source], trusted, tally, 'ai_summary');
   if (data.summary_tr.trim() !== '' && summary === null) dropped.add('ai_summary');
+  await recordGrounding(pipeline.runtime.telemetry, result.aiRequestId, tally);
   return {
     kind: 'ai',
     reason: null,

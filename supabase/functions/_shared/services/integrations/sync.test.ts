@@ -548,3 +548,48 @@ Deno.test(
     assertEquals(h.store.accounts.has(account.id), true);
   },
 );
+
+Deno.test(
+  'Gmail history 404 seen by a push and a poll sync queues one bounded resync (IT-SYNC-03 dedupe)',
+  async () => {
+    const h = await integrationHarness();
+    const account = await activeDemoAccount(h, { userId: USER_A });
+    await firstPass(h, account, ['mail']);
+    const original = DemoMailAdapter.prototype.changesSince;
+    DemoMailAdapter.prototype.changesSince = () =>
+      Promise.reject(new ProviderError('cursor_invalid', 404, null, 'notFound'));
+    try {
+      // The provider_webhook job enqueues a push sync; the scheduler's poll runs a second later.
+      for (const [trigger, offset] of [
+        ['push', 1_000],
+        ['poll', 2_000],
+      ] as const) {
+        h.setNow(new Date(Date.parse('2026-09-24T07:30:00.000Z') + offset));
+        await h.runtime.enqueue({
+          type: 'gmail_sync',
+          idempotencyKey: `gmail_sync:${account.id}:${trigger}:404`,
+          payload: { connected_account_id: account.id, trigger, target_history_id: null },
+          accountId: account.id,
+          userId: USER_A,
+        });
+        await drain(h, ['gmail_sync']);
+      }
+    } finally {
+      DemoMailAdapter.prototype.changesSince = original;
+    }
+    const resyncs = [...h.jobs.jobs.values()].filter(
+      (j) => j.type === 'initial_sync' && (j.payload as { phase?: string }).phase === 'resync',
+    );
+    assertEquals(resyncs.length, 1);
+    // The key is derived from the hashed stale cursor, which also fits the payload's `origin`.
+    assert(
+      /^resync:[0-9a-f-]{36}:[0-9a-f]{40}$/.test(
+        (resyncs[0]!.payload as { origin: string }).origin,
+      ),
+    );
+    const states = [...h.store.syncStates.values()].filter(
+      (s) => s.connected_account_id === account.id && s.status === 'resync_required',
+    );
+    assertEquals(states.length, 1);
+  },
+);

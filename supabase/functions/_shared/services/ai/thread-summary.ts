@@ -9,6 +9,7 @@
  */
 import { localDate, type StoredEvidence, stripQuotedHistory } from '@da/domain';
 import { refineThreadSummaryV1, ThreadSummaryV1 } from '@da/validation';
+import { recordGrounding } from '../../ai/telemetry.ts';
 import type { UntrustedDoc } from '../../ai/untrusted.ts';
 import { clip } from '../copy.ts';
 import type { MailMessageRow, MailThreadRow } from '../intel/types.ts';
@@ -186,6 +187,7 @@ export async function summarizeThread(
           },
         ],
   );
+  await recordGrounding(pipeline.runtime.telemetry, result.aiRequestId, tally);
   return {
     kind: 'ai',
     reason: null,

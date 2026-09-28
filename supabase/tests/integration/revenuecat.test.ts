@@ -285,8 +285,11 @@ it(
 it('IT-RC-08', 'POST /purchases/sync re-fetches REST and makes the entitlement pro', async () => {
   const user = await createUser();
   assertEquals((await entitlement(user.id)).is_active, false);
-  // The store purchase the Maestro harness reports (E2E-M-06/M-16).
-  await mock.revenuecatActivate(user.id, 'da_pro_annual');
+  await mock.revenuecat({
+    op: 'customer',
+    id: user.id,
+    fixture: 'revenuecat/customer_v2_active.json',
+  });
   const res = await call('api', 'POST', '/purchases/sync', {
     jwt: user.jwt,
     key: crypto.randomUUID(),
@@ -296,9 +299,7 @@ it('IT-RC-08', 'POST /purchases/sync re-fetches REST and makes the entitlement p
   assertEquals(res.status, 200, JSON.stringify(out));
   await releaseJobs();
   await drain({ types: ['billing_sync'] });
-  const row = await mirror(user.id);
-  assertEquals(row?.status, 'active');
-  assertEquals(row?.product_id, 'da_pro_annual');
+  assertEquals((await mirror(user.id))?.status, 'active');
   const e = await entitlement(user.id);
   assertEquals(e.entitlement, 'pro');
   assertEquals(e.is_active, true);
@@ -311,6 +312,34 @@ it('IT-RC-08', 'POST /purchases/sync re-fetches REST and makes the entitlement p
   await other.body?.cancel();
   assertEquals(other.status, 422);
 });
+
+it(
+  'IT-RC-08',
+  'E2E paywall: the mock store activation (/revenuecat/__activate) then POST /purchases/sync → pro',
+  async () => {
+    const user = await createUser();
+    // The Maestro harness' `POST /revenuecat/activate` forwards here (scripts/e2e/harness-server.ts).
+    const activated = await fetch(`${env('DA_IT_MOCK_URL')}/revenuecat/__activate`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ app_user_id: user.id, product: 'da_pro_monthly' }),
+    });
+    assertEquals(activated.status, 200, await activated.text());
+    const res = await call('api', 'POST', '/purchases/sync', {
+      jwt: user.jwt,
+      key: crypto.randomUUID(),
+      body: { reason: 'purchase', rc_app_user_id: user.id },
+    });
+    assertEquals(res.status, 200, JSON.stringify(await json(res)));
+    await releaseJobs();
+    await drain({ types: ['billing_sync'] });
+    const row = await mirror(user.id);
+    assertEquals(row?.status, 'active');
+    assertEquals(row?.product_id, 'da_pro_monthly:monthly');
+    const e = await entitlement(user.id);
+    assertEquals([e.entitlement, e.is_active], ['pro', true]);
+  },
+);
 
 it('IT-RC-09', 'REST 429 → backoff honouring the rate-limit headers', async () => {
   const user = await createUser();

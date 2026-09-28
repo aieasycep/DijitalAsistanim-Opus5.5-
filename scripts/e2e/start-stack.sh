@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-# Tier-A stack for the Maestro run (TEST_PLAN §9.1; T-12.02): `supabase start`, the E2E preparation
-# SQL, the demo seed, the mock provider server (RevenueCat REST v2 for the paywall flows E2E-M-06 /
-# M-16), `supabase functions serve` (APP_ENV=e2e, DEMO_MODE, fixture AI, fixed clock) and the
-# harness on 127.0.0.1:8790. Writes the values later steps need to "$GITHUB_ENV" when set (else to
-# stdout). Loopback / runner-local only; CI-generated secrets never leave the runner.
+# Tier-A stack for the Maestro run (TEST_PLAN §9.1, §12.2; T-12.02): `supabase start`, the E2E
+# preparation SQL, the demo seed, the E2E scenario seed functions (supabase/seed/e2e/functions.sql),
+# the mock provider server (RevenueCat REST v2 for the paywall flows E2E-M-06 / M-16), `supabase
+# functions serve` (APP_ENV=e2e, DEMO_MODE, fixture AI, fixed clock) and the harness on
+# 127.0.0.1:8790. Writes the values later steps need to "$GITHUB_ENV" when set (else to stdout).
+# Loopback / runner-local only; CI-generated secrets never leave the runner.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -24,6 +25,14 @@ PUBLISHABLE_KEY="${SB_PUBLISHABLE_KEY:-${SB_ANON_KEY:-}}"
 
 psql "$DB_URL" -v ON_ERROR_STOP=1 -q -f scripts/e2e/prepare-stack.sql
 DEMO_MODE=true DEMO_DB_URL="$DB_URL" bash scripts/db/seed-demo.sh
+# E2E scenario seeds (TEST_PLAN §12.2): e2e.seed_user / e2e.reset_user for the harness. The file and
+# its functions refuse unless the session carries app.env (set only here, on the loopback stack).
+SEED_APP_ENV=local
+[[ "${CI:-}" == "true" ]] && SEED_APP_ENV=ci
+{
+  printf "set app.env = '%s';\n" "$SEED_APP_ENV"
+  cat supabase/seed/e2e/functions.sql
+} | psql "$DB_URL" -X -v ON_ERROR_STOP=1 -q --single-transaction -f -
 
 # The edge runtime runs in Docker, where host.docker.internal is the host gateway (the Docker bridge
 # gateway on Linux, the host loopback under Docker Desktop): the mock listens there, never on a

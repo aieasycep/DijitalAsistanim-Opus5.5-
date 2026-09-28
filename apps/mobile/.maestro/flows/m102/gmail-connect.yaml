@@ -3,7 +3,7 @@ name: 'E2E-M-03 · Gmail connect (demo adapter)'
 tags: [m102, android, ios, free]
 env:
   USER_KEY: u_empty
-  SCENARIO: none
+  SCENARIO: empty_accounts
 onFlowStart:
   - runScript:
       file: ../../scripts/harness.js
@@ -14,6 +14,13 @@ onFlowStart:
 - extendedWaitUntil: { visible: '${output.t.states.empty.noAccount.title}', timeout: 60000 }
 - tapOn: '${output.t.states.empty.noAccount.cta}'
 - extendedWaitUntil: { visible: { id: 'screen.accounts' }, timeout: 30000 }
+- tapOn: { id: 'accounts.add' }
+- tapOn: { id: 'addAccount.gmail' }
+- tapOn: { id: 'explainer' }
+# Deny branch: "Reddet" on the demo consent page (OAUTH-03 → error=access_denied) connects nothing.
+- extendedWaitUntil: { visible: '${output.t.web.demoConsent.deny}', timeout: 60000 }
+- tapOn: '${output.t.web.demoConsent.deny}'
+- extendedWaitUntil: { visible: { id: 'accounts.empty' }, timeout: 30000 }
 - tapOn: { id: 'accounts.add' }
 - tapOn: { id: 'addAccount.gmail' }
 - tapOn: { id: 'explainer' }
