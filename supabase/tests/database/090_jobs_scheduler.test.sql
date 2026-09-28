@@ -3,6 +3,14 @@
 begin;
 select plan(52);
 
+-- Isolation from the live scheduler: pg_cron (tier A, and tier C with pg_cron) commits its own due
+-- jobs (e.g. `da_health_check` every 5 minutes), which claim_jobs would pick up alongside the
+-- test's jobs. Block concurrent inserts until this transaction rolls back and park the jobs that
+-- already exist; both are undone at the end.
+lock table public.jobs in share row exclusive mode;
+update public.jobs set run_after = 'infinity'
+ where status in ('queued', 'retrying') and idempotency_key not like 'test:%';
+
 -- ═══ Jobs ═════════════════════════════════════════════════════════════════════════════════════
 select is(public.enqueue_job('health_check', 'test:idem'), public.enqueue_job('health_check', 'test:idem'),
           'enqueue_job with the same key returns the same id');
