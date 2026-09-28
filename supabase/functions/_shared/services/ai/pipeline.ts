@@ -4,6 +4,10 @@
  * output-validator context (sources and request aliases) and the user's plan, profile and flags.
  * Extraction calls never carry tools (the provider adapters send none for structured output), so a
  * hijacked model can only fill the schema (AI_PIPELINE_PLAN §9 item 2).
+ *
+ * Data Source Controls: context lines and documents may be tagged with the `ai_data_access`
+ * classes they carry; `callModel` drops every tagged part whose class is off before the prompt is
+ * assembled (`_shared/policy/data-access.ts`), so no feature can forget the check.
  */
 import type { AiFeature, InjectionScan } from '@da/domain';
 import { isoWeekdayOf, localDate, localTime } from '@da/domain';
@@ -13,7 +17,17 @@ import { type AiRuntime, generateStructured, type StructuredCallResult } from '.
 import { assemblePrompt } from '../../ai/prompts/assemble.ts';
 import type { ModelRole } from '../../ai/types.ts';
 import type { UntrustedDoc } from '../../ai/untrusted.ts';
+import {
+  admit,
+  admitContext,
+  type ContextLine,
+  disabledClasses,
+  type Guarded,
+} from '../../policy/data-access.ts';
 import type { AiUser } from './runtime.ts';
+
+/** A prompt document tagged with the `ai_data_access` classes it carries. */
+export type GuardedDoc = UntrustedDoc & Guarded;
 
 export interface PipelineContext {
   readonly runtime: AiRuntime;
@@ -28,8 +42,8 @@ export interface ModelCallInput<T> {
   readonly feature: AiFeature;
   readonly schema: z.ZodType<T>;
   readonly schemaName: string;
-  readonly context: readonly string[];
-  readonly docs: readonly UntrustedDoc[];
+  readonly context: readonly ContextLine[];
+  readonly docs: readonly GuardedDoc[];
   readonly vars?: Readonly<Record<string, string | number>>;
   /** Normalised content for the per-user result cache; omit to skip the cache. */
   readonly cacheContent?: string;
@@ -37,6 +51,8 @@ export interface ModelCallInput<T> {
   readonly units: number;
   readonly injection?: InjectionScan;
   readonly skipPrimary?: boolean;
+  /** T3: the route's escalation target only (see `StructuredCallInput.escalate`). */
+  readonly escalate?: boolean;
   readonly cacheTtl?: '5m' | '1h' | null;
   readonly promptKey?: PromptKey;
   readonly role?: ModelRole;
@@ -48,11 +64,23 @@ export function callModel<T>(
   ctx: PipelineContext,
   input: ModelCallInput<T>,
 ): Promise<StructuredCallResult<T>> {
-  const sources = [
-    ...input.docs.map((d) => d.text),
-    ...input.context,
-    ...(input.extraSources ?? []),
-  ];
+  const access = ctx.user.dataAccess;
+  const docs: UntrustedDoc[] = admit(access, input.docs).map((d) => ({
+    ref: d.ref,
+    kind: d.kind,
+    text: d.text,
+    ...(d.meta === undefined ? {} : { meta: d.meta }),
+  }));
+  const context = admitContext(access, input.context);
+  const sources = [...docs.map((d) => d.text), ...context, ...(input.extraSources ?? [])];
+  // A guarded prompt differs from the full one: never serve (or store) the other's cached result.
+  const guarded = docs.length < input.docs.length || context.length < input.context.length;
+  const cacheContent =
+    input.cacheContent === undefined
+      ? undefined
+      : guarded
+        ? `${input.cacheContent}\nguard:${disabledClasses(access).join(',')}`
+        : input.cacheContent;
   return generateStructured(ctx.runtime, {
     feature: input.feature,
     userId: ctx.user.userId,
@@ -64,16 +92,16 @@ export function callModel<T>(
     buildPrompt: (version) =>
       assemblePrompt({
         version,
-        context: input.context,
-        docs: input.docs,
+        context,
+        docs,
         ...(input.vars === undefined ? {} : { vars: input.vars }),
         ...(ctx.canary === undefined ? {} : { canary: ctx.canary }),
         cacheTtl: input.cacheTtl ?? null,
       }),
-    ...(input.cacheContent === undefined ? {} : { cacheContent: input.cacheContent }),
+    ...(cacheContent === undefined ? {} : { cacheContent }),
     ...(input.refreshCache === true ? { refreshCache: true } : {}),
     sources,
-    aliases: new Set(input.docs.map((d) => d.ref)),
+    aliases: new Set(docs.map((d) => d.ref)),
     ...(input.injection === undefined ? {} : { injection: input.injection }),
     units: input.units,
     correlationId: ctx.correlationId,
@@ -84,6 +112,7 @@ export function callModel<T>(
     ...(ctx.signal === undefined ? {} : { signal: ctx.signal }),
     ...(ctx.canary === undefined ? {} : { canary: ctx.canary }),
     ...(input.skipPrimary === true ? { skipPrimary: true } : {}),
+    ...(input.escalate === true ? { escalate: true } : {}),
   });
 }
 

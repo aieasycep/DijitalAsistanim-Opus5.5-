@@ -15,6 +15,7 @@ import {
 import type { T0Reason } from '../../ai/types.ts';
 import { aliasMap, groundQuote } from '../ai/grounding.ts';
 import { callModel, type PipelineContext, trustedHeader } from '../ai/pipeline.ts';
+import { tagged } from '../../policy/data-access.ts';
 import type { MeetingContact, MeetingEventRow, MeetingNoteRow } from '../assist/store.ts';
 import { clip } from '../copy.ts';
 import type { Attendee } from './prep.ts';
@@ -88,7 +89,11 @@ export async function extractPostMeeting(
   const context = [
     ...trustedHeader(pipeline.user, input.now),
     `Toplantı: ${clip(input.event.title ?? '', 200)}`,
-    `Katılımcılar: ${input.attendees.map((a) => a.name ?? a.email.split('@')[0]).join(', ')}`,
+    // Attendees are calendar details: dropped by the guard with `calendar` off.
+    tagged(
+      `Katılımcılar: ${input.attendees.map((a) => a.name ?? a.email.split('@')[0]).join(', ')}`,
+      'calendar',
+    ),
   ];
   const result = await callModel(pipeline, {
     feature: 'post_meeting_parse',

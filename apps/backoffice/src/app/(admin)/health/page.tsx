@@ -11,7 +11,7 @@ import { EnumLabel, StatusBadge } from '@/components/status-badge';
 import { Card } from '@/components/ui/card';
 import { serverEnv } from '@/env';
 import { cn } from '@/lib/cn';
-import { effectiveStatus, isStale, overallHealth } from '@/lib/health';
+import { effectiveStatus, googleVerificationNotice, isStale, overallHealth } from '@/lib/health';
 import { parseRange } from '@/lib/ranges';
 import { requestTime } from '@/server/clock';
 import { getFormatters } from '@/server/formatters';
@@ -92,6 +92,10 @@ async function Probes({ params }: { params: Record<string, string | string[] | u
   const component = HEALTH_PROBE_VALUES.find((p) => p === params.component) ?? null;
   const tone =
     overall === 'outage' ? 'critical' : overall === 'operational' ? 'success' : 'warning';
+  // KPL-32: the `google_oauth` probe's verification detail (the 100-user cap while unverified).
+  const googleNotice = googleVerificationNotice(
+    components.find((c) => c.component === 'google_oauth')?.detail_code ?? null,
+  );
   return (
     <div className="flex flex-col gap-4">
       <p
@@ -167,6 +171,21 @@ async function Probes({ params }: { params: Record<string, string | string[] | u
           </table>
         )}
       </Panel>
+      {googleNotice === null ? null : (
+        <p
+          role="note"
+          data-testid="health-google-verification"
+          className={cn(
+            'rounded-card-sm p-4 text-bo-body',
+            googleNotice === 'google_unverified'
+              ? 'bg-tone-warning-soft text-tone-warning-text'
+              : 'bg-tone-critical-soft text-tone-critical-text-strong',
+          )}
+        >
+          <span className="block font-semibold">{t('googleVerification.title')}</span>
+          {t(`googleVerification.${googleNotice}`)}
+        </p>
+      )}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <Panel title={t('notConfiguredTitle')}>
           {missing.length === 0 ? (

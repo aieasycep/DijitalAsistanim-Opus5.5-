@@ -23,6 +23,9 @@ Deno.test(
     assertEquals(data.profile.auth_providers, ['apple']);
     assertEquals(data.config.upgrade_required, false);
     assertEquals(data.config.referral_reward_days, 30);
+    // KPL-32 and the referral kill switch: documented defaults without a stored setting.
+    assertEquals(data.config.google_oauth_verified, false);
+    assertEquals(data.config.referral_rewards_enabled, true);
     const account = data.accounts[0];
     assertEquals(account.manual_revoke_url, 'https://myapps.microsoft.com');
     assertEquals(account.data_sources.draft_replies, false);

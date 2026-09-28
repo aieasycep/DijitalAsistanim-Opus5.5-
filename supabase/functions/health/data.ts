@@ -6,6 +6,8 @@
 import type { DbClient } from '../_shared/db/clients.ts';
 import { DB_FN, rpc } from '../_shared/db/functions.ts';
 import { mapDbError } from '../_shared/errors.ts';
+import { WORKER_JOB_TYPES } from '../_shared/jobs/worker-types.ts';
+import { GOOGLE_OAUTH_VERIFIED_SETTING } from '../_shared/services/google-verification.ts';
 import type { HealthData, HealthStatus } from './probes/types.ts';
 
 async function countRows(
@@ -43,6 +45,7 @@ export function supabaseHealthData(system: DbClient): HealthData {
           .from('jobs')
           .select('run_after')
           .in('status', ['queued', 'retrying'])
+          .in('type', [...WORKER_JOB_TYPES])
           .lte('run_after', now.toISOString())
           .order('run_after', { ascending: true })
           .limit(1)
@@ -130,6 +133,29 @@ export function supabaseHealthData(system: DbClient): HealthData {
         .maybeSingle();
       if (error !== null) throw mapDbError(error);
       return (data as { model: string } | null)?.model ?? null;
+    },
+    async googleOauth() {
+      const [setting, accounts] = await Promise.all([
+        system
+          .from('app_settings')
+          .select('value')
+          .eq('key', GOOGLE_OAUTH_VERIFIED_SETTING)
+          .maybeSingle(),
+        system
+          .from('connected_accounts')
+          .select('user_id')
+          .eq('provider', 'google')
+          .neq('status', 'disconnected')
+          .contains('capabilities_granted', ['mail_read'])
+          .limit(5000),
+      ]);
+      if (setting.error !== null) throw mapDbError(setting.error);
+      if (accounts.error !== null) throw mapDbError(accounts.error);
+      return {
+        setting: (setting.data as { value?: unknown } | null)?.value ?? null,
+        gmailUsers: new Set(((accounts.data ?? []) as { user_id: string }[]).map((r) => r.user_id))
+          .size,
+      };
     },
     async auditChain(window) {
       const { data, error } = await system

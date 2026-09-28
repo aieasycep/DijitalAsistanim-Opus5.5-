@@ -35,7 +35,7 @@ export async function runMeetingPrep(
   const event = await deps.store.meetingEvent(userId, eventId);
   if (event === null || event.status === 'cancelled') return { skipped: 'event_gone' };
   const now = ctx.now();
-  const sources = await loadPrepSources(deps.store, userId, event, now);
+  const sources = await loadPrepSources(deps.store, userId, event, now, user.dataAccess);
   const existing = await deps.store.meetingPrep(userId, eventId);
   if (
     existing?.status === 'ready' &&

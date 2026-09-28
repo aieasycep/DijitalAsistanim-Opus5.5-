@@ -73,3 +73,20 @@ Deno.test(
     assertEquals(supabaseRuntimeKeys({}, url), { url, publishableKey: null, secretKey: null });
   },
 );
+
+Deno.test(
+  'Voyage in preview/production needs the owner-confirmed training opt-out (PRIVACY.md)',
+  () => {
+    const voyage = { APP_ENV: 'preview', VOYAGE_API_KEY: 'pa-test-voyage-key' };
+    const error = assertThrows(() => parseFunctionEnv(testEnv(voyage)));
+    assert((error as Error).message.includes('VOYAGE_TRAINING_OPT_OUT_CONFIRMED'));
+    assert(!(error as Error).message.includes('pa-test-voyage-key'));
+    const confirmed = parseFunctionEnv(
+      testEnv({ ...voyage, VOYAGE_TRAINING_OPT_OUT_CONFIRMED: 'true' }),
+    );
+    assertEquals(confirmed.VOYAGE_TRAINING_OPT_OUT_CONFIRMED, true);
+    // Development and a deployment without Voyage are not affected.
+    parseFunctionEnv(testEnv({ VOYAGE_API_KEY: 'pa-test-voyage-key' }));
+    parseFunctionEnv(testEnv({ APP_ENV: 'preview' }));
+  },
+);

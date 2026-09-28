@@ -954,9 +954,27 @@ Deno.test(
   async () => {
     const hash = 'ab'.repeat(32);
     const pg = postgrest({
-      'POST memory_chunks': [{ id: 'mc1', user_id: USER_A, content: 'x', embedding_model: null }],
+      'POST memory_chunks': [
+        {
+          id: 'mc1',
+          user_id: USER_A,
+          chunk_kind: 'email_summary',
+          source_type: 'email_thread',
+          content: 'x',
+          embedding_model: null,
+        },
+      ],
       'DELETE memory_chunks': undefined,
-      'GET memory_chunks': [{ id: 'mc1', user_id: USER_A, content: 'x', embedding_model: null }],
+      'GET memory_chunks': [
+        {
+          id: 'mc1',
+          user_id: USER_A,
+          chunk_kind: 'email_summary',
+          source_type: 'email_thread',
+          content: 'x',
+          embedding_model: null,
+        },
+      ],
       'PATCH memory_chunks': undefined,
     });
     const store = supabaseMemoryStore(pg.db);

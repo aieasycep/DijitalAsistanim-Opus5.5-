@@ -9,11 +9,13 @@ import {
   validBody,
 } from '../../_shared/http/validate.ts';
 import {
+  type DeviceRegistrationChange,
   registerDevice,
   type RegisterResult,
   unregisterDevice,
 } from '../../_shared/services/devices.ts';
 import type { RouteRegistrar } from '../deps.ts';
+import { emitServerEvent } from '../server-events.ts';
 
 export const registerDeviceRoutes: RouteRegistrar = (app, kit) => {
   const register = routes['POST /devices/register'];
@@ -27,19 +29,38 @@ export const registerDeviceRoutes: RouteRegistrar = (app, kit) => {
       const auth = currentUser(c);
       const body = validBody(c, DeviceRegisterBody);
       const repos = kit.deps.repos(auth);
+      // §17.1: a new installation is `device_registered`; a push on/off flip on a known one is
+      // `push_permission_changed`.
+      const registrationEvents = async (
+        change: DeviceRegistrationChange | null,
+        platform: 'ios' | 'android',
+        permission: 'granted' | 'denied' | 'provisional' | 'undetermined',
+      ) => {
+        if (change?.firstRegistration === true) {
+          await emitServerEvent(kit, c, 'device_registered', {
+            platform,
+            push_permission: permission,
+          });
+        } else if (change?.pushChanged === true) {
+          await emitServerEvent(kit, c, 'push_permission_changed', { permission });
+        }
+      };
       return withIdempotency(
         c,
         { repo: kit.deps.idempotency, now: () => kit.now().getTime() },
         {
           status: register.status,
           async execute() {
+            let change: DeviceRegistrationChange | null = null;
             const data = await registerDevice(
               repos.devices,
               kit.deps.env,
               auth.userId,
               body,
               kit.now(),
+              (observed) => (change = observed),
             );
+            await registrationEvents(change, body.platform, body.push.permission);
             return {
               data,
               ref: { type: 'app_installation', id: body.installation_id, ack: { ...data } },

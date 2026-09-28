@@ -65,6 +65,7 @@ import {
 import { integrationMailBodySource } from '../../../_shared/services/intel/mail-bodies.ts';
 import { supabaseAssistApi } from '../../routes/assist-api.ts';
 import { supabaseAniSignalsRepo } from '../../../_shared/services/android-ni/ingest.ts';
+import { supabaseServerAnalytics } from '../../../_shared/services/analytics/emit.ts';
 
 export function createApiDeps(input: {
   readonly env: FunctionEnv;
@@ -75,7 +76,11 @@ export function createApiDeps(input: {
 }): ApiDeps {
   const { env, raw, config } = input;
   const system = serviceClient(config);
-  const settings = supabaseAppSettingsRepo(system);
+  const settings = supabaseAppSettingsRepo(system, {
+    ...(raw.GOOGLE_CASA_LOA_NOT_AFTER === undefined
+      ? {}
+      : { googleCasaLoaNotAfter: raw.GOOGLE_CASA_LOA_NOT_AFTER }),
+  });
   const flags = supabaseFlagSource(system);
   const base = env.SUPABASE_URL.replace(/\/+$/, '');
   const verifier = chainVerifiers(
@@ -122,6 +127,7 @@ export function createApiDeps(input: {
     log: input.log,
   });
   const gate = supabaseEntitlementGate(system);
+  const serverAnalytics = supabaseServerAnalytics(system, input.log);
   const revenueCat = revenueCatConfig(env);
 
   return {
@@ -156,7 +162,7 @@ export function createApiDeps(input: {
     business: {
       gate: () => gate,
       referrals: supabaseReferralRepo(system),
-      billing: supabaseBillingRepo(system),
+      billing: supabaseBillingRepo(system, serverAnalytics),
       revenueCat: revenueCat === null ? null : createRevenueCatClient({ config: revenueCat }),
     },
     repos: (auth) => {
@@ -172,6 +178,8 @@ export function createApiDeps(input: {
             flags: (userId, platform, version) => flags.forUser(userId, platform, version),
             minSupportedVersion: () => settings.minSupportedVersion(),
             referralRewardDays: () => settings.referralRewardDays(),
+            referralRewardsEnabled: () => settings.referralRewardsEnabled(),
+            googleOauthVerified: () => settings.googleOauthVerified(),
           },
         ),
         analytics: supabaseAnalyticsRepo({ system, user }),
@@ -195,5 +203,6 @@ export function createApiDeps(input: {
     }),
     assist: supabaseAssistApi(system),
     androidSignals: supabaseAniSignalsRepo(system),
+    serverAnalytics,
   };
 }

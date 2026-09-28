@@ -106,9 +106,31 @@ function empty(
   };
 }
 
+/**
+ * T2 deep extraction with the T3 escalation of AI_PIPELINE_PLAN §1.1 ("required field failed →
+ * T3 once, flag `ai.model.opus_escalation`"): when grounding dropped a field of a clean source, the
+ * same request is asked once on the route's escalation target (budget-reserved, `ai_requests` tier
+ * `t3`); the result with fewer dropped fields wins. Without an escalation target the T2 result
+ * stands.
+ */
 export async function deepExtract(
   pipeline: PipelineContext,
   input: DeepExtractInput,
+): Promise<DeepExtractResult> {
+  const first = await deepExtractOnce(pipeline, input, false);
+  if (first.kind !== 'ai' || first.droppedFields.length === 0 || first.injectionSuspected) {
+    return first;
+  }
+  const escalated = await deepExtractOnce(pipeline, input, true);
+  return escalated.kind === 'ai' && escalated.droppedFields.length < first.droppedFields.length
+    ? escalated
+    : first;
+}
+
+async function deepExtractOnce(
+  pipeline: PipelineContext,
+  input: DeepExtractInput,
+  escalate: boolean,
 ): Promise<DeepExtractResult> {
   const tally = new GroundingTally();
   const m = input.message;
@@ -140,6 +162,7 @@ export async function deepExtract(
     cacheContent: `email_deep_extract\n${docs.map((d) => `${d.ref}\n${d.text}`).join('\n')}`,
     units: 1,
     injection: scan,
+    ...(escalate ? { escalate: true } : {}),
   });
   if (result.kind !== 'ai') return empty(result.reason, source, tally, scan);
   const refined = refineEmailDeepExtractV1(result.data, {

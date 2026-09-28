@@ -24,9 +24,14 @@ How each part of Dijital Asistan reaches production, what the owner sets up once
    - `SUPABASE_AUTH_EXTERNAL_{APPLE,GOOGLE,AZURE}_{CLIENT_ID,SECRET}`.
 3. Set the Edge Function secrets from a local file that is never committed: `supabase secrets set --project-ref <ref> --env-file ./prod.secrets.env`. The names the code reads come in three tiers (derived by [`scripts/deploy/check-secrets.ts`](../scripts/deploy/check-secrets.ts) from `serverEnvShape` and `CREDENTIALS`):
    - **boot** (functions refuse to start without them): `HASH_PEPPER` and the active `TOKEN_ENC_KEY_V{n}`;
-   - **production** (the feature reports `external_credential_required` until set): Anthropic, Voyage, `AI_HASH_PEPPER`, Google OAuth + Pub/Sub + Calendar webhook, Microsoft OAuth (certificate) + Graph notification URLs, Sign in with Apple (revocation), RevenueCat (+ webhook auth), `EXPO_ACCESS_TOKEN`, `CRON_SECRET`, `WEBHOOK_HMAC_SECRET`, `ADMIN_BFF_SECRET` + `ADMIN_GATEWAY_SECRET`, email delivery, and `APP_ENV`, `PUBLIC_WEB_URL`, `API_PUBLIC_BASE_URL`, `OAUTH_RESULT_REDIRECT_URI`, `MAIL_MESSAGE_ID_DOMAIN`, `ADMIN_ORIGIN`, `RECOVERY_CODE_PEPPER`;
+   - **production** (the feature reports `external_credential_required` until set): Anthropic, Voyage (with `VOYAGE_TRAINING_OPT_OUT_CONFIRMED=true`, see below), `AI_HASH_PEPPER`, Google OAuth + Pub/Sub + Calendar webhook, Microsoft OAuth (certificate) + Graph notification URLs, Sign in with Apple (revocation), RevenueCat (+ webhook auth), `EXPO_ACCESS_TOKEN`, `CRON_SECRET`, `WEBHOOK_HMAC_SECRET`, `ADMIN_BFF_SECRET` + `ADMIN_GATEWAY_SECRET`, email delivery, and `APP_ENV`, `PUBLIC_WEB_URL`, `API_PUBLIC_BASE_URL`, `OAUTH_RESULT_REDIRECT_URI`, `MAIL_MESSAGE_ID_DOMAIN`, `ADMIN_ORIGIN`, `RECOVERY_CODE_PEPPER`;
    - **optional**: OpenAI (fallback models, disaster-recovery embeddings, server STT/TTS), the Anthropic/OpenAI admin keys (nightly cost reconciliation), Deepgram, premium TTS, Sentry, Turnstile.
    `SUPABASE_*` names are injected by the platform; the CLI refuses to set them.
+   - **Voyage training opt-out:** Voyage's terms allow training on customer content unless the
+     account opts out. Switch the opt-out on in the Voyage dashboard (manual external step), then
+     set `VOYAGE_TRAINING_OPT_OUT_CONFIRMED=true`. While `VOYAGE_API_KEY` is set in preview or
+     production without it, every Edge Function refuses to start (`voyage_training_opt_out_unconfirmed`,
+     key names only) ([PRIVACY.md](PRIVACY.md#ai-providers-and-sub-processors)).
 4. Generate local secrets for new keys with `bash scripts/dev/env.sh --init` (peppers, encryption keys, webhook secrets). The same generator makes production values when run on the owner's machine.
 
 ### The deploy workflow
@@ -36,6 +41,7 @@ Run **Actions → Deploy Supabase → Run workflow**. `dry_run` is on by default
 | Step | Dry run | Deploy |
 | --- | --- | --- |
 | `functions:imports --check` (generated per-function `deno.json`) | ✓ | ✓ |
+| `functions:check` with `DA_DENO_FROZEN=1`: every function entrypoint and module type-checks against the committed `supabase/functions/deno.lock` (THR-16) | ✓ | ✓ |
 | Secret-name report: `supabase secrets list -o json` → `check-secrets.ts` (names only, also written to the job summary) | report only | fails on a missing boot, production or deploy-job name |
 | `supabase link` | ✓ | ✓ |
 | `supabase db push --dry-run` (pending migrations) | ✓ | — |

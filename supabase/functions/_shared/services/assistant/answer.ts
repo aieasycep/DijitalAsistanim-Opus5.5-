@@ -414,6 +414,73 @@ export async function answerGrounded(
   };
 }
 
+/** Below this citation coverage a grounded answer is re-asked on the T3 target (§11.4 step 4). */
+export const QA_ESCALATION_COVERAGE = 0.8;
+
+function qaScore(result: QaResult): number {
+  return result.coverage ?? (result.grounded ? 1 : 0);
+}
+
+/**
+ * Grounded QA with the T3 escalation of AI_PIPELINE_PLAN §11.4 step 4: when the route resolved an
+ * escalation target (`ai.model.large.enabled` + `ai.model.opus_escalation`, balanced profile) and
+ * the answer's coverage is below {@link QA_ESCALATION_COVERAGE} (or nothing was verified), the same
+ * blocks are asked once on that target and the higher-coverage answer wins. The escalation call is
+ * budget-reserved like any call and recorded in `ai_requests` with tier `t3`; a refusal or failure
+ * keeps the first answer. With an escalation target both answers are buffered and only the winner's
+ * verified sentences are emitted; without one the answer streams sentence by sentence as before.
+ */
+export async function answerGroundedEscalating(
+  runtime: AiRuntime,
+  plan: Extract<QaPlan, { kind: 'ok' }>,
+  input: Parameters<typeof answerGrounded>[2],
+  cb: QaCallbacks,
+): Promise<QaResult> {
+  const escalation = plan.route.escalation;
+  if (escalation === null) return await answerGrounded(runtime, plan, input, cb);
+  const buffer = () => {
+    const events: ({ delta: string } | { cite: number })[] = [];
+    const callbacks: QaCallbacks = {
+      delta: (text) => Promise.resolve(void events.push({ delta: text })),
+      cite: (index) => Promise.resolve(void events.push({ cite: index })),
+    };
+    return { events, callbacks };
+  };
+  const firstOut = buffer();
+  const first = await answerGrounded(runtime, plan, input, firstOut.callbacks);
+  let chosen = first;
+  let out = firstOut;
+  if (
+    first.finish !== 'client_disconnected' &&
+    input.signal?.aborted !== true &&
+    qaScore(first) < QA_ESCALATION_COVERAGE
+  ) {
+    const secondOut = buffer();
+    try {
+      const second = await answerGrounded(
+        runtime,
+        { ...plan, route: { ...plan.route, tier: 't3', chain: [escalation], escalation: null } },
+        input,
+        secondOut.callbacks,
+      );
+      if (qaScore(second) > qaScore(first)) {
+        chosen = second;
+        out = secondOut;
+      }
+    } catch (error) {
+      runtime.log.warn('ai_escalation_failed', {
+        feature: 'assistant_qa',
+        error_code: error instanceof AiError ? error.code : 'unknown',
+      });
+    }
+  }
+  for (const event of out.events) {
+    if ('delta' in event) await cb.delta(event.delta);
+    else await cb.cite(event.cite);
+  }
+  return chosen;
+}
+
 /** Non-streaming grounded answer (API-SRCH-01 `mode=answer`): the verified text and its sources. */
 export async function answerText(
   runtime: AiRuntime,
@@ -421,7 +488,7 @@ export async function answerText(
   input: Parameters<typeof answerGrounded>[2],
 ): Promise<QaResult & { text: string }> {
   let text = '';
-  const result = await answerGrounded(runtime, plan, input, {
+  const result = await answerGroundedEscalating(runtime, plan, input, {
     delta: (t) => {
       text += t;
       return Promise.resolve();

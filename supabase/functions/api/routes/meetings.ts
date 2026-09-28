@@ -82,7 +82,7 @@ async function prep(
   correlationId: string,
 ) {
   const { assist } = assistOf(kit);
-  await requireMeetingFlag(kit, auth.userId);
+  const user = await requireMeetingFlag(kit, auth.userId);
   const event = await ownedEvent(kit, auth.userId, eventId);
   const now = kit.now();
   const start = Date.parse(event.start_at);
@@ -95,7 +95,7 @@ async function prep(
       details: { resource: 'calendar_event', reason: 'outside_prep_window' },
     });
   }
-  const sources = await loadPrepSources(assist.store, auth.userId, event, now);
+  const sources = await loadPrepSources(assist.store, auth.userId, event, now, user.dataAccess);
   const existing = await assist.store.meetingPrep(auth.userId, eventId);
   const fresh =
     existing?.status === 'ready' &&
@@ -251,10 +251,13 @@ async function post(
     client_note_id: body.client_post_id,
   });
   const attendees = attendeesOf(event);
-  const contacts = await assist.store.contactsForEmails(
-    auth.userId,
-    attendees.map((a) => a.email),
-  );
+  // The contact book is read for counterparty matching only with `ai_data_access.contacts` on.
+  const contacts = user.dataAccess.contacts
+    ? await assist.store.contactsForEmails(
+        auth.userId,
+        attendees.map((a) => a.email),
+      )
+    : [];
   const outcome = await extractPostMeeting(
     {
       runtime: intel.ai.runtime,

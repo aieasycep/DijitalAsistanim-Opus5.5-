@@ -12,10 +12,11 @@ import { currentUser } from '../../_shared/auth/user.ts';
 import { AppError } from '../../_shared/errors.ts';
 import { sendData } from '../../_shared/http/respond.ts';
 import { mountRoute, validateRequest, validQuery } from '../../_shared/http/validate.ts';
-import { embedTexts } from '../../_shared/services/memory/embed.ts';
+import { embedQueryText } from '../../_shared/services/memory/dr.ts';
 import { runSearch } from '../../_shared/services/memory/search.ts';
 import { searchAnswer } from '../../_shared/services/assistant/search-answer.ts';
 import type { RouteRegistrar } from '../deps.ts';
+import { emitServerEvent } from '../server-events.ts';
 
 export const registerSearchRoutes: RouteRegistrar = (app, kit) => {
   const route = routes['GET /search'];
@@ -48,16 +49,7 @@ export const registerSearchRoutes: RouteRegistrar = (app, kit) => {
             return ok;
           },
           embedQuery: user.isPro
-            ? (text) =>
-                embedTexts(api.ai.runtime, {
-                  feature: 'embedding_query',
-                  userId: user.userId,
-                  plan: user.plan,
-                  profile: user.profile,
-                  flags: user.flags,
-                  inputs: [text],
-                  correlationId,
-                })
+            ? (text) => embedQueryText(api.ai, user, text, correlationId)
             : null,
         },
         {
@@ -86,6 +78,13 @@ export const registerSearchRoutes: RouteRegistrar = (app, kit) => {
         });
         outcome.data.answer = answer;
         outcome.data.sources = sources;
+      }
+      // §17.1 `search_performed`: one per search (the first page), with counts only.
+      if (query.cursor === undefined) {
+        await emitServerEvent(kit, c, 'search_performed', {
+          mode: outcome.data.mode,
+          result_count: outcome.data.results.length,
+        });
       }
       const retention = await repo.retention();
       const last = outcome.data.results[outcome.data.results.length - 1];

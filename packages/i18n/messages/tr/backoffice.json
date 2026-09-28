@@ -414,6 +414,12 @@
     "lastCheck": "Son kontrol {relative}",
     "notConfiguredTitle": "Yapılandırılmamış bileşenler",
     "allConfigured": "Tüm bileşenler yapılandırılmış.",
+    "googleVerification": {
+      "title": "Google OAuth doğrulaması tamamlanmadı",
+      "google_unverified": "Google uygulamayı ve Gmail okuma iznini (CASA) doğrulayana kadar en fazla 100 Gmail kullanıcısı bağlanabilir. Doğrulama tamamlanınca Ayarlar'da google.oauth_verified değerini true yap.",
+      "google_unverified_cap_near": "100 kullanıcı sınırına yaklaşıldı (80 ve üzeri Gmail kullanıcısı). CASA doğrulamasını tamamla.",
+      "google_unverified_cap_reached": "100 kullanıcı sınırına ulaşılmak üzere (95 ve üzeri Gmail kullanıcısı): yeni Gmail bağlantıları Google tarafından reddedilebilir."
+    },
     "notConfiguredRow": "Yapılandırılmadı — Harici kimlik bilgisi gerekli",
     "expiry": "Kimlik bilgisi bitişi",
     "noExpiry": "Bitiş tarihi yok",
@@ -1372,7 +1378,12 @@
       "maxPerYear": "Yıllık en fazla ödül",
       "rewardDays": "Ödül günü",
       "riskThreshold": "Risk eşiği",
-      "applyWindow": "Kod uygulama süresi (gün)"
+      "applyWindow": "Kod uygulama süresi (gün)",
+      "rewardsEnabled": "Ödüller"
+    },
+    "rewards": {
+      "on": "Açık",
+      "off": "Kapalı: yeni kredi ve Pro verilmez"
     },
     "empty": "Henüz davet yok.",
     "emptyFlagged": "İncelenecek işaretli davet yok.",

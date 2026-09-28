@@ -28,6 +28,7 @@ import {
 import { isOn } from '../../_shared/services/flags.ts';
 import { SIGNED_AUDIO_TTL_S } from '../../_shared/services/storage.ts';
 import type { RouteRegistrar } from '../deps.ts';
+import { emitServerEvent } from '../server-events.ts';
 import { assistOf } from './assist-api.ts';
 
 export const registerBriefingAudioRoutes: RouteRegistrar = (app, kit) => {
@@ -56,12 +57,16 @@ export const registerBriefingAudioRoutes: RouteRegistrar = (app, kit) => {
       }
       const path = briefingAudioPath(auth.userId, briefing.id, briefing.version);
       const now = kit.now();
+      // §17.1 `briefing_audio_requested`: the mode this response serves.
+      const served = (mode: 'premium_tts' | 'native_tts') =>
+        emitServerEvent(kit, c, 'briefing_audio_requested', { mode });
       if (
         body.prefer === 'premium' &&
         briefing.audio_status === 'ready' &&
         briefing.audio_storage_path === path
       ) {
         const url = await assist.storage.signedUrl('briefing-audio', path, SIGNED_AUDIO_TTL_S);
+        await served('premium_tts');
         return sendData(c, {
           mode: 'premium',
           url,
@@ -79,6 +84,7 @@ export const registerBriefingAudioRoutes: RouteRegistrar = (app, kit) => {
         notice_key: notice,
         premium_status: premium,
       });
+      await served('native_tts');
       if (body.prefer === 'native') return sendData(c, native(null, null));
       if (
         briefing.audio_status !== 'failed' &&

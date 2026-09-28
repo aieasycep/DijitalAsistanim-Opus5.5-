@@ -27,6 +27,12 @@ import type {
 } from '../assist/store.ts';
 import { clip } from '../copy.ts';
 import type { CommitmentRow, MailMessageRow, MailThreadRow } from '../intel/types.ts';
+import {
+  type AiDataAccess,
+  DEFAULT_AI_DATA_ACCESS,
+  disabledClasses,
+  tagged,
+} from '../../policy/data-access.ts';
 
 export const PREP_MAIL_DAYS = 60;
 export const PREP_MAIL_LIMIT = 10;
@@ -88,16 +94,22 @@ export function attendeesOf(event: MeetingEventRow): Attendee[] {
   return out;
 }
 
+/**
+ * Data Source Controls (M-SET-33): with `calendar` off the prep uses the title and time only, so
+ * the attendees (and every source found through them) are not loaded; with `contacts` off the
+ * contact book is not read. A changed toggle changes the source hash, so the prep regenerates.
+ */
 export async function loadPrepSources(
   store: AssistStore,
   userId: string,
   event: MeetingEventRow,
   now: Date,
+  access: AiDataAccess = DEFAULT_AI_DATA_ACCESS,
 ): Promise<PrepSources> {
-  const attendees = attendeesOf(event);
+  const attendees = access.calendar ? attendeesOf(event) : [];
   const emails = attendees.map((a) => a.email);
   const [contacts, mails, notes, awaiting] = await Promise.all([
-    store.contactsForEmails(userId, emails),
+    access.contacts ? store.contactsForEmails(userId, emails) : Promise.resolve([]),
     store.mailsWith(
       userId,
       emails,
@@ -118,6 +130,7 @@ export async function loadPrepSources(
     ...notes.map((n) => `n:${n.id}`).sort(),
     ...commitments.map((c) => `c:${c.id}:${c.status}:${c.due_at ?? ''}`).sort(),
     ...awaiting.map((t) => `t:${t.id}:${t.reply_state}:${t.last_message_at}`).sort(),
+    ...(access.calendar && access.contacts ? [] : [`guard:${disabledClasses(access).join(',')}`]),
   ];
   return {
     event,
@@ -288,7 +301,8 @@ export async function composePrep(
     provider: event.provider,
     at: event.updated_at,
   };
-  if (event.description_excerpt !== null)
+  // The description is a calendar detail (M-SET-32 "Takvim ayrıntıları").
+  if (event.description_excerpt !== null && pipeline.user.dataAccess.calendar)
     add('e1', 'event', event.description_excerpt, eventSource);
   sources.mails.forEach((m, i) =>
     add(`m${i + 1}`, 'summary', mailText(m), {
@@ -320,7 +334,10 @@ export async function composePrep(
   const context = [
     ...trustedHeader(pipeline.user, now),
     `Toplantı: ${clip(event.title ?? '', 200)} · ${localDate(event.start_at, tz)} ${localTime(event.start_at, tz)}`,
-    `Katılımcılar: ${sources.attendees.map((a) => a.name ?? a.email.split('@')[0]).join(', ')}`,
+    tagged(
+      `Katılımcılar: ${sources.attendees.map((a) => a.name ?? a.email.split('@')[0]).join(', ')}`,
+      'calendar',
+    ),
     `Senden beklenenler: ${sources.commitments.filter((c) => c.direction === 'user_owes').length}`,
     `Senin beklediklerin: ${sources.commitments.filter((c) => c.direction === 'they_owe').length + sources.awaiting.filter((t) => t.reply_state === 'awaiting_their_reply').length}`,
   ];

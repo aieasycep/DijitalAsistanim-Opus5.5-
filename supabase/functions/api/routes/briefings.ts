@@ -22,6 +22,7 @@ import { enforceRateLimit } from '../../_shared/ratelimit.ts';
 import { shareCard } from '../../_shared/services/briefings/share-card.ts';
 import { isOn } from '../../_shared/services/flags.ts';
 import type { RouteKit, RouteRegistrar } from '../deps.ts';
+import { emitServerEvent } from '../server-events.ts';
 import type { IntelApi } from './intel-api.ts';
 
 function intel(kit: RouteKit): IntelApi {
@@ -73,7 +74,7 @@ export const registerBriefingRoutes: RouteRegistrar = (app, kit) => {
           status: evening.status,
           async execute() {
             const data = await run();
-            c.get('log').info('evening_closed', { carried: data.carried });
+            await emitServerEvent(kit, c, 'evening_closed', { carried: data.carried });
             return { data, ref: { type: 'briefing', id: params.id, ack: data } };
           },
           replay: () => run(),
@@ -101,7 +102,7 @@ export const registerBriefingRoutes: RouteRegistrar = (app, kit) => {
       const card = shareCard(briefing.weekly_stats, user.locale);
       if (card === null)
         throw new AppError('NOT_FOUND', { details: { reason: 'weekly_stats_missing' } });
-      c.get('log').info('weekly_share_card_served');
+      await emitServerEvent(kit, c, 'weekly_share_card_served', {});
       return sendData(c, card);
     },
   );

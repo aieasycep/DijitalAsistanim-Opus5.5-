@@ -31,6 +31,7 @@ import { createHarness } from './testing.ts';
 import type { IntelApi } from './routes/intel-api.ts';
 import type { AssistApi } from './routes/assist-api.ts';
 import type { RequestRepos } from './deps.ts';
+import type { AiDataAccess } from '../_shared/policy/data-access.ts';
 
 const M1 = '11111111-1111-4111-8111-000000000001';
 const T1 = '11111111-1111-4111-8111-000000000002';
@@ -1187,5 +1188,317 @@ Deno.test(
       ['queued', 4, 0],
     );
     assertEquals((await s.request('GET', `/onboarding/first-analysis/${uuid()}`)).status, 404);
+  },
+);
+
+// ── Data Source Controls (SECURITY_AND_PRIVACY_PLAN §4.4; SCREEN_AND_FLOW_MAP M-SET-32/33) ──
+function setAccess(s: Setup, patch: Partial<AiDataAccess>): void {
+  const user = s.fx.ai.users.get(USER_A)!;
+  s.fx.ai.users.set(USER_A, { ...user, dataAccess: { ...user.dataAccess, ...patch } });
+}
+
+/** Every rendered request that reached the fixture provider (optionally one schema / op). */
+function sent(s: Setup, name?: string): string {
+  return s.fx.ai.prompts
+    .filter((p) => name === undefined || p.name === name)
+    .map((p) => p.text)
+    .join('\n');
+}
+
+async function prepViaJob(s: Setup) {
+  const first = await s.request('POST', `/meetings/${EVENT}/prep`, {}, { key: key() });
+  assertEquals(first.status, 202);
+  const job = [...s.h.workflow.queue.jobs.values()].find((j) => j.type === 'meeting_prep')!;
+  const result = await runMeetingPrep(
+    s.fx.jobs,
+    jobContext(job.payload as never, { type: 'meeting_prep' }),
+  );
+  const ready = await s.request('POST', `/meetings/${EVENT}/prep`, {}, { key: key() });
+  return { result, prep: (await ready.json()).data.prep };
+}
+
+Deno.test(
+  'Data Source Controls: meeting prep with calendar on sends the description and attendees (control)',
+  async () => {
+    const s = await setup();
+    await prepViaJob(s);
+    const prompt = sent(s, 'MeetingPrepV1');
+    assertStringIncludes(prompt, 'Ekim teslimatı');
+    assertStringIncludes(prompt, 'Mehmet Yılmaz');
+  },
+);
+
+Deno.test(
+  'Data Source Controls: calendar off → meeting prep uses title and time only (no attendees, description or attendee-derived sources)',
+  async () => {
+    const s = await setup();
+    setAccess(s, { calendar: false });
+    s.fx.store.notes.push({
+      id: uuid(),
+      user_id: USER_A,
+      calendar_event_id: EVENT,
+      kind: 'prep_note',
+      body: 'Fiyat listesini yanıma al.',
+      input: 'text',
+      client_note_id: null,
+      created_at: NOW.toISOString(),
+    });
+    const { prep } = await prepViaJob(s);
+    const prompt = sent(s, 'MeetingPrepV1');
+    assertStringIncludes(prompt, 'Teklif görüşmesi');
+    assertStringIncludes(prompt, 'Fiyat listesini');
+    assert(!prompt.includes('Ekim teslimatı'), 'description reached the prompt');
+    assert(!prompt.includes('Mehmet'), 'attendee reached the prompt');
+    assert(!prompt.includes('Katılımcılar'), 'attendee line reached the prompt');
+    assert(!prompt.includes('Revize'), 'attendee mail reached the prompt');
+    assertEquals(prep.people, []);
+  },
+);
+
+Deno.test('Data Source Controls: contacts off → meeting prep reads no contact book', async () => {
+  const s = await setup();
+  setAccess(s, { contacts: false });
+  const { prep } = await prepViaJob(s);
+  assertEquals(prep.people, []);
+  assert(!sent(s).includes('Yılmaz Endüstri'));
+});
+
+Deno.test(
+  'Data Source Controls: calendar off → the post-meeting prompt carries no attendee names',
+  async () => {
+    const s = await setup();
+    setAccess(s, { calendar: false });
+    s.fx.store.meetingEvents[0] = event({
+      start_at: new Date(NOW.getTime() - 2 * 3_600_000).toISOString(),
+      end_at: new Date(NOW.getTime() - 3_600_000).toISOString(),
+    });
+    const res = await s.request('POST', `/meetings/${EVENT}/post`, {
+      client_post_id: crypto.randomUUID(),
+      text: 'Sunumu yarın göndereceğim.',
+      source: 'text',
+    });
+    assertEquals(res.status, 201);
+    const prompt = sent(s, 'PostMeetingCommitmentV1');
+    assertStringIncludes(prompt, 'Sunumu yarın');
+    assert(!prompt.includes('Mehmet Yılmaz'));
+    assert(!prompt.includes('Katılımcılar'));
+  },
+);
+
+Deno.test(
+  'Data Source Controls: attachments off → reply drafts never see attachment names; mail_body off → 403',
+  async () => {
+    const body = {
+      text: 'Revize fiyatı Cuma’ya kadar iletebilir misiniz?',
+      html: null,
+      attachments: [
+        { filename: 'Teklif_v2.pdf', mimeType: 'application/pdf', sizeBytes: 1200, inline: false },
+      ],
+    };
+    const s = await setup();
+    s.fx.mem.bodies.set(`p-${M1}`, body);
+    const on = await s.request(
+      'POST',
+      `/mail/${M1}/reply-drafts`,
+      { tone: 'short' },
+      { key: key() },
+    );
+    assertEquals(on.status, 201);
+    assertStringIncludes(sent(s, 'ReplyDraftsV1'), 'Teklif_v2.pdf');
+    const s2 = await setup();
+    s2.fx.mem.bodies.set(`p-${M1}`, body);
+    setAccess(s2, { attachments: false });
+    const off = await s2.request(
+      'POST',
+      `/mail/${M1}/reply-drafts`,
+      { tone: 'short' },
+      { key: key() },
+    );
+    assertEquals(off.status, 201);
+    const prompt = sent(s2, 'ReplyDraftsV1');
+    assertStringIncludes(prompt, 'Revize fiyatı');
+    assert(!prompt.includes('Teklif_v2'), 'attachment name reached the prompt');
+    const s3 = await setup();
+    setAccess(s3, { mailBody: false });
+    const blocked = await s3.request(
+      'POST',
+      `/mail/${M1}/reply-drafts`,
+      { tone: 'short' },
+      { key: key() },
+    );
+    assertEquals(blocked.status, 403);
+    assertEquals((await blocked.json()).error.details.toggle, 'ai_data_access.mail_body');
+    assertEquals(s3.fx.ai.prompts.length, 0);
+  },
+);
+
+Deno.test(
+  'Data Source Controls: assistant retrieval drops person rows, event details and body-derived summaries of disabled classes',
+  async () => {
+    const rows = (): SearchRow[] => [
+      {
+        result_type: 'event',
+        entity_id: EVENT,
+        title: 'Teklif görüşmesi',
+        snippet: 'Kadıköy ofisi, 3. kat toplantı odası',
+        source_type: 'calendar_event',
+        source_id: EVENT,
+        source_provider: 'google',
+        source_timestamp: NOW.toISOString(),
+        score: 0.9,
+      },
+      {
+        result_type: 'person',
+        entity_id: CONTACT,
+        title: 'Mehmet Yılmaz teklif sorumlusu',
+        snippet: 'Yılmaz Endüstri satın alma',
+        source_type: 'contact',
+        source_id: CONTACT,
+        source_provider: null,
+        source_timestamp: NOW.toISOString(),
+        score: 0.8,
+      },
+      {
+        result_type: 'email',
+        entity_id: M1,
+        title: 'Revize teklif',
+        snippet: 'Teklif özeti: fiyat yüzde on artıyor.',
+        source_type: 'email_thread',
+        source_id: T1,
+        source_provider: 'google',
+        source_timestamp: NOW.toISOString(),
+        score: 0.7,
+      },
+    ];
+    const ask = async (s: Setup) => {
+      s.searchRows.push(...rows());
+      const id = await thread(s);
+      await sse(
+        await s.request('POST', `/assistant/threads/${id}/messages`, {
+          client_message_id: crypto.randomUUID(),
+          content: 'Teklif ne zaman isteniyor?',
+          input_mode: 'text',
+        }),
+      );
+      return s.fx.ai.prompts
+        .filter((p) => p.op === 'stream' || p.name === 'AssistantGroundedJsonV1')
+        .map((p) => p.text)
+        .join('\n');
+    };
+    const control = await setup();
+    const full = await ask(control);
+    assertStringIncludes(full, 'Kadıköy ofisi');
+    assertStringIncludes(full, 'Yılmaz Endüstri');
+    const s = await setup();
+    setAccess(s, { calendar: false, contacts: false, mailBody: false });
+    const guarded = await ask(s);
+    assertStringIncludes(guarded, 'Teklif görüşmesi');
+    assert(!guarded.includes('Kadıköy'), 'event location reached the prompt');
+    assert(!guarded.includes('Yılmaz Endüstri'), 'contact row reached the prompt');
+    assert(!guarded.includes('yüzde on'), 'mail summary reached the prompt');
+  },
+);
+
+// ── Backend analytics events (API_CONTRACTS §17.1) ───────────────────────────
+Deno.test(
+  '§17.1 server analytics: draft generation, briefing audio, first analysis start and capture analysis',
+  async () => {
+    const s = await setup();
+    const created = (
+      await (
+        await s.request('POST', `/mail/${M1}/reply-drafts`, { tone: 'short' }, { key: key() })
+      ).json()
+    ).data;
+    // A reused draft (same request within 10 min) generates nothing new.
+    await (
+      await s.request('POST', `/mail/${M1}/reply-drafts`, { tone: 'short' }, { key: key() })
+    ).body?.cancel();
+    await (
+      await s.request(
+        'POST',
+        `/reply-drafts/${created.id}/regenerate`,
+        { tone: 'friendly', expected_version: 1 },
+        { key: key() },
+      )
+    ).body?.cancel();
+    s.fx.mem.messages.push(
+      messageRow({
+        thread_id: T1,
+        direction: 'outbound',
+        from_email: 'yunus@firma.example',
+        to_emails: ['mehmet@yilmazendustri.example'],
+        subject: 'Teklif',
+        received_at: NOW.toISOString(),
+      }),
+    );
+    Object.assign(s.fx.mem.threads[0]!, {
+      reply_state: 'awaiting_their_reply',
+      awaiting_since: new Date(NOW.getTime() - 4 * 86_400_000).toISOString(),
+    });
+    const followUp = (
+      await (await s.request('POST', `/followups/${T1}/draft`, {}, { key: key() })).json()
+    ).data;
+
+    const b = briefingRow({ status: 'ready' });
+    s.fx.store.briefings.push({
+      id: b.id,
+      user_id: USER_A,
+      kind: 'morning',
+      status: 'ready',
+      version: 1,
+      local_date: b.local_date,
+      hero_line: 'Bugün bilmen gereken 2 şey var.',
+      narrative: 'Öğleden sonra teklif var.',
+      sections: ['priorities'],
+      audio_status: 'none',
+      audio_storage_path: null,
+      audio_duration_s: null,
+      audio_chapters: [],
+    });
+    await (
+      await s.request('POST', `/briefings/${b.id}/audio`, { prefer: 'native' })
+    ).body?.cancel();
+    await (
+      await s.request('POST', '/onboarding/first-analysis', {}, { key: key() })
+    ).body?.cancel();
+
+    const capture = (
+      await (
+        await s.request('POST', '/captures', {
+          client_capture_id: crypto.randomUUID(),
+          share_origin: 'in_app',
+          source: { kind: 'text', text: 'Perşembe 15:00 Ayşe ile kahve.' },
+        })
+      ).json()
+    ).data;
+    await (
+      await s.request('POST', `/captures/${capture.id}/analyze`, {}, { key: key() })
+    ).body?.cancel();
+    const job = [...s.h.workflow.queue.jobs.values()].find((j) => j.type === 'capture_analysis')!;
+    const ran = await runCaptureAnalysis(
+      s.fx.jobs,
+      jobContext(job.payload as never, { type: 'capture_analysis' }),
+    );
+    assertEquals(ran.status, 'extracted');
+
+    assertEquals(
+      s.h.serverEvents.rows.map((r) => [r.event_name, r.props]),
+      [
+        ['reply_draft_generated', { tone: 'short' }],
+        ['reply_draft_generated', { tone: 'friendly' }],
+        ['followup_draft_generated', { tone: followUp.tone }],
+        ['briefing_audio_requested', { mode: 'native_tts' }],
+        ['onboarding_first_analysis_started', {}],
+      ],
+    );
+    assertEquals(
+      s.fx.events.rows.map((r) => [r.event_name, r.props, r.user_id]),
+      [['capture_analyzed', { kind: 'text' }, USER_A]],
+    );
+    // No subject, body, name or address ever reaches an analytics row.
+    const stored = JSON.stringify([...s.h.serverEvents.rows, ...s.fx.events.rows]);
+    for (const leak of ['Revize', 'Mehmet', 'yilmazendustri', 'Ayşe', 'Teklif']) {
+      assert(!stored.includes(leak), `${leak} reached analytics_events`);
+    }
   },
 );

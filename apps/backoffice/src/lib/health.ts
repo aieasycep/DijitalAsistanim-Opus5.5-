@@ -45,3 +45,21 @@ export function overallHealth(
   if (statuses.length === 0) return 'unknown';
   return 'operational';
 }
+
+const GOOGLE_VERIFICATION_CODES = [
+  'google_unverified',
+  'google_unverified_cap_near',
+  'google_unverified_cap_reached',
+] as const;
+
+export type GoogleVerificationNotice = (typeof GOOGLE_VERIFICATION_CODES)[number];
+
+/**
+ * KPL-32: the `google_oauth` probe reports the unverified Google OAuth app (at most 100 Gmail users)
+ * through its detail code; System Health shows the matching notice.
+ */
+export function googleVerificationNotice(
+  detailCode: string | null | undefined,
+): GoogleVerificationNotice | null {
+  return GOOGLE_VERIFICATION_CODES.find((code) => code === detailCode) ?? null;
+}

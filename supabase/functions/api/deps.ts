@@ -41,6 +41,7 @@ export interface JobQueue {
 import type { IntelApi } from './routes/intel-api.ts';
 import type { AssistApi } from './routes/assist-api.ts';
 import type { AniSignalsRepo } from '../_shared/services/android-ni/ingest.ts';
+import type { ServerAnalytics } from '../_shared/services/analytics/emit.ts';
 
 /** Per-request repositories bound to the caller (their RLS client plus scoped system access). */
 export interface RequestRepos {
@@ -99,6 +100,8 @@ export interface ApiDeps {
   readonly assist?: AssistApi;
   /** Android Notification Intelligence ingest (API-ANI-01); the route is mounted when present. */
   readonly androidSignals?: AniSignalsRepo;
+  /** Backend analytics events (API_CONTRACTS §17.1) through the shared server emitter. */
+  readonly serverAnalytics?: ServerAnalytics;
 }
 
 export interface RouteKit {

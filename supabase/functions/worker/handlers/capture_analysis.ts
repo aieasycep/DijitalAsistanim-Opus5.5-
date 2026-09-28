@@ -24,6 +24,7 @@ import { type CaptureInput, extractCapture } from '../../_shared/services/captur
 import { PAGE_MIN_TEXT, readPage, SsrfError } from '../../_shared/services/capture/link.ts';
 import { readPdf } from '../../_shared/services/capture/pdf.ts';
 import { isOn } from '../../_shared/services/flags.ts';
+import { dataAllowed } from '../../_shared/policy/data-access.ts';
 import type { AiUser } from '../../_shared/services/ai/runtime.ts';
 import { type AssistJobDeps, assistPipeline } from './assist.ts';
 
@@ -31,6 +32,8 @@ export const CaptureAnalysisPayload = z.object({ capture_id: Uuid, user_id: Uuid
 export type CaptureAnalysisPayload = z.infer<typeof CaptureAnalysisPayload>;
 
 const MAX_FILE_BYTES = 20 * 1024 * 1024;
+/** Capture kinds read from text or a link; every other kind is a file (attachment data). */
+const TEXT_KINDS: ReadonlySet<string> = new Set(['text', 'link', 'share']);
 const FILE_TTL_MS = 24 * 3_600_000;
 
 class Terminal extends Error {
@@ -141,6 +144,21 @@ export async function runCaptureAnalysis(
   const capture = await deps.store.capture(userId, ctx.payload.capture_id);
   if (capture === null || capture.status !== 'analyzing') return { skipped: 'not_analyzing' };
   const user = await deps.intel.ai.users.load(userId);
+  // Data Source Controls apply at use time: a file capture queued before `attachments` was turned
+  // off never reaches a model; its file is removed and the capture fails with the toggle's code.
+  if (!TEXT_KINDS.has(capture.kind) && !dataAllowed(user.dataAccess, 'attachments')) {
+    await deps.store.updateCapture(userId, capture.id, {
+      status: 'failed',
+      error_code: 'DATA_SOURCE_DISABLED',
+    });
+    if (capture.storage_path !== null && capture.file_deleted_at === null) {
+      await deps.storage.remove('captures', [capture.storage_path]);
+      await deps.store.updateCapture(userId, capture.id, {
+        file_deleted_at: new Date().toISOString(),
+      });
+    }
+    return { skipped: 'attachments_off' };
+  }
   const now = ctx.now();
   const final = ctx.job.attempts >= ctx.job.max_attempts;
   const progress = (step: string) =>
@@ -194,6 +212,7 @@ export async function runCaptureAnalysis(
       });
     }
     await cleanupStaleFiles(deps, userId, now);
+    await deps.analytics?.emit('capture_analyzed', { kind: capture.kind }, { userId });
     return { status: 'extracted', items: outcome.items.length };
   } catch (error) {
     if (error instanceof Terminal) {

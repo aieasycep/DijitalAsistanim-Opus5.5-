@@ -4,12 +4,19 @@
  * contacts, and the follow-ups `email_analysis` (Pro escalations), `insight_refresh` and
  * `embedding` (Pro). A budget refusal or a kill switch leaves the deterministic result with
  * `ai_status='skipped_budget'` / `'skipped_flag'`; messages are never blocked.
+ *
+ * Backfilled mail (`origin: 'backfill'`, days 4–N of the initial sync) gets model work only for
+ * Pro users with `ai.backfill.enabled` on (AI_PIPELINE_PLAN §3 First Analysis, INTEGRATION_PLAN
+ * §3.15 stage B, R-10); otherwise it keeps the T0 result (`skipped_flag` with the flag off, the
+ * deterministic `t0_final` on Free) and no analysis or embedding follows.
  */
 import type { LearnedPreference, PriorityRule } from '@da/domain';
 import { emailDomain } from '@da/domain';
 import { Uuid } from '@da/validation';
 import { z } from 'zod';
 import { defineJob } from '../../_shared/jobs/registry.ts';
+import { isOn } from '../../_shared/services/flags.ts';
+import { dataAllowed } from '../../_shared/policy/data-access.ts';
 import type { JobContext } from '../../_shared/jobs/types.ts';
 import {
   type AiTriage,
@@ -39,7 +46,7 @@ import {
 export const EmailTriagePayload = z.object({
   connected_account_id: Uuid,
   email_message_ids: z.array(Uuid).min(1).max(50),
-  origin: z.enum(['initial', 'incremental', 'resync']),
+  origin: z.enum(['initial', 'incremental', 'resync', 'backfill']),
 });
 export type EmailTriagePayload = z.infer<typeof EmailTriagePayload>;
 
@@ -114,7 +121,8 @@ export async function runEmailTriage(
     learnFromInteractions: user.learnFromInteractions,
     timeZone: user.timeZone,
     now,
-    mailBodyAllowed: user.dataAccess.mailBody,
+    mailBodyAllowed: dataAllowed(user.dataAccess, 'mail_body'),
+    contactsAllowed: dataAllowed(user.dataAccess, 'contacts'),
   };
   const ruleById = new Map<string, PriorityRule>(rules.map((r) => [r.id, r]));
 
@@ -132,7 +140,7 @@ export async function runEmailTriage(
   for (const m of unique) {
     const bulkHeaders = m.list_unsubscribe || m.precedence_bulk || m.auto_submitted;
     const body =
-      user.dataAccess.mailBody && !bulkHeaders
+      tctx.mailBodyAllowed && !bulkHeaders
         ? await fetchBody(deps, ctx, {
             userId,
             accountId: account.id,
@@ -144,11 +152,22 @@ export async function runEmailTriage(
   }
 
   const pipeline = pipelineFor(deps, user, ctx);
+  // Backfill gate (R-10 `ai.backfill.enabled`, Pro only): the deterministic pass still runs.
+  const backfillGate =
+    p.origin !== 'backfill'
+      ? null
+      : !isOn(user.flags, 'ai.backfill.enabled')
+        ? ('skipped_flag' as const)
+        : !user.isPro
+          ? ('t0_final' as const)
+          : null;
+  const aiAllowed = backfillGate === null;
   const survivors = prepared.filter((m) => !m.t0Final && m.row.direction === 'inbound');
   const ai = new Map<string, AiTriage>();
   const skipped = new Map<string, string>();
   const promptVersion = new Map<string, string | null>();
-  for (let i = 0; i < survivors.length; i += TRIAGE_BATCH_SIZE) {
+  if (backfillGate !== null) for (const m of survivors) skipped.set(m.row.id, backfillGate);
+  for (let i = 0; aiAllowed && i < survivors.length; i += TRIAGE_BATCH_SIZE) {
     const batch = survivors.slice(i, i + TRIAGE_BATCH_SIZE);
     const outcome = await classifyBatch(pipeline, batch, tctx);
     if (outcome.kind === 'ai') {
@@ -242,7 +261,7 @@ export async function runEmailTriage(
         }),
       );
     }
-    if (user.isPro) {
+    if (user.isPro && aiAllowed) {
       const reasons: string[] = [];
       if (result?.item.needs_deep_extract) reasons.push('summary', 'key_points', 'deadline');
       if (m.commitmentSignal || result?.counterpartyCommitment) reasons.push('commitment');
@@ -305,7 +324,7 @@ export async function runEmailTriage(
     });
   }
   await enqueueInsightRefresh(ctx, userId, 'mail', 'email_triage');
-  if (user.isPro && important.length > 0) {
+  if (user.isPro && aiAllowed && important.length > 0) {
     await enqueueEmbedding(
       ctx,
       userId,

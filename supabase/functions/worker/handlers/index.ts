@@ -31,6 +31,7 @@ import { briefingAudioJob } from './briefing_audio.ts';
 import { captureAnalysisJob } from './capture_analysis.ts';
 import { firstAnalysisJob } from './first_analysis.ts';
 import { meetingPrepJob } from './meeting_prep.ts';
+import { healthCheckJob, type HealthCheckJobDeps } from './health_check.ts';
 
 export interface HandlerDeps {
   readonly credentials: CredentialsRepo;
@@ -51,6 +52,8 @@ export interface HandlerDeps {
   readonly privacy?: PrivacyJobDeps;
   /** AI pipeline part 2: JOB-13, JOB-15, JOB-27, JOB-30 (T-5.09…T-5.15). */
   readonly assist?: AssistJobDeps;
+  /** JOB-26 `health_check` (the System Health probes, every 5 minutes from `da_health_check`). */
+  readonly health?: HealthCheckJobDeps;
 }
 
 export function jobDefinitions(deps: HandlerDeps): JobDefinition<never>[] {
@@ -84,6 +87,9 @@ export function jobDefinitions(deps: HandlerDeps): JobDefinition<never>[] {
           captureAnalysisJob(deps.assist),
           briefingAudioJob(deps.assist),
         ] as unknown as JobDefinition<never>[])),
+    ...(deps.health === undefined
+      ? []
+      : [healthCheckJob(deps.health) as unknown as JobDefinition<never>]),
   ];
 }
 

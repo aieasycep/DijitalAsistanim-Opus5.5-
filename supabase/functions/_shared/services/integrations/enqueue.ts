@@ -217,7 +217,7 @@ export async function enqueueTriage(
   rt: IntegrationRuntime,
   account: Pick<AccountRecord, 'id' | 'user_id'>,
   messageIds: readonly string[],
-  origin: 'initial' | 'incremental' | 'resync',
+  origin: 'initial' | 'incremental' | 'resync' | 'backfill',
   correlationId?: string | null,
 ): Promise<string[]> {
   const ids: string[] = [];

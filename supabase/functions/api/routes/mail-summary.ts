@@ -12,6 +12,7 @@ import { routes as appRoutes } from '@da/domain';
 import { routes, ThreadIdParams, ThreadSummaryBody } from '@da/validation';
 import { currentUser } from '../../_shared/auth/user.ts';
 import { AppError } from '../../_shared/errors.ts';
+import { assertDataAllowed } from '../../_shared/policy/data-access.ts';
 import {
   mountRoute,
   parseJsonBody,
@@ -69,13 +70,10 @@ export async function threadSummary(
     throw new AppError('FEATURE_DISABLED', { details: { feature: 'thread_summary' } });
   }
   const account = await api.mail.account(thread.connected_account_id);
-  if (
-    account === null ||
-    account.data_source_toggles.mail_read === false ||
-    !user.dataAccess.mailBody
-  ) {
+  if (account === null || account.data_source_toggles.mail_read === false) {
     throw new AppError('DATA_SOURCE_DISABLED', { details: { toggle: 'mail_read' } });
   }
+  assertDataAllowed(user.dataAccess, 'mail_body');
   const messages = await api.mail.threadMessages(thread.id, 20);
   const fresh = newMessages(thread, messages);
   const bodies = new Map<string, string>();

@@ -1116,7 +1116,7 @@ export function supabaseMemoryStore(db: DbClient): MemoryStore {
             onConflict: 'user_id,source_type,source_id,chunk_kind,content_hash',
             ignoreDuplicates: true,
           })
-          .select('id,user_id,content,embedding_model'),
+          .select('id,user_id,chunk_kind,source_type,content,embedding_model'),
       );
       // A changed source replaces its previous chunk (same source and kind, other content).
       for (const r of rows) {
@@ -1137,7 +1137,7 @@ export function supabaseMemoryStore(db: DbClient): MemoryStore {
       const base = () =>
         db
           .from('memory_chunks')
-          .select('id,user_id,content,embedding_model')
+          .select('id,user_id,chunk_kind,source_type,content,embedding_model')
           .eq('user_id', userId)
           .is('embedding_model', null)
           .limit(limit);

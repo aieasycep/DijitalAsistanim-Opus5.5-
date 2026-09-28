@@ -121,6 +121,14 @@ export const BootstrapData = z.object({
     referral_reward_days: z.int(),
     referral_max_rewards_per_year: z.int(),
     undo_window_seconds: z.literal(5),
+    /** `app_settings.referral.rewards_enabled` (the reward kill switch; STORE_CHECKLIST 3.1.1). */
+    referral_rewards_enabled: z.boolean().optional(),
+    /**
+     * Google verified the OAuth app and the restricted Gmail scope (KPL-32): the
+     * `google.oauth_verified` setting while `GOOGLE_CASA_LOA_NOT_AFTER` is unset or in the future.
+     * `false` shows the unverified notice on the Gmail explainer (M-ON-06G).
+     */
+    google_oauth_verified: z.boolean().optional(),
   }),
   counts: z.object({
     pending_approvals: z.int(),

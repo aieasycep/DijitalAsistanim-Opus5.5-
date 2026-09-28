@@ -414,6 +414,12 @@
     "lastCheck": "Last check {relative}",
     "notConfiguredTitle": "Components not configured",
     "allConfigured": "All components are configured.",
+    "googleVerification": {
+      "title": "Google OAuth verification is not complete",
+      "google_unverified": "Until Google verifies the app and the Gmail read scope (CASA), at most 100 Gmail users can connect. When verification is done, set google.oauth_verified to true in Settings.",
+      "google_unverified_cap_near": "Close to the 100-user cap (80 or more Gmail users). Complete the CASA verification.",
+      "google_unverified_cap_reached": "At the 100-user cap (95 or more Gmail users): Google may refuse new Gmail connections."
+    },
     "notConfiguredRow": "Not configured — External credential required",
     "expiry": "Credential expiry",
     "noExpiry": "No expiry date",
@@ -1372,7 +1378,12 @@
       "maxPerYear": "Maximum rewards per year",
       "rewardDays": "Reward days",
       "riskThreshold": "Risk threshold",
-      "applyWindow": "Code apply window (days)"
+      "applyWindow": "Code apply window (days)",
+      "rewardsEnabled": "Rewards"
+    },
+    "rewards": {
+      "on": "On",
+      "off": "Off: no new credits or Pro grants"
     },
     "empty": "No referrals yet.",
     "emptyFlagged": "No flagged referrals to review.",

@@ -11,6 +11,7 @@ import {
   type Urgency,
 } from '@da/domain';
 import { clip, copy, type CopyLocale, formatTime } from '../copy.ts';
+import type { AiDataAccess } from '../../policy/data-access.ts';
 import type { NotificationBuild } from '../insights/build.ts';
 import type {
   BriefingItemInsert,
@@ -62,6 +63,13 @@ export interface ItemDraft extends ProvenanceColumns {
   readonly kind: InsightKind | 'event' | 'carried';
   readonly urgency: Urgency;
   readonly at: string | null;
+  /** Events: the meta without calendar details (time only), for prompts with `calendar` off. */
+  readonly metaWithoutDetails?: string | null;
+}
+
+/** The meta line a prompt may carry: event locations only with `ai_data_access.calendar`. */
+export function promptMeta(d: ItemDraft, access: AiDataAccess): string | null {
+  return d.kind === 'event' && !access.calendar ? (d.metaWithoutDetails ?? null) : d.meta;
 }
 
 const LIFE_BADGES: ReadonlySet<string> = new Set([
@@ -141,6 +149,7 @@ export function fromEvent(
     kind: 'event',
     urgency: 'normal',
     at: e.start_at,
+    metaWithoutDetails: time === '' ? null : time,
     source_type:
       e.provider === 'apple_device' || e.provider === 'android_device'
         ? 'device_calendar_event'

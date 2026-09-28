@@ -87,11 +87,21 @@ statement.
 ## Data Source Controls
 
 `user_preferences.ai_data_access` holds five booleans (`mail_body`, `attachments`, `calendar`,
-`contacts`, `location_coarse`); every change is audited. As built, `mail_body` off keeps every mail
-body away from models (triage uses headers and snippets; analysis, thread summaries and drafts
-stop) and `attachments` off refuses file and photo captures. `calendar`, `contacts` and
-`location_coarse` are stored but not yet checked by any model call
-([AI_PIPELINE.md](AI_PIPELINE.md#known-gaps)). Per-account toggles
+`contacts`, `location_coarse`); every change is audited. All five are enforced through one guard
+([`_shared/policy/data-access.ts`](../supabase/functions/_shared/policy/data-access.ts)) in every
+place that builds a model prompt or writes AI memory
+([AI_PIPELINE.md](AI_PIPELINE.md#prompt-assembly-and-injection-defences)):
+
+| Toggle off | What no model sees and nothing embeds |
+|---|---|
+| `mail_body` | Mail bodies and what was derived from them (summaries, key points); triage uses headers and snippets, analysis, thread summaries and drafts stop |
+| `attachments` | Attachment names, file and photo captures (refused with `DATA_SOURCE_DISABLED`; a queued one fails and its file is deleted) |
+| `calendar` | Attendees, locations and descriptions of events (title and time stay) |
+| `contacts` | The contact book: person profiles and facts, VIP marks, person scopes |
+| `location_coarse` | Approximate location (off by default; the app never collects it) |
+
+AI memory chunks of a class that is off are not embedded, and chunks of that class stored earlier
+stay out of retrieval until the class is turned on again. Per-account toggles
 (`connected_accounts.data_source_toggles`) switch reading of mail, calendar and tasks per account.
 
 ## Export
@@ -178,13 +188,18 @@ Providers' published policies on training (checked 2026-09-28; re-check before l
 | Voyage AI | The Terms of Service let Voyage use customer content to train and improve its models **unless the customer opts out** (a switch in the Voyage dashboard); after the opt-out, new content is deleted once processed | [Terms of Service](https://www.voyageai.com/tos), [Manage data collection for model training](https://www.mongodb.com/docs/voyageai/management/model-training-data/) |
 
 The product copy ("AI providers do not train models on your data", web privacy policy and FAQ)
-holds for Voyage only after that opt-out: **manual external step** for the owner before
-production, together with the DPAs and the Anthropic and OpenAI zero-data-retention requests listed
-in SECURITY_AND_PRIVACY_PLAN §4.10. Message Batches (weekly review) keep results at Anthropic until
+holds for Voyage only after that opt-out, so it is an enforced owner step: the server-only
+`VOYAGE_TRAINING_OPT_OUT_CONFIRMED` must be `true` in preview and production whenever
+`VOYAGE_API_KEY` is set, otherwise the Edge Functions refuse to start (the `@da/validation` env
+schema) and the deploy secret check lists it as a production key
+([DEPLOYMENT.md](DEPLOYMENT.md)). Set it only after switching the opt-out on in the Voyage
+dashboard (**manual external step**), together with the DPAs and the Anthropic and OpenAI
+zero-data-retention requests listed in SECURITY_AND_PRIVACY_PLAN §4.10. Message Batches (weekly review) keep results at Anthropic until
 the `ai_batch` purge phase deletes them.
 
 Sub-processors as configured in the product (the web list is built by
-[`apps/web/src/content/subprocessors.ts`](../apps/web/src/content/subprocessors.ts)):
+[`apps/web/src/content/subprocessors.ts`](../apps/web/src/content/subprocessors.ts); a web test
+keeps it equal to the AI adapters under `_shared/ai/adapters` and the other provider clients):
 
 | Service | Role | When involved |
 |---|---|---|
@@ -200,7 +215,7 @@ Sub-processors as configured in the product (the web list is built by
 | Google Cloud Pub/Sub | Gmail push relay (`{emailAddress, historyId}`) | Gmail connected |
 | Azure Speech or ElevenLabs | Premium TTS | `voice.tts_premium` with a TTS credential |
 | Cloudflare Turnstile | Bot check on web forms | When `TURNSTILE_SECRET_KEY` is set |
-| Deepgram | Server STT fallback | Only with `STT_SERVER_PROVIDER=deepgram` and `STT_API_KEY`; it is **not** in the web sub-processor list, so add it there before enabling it |
+| Deepgram | Server STT fallback | Only with `STT_SERVER_PROVIDER=deepgram` and `STT_API_KEY` |
 
 Google, Microsoft and Apple act as independent controllers of their own services. Google user data
 follows the Limited Use requirements; the scopes are listed in [OAUTH.md](OAUTH.md).
@@ -237,8 +252,16 @@ Android only, opt-in, Pro and behind `feature.android_ni`
   the installation id, a random session id, platform, app version and catalogue props; no advertising ids, IP addresses
   or free text. Events are kept 400 days.
 - The web site counts events in `web_analytics_daily` (no row per visit, no user id, no IP).
-- No external analytics adapter exists at `ec14e92` (`ANALYTICS_EXTERNAL_*` keys are reserved), and
-  the backend events listed in API_CONTRACTS are not emitted.
+- Backend events (API_CONTRACTS §17.1: device registration, first analysis, drafts, reminders,
+  searches, captures, briefing audio, evening close, weekly share card, subscriptions) are written
+  by one server emitter
+  ([`_shared/services/analytics/emit.ts`](../supabase/functions/_shared/services/analytics/emit.ts)):
+  only catalogue events whose source is `server` or `both`, props typed per event and validated by
+  the same catalogue (an event with any refused prop is dropped whole), the opt-out honoured, no
+  session id and no content; a storage failure never fails the request. `referral_link_opened` is an
+  aggregate row without a user, written inside the PUB-04 resolve RPC. The per-user usage panel of
+  the backoffice counts the app's rows only (`search_performed` is sent by both).
+- No external analytics adapter exists at `ec14e92` (`ANALYTICS_EXTERNAL_*` keys are reserved).
 
 ## Differences from the plan
 

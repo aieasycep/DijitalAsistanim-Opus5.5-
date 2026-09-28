@@ -86,7 +86,7 @@ export async function runBriefingAudio(
     }
     await deps.store.updateBriefingAudio(briefing.id, { audio_status: 'generating' });
     const items = await deps.intel.briefings.items(briefing.id);
-    const chapters = briefingChapters(briefing, items, user.locale);
+    const chapters = briefingChapters(briefing, items, user.locale, user.dataAccess);
     const rendered = await renderChapters(runtime, user, chapters, meta);
     if (rendered.kind !== 'ok') {
       if (rendered.retryable && !final) {

@@ -219,6 +219,11 @@ export async function runFirstAnalysis(
           localDate(now, user.timeZone),
         );
         await deps.store.setOnboardingStep(userId, 'ready');
+        await deps.analytics?.emit(
+          'onboarding_first_analysis_completed',
+          { partial: p.partial },
+          { userId },
+        );
         return {
           partial: p.partial,
           top_items: top.items.map((i) => ({

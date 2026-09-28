@@ -1,0 +1,51 @@
+# Dependency updates (docs/SECURITY.md THR-16).
+# - npm: the pnpm workspace (root pnpm-lock.yaml, apps/*, packages/*, the pnpm catalogs), weekly,
+#   minor and patch updates grouped into one pull request; majors arrive one per package.
+# - github-actions: the workflows and the composite setup action, weekly. Every action is pinned to
+#   a full commit SHA with the version in a comment; Dependabot keeps that form when it bumps them.
+# The cooldown matches pnpm `minimumReleaseAge` (1 day), so a proposed version can be installed.
+# Deno imports of the Edge Functions (supabase/functions/import_map.base.json) are not covered by
+# Dependabot: update the map, then `pnpm functions:imports` and `pnpm functions:lock`.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Europe/Istanbul
+    cooldown:
+      default-days: 1
+    open-pull-requests-limit: 10
+    versioning-strategy: increase
+    labels:
+      - dependencies
+    commit-message:
+      prefix: chore(deps)
+    groups:
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: github-actions
+    directories:
+      - /
+      - /.github/actions/*
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Europe/Istanbul
+    cooldown:
+      default-days: 1
+    labels:
+      - dependencies
+    commit-message:
+      prefix: ci(deps)
+    groups:
+      actions:
+        update-types:
+          - minor
+          - patch

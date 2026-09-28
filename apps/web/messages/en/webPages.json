@@ -371,6 +371,11 @@
           "purpose": "Semantic index (embeddings)",
           "data": "Short derived texts"
         },
+        "deepgram": {
+          "name": "Deepgram",
+          "purpose": "Server-side speech recognition fallback",
+          "data": "Voice recording (not stored)"
+        },
         "expo": {
           "name": "Expo (650 Industries)",
           "purpose": "Delivering notifications",
@@ -424,6 +429,7 @@
       "conditions": {
         "always": "Always",
         "fallback": "When the primary provider doesn't respond; when on-device speech recognition isn't available",
+        "sttFallback": "Only when configured and on-device speech recognition is unavailable",
         "memory": "AI memory and search",
         "push": "If you allowed notifications",
         "gmail": "If you connected Gmail",

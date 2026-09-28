@@ -10,6 +10,7 @@ import type { UserState } from '@da/domain';
 import { APP_SETTING_DEFAULTS, APP_SETTING_KEYS } from '../config.ts';
 import type { DbClient } from '../db/clients.ts';
 import { AppError, mapDbError } from '../errors.ts';
+import { googleOauthVerified } from './google-verification.ts';
 import type { AppEnv } from '../http/context.ts';
 
 export interface AccountState {
@@ -29,6 +30,10 @@ export interface MinVersions {
 export interface AppSettingsRepo {
   minSupportedVersion(): Promise<MinVersions>;
   referralRewardDays(): Promise<number>;
+  /** `referral.rewards_enabled` (the reward kill switch; default on). */
+  referralRewardsEnabled(): Promise<boolean>;
+  /** KPL-32: `google.oauth_verified` while the CASA letter has not expired (default false). */
+  googleOauthVerified(): Promise<boolean>;
 }
 
 export function effectiveAccountState(state: AccountState | null): UserState {
@@ -103,7 +108,7 @@ function isSemver(value: unknown): value is string {
 
 export function supabaseAppSettingsRepo(
   client: DbClient,
-  options: { ttlMs?: number; now?: () => number } = {},
+  options: { ttlMs?: number; now?: () => number; googleCasaLoaNotAfter?: string } = {},
 ): AppSettingsRepo {
   const ttl = options.ttlMs ?? 60_000;
   const now = options.now ?? Date.now;
@@ -113,7 +118,12 @@ export function supabaseAppSettingsRepo(
     const { data, error } = await client
       .from('app_settings')
       .select('key,value')
-      .in('key', [APP_SETTING_KEYS.minSupportedVersion, APP_SETTING_KEYS.referralRewardDays]);
+      .in('key', [
+        APP_SETTING_KEYS.minSupportedVersion,
+        APP_SETTING_KEYS.referralRewardDays,
+        APP_SETTING_KEYS.referralRewardsEnabled,
+        APP_SETTING_KEYS.googleOauthVerified,
+      ]);
     if (error !== null) throw mapDbError(error);
     const values = new Map<string, unknown>();
     for (const row of (data ?? []) as { key: string; value: unknown }[])
@@ -137,6 +147,14 @@ export function supabaseAppSettingsRepo(
       return typeof value === 'number' && Number.isInteger(value)
         ? value
         : APP_SETTING_DEFAULTS.referralRewardDays;
+    },
+    async referralRewardsEnabled() {
+      const value = (await load()).get(APP_SETTING_KEYS.referralRewardsEnabled);
+      return typeof value === 'boolean' ? value : APP_SETTING_DEFAULTS.referralRewardsEnabled;
+    },
+    async googleOauthVerified() {
+      const value = (await load()).get(APP_SETTING_KEYS.googleOauthVerified);
+      return googleOauthVerified(value, options.googleCasaLoaNotAfter, new Date(now()));
     },
   };
 }

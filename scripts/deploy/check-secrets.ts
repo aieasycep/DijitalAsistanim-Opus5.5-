@@ -64,6 +64,9 @@ export const PRODUCTION_KEYS = [
   'MAIL_MESSAGE_ID_DOMAIN',
   'ADMIN_ORIGIN',
   'RECOVERY_CODE_PEPPER',
+  // The Voyage model-training opt-out confirmation (PRIVACY.md): the env schema refuses to start
+  // preview/production functions with VOYAGE_API_KEY set unless it is 'true'.
+  'VOYAGE_TRAINING_OPT_OUT_CONFIRMED',
 ] as const;
 
 /** Names the deploy job reads from the GitHub `production` environment (not Edge secrets). */

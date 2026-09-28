@@ -76,8 +76,13 @@ export interface TriageContext {
   readonly learnFromInteractions: boolean;
   readonly timeZone: string;
   readonly now: Date;
-  /** `ai_data_access.mail_body`: off → no body ever reaches a model. */
+  /** `ai_data_access.mail_body`: off → no body (nor its snippet) ever reaches a model. */
   readonly mailBodyAllowed: boolean;
+  /**
+   * `ai_data_access.contacts`: off → the contact book's VIP mark is not sent to the model (the T0
+   * VIP rule still applies by address). Omitted = on.
+   */
+  readonly contactsAllowed?: boolean;
 }
 
 /** One message after T0. */
@@ -191,8 +196,11 @@ export function prepareMessage(
   };
   const t0 = evaluatePriority(item, pctx(ctx));
   const injection = injectionScan(`${subject}\n${visible ?? row.snippet ?? ''}`);
+  // `ai_data_access.mail_body` off: the model sees sender and subject only (M-SET-33); the stored
+  // snippet is the start of the body, so it stays out of the prompt too.
+  const modelBody = ctx.mailBodyAllowed ? (visible ?? row.snippet ?? '') : '';
   const redacted = modelText(
-    { text: `${subject}\n\n${visible ?? row.snippet ?? ''}`, html: null },
+    { text: `${subject}\n\n${modelBody}`, html: null },
     TRIAGE_BODY_TOKENS,
   );
   const bulk = t0.signals.some((s) =>
@@ -279,7 +287,7 @@ function metaLine(ref: string, m: PreparedMessage, ctx: TriageContext): string {
   return [
     `${ref}: alan adı ${emailDomain(from)}`,
     `rol ${toMe ? 'Sana' : 'Cc'}`,
-    `vip ${vip ? 'evet' : 'hayır'}`,
+    ...(ctx.contactsAllowed === false ? [] : [`vip ${vip ? 'evet' : 'hayır'}`]),
     `tanıdık ${ctx.history.known.has(from) ? 'evet' : 'hayır'}`,
     `daha önce yanıtladın ${ctx.history.repliedBefore.has(from) ? 'evet' : 'hayır'}`,
     `tarih ${localDate(m.row.received_at, ctx.timeZone)}`,

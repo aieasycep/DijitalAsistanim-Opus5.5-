@@ -35,6 +35,8 @@ import { emailConfig } from '../_shared/email/provider.ts';
 import { integrationMailBodySource } from '../_shared/services/intel/mail-bodies.ts';
 import { supabaseAssistStore } from '../_shared/services/assist/supabase-store.ts';
 import { supabaseStorage } from '../_shared/services/storage.ts';
+import { supabaseHealthData, supabaseHealthWriter } from '../health/data.ts';
+import { supabaseServerAnalytics } from '../_shared/services/analytics/emit.ts';
 
 const raw = processEnv();
 assertDemoAllowed(raw);
@@ -62,6 +64,9 @@ const deletionRecipient = deletionRequestRecipient({
 const intel = createIntelDeps(system, raw, workerLog, {
   bodies: integrationMailBodySource(integrations.runtime, workerLog),
 });
+const sentry = createSentry({ dsn: env.SENTRY_DSN, environment: env.APP_ENV });
+// Backend analytics events (API_CONTRACTS §17.1) through the shared server emitter.
+const serverAnalytics = supabaseServerAnalytics(system, workerLog);
 const app = createWorkerApp({
   secret: env.CRON_SECRET,
   repo: supabaseJobsRepo(system),
@@ -84,7 +89,7 @@ const app = createWorkerApp({
     },
     business: {
       billing: {
-        repo: supabaseBillingRepo(system),
+        repo: supabaseBillingRepo(system, serverAnalytics),
         revenueCat: revenueCat === null ? null : createRevenueCatClient({ config: revenueCat }),
         production: env.APP_ENV === 'production',
       },
@@ -92,7 +97,12 @@ const app = createWorkerApp({
     },
     integrations: { runtime: integrations.runtime, webhooks: integrations.webhooks },
     intel,
-    assist: { intel, store: supabaseAssistStore(system), storage: supabaseStorage(system) },
+    assist: {
+      intel,
+      store: supabaseAssistStore(system),
+      storage: supabaseStorage(system),
+      analytics: serverAnalytics,
+    },
     email: {
       system,
       raw,
@@ -130,9 +140,15 @@ const app = createWorkerApp({
         emailConfigured: emailConfig(raw).configured,
       },
     },
+    health: {
+      raw,
+      data: supabaseHealthData(system),
+      writer: supabaseHealthWriter(system),
+      sentry,
+    },
   }),
   log: workerLog,
-  sentry: createSentry({ dsn: env.SENTRY_DSN, environment: env.APP_ENV }),
+  sentry,
 });
 
 Deno.serve(app.fetch);

@@ -232,6 +232,17 @@ export const APP_SETTING_VALUE_SCHEMAS: Readonly<Record<string, z.ZodType>> = {
   'session.idle_minutes': z.int().min(5).max(30),
   'session.absolute_hours': z.int().min(1).max(12),
   'web.pricing_display': PricingDisplay,
+  // GAP-1 (migration 20260924003300): the referral reward kill switch, the Google OAuth
+  // verification status (KPL-32) and the disaster-recovery embeddings (AI_PIPELINE_PLAN §10.8).
+  'referral.rewards_enabled': z.boolean(),
+  'google.oauth_verified': z.boolean(),
+  'ai.embedding_dr': z.strictObject({
+    reembed: z.boolean(),
+    search: z.boolean(),
+    provider: z.literal('openai'),
+    model: z.string().regex(/^[a-z0-9][a-z0-9._-]{0,119}$/),
+    dimensions: z.literal(1024),
+  }),
 };
 export const AppSettingKey = z.string().regex(/^[a-z_]+(\.[a-z_]+)+$/);
 export const SettingsResponse = Success(
