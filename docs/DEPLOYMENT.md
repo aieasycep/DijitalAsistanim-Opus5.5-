@@ -1,5 +1,7 @@
 # Deployment
 
+Documented at `ec14e92`.
+
 How each part of Dijital Asistan reaches production, what the owner sets up once, and how a release is checked. Environment variable names are the ones in [`.env.example`](../.env.example) (INTEGRATION_PLAN §15). Nothing here needs a secret value in the repository.
 
 | Part | Runs on | Deployed by | Trigger |
@@ -9,7 +11,7 @@ How each part of Dijital Asistan reaches production, what the owner sets up once
 | Backoffice (`apps/backoffice`, `admin.<domain>`) | Vercel project `da-backoffice` | Vercel Git integration | Push to the production branch |
 | Mobile app (`apps/mobile`) | App Store / Google Play | EAS Build + EAS Submit | Owner runs `eas build` / `eas submit` |
 
-`APP_ENV` is `development` (local), `e2e` (CI and E2E builds), `preview` or `production`. In `preview` and `production` the server env schema refuses test-only overrides (`DA_FIXED_NOW`, provider `*_BASE_URL`), the fixture AI provider and demo mode (unless `ALLOW_DEMO_IN_PRODUCTION=true`), and every URL must be `https:`.
+`APP_ENV` is `development` (local), `e2e` (CI and E2E builds), `preview` or `production`. In `preview` and `production` the server env schema refuses the test-only overrides (`DA_FIXED_NOW`, provider `*_BASE_URL`); in `production` it also refuses the fixture AI provider and demo mode (unless `ALLOW_DEMO_IN_PRODUCTION=true`), and the public URLs must be `https:`.
 
 ## 1. Supabase
 
@@ -82,8 +84,8 @@ Profiles in [`apps/mobile/eas.json`](../apps/mobile/eas.json): `development` (de
 
 Owner steps (manual, External credential required):
 
-1. `eas init` to create the EAS project (project id into the app config), then `eas credentials` for the iOS distribution certificate, provisioning profiles (app + widget extension + share extension, App Group `group.com.dijitalasistan.app`) and the APNs key; upload the FCM v1 service account for Android push.
-2. EAS environment variables: `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`, `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`, `EXPO_PUBLIC_REVENUECAT_APPLE_API_KEY`, `EXPO_PUBLIC_REVENUECAT_GOOGLE_API_KEY`, `EXPO_PUBLIC_SENTRY_DSN`; build-time `GOOGLE_IOS_URL_SCHEME`, `GOOGLE_SERVICES_JSON`, `SENTRY_AUTH_TOKEN` / `SENTRY_ORG` / `SENTRY_PROJECT` (source maps are uploaded from EAS only).
+1. `eas init` to create the EAS project, then set its id as `EXPO_PUBLIC_EAS_PROJECT_ID` (the dynamic `app.config.ts` reads it from the environment; push tokens and `updates.url` need it) and `EXPO_OWNER`; then `eas credentials` for the iOS distribution certificate, provisioning profiles (app + widget extension + share extension, App Group `group.com.dijitalasistan.app`) and the APNs key; upload the FCM v1 service account for Android push.
+2. EAS environment variables: `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`, `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`, `EXPO_PUBLIC_REVENUECAT_APPLE_API_KEY`, `EXPO_PUBLIC_REVENUECAT_GOOGLE_API_KEY`, `EXPO_PUBLIC_SENTRY_DSN`; build-time `GOOGLE_IOS_URL_SCHEME`, `GOOGLE_SERVICES_JSON`, `SENTRY_ORG` / `SENTRY_PROJECT`. The build does not upload source maps (`disableAutoUpload` in `app.config.ts`) and no workflow uploads them, so uploading them with `SENTRY_AUTH_TOKEN` after a build is a manual step.
 3. `eas build --profile production --platform all`, then `eas submit --profile production` (Android goes to the internal track as a draft).
 
 Store listing, privacy labels, the Play Data safety form and the notification-listener declaration are in [`STORE_CHECKLIST.md`](STORE_CHECKLIST.md).
