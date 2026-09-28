@@ -7,6 +7,7 @@
 import { fromByteaHex, toByteaHex, toHex } from '../../crypto/encoding.ts';
 import type { DbClient } from '../../db/clients.ts';
 import { DB_FN, rpc } from '../../db/functions.ts';
+import { inChunks } from '../../db/in-chunks.ts';
 import { AppError, mapDbError } from '../../errors.ts';
 import type { TokenKind } from '../../crypto/token-cipher.ts';
 import type {
@@ -484,10 +485,11 @@ export function supabaseIntegrationStore(
     },
     async deleteCalendars(ids) {
       if (ids.length === 0) return;
-      const { error } = await calendars()
-        .delete()
-        .in('id', [...ids]);
-      throwIf(error);
+      await inChunks(ids, async (chunk) => {
+        const { error } = await calendars().delete().in('id', chunk);
+        throwIf(error);
+        return [];
+      });
     },
     async setCalendarSelected(id, selected) {
       const { error } = await calendars().update({ selected }).eq('id', id);

@@ -8,6 +8,7 @@ import type { BriefingKind, LearnedPreference, PriorityRule } from '@da/domain';
 import { isoWeekdayOf, localDate } from '@da/domain';
 import type { DbClient } from '../../db/clients.ts';
 import { DB_FN, rpc } from '../../db/functions.ts';
+import { inChunks } from '../../db/in-chunks.ts';
 import { mapDbError } from '../../errors.ts';
 import type { LifeEventInsert } from '../life/classify.ts';
 import type {
@@ -99,23 +100,23 @@ export function supabaseMailStore(db: DbClient): MailStore {
     },
     async messages(ids) {
       if (ids.length === 0) return [];
-      const data = check(
-        await db
-          .from('email_messages')
-          .select(MESSAGE_COLUMNS)
-          .in('id', [...ids]),
+      const data = await inChunks(
+        ids,
+        async (chunk) =>
+          (check(await db.from('email_messages').select(MESSAGE_COLUMNS).in('id', chunk)) ??
+            []) as Row[],
       );
-      return ((data ?? []) as Row[]).map(normalizeMessage);
+      return data.map(normalizeMessage);
     },
     async threads(ids) {
       if (ids.length === 0) return [];
-      const data = check(
-        await db
-          .from('email_threads')
-          .select(THREAD_COLUMNS)
-          .in('id', [...ids]),
+      const data = await inChunks(
+        ids,
+        async (chunk) =>
+          (check(await db.from('email_threads').select(THREAD_COLUMNS).in('id', chunk)) ??
+            []) as Row[],
       );
-      return ((data ?? []) as Row[]).map(normalizeThread);
+      return data.map(normalizeThread);
     },
     async threadMessages(threadId, limit) {
       const data = check(
@@ -162,12 +163,16 @@ export function supabaseMailStore(db: DbClient): MailStore {
     },
     async senderHistory(userId, emails, since): Promise<SenderHistory> {
       if (emails.length === 0) return { known: new Set(), repliedBefore: new Set() };
-      const data = check(
-        await db
-          .from('contacts')
-          .select('primary_email,emails,last_inbound_at,last_outbound_at')
-          .eq('user_id', userId)
-          .overlaps('emails', [...emails]),
+      const data = await inChunks(
+        emails,
+        async (chunk) =>
+          (check(
+            await db
+              .from('contacts')
+              .select('primary_email,emails,last_inbound_at,last_outbound_at')
+              .eq('user_id', userId)
+              .overlaps('emails', chunk),
+          ) ?? []) as Row[],
       );
       const known = new Set<string>();
       const replied = new Set<string>();
@@ -213,18 +218,20 @@ export function supabaseMailStore(db: DbClient): MailStore {
     },
     async contactsByEmail(userId, emails) {
       if (emails.length === 0) return [];
-      const data = check(
-        await db
-          .from('contacts')
-          .select('id,display_name,emails')
-          .eq('user_id', userId)
-          .is('merged_into_id', null)
-          .overlaps(
-            'emails',
-            emails.map((e) => e.toLowerCase()),
-          ),
+      // Sender addresses of a whole batch: URL-sized chunks; a contact matched twice is kept once.
+      const rows = await inChunks(
+        [...new Set(emails.map((e) => e.toLowerCase()))],
+        async (chunk) =>
+          (check(
+            await db
+              .from('contacts')
+              .select('id,display_name,emails')
+              .eq('user_id', userId)
+              .is('merged_into_id', null)
+              .overlaps('emails', chunk),
+          ) ?? []) as ContactRef[],
       );
-      return (data ?? []) as ContactRef[];
+      return [...new Map(rows.map((r) => [r.id, r])).values()];
     },
     async upsertLifeEvents(rows: readonly LifeEventInsert[]) {
       if (rows.length === 0) return [];
@@ -402,17 +409,25 @@ export function supabaseInsightStore(db: DbClient): InsightStore {
         .map((t) => t.id);
       const latest: MailMessageRow[] = [];
       if (replyThreads.length > 0) {
-        const msgs = check(
-          await db
-            .from('email_messages')
-            .select(MESSAGE_COLUMNS)
-            .in('thread_id', replyThreads)
-            .eq('direction', 'inbound')
-            .order('received_at', { ascending: false })
-            .limit(replyThreads.length * 5),
+        // The newest inbound message per thread: thread ids go in URL-sized chunks, and the rows are
+        // merged newest first (every thread lives in exactly one chunk).
+        const msgs = await inChunks(
+          replyThreads,
+          async (chunk) =>
+            (check(
+              await db
+                .from('email_messages')
+                .select(MESSAGE_COLUMNS)
+                .in('thread_id', chunk)
+                .eq('direction', 'inbound')
+                .order('received_at', { ascending: false })
+                .limit(chunk.length * 5),
+            ) ?? []) as Row[],
         );
+        const receivedAt = (r: Row) => Date.parse(String(r.received_at ?? '')) || 0;
+        msgs.sort((a, b) => receivedAt(b) - receivedAt(a));
         const seen = new Set<string>();
-        for (const m of ((msgs ?? []) as Row[]).map(normalizeMessage)) {
+        for (const m of msgs.map(normalizeMessage)) {
           if (seen.has(m.thread_id)) continue;
           seen.add(m.thread_id);
           latest.push(m);
@@ -427,8 +442,10 @@ export function supabaseInsightStore(db: DbClient): InsightStore {
         if (p.target_type === 'contact') mutedContactIds.push(String(p.target_ref));
       }
       if (mutedContactIds.length > 0) {
-        const contacts = check(
-          await db.from('contacts').select('emails').in('id', mutedContactIds),
+        const contacts = await inChunks(
+          mutedContactIds,
+          async (chunk) =>
+            (check(await db.from('contacts').select('emails').in('id', chunk)) ?? []) as Row[],
         );
         for (const c of (contacts ?? []) as Row[])
           muted.push(...((c.emails as string[]) ?? []).map((e) => e.toLowerCase()));
@@ -455,14 +472,17 @@ export function supabaseInsightStore(db: DbClient): InsightStore {
     upsertInsights: (rows) => upsertInsightRows(db, rows),
     async expireInsights(userId, ids) {
       if (ids.length === 0) return;
-      check(
-        await db
-          .from('insights')
-          .update({ status: 'expired' })
-          .eq('user_id', userId)
-          .in('id', [...ids])
-          .in('status', ['open', 'snoozed']),
-      );
+      await inChunks(ids, async (chunk) => {
+        check(
+          await db
+            .from('insights')
+            .update({ status: 'expired' })
+            .eq('user_id', userId)
+            .in('id', chunk)
+            .in('status', ['open', 'snoozed']),
+        );
+        return [];
+      });
     },
     async updateThreads(patches) {
       for (const p of patches) check(await db.from('email_threads').update(p.patch).eq('id', p.id));
@@ -556,13 +576,12 @@ export function supabaseBriefingStore(db: DbClient): BriefingJobStore {
     },
     async byJobIds(jobIds) {
       if (jobIds.length === 0) return [];
-      const data = check(
-        await db
-          .from('briefings')
-          .select(BRIEFING_COLUMNS)
-          .in('job_id', [...jobIds]),
+      return await inChunks(
+        jobIds,
+        async (chunk) =>
+          (check(await db.from('briefings').select(BRIEFING_COLUMNS).in('job_id', chunk)) ??
+            []) as BriefingRow[],
       );
-      return (data ?? []) as BriefingRow[];
     },
     async recordBatch(row) {
       check(
@@ -811,13 +830,17 @@ export function supabaseMemoryStore(db: DbClient): MemoryStore {
       const threadIds = ids('email_summary');
       if (threadIds.length > 0) {
         const threads = (
-          (check(
-            await db
-              .from('email_threads')
-              .select(THREAD_COLUMNS)
-              .eq('user_id', userId)
-              .in('id', threadIds),
-          ) ?? []) as Row[]
+          await inChunks(
+            threadIds,
+            async (chunk) =>
+              (check(
+                await db
+                  .from('email_threads')
+                  .select(THREAD_COLUMNS)
+                  .eq('user_id', userId)
+                  .in('id', chunk),
+              ) ?? []) as Row[],
+          )
         ).map(normalizeThread);
         for (const t of threads) {
           const summary = t.rolling_summary ?? t.ai_summary;
@@ -850,15 +873,19 @@ export function supabaseMemoryStore(db: DbClient): MemoryStore {
       }
       const lifeIds = ids('life_event');
       if (lifeIds.length > 0) {
-        const rows = (check(
-          await db
-            .from('life_events')
-            .select(
-              `id,type,title,event_at,due_at,payload,amount,currency,expires_at,${PROVENANCE}`,
-            )
-            .eq('user_id', userId)
-            .in('id', lifeIds),
-        ) ?? []) as Row[];
+        const rows = await inChunks(
+          lifeIds,
+          async (chunk) =>
+            (check(
+              await db
+                .from('life_events')
+                .select(
+                  `id,type,title,event_at,due_at,payload,amount,currency,expires_at,${PROVENANCE}`,
+                )
+                .eq('user_id', userId)
+                .in('id', chunk),
+            ) ?? []) as Row[],
+        );
         for (const r of rows) {
           out.push({
             userId,
@@ -885,15 +912,19 @@ export function supabaseMemoryStore(db: DbClient): MemoryStore {
       }
       const commitmentIds = ids('commitment');
       if (commitmentIds.length > 0) {
-        const rows = (check(
-          await db
-            .from('commitments')
-            .select(
-              `id,contact_id,counterparty_name,direction,text,due_at,created_at,expires_at,${PROVENANCE}`,
-            )
-            .eq('user_id', userId)
-            .in('id', commitmentIds),
-        ) ?? []) as Row[];
+        const rows = await inChunks(
+          commitmentIds,
+          async (chunk) =>
+            (check(
+              await db
+                .from('commitments')
+                .select(
+                  `id,contact_id,counterparty_name,direction,text,due_at,created_at,expires_at,${PROVENANCE}`,
+                )
+                .eq('user_id', userId)
+                .in('id', chunk),
+            ) ?? []) as Row[],
+        );
         for (const r of rows) {
           out.push({
             userId,
@@ -918,14 +949,18 @@ export function supabaseMemoryStore(db: DbClient): MemoryStore {
       }
       const captureIds = ids('capture');
       if (captureIds.length > 0) {
-        const rows = (check(
-          await db
-            .from('captures')
-            .select('id,extracted,created_at,expires_at,status')
-            .eq('user_id', userId)
-            .in('id', captureIds)
-            .neq('status', 'discarded'),
-        ) ?? []) as Row[];
+        const rows = await inChunks(
+          captureIds,
+          async (chunk) =>
+            (check(
+              await db
+                .from('captures')
+                .select('id,extracted,created_at,expires_at,status')
+                .eq('user_id', userId)
+                .in('id', chunk)
+                .neq('status', 'discarded'),
+            ) ?? []) as Row[],
+        );
         for (const r of rows) {
           const items = ((r.extracted as Row[]) ?? []).map((x) =>
             Object.entries(x)
@@ -953,13 +988,17 @@ export function supabaseMemoryStore(db: DbClient): MemoryStore {
       }
       const noteIds = ids('meeting_note');
       if (noteIds.length > 0) {
-        const rows = (check(
-          await db
-            .from('meeting_notes')
-            .select('id,calendar_event_id,kind,body,created_at,expires_at')
-            .eq('user_id', userId)
-            .in('id', noteIds),
-        ) ?? []) as Row[];
+        const rows = await inChunks(
+          noteIds,
+          async (chunk) =>
+            (check(
+              await db
+                .from('meeting_notes')
+                .select('id,calendar_event_id,kind,body,created_at,expires_at')
+                .eq('user_id', userId)
+                .in('id', chunk),
+            ) ?? []) as Row[],
+        );
         for (const r of rows) {
           out.push({
             userId,
@@ -979,14 +1018,18 @@ export function supabaseMemoryStore(db: DbClient): MemoryStore {
       }
       const factIds = ids('assistant_fact');
       if (factIds.length > 0) {
-        const rows = (check(
-          await db
-            .from('assistant_messages')
-            .select('id,role,content,created_at,expires_at')
-            .eq('user_id', userId)
-            .eq('role', 'user')
-            .in('id', factIds),
-        ) ?? []) as Row[];
+        const rows = await inChunks(
+          factIds,
+          async (chunk) =>
+            (check(
+              await db
+                .from('assistant_messages')
+                .select('id,role,content,created_at,expires_at')
+                .eq('user_id', userId)
+                .eq('role', 'user')
+                .in('id', chunk),
+            ) ?? []) as Row[],
+        );
         for (const r of rows) {
           out.push({
             userId,
@@ -1006,13 +1049,19 @@ export function supabaseMemoryStore(db: DbClient): MemoryStore {
       }
       const personIds = ids('person_profile');
       if (personIds.length > 0) {
-        const rows = (check(
-          await db
-            .from('contacts')
-            .select('id,display_name,organization,title,primary_email,last_contact_at,updated_at')
-            .eq('user_id', userId)
-            .in('id', personIds),
-        ) ?? []) as Row[];
+        const rows = await inChunks(
+          personIds,
+          async (chunk) =>
+            (check(
+              await db
+                .from('contacts')
+                .select(
+                  'id,display_name,organization,title,primary_email,last_contact_at,updated_at',
+                )
+                .eq('user_id', userId)
+                .in('id', chunk),
+            ) ?? []) as Row[],
+        );
         for (const r of rows) {
           const topics = (check(
             await db
@@ -1085,14 +1134,19 @@ export function supabaseMemoryStore(db: DbClient): MemoryStore {
       return (data ?? []) as MemoryChunkRow[];
     },
     async pendingChunks(userId, ids, limit) {
-      let q = db
-        .from('memory_chunks')
-        .select('id,user_id,content,embedding_model')
-        .eq('user_id', userId)
-        .is('embedding_model', null)
-        .limit(limit);
-      if (ids !== null) q = q.in('id', [...ids]);
-      return (check(await q) ?? []) as MemoryChunkRow[];
+      const base = () =>
+        db
+          .from('memory_chunks')
+          .select('id,user_id,content,embedding_model')
+          .eq('user_id', userId)
+          .is('embedding_model', null)
+          .limit(limit);
+      if (ids === null) return (check(await base()) ?? []) as MemoryChunkRow[];
+      const rows = await inChunks(
+        ids,
+        async (chunk) => (check(await base().in('id', chunk)) ?? []) as MemoryChunkRow[],
+      );
+      return rows.slice(0, limit);
     },
     async writeEmbeddings(rows) {
       const at = new Date().toISOString();

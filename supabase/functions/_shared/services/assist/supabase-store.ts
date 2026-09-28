@@ -4,6 +4,7 @@
  */
 import type { DbClient } from '../../db/clients.ts';
 import { DB_FN, rpc } from '../../db/functions.ts';
+import { inChunks } from '../../db/in-chunks.ts';
 import { mapDbError } from '../../errors.ts';
 import { MESSAGE_COLUMNS, THREAD_COLUMNS } from '../intel/supabase-store.ts';
 import type {
@@ -83,6 +84,14 @@ function captureRow(r: Row): CaptureRow {
     progress: (r.progress ?? {}) as Record<string, unknown>,
   };
 }
+
+/** Rows of chunked reads, first occurrence per id kept (a row can match in two chunks). */
+function uniqueById<T extends Row>(rows: readonly T[]): T[] {
+  return [...new Map(rows.map((r) => [String(r.id), r])).values()];
+}
+
+/** Address lists add two OR terms each: smaller chunks keep the URL inside the gateway limit. */
+const OR_TERMS_CHUNK = 40;
 
 function orEmails(column: string, emails: readonly string[]): string {
   return emails.map((e) => `${column}.cs.{"${e.replace(/["{},]/g, '')}"}`).join(',');
@@ -236,42 +245,55 @@ export function supabaseAssistStore(db: DbClient): AssistStore {
     },
     async contactsForEmails(userId, emails) {
       if (emails.length === 0) return [];
-      const data = check(
-        await db
-          .from('contacts')
-          .select('id,display_name,emails,organization')
-          .eq('user_id', userId)
-          .is('merged_into_id', null)
-          .overlaps(
-            'emails',
-            emails.map((e) => e.toLowerCase()),
-          )
-          .limit(20),
-      );
-      return ((data ?? []) as Row[]).map((c) => ({
+      // Attendee lists can be long: URL-sized chunks, merged and capped at 20 contacts.
+      const data = uniqueById(
+        await inChunks(
+          [...new Set(emails.map((e) => e.toLowerCase()))],
+          async (chunk) =>
+            (check(
+              await db
+                .from('contacts')
+                .select('id,display_name,emails,organization')
+                .eq('user_id', userId)
+                .is('merged_into_id', null)
+                .overlaps('emails', chunk)
+                .limit(20),
+            ) ?? []) as Row[],
+        ),
+      ).slice(0, 20);
+      return data.map((c) => ({
         ...(c as unknown as MeetingContact),
         role_text: null,
       }));
     },
     async mailsWith(userId, emails, since, limit) {
       if (emails.length === 0) return [];
-      const lower = emails.map((e) => e.toLowerCase());
-      const filter = [
-        `from_email.in.(${lower.map((e) => `"${e}"`).join(',')})`,
-        orEmails('to_emails', lower),
-      ].join(',');
-      const data = check(
-        await db
-          .from('email_messages')
-          .select(MESSAGE_COLUMNS)
-          .eq('user_id', userId)
-          .is('provider_deleted_at', null)
-          .gte('received_at', since.toISOString())
-          .or(filter)
-          .order('received_at', { ascending: false })
-          .limit(limit),
+      const lower = [...new Set(emails.map((e) => e.toLowerCase()))];
+      const rows = await inChunks(
+        lower,
+        async (chunk) => {
+          const filter = [
+            `from_email.in.(${chunk.map((e) => `"${e}"`).join(',')})`,
+            orEmails('to_emails', chunk),
+          ].join(',');
+          return (check(
+            await db
+              .from('email_messages')
+              .select(MESSAGE_COLUMNS)
+              .eq('user_id', userId)
+              .is('provider_deleted_at', null)
+              .gte('received_at', since.toISOString())
+              .or(filter)
+              .order('received_at', { ascending: false })
+              .limit(limit),
+          ) ?? []) as Row[];
+        },
+        OR_TERMS_CHUNK,
       );
-      return (data ?? []) as unknown as MailMessageRow[];
+      const receivedAt = (r: Row) => Date.parse(String(r.received_at ?? '')) || 0;
+      return uniqueById(rows)
+        .sort((a, b) => receivedAt(b) - receivedAt(a))
+        .slice(0, limit) as unknown as MailMessageRow[];
     },
     async awaitingThreadsWith(userId, emails) {
       if (emails.length === 0) return [];
@@ -299,17 +321,30 @@ export function supabaseAssistStore(db: DbClient): AssistStore {
           .map((n) => `counterparty_name.ilike.${n}%`),
       ];
       if (ors.length === 0) return [];
-      const data = check(
-        await db
-          .from('commitments')
-          .select(COMMITMENT_COLUMNS)
-          .eq('user_id', userId)
-          .in('status', ['open', 'snoozed'])
-          .or(ors.join(','))
-          .order('due_at', { ascending: true, nullsFirst: false })
-          .limit(20),
+      const rows = await inChunks(
+        ors,
+        async (chunk) =>
+          (check(
+            await db
+              .from('commitments')
+              .select(COMMITMENT_COLUMNS)
+              .eq('user_id', userId)
+              .in('status', ['open', 'snoozed'])
+              .or(chunk.join(','))
+              .order('due_at', { ascending: true, nullsFirst: false })
+              .limit(20),
+          ) ?? []) as Row[],
+        OR_TERMS_CHUNK,
       );
-      return ((data ?? []) as Row[]).map((c) => ({
+      // Soonest due first, undated last (the per-chunk order), capped at 20 overall.
+      const dueAt = (r: Row) =>
+        r.due_at === null || r.due_at === undefined
+          ? Number.POSITIVE_INFINITY
+          : Date.parse(String(r.due_at));
+      const data = uniqueById(rows)
+        .sort((a, b) => dueAt(a) - dueAt(b))
+        .slice(0, 20);
+      return data.map((c) => ({
         ...(c as unknown as CommitmentRow),
         confidence: Number(c.confidence ?? 0),
       }));
