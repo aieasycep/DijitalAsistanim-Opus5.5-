@@ -7,7 +7,7 @@
  * RPC; controls whose screen is not in this build are not rendered (R-24). Offline shows the
  * persisted Today with the banner; pull-to-refresh syncs healthy accounts (1/60 s per account).
  */
-import { audioMinutes, formatDuration, toUpper } from '@da/i18n';
+import { audioMinutes, formatDuration, toUpper, withTrCases } from '@da/i18n';
 import { qk } from '@da/api-client';
 import { useBootstrap } from '@da/api-client/react';
 import {
@@ -338,10 +338,10 @@ function Hero({ hero, data, bootstrap, online }: HeroProps) {
     case 'evening_confirmed':
       kicker = t('eveningConfirmed.kicker');
       sentence = {
-        before: t('eveningConfirmed.title', {
-          time: prefs.morning_time.slice(0, 5),
-          time_loc: prefs.morning_time.slice(0, 5),
-        }),
+        before: t(
+          'eveningConfirmed.title',
+          withTrCases({ time: prefs.morning_time.slice(0, 5) }, ['time']),
+        ),
       };
       heroContext = undefined;
       if (briefing !== null)
@@ -422,7 +422,7 @@ function Hero({ hero, data, bootstrap, online }: HeroProps) {
     case 'pre_morning': {
       const at = prefs.morning_time.slice(0, 5);
       kicker = t('preMorning.kicker', { time: at });
-      sentence = { before: t('preMorning.title', { time: at, time_loc: at }) };
+      sentence = { before: t('preMorning.title', withTrCases({ time: at }, ['time'])) };
       heroContext = count > 0 ? t('preMorning.context', { count }) : undefined;
       break;
     }

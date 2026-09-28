@@ -48,11 +48,11 @@ module.exports = {
   // graph, fonts, i18n catalogs) can take several seconds when turbo runs lint and typecheck
   // alongside, well past Jest's 5 s default.
   testTimeout: 60_000,
-  // Coverage of `src/**` and `app/**` (TEST_PLAN §16). The §16 target is 75/65/75; the suite
-  // measures 66/51/58, so this threshold is a regression floor only (no decrease allowed) until
-  // the remaining screen-state tests land. Ambient `*.d.ts` declarations are excluded.
+  // Coverage of `src/**` and `app/**` (TEST_PLAN §16): the threshold is the §16 target itself
+  // (lines 75, branches 65, functions 75), met by the screen-state suites under `test/states`;
+  // a change that drops below it fails the run. Ambient `*.d.ts` declarations are excluded.
   collectCoverage: true,
   collectCoverageFrom: ['<rootDir>/src/**/*.{ts,tsx}', '<rootDir>/app/**/*.{ts,tsx}', '!**/*.d.ts'],
   coverageReporters: ['text-summary'],
-  coverageThreshold: { global: { lines: 65, branches: 50, functions: 57 } },
+  coverageThreshold: { global: { lines: 75, branches: 65, functions: 75 } },
 };

@@ -459,15 +459,20 @@ export function ReplyScreen() {
     );
   };
 
-  const confirmSend = async () => {
+  /**
+   * `scopeGranted`: resuming after the M-REPLY-02 grant. This closure still sees the bootstrap
+   * from before the grant, so the scope check is skipped (the server stays authoritative: a
+   * missing scope answers 424 on approve).
+   */
+  const confirmSend = async (scopeGranted = false) => {
     if (draft === null || blocked('approve')) return;
-    if (!hasSendScope && account !== undefined) {
+    if (!scopeGranted && !hasSendScope && account !== undefined) {
       openScopeUpgrade({
         accountId: account.id,
         provider,
         capability: 'mail_send',
         onGranted: () => {
-          void confirmSend();
+          void confirmSend(true);
         },
       });
       return;

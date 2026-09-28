@@ -7,6 +7,7 @@
  * `notification_preferences.snooze_until = next_morning_at`.
  */
 import { qk } from '@da/api-client';
+import { withTrCases } from '@da/i18n';
 import {
   BottomSheet,
   Button,
@@ -198,7 +199,7 @@ function EveningReadySheet({
           </GroupedList>
         ) : null}
         <Text variant="secondary" tone="secondary">
-          {t('echo', { time: morning, time_loc: morning })}
+          {t('echo', withTrCases({ time: morning }, ['time']))}
         </Text>
         {!online ? (
           <Text variant="secondary" tone="tertiaryStrong">
