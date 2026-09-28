@@ -5,8 +5,15 @@ select plan(52);
 
 -- Isolation from the live scheduler: pg_cron (tier A, and tier C with pg_cron) commits its own due
 -- jobs (e.g. `da_health_check` every 5 minutes), which claim_jobs would pick up alongside the
--- test's jobs. Block concurrent inserts until this transaction rolls back and park the jobs that
--- already exist; both are undone at the end.
+-- test's jobs. Order matters:
+--   1. take the scheduler's advisory lock first (waits for a running tick to finish). A live
+--      `da_scheduler_tick` then skips on its pg_try_advisory_xact_lock, while this session's own
+--      scheduler_tick calls re-enter the lock it already holds. Locking the table first would let a
+--      live tick win the advisory lock and then wait on the table, so every scheduler_tick below
+--      would return {"skipped": "locked"};
+--   2. block the other cron enqueues (health, receipts, retention) until this transaction rolls back;
+--   3. park the jobs that already exist. All three are undone at the end.
+select pg_advisory_xact_lock(hashtext('da_scheduler_tick'));
 lock table public.jobs in share row exclusive mode;
 update public.jobs set run_after = 'infinity'
  where status in ('queued', 'retrying') and idempotency_key not like 'test:%';
