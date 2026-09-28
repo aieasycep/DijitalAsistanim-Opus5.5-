@@ -43,7 +43,7 @@ class NotificationIntelligenceModule : Module() {
     /** False on low-RAM (Go) devices, which do not offer notification-listener access. */
     Function("isAvailable") {
       val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager
-      !(activityManager?.isLowRamDevice ?: false)
+      activityManager?.isLowRamDevice != true
     }
 
     Function("isGranted") { isGranted() }
