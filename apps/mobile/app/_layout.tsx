@@ -39,6 +39,8 @@ import { ShareIntakeBridge } from '../src/features/capture/ShareIntakeBridge';
 import { AniBridge } from '../src/features/android-ni/AniBridge';
 // T-8.25: widget snapshot refresh triggers, the sign-in refresh and the sign-out clear hook.
 import { WidgetBridge } from '../src/features/widgets/WidgetBridge';
+// M-GL-14 / DEV-52: the audio briefing players live here, so the mini player keeps playback.
+import { AudioPlayerHost } from '../src/features/briefing/player/AudioPlayerHost';
 // Feature hooks that must exist before the first sign-in or OAuth return (T-8.06, T-8.07, T-8.09).
 import '../src/features/onboarding/post-sign-in';
 import '../src/features/integrations/callback-handler';
@@ -77,6 +79,7 @@ function RootNavigator() {
       <AniBridge signedIn={flags.app} />
       <NotificationBridge signedIn={flags.app} />
       <WidgetBridge signedIn={flags.app} />
+      <AudioPlayerHost />
       <Stack
         screenOptions={{
           headerShown: false,

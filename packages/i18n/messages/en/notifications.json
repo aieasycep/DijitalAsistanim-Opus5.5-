@@ -129,7 +129,12 @@
       "sender": "Sample Person",
       "subject": "Proposal revision",
       "action": "A reply is expected today"
-    }
+    },
+    "timeSensitive": {
+      "offTitle": "Time Sensitive Notifications are off",
+      "offBody": "Meeting and reminder notifications may be held by Focus or the Scheduled Summary."
+    },
+    "deliveryFootnote": "Notifications are delivered through Apple's and Google's notification services. If your phone is off or offline, some may arrive late or only the latest may arrive. The Today screen always has the current state."
   },
   "prePrompt": {
     "title": "Allow notifications?",

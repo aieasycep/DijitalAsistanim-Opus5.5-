@@ -118,5 +118,15 @@
     "retry": "Try again",
     "troubleTitle": "Having trouble?",
     "troubleBody": "App info → ⋮ → Allow restricted settings"
+  },
+  "health": {
+    "disconnectedTitle": "Notification access is on, but the connection dropped",
+    "staleTitle": "Notification access is on, but nothing has arrived for a day",
+    "disconnectedBody": "Battery saving may have stopped Dijital Asistan. I tried to reconnect; if it keeps happening, exclude the app from battery optimization.",
+    "staleBody": "Battery saving may have stopped Dijital Asistan. Try reconnecting; if it keeps happening, exclude the app from battery optimization.",
+    "bodyExempt": "Try reconnecting. If it keeps happening, turn notification access off and on again.",
+    "rebind": "Reconnect",
+    "checking": "Reconnecting…",
+    "batteryCta": "Open battery settings"
   }
 }

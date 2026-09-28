@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.provider.Settings
+import android.service.notification.NotificationListenerService
 import androidx.core.app.NotificationManagerCompat
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
@@ -13,7 +14,8 @@ import expo.modules.kotlin.modules.ModuleDefinition
 /**
  * JS API of the listener (SCREEN_AND_FLOW_MAP §9 "JS API"): grant state and the settings handoff,
  * the user's choices (enabled, mode, allowed packages), candidate apps for the picker and the
- * encrypted signal buffer. Events: `onGrantChanged {granted}` and `onSignalsChanged`.
+ * encrypted signal buffer, and the listener health with the rebind request (KPL-04). Events:
+ * `onGrantChanged {granted}`, `onSignalsChanged` and `onListenerChanged` (bound / unbound).
  */
 class NotificationIntelligenceModule : Module() {
   private val context: Context
@@ -24,16 +26,18 @@ class NotificationIntelligenceModule : Module() {
   override fun definition() = ModuleDefinition {
     Name("NotificationIntelligence")
 
-    Events(EVENT_GRANT, EVENT_SIGNALS)
+    Events(EVENT_GRANT, EVENT_SIGNALS, EVENT_LISTENER)
 
     OnCreate {
       NiEvents.onGrantChanged = { granted -> emitGrant(granted) }
       NiEvents.onSignalsChanged = { sendEvent(EVENT_SIGNALS, emptyMap<String, Any>()) }
+      NiEvents.onListenerChanged = { sendEvent(EVENT_LISTENER, emptyMap<String, Any>()) }
     }
 
     OnDestroy {
       NiEvents.onGrantChanged = null
       NiEvents.onSignalsChanged = null
+      NiEvents.onListenerChanged = null
     }
 
     OnActivityEntersForeground {
@@ -69,6 +73,41 @@ class NotificationIntelligenceModule : Module() {
         "mode" to store.mode.wire,
         "allowedPackages" to store.allowedPackages.sorted(),
       )
+    }
+
+    /**
+     * KPL-04: the grant, whether the system has the service bound in this process, the last connect
+     * and posted-notification times, and the [ListenerHealth] verdict.
+     */
+    Function("getListenerState") {
+      val store = NiStore(context)
+      val facts = ListenerFacts(
+        granted = isGranted(),
+        enabled = store.enabled,
+        connected = DaNotificationListenerService.isConnected(),
+        lastConnectedAt = store.lastConnectedAt,
+        lastEventAt = store.lastEventAt,
+      )
+      mapOf(
+        "granted" to facts.granted,
+        "connected" to facts.connected,
+        "lastConnectedAt" to facts.lastConnectedAt?.let { SignalExtractor.isoInstant(it) },
+        "lastEventAt" to facts.lastEventAt?.let { SignalExtractor.isoInstant(it) },
+        "health" to ListenerHealth.evaluate(facts, System.currentTimeMillis()).wire,
+      )
+    }
+
+    /** Asks the system to bind the granted listener again (API 24+); false without the grant. */
+    Function("requestRebind") {
+      if (!isGranted()) return@Function false
+      try {
+        NotificationListenerService.requestRebind(
+          ComponentName(context, DaNotificationListenerService::class.java),
+        )
+        true
+      } catch (_: Exception) {
+        false
+      }
     }
 
     Function("setEnabled") { enabled: Boolean ->
@@ -176,6 +215,7 @@ class NotificationIntelligenceModule : Module() {
   companion object {
     private const val EVENT_GRANT = "onGrantChanged"
     private const val EVENT_SIGNALS = "onSignalsChanged"
+    private const val EVENT_LISTENER = "onListenerChanged"
     private val PACKAGE = Regex("^[a-zA-Z0-9_.]{3,120}$")
   }
 }

@@ -5,16 +5,25 @@
  * own stack; re-tapping the active tab emits it on the focused route, which pops that tab's stack
  * to its root and scrolls the root to the top (`useScrollToTop`). While a tab asks for
  * `tabBarHideOnKeyboard` (Asistan) the bar hides with the keyboard. Toasts sit 14 above the bar.
+ * DEV-20: on iOS the bar is translucent over an `expo-blur` `BlurView` (intensity 20); the kit
+ * falls back to the opaque bar on Android and when "Reduce Transparency" is on. M-GL-14: the audio
+ * mini player docks above the bar while a briefing plays (`MiniPlayerDock`).
  */
 import { TabBar, useTheme, type IconName, type TabBarItem } from '@da/ui';
+import { BlurView } from 'expo-blur';
 import type { Tabs } from 'expo-router/js-tabs';
 import { useEffect, useState, type ComponentProps } from 'react';
-import { Keyboard } from 'react-native';
+import { Keyboard, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslations } from 'use-intl';
 
 import { track } from '../../lib/events';
 import { useTabBarToastOffset } from '../../providers/ToastHost';
+import {
+  MINI_PLAYER_DOCK_HEIGHT,
+  MiniPlayerDock,
+  useMiniPlayerVisible,
+} from '../briefing/player/MiniPlayerDock';
 
 export type ShellTabBarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>['tabBar']>>[0];
 
@@ -60,7 +69,11 @@ export function ShellTabBar({ state, navigation, descriptors }: ShellTabBarProps
     focused !== undefined &&
     descriptors[focused.key]?.options.tabBarHideOnKeyboard === true;
 
-  useTabBarToastOffset(theme.layout.tabBar.height + insets.bottom, !hideForKeyboard);
+  const mini = useMiniPlayerVisible();
+  useTabBarToastOffset(
+    theme.layout.tabBar.height + insets.bottom + (mini ? MINI_PLAYER_DOCK_HEIGHT : 0),
+    !hideForKeyboard,
+  );
 
   if (hideForKeyboard || focused === undefined) return null;
 
@@ -85,16 +98,40 @@ export function ShellTabBar({ state, navigation, descriptors }: ShellTabBarProps
   };
 
   return (
-    <TabBar
-      items={items}
-      activeKey={focused.name}
-      onTabPress={(key) => {
-        press(key, false);
-      }}
-      onReselect={(key) => {
-        press(key, true);
-      }}
-      testID="shell.tabBar"
-    />
+    <View>
+      {mini ? (
+        <View
+          style={[
+            styles.dock,
+            { paddingHorizontal: theme.layout.screenX, backgroundColor: theme.color.bg },
+          ]}
+        >
+          <MiniPlayerDock testID="shell.miniPlayer" />
+        </View>
+      ) : null}
+      <TabBar
+        items={items}
+        activeKey={focused.name}
+        onTabPress={(key) => {
+          press(key, false);
+        }}
+        onReselect={(key) => {
+          press(key, true);
+        }}
+        background={
+          <BlurView
+            intensity={20}
+            tint={theme.isDark ? 'dark' : 'light'}
+            style={StyleSheet.absoluteFill}
+            testID="shell.tabBar.blur"
+          />
+        }
+        testID="shell.tabBar"
+      />
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  dock: { paddingTop: 4 },
+});

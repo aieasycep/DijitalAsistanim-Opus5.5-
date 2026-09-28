@@ -71,6 +71,7 @@ import {
   type PlanItemRow,
   type SignalRow,
 } from './data';
+import { OutsideWindowNote } from './OutsideWindowNote';
 
 type PlanView = 'day' | 'week';
 
@@ -1099,6 +1100,7 @@ export function PlanScreen() {
           testID="plan.segments"
         />
         {online ? null : <OfflineNotice onRefresh={refresh} />}
+        <OutsideWindowNote lastDay={view === 'day' ? date : (days[6] ?? date)} />
         {view === 'day' ? (
           <>
             <DayStrip accessibilityLabel={t('screen.strip')} testID="plan.strip">

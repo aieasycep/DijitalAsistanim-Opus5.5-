@@ -54,7 +54,17 @@
     "nowPlaying": "şu an çalıyor",
     "nativeNotice": "Cihaz sesiyle okunuyor",
     "useDevice": "Cihaz Sesiyle Dinle",
-    "offline": "Ses indirilmedi · çevrimdışısın."
+    "offline": "Ses indirilmedi · çevrimdışısın.",
+    "mini": {
+      "close": "Sesli brifingi kapat",
+      "expand": "Sesli brifingi aç"
+    },
+    "voice": {
+      "missing": "Bu cihazda Türkçe ses yüklü değil.",
+      "iosHelp": "Daha doğal bir ses için Ayarlar → Erişilebilirlik → Seslendirilen İçerik → Sesler → Türkçe yolundan bir ses indirebilirsin.",
+      "install": "Ses paketini indir",
+      "installFailed": "Ses paketi ekranı açılamadı."
+    }
   },
   "midday": {
     "noChange": "Sabahından beri önemli bir değişiklik yok.",
@@ -173,5 +183,12 @@
     "emptyTitle": "Henüz brifing yok.",
     "emptyBody": "İlk sabah brifingin {time_loc} hazır olacak.",
     "loadFailed": "Brifingler yüklenemedi."
+  },
+  "deviceFreshness": {
+    "stale": "{source} · son eşitleme {time}. Sonraki değişiklikler uygulamayı açtığında eklenir.",
+    "neverSynced": "{source} henüz eşitlenmedi. Değişiklikler uygulamayı açtığında eklenir.",
+    "changed": "Takvimin bu brifingden sonra değişti.",
+    "seeCurrent": "Güncel programı gör",
+    "region": "Takvim güncelliği"
   }
 }

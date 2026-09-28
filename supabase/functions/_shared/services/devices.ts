@@ -7,6 +7,9 @@
  * installation, and apply the device timezone when `timezone_mode='auto'`. The device fingerprint
  * is re-hashed with `HASH_PEPPER` before storage (referral anti-abuse only).
  *
+ * `platform_capabilities` (KPL-04/06/07/09): when the body carries it, it replaces the stored object
+ * after the keys of the other platform are dropped; absent, the stored object is left unchanged.
+ *
  * Unregister: disables the installation's tokens and sets `signed_out_at`; a foreign installation is
  * `NOT_FOUND`; a repeat returns `disabled_tokens: 0`.
  */
@@ -53,6 +56,40 @@ export interface InstallationUpsert {
   readonly ni_listener_granted?: boolean | null;
   readonly ni_mode?: 'all' | 'selected' | null;
   readonly ni_allowed_packages?: string[];
+  readonly platform_capabilities?: Readonly<Record<string, boolean>>;
+}
+
+/** Capability keys that exist on one platform only (the rest apply to both). */
+const IOS_ONLY_CAPABILITIES: ReadonlySet<string> = new Set([
+  'ios_time_sensitive',
+  'ios_show_previews',
+  'widget_small',
+  'widget_medium',
+  'widget_large',
+  'widget_lock_inline',
+  'widget_lock_circular',
+  'widget_lock_rectangular',
+]);
+const ANDROID_ONLY_CAPABILITIES: ReadonlySet<string> = new Set([
+  'exact_alarm',
+  'ni_available',
+  'ni_granted',
+  'ni_connected',
+  'widget_next',
+  'widget_today',
+]);
+
+/** The reported capabilities that apply to the installation's platform (booleans only). */
+export function capabilitiesFor(
+  platform: 'ios' | 'android',
+  reported: Readonly<Record<string, boolean | undefined>>,
+): Record<string, boolean> {
+  const foreign = platform === 'ios' ? ANDROID_ONLY_CAPABILITIES : IOS_ONLY_CAPABILITIES;
+  const out: Record<string, boolean> = {};
+  for (const [key, value] of Object.entries(reported)) {
+    if (typeof value === 'boolean' && !foreign.has(key)) out[key] = value;
+  }
+  return out;
 }
 
 export interface DevicesRepo {
@@ -136,6 +173,9 @@ export async function registerDevice(
           ni_mode: android.enabled ? android.mode : null,
           ni_allowed_packages: android.allowed_packages,
         }),
+    ...(input.platform_capabilities === undefined
+      ? {}
+      : { platform_capabilities: capabilitiesFor(input.platform, input.platform_capabilities) }),
   });
 
   if (rebound) {

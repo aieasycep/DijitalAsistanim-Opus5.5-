@@ -46,6 +46,8 @@ export const LOGOUT_HOOKS = {
   analyticsBuffer: 'analytics.clear_buffer',
   // T-8.07 background device-calendar upload (registered while a device calendar is connected)
   deviceCalendarTask: 'device_calendar.unregister_task',
+  // M-GL-14: the audio briefing session (mini player) stops before the caches are deleted.
+  audioPlayer: 'audio.stop_player',
 } as const;
 
 const hooks = new Map<string, { readonly phase: LogoutHookPhase; readonly run: LogoutHook }>();

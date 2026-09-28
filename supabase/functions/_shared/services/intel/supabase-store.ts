@@ -10,6 +10,7 @@ import type { DbClient } from '../../db/clients.ts';
 import { DB_FN, rpc } from '../../db/functions.ts';
 import { inChunks } from '../../db/in-chunks.ts';
 import { mapDbError } from '../../errors.ts';
+import type { DeviceSchedule, DeviceSource } from '../briefings/device-refresh.ts';
 import type { LifeEventInsert } from '../life/classify.ts';
 import type {
   BriefingStore,
@@ -815,6 +816,48 @@ export function supabaseStatsStore(db: DbClient): StatsStore {
           last_sync_at: a.last_successful_sync_at ?? null,
         })),
       };
+    },
+    async deviceSchedule(userId, from, to): Promise<DeviceSchedule> {
+      const accounts = (check(
+        await db
+          .from('connected_accounts')
+          .select('id,provider,provider_account_id,last_successful_sync_at')
+          .eq('user_id', userId)
+          .in('provider', ['apple_device', 'android_device'])
+          .is('disconnected_at', null)
+          .neq('status', 'disconnected'),
+      ) ?? []) as Row[];
+      if (accounts.length === 0) return { sources: [], events: [] };
+      const installationIds = accounts.map((a) => String(a.provider_account_id));
+      const installations = (check(
+        await db
+          .from('app_installations')
+          .select('id,installation_id')
+          .eq('user_id', userId)
+          .in('installation_id', installationIds)
+          .is('signed_out_at', null),
+      ) ?? []) as Row[];
+      const rowIdOf = new Map(installations.map((i) => [String(i.installation_id), String(i.id)]));
+      const sources: DeviceSource[] = accounts.map((a) => ({
+        accountId: String(a.id),
+        provider: a.provider as DeviceSource['provider'],
+        installationRowId: rowIdOf.get(String(a.provider_account_id)) ?? null,
+        lastSyncAt: (a.last_successful_sync_at as string | null) ?? null,
+      }));
+      const events = (check(
+        await db
+          .from('calendar_events')
+          .select('id,start_at,end_at,status')
+          .eq('user_id', userId)
+          .in(
+            'connected_account_id',
+            sources.map((s) => s.accountId),
+          )
+          .is('provider_deleted_at', null)
+          .lt('start_at', to.toISOString())
+          .gt('end_at', from.toISOString()),
+      ) ?? []) as { id: string; start_at: string; end_at: string; status: string }[];
+      return { sources, events };
     },
   };
 }

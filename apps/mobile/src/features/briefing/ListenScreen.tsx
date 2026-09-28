@@ -1,6 +1,7 @@
 /**
  * M-BR-02 audio briefing player (`briefing/[id]/listen`, full-screen modal, `?autoplay=1`).
- * `POST /briefings/:id/audio` (API-BRF-01, used as a query; 402 for Free → the gate):
+ * `POST /briefings/:id/audio` (API-BRF-01, used as a query; 402 for Free → the gate) decides the
+ * source, which this screen prepares and hands to the player session (`player/store.ts`):
  * - premium: the signed file is downloaded (cached per version) and played with expo-audio —
  *   play/pause, exact ±15 s seeks, scrubbing, 1.0/1.25/1.5×, chapters, lock-screen controls;
  * - native: the chapter script is synthesized on the device into one file per chapter
@@ -9,515 +10,111 @@
  *   (`briefing_audio_fallback{reason:'tts_unavailable'}`) the script is read with expo-speech
  *   sentence by sentence as the last resort (D-19: estimated positions, ±15 s by sentences,
  *   Android pause = stop and resume from the sentence). Both carry the honest notice "Cihaz
- *   sesiyle okunuyor".
+ *   sesiyle okunuyor"; without a Turkish voice the KPL-25 note offers the voice-data install
+ *   (Android) or the Settings path (iOS).
  * A failed file offers the device voice (`prefer:'native'`); offline plays a cached file.
+ * The players live in `AudioPlayerHost` (root layout): collapsing this screen keeps playback
+ * running and docks the mini player (M-GL-14); re-opening it from the mini player shows the
+ * running session instead of starting over.
  */
 import { briefingAudioQueryOptions, useApiClient } from '@da/api-client/react';
 import { formatDatePattern } from '@da/i18n';
-import { useQuery } from '@tanstack/react-query';
 import {
-  setAudioModeAsync,
-  useAudioPlayer,
-  useAudioPlayerStatus,
-  useAudioPlaylist,
-  useAudioPlaylistStatus,
-  type AudioPlaylist,
-} from 'expo-audio';
+  Button,
+  ErrorCard,
+  FullPlayer,
+  GradientSurface,
+  Spinner,
+  Text,
+  TextAction,
+  useTheme,
+} from '@da/ui';
+import { useQuery } from '@tanstack/react-query';
 import * as FileSystem from 'expo-file-system/legacy';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import * as Speech from 'expo-speech';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocale, useTranslations } from 'use-intl';
-import { Button, ErrorCard, FullPlayer, GradientSurface, Spinner, Text, useTheme } from '@da/ui';
 
-import { isTtsAvailable, synthesizeChapters, type TtsTrack } from '../../../modules/da-tts/src';
+import { isTtsAvailable, synthesizeChapters } from '../../../modules/da-tts/src';
 import { track } from '../../lib/events';
 import { cachedBootstrap } from '../../lib/postgrest';
 import { useOnline } from '../../lib/query/online-manager';
+import { showToast } from '../../providers/ToastHost';
 import { ContextualGate, isPro } from '../pro-gate/ProGate';
+import { hasTurkishVoice, openVoiceDataInstall } from '../voice/availability';
 import { cachedAudioFile, downloadAudio } from './audio-cache';
 import { useBriefing } from './data';
 import {
-  buildQueue,
-  chapterStart,
-  sentenceAt,
-  skip as skipSentences,
-  totalDuration,
-} from './tts-queue';
+  clock,
+  currentSession,
+  SKIP_S,
+  startSession,
+  usePlayerControls,
+  usePlayerSession,
+  usePlayerStatus,
+  type PlayerSession,
+  type PlayerSource,
+} from './player/store';
 
-export const SKIP_S = 15;
-export const RATES = [1, 1.25, 1.5] as const;
-type Rate = (typeof RATES)[number];
-
-export function clampSeek(position: number, delta: number, duration: number): number {
-  return Math.max(0, Math.min(duration, position + delta));
-}
-
-export function nextRate(rate: Rate): Rate {
-  const index = RATES.indexOf(rate);
-  return RATES[(index + 1) % RATES.length] ?? 1;
-}
-
-function bucketOf(position: number, duration: number): 0 | 25 | 50 | 75 | 100 {
-  if (duration <= 0) return 0;
-  const ratio = Math.max(0, Math.min(1, position / duration));
-  const value = Math.round(ratio * 4) * 25;
-  return value as 0 | 25 | 50 | 75 | 100;
-}
-
-function clock(seconds: number): string {
-  const s = Math.max(0, Math.round(seconds));
-  return `${String(Math.floor(s / 60))}:${String(s % 60).padStart(2, '0')}`;
-}
-
-interface Chapter {
-  readonly key: string;
-  readonly title: string;
-  readonly startS: number;
-  readonly durationS: number;
-}
+export { locateTrack, trackOffsets } from './player/AudioPlayerHost';
+export { clampSeek, nextRate, RATES, SKIP_S } from './player/store';
 
 interface PlayerChrome {
   readonly kicker: string;
-  readonly title: string;
   readonly date: string;
-  readonly kind: 'morning' | 'midday' | 'evening' | 'weekly';
   readonly onClose: () => void;
 }
 
-function PremiumPlayer({
+/** The full player over the running session (every control acts on the session's engine). */
+function PlayerView({
+  session,
   chrome,
-  uri,
-  chapters,
-  durationS,
-  autoplay,
 }: {
+  readonly session: PlayerSession;
   readonly chrome: PlayerChrome;
-  readonly uri: string;
-  readonly chapters: readonly Chapter[];
-  readonly durationS: number;
-  readonly autoplay: boolean;
 }) {
   const t = useTranslations('briefing.audio');
-  const player = useAudioPlayer({ uri });
-  const status = useAudioPlayerStatus(player);
-  const [rate, setRate] = useState<Rate>(1);
-  const position = status.currentTime;
-  const duration = status.duration > 0 ? status.duration : durationS;
-  const positionRef = useRef(0);
-  useEffect(() => {
-    positionRef.current = position;
-  }, [position]);
-
-  useEffect(() => {
-    void setAudioModeAsync({
-      playsInSilentMode: true,
-      shouldPlayInBackground: true,
-      interruptionMode: 'doNotMix',
-    });
-    player.setActiveForLockScreen(
-      true,
-      { title: chrome.title, artist: 'Dijital Asistan' },
-      {
-        showSeekForward: true,
-        showSeekBackward: true,
-      },
-    );
-    if (autoplay) player.play();
-    return () => {
-      track('briefing_audio_played', {
-        kind: chrome.kind,
-        mode: 'premium_tts',
-        completion_bucket: bucketOf(positionRef.current, duration),
-      });
-    };
-    // Set up once per file.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [player]);
-
-  const seek = (seconds: number, method: 'skip' | 'scrub' | 'chapter') => {
-    track('briefing_audio_seek', { method });
-    void player.seekTo(Math.max(0, Math.min(duration, seconds)));
-  };
-  const active = [...chapters].reverse().find((c) => c.startS <= position) ?? chapters[0];
+  const status = usePlayerStatus();
+  const controls = usePlayerControls();
+  const device = session.source.kind !== 'file';
+  const active = status.chapters.find((c) => c.key === status.activeKey) ?? status.chapters[0];
+  const rateText = status.rate === 1 ? '1.0' : String(status.rate);
   return (
     <FullPlayer
       kicker={chrome.kicker}
-      title={chrome.title}
-      meta={[chrome.date, clock(duration), active?.title ?? ''].filter((p) => p !== '').join(' · ')}
-      onCollapse={chrome.onClose}
-      collapseLabel={t('close')}
-      speed={{
-        label: t('rateLabel', { rate: rate === 1 ? '1.0' : String(rate) }),
-        accessibilityLabel: t('speedA11y', { rate: String(rate) }),
-        onPress: () => {
-          const next = nextRate(rate);
-          setRate(next);
-          player.setPlaybackRate(next, 'high');
-          track('briefing_audio_speed_changed', { rate: next === 1 ? '1' : String(next) });
-        },
-      }}
-      progress={duration > 0 ? position / duration : 0}
-      playing={status.playing}
-      scrubber={{
-        positionS: position,
-        durationS: duration,
-        onSeek: (seconds) => {
-          seek(seconds, 'scrub');
-        },
-        valueText: t('seekA11y', { position: clock(position), duration: clock(duration) }),
-        accessibilityLabel: t('scrubber'),
-        step: SKIP_S,
-      }}
-      transport={{
-        playing: status.playing,
-        loading: !status.isLoaded,
-        onPlayPause: () => {
-          if (status.playing) {
-            player.pause();
-            track('briefing_audio_pause');
-          } else {
-            if (status.didJustFinish || (duration > 0 && position >= duration))
-              void player.seekTo(0);
-            player.play();
-          }
-        },
-        onSkipBack: () => {
-          seek(clampSeek(position, -SKIP_S, duration), 'skip');
-        },
-        onSkipForward: () => {
-          seek(clampSeek(position, SKIP_S, duration), 'skip');
-        },
-        playLabel: t('play'),
-        pauseLabel: t('pause'),
-        skipBackLabel: t('back15'),
-        skipForwardLabel: t('forward15'),
-        skipCaption: String(SKIP_S),
-      }}
-      chapters={{
-        chapters: chapters.map((c, i) => ({
-          key: c.key,
-          index: String(i + 1),
-          title: c.title,
-          duration: clock(c.durationS),
-        })),
-        ...(active === undefined ? {} : { activeKey: active.key }),
-        onSelect: (key) => {
-          const chapter = chapters.find((c) => c.key === key);
-          if (chapter !== undefined) seek(chapter.startS, 'chapter');
-        },
-        playingLabel: t('nowPlaying'),
-      }}
-      testID="player.premium"
-    />
-  );
-}
-
-function NativePlayer({
-  chrome,
-  chapters,
-  language,
-  autoplay,
-}: {
-  readonly chrome: PlayerChrome;
-  readonly chapters: readonly { index: number; title: string; text: string }[];
-  readonly language: string;
-  readonly autoplay: boolean;
-}) {
-  const t = useTranslations('briefing.audio');
-  const queue = useMemo(() => buildQueue(chapters), [chapters]);
-  const duration = totalDuration(queue);
-  const [index, setIndex] = useState(0);
-  const startPlaying = autoplay && queue.length > 0;
-  const [playing, setPlaying] = useState(startPlaying);
-  const [rate, setRate] = useState<Rate>(1);
-  const indexRef = useRef(0);
-  const playingRef = useRef(startPlaying);
-  const token = useRef(0);
-
-  const speakFrom = (start: number) => {
-    token.current += 1;
-    const run = token.current;
-    void Speech.stop();
-    const speakAt = (i: number) => {
-      const sentence = queue[i];
-      if (sentence === undefined || run !== token.current) {
-        if (sentence === undefined) {
-          playingRef.current = false;
-          setPlaying(false);
-        }
-        return;
-      }
-      indexRef.current = i;
-      setIndex(i);
-      Speech.speak(sentence.text, {
-        language,
-        rate,
-        onDone: () => {
-          if (run === token.current && playingRef.current) speakAt(i + 1);
-        },
-      });
-    };
-    speakAt(start);
-  };
-
-  useEffect(() => {
-    if (startPlaying) speakFrom(0);
-    return () => {
-      token.current += 1;
-      void Speech.stop();
-      track('briefing_audio_played', {
-        kind: chrome.kind,
-        mode: 'native_tts',
-        completion_bucket: bucketOf(queue[indexRef.current]?.startS ?? 0, duration),
-      });
-    };
-    // Start once.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const jump = (target: number, method: 'skip' | 'scrub' | 'chapter') => {
-    track('briefing_audio_seek', { method });
-    indexRef.current = target;
-    setIndex(target);
-    if (playingRef.current) speakFrom(target);
-  };
-  const position = queue[index]?.startS ?? 0;
-  const activeChapter = queue[index]?.chapter ?? chapters[0]?.index ?? 0;
-  return (
-    <FullPlayer
-      kicker={chrome.kicker}
-      title={chrome.title}
-      meta={[
-        chrome.date,
-        clock(duration),
-        chapters.find((c) => c.index === activeChapter)?.title ?? '',
-      ]
+      title={session.title}
+      meta={[chrome.date, clock(status.durationS), active?.title ?? '']
         .filter((p) => p !== '')
         .join(' · ')}
       onCollapse={chrome.onClose}
       collapseLabel={t('close')}
-      notice={t('nativeNotice')}
+      {...(device ? { notice: t('nativeNotice') } : {})}
       speed={{
-        label: t('rateLabel', { rate: rate === 1 ? '1.0' : String(rate) }),
-        accessibilityLabel: t('speedA11y', { rate: String(rate) }),
-        onPress: () => {
-          const next = nextRate(rate);
-          setRate(next);
-          track('briefing_audio_speed_changed', { rate: next === 1 ? '1' : String(next) });
-        },
+        label: t('rateLabel', { rate: rateText }),
+        accessibilityLabel: t('speedA11y', { rate: String(status.rate) }),
+        onPress: () => controls?.cycleRate(),
       }}
-      progress={duration > 0 ? position / duration : 0}
-      playing={playing}
-      scrubber={{
-        positionS: position,
-        durationS: duration,
-        onSeek: (seconds) => {
-          jump(sentenceAt(queue, seconds), 'scrub');
-        },
-        valueText: t('seekA11y', { position: clock(position), duration: clock(duration) }),
-        accessibilityLabel: t('scrubber'),
-        step: SKIP_S,
-      }}
-      transport={{
-        playing,
-        onPlayPause: () => {
-          if (playing) {
-            playingRef.current = false;
-            setPlaying(false);
-            track('briefing_audio_pause');
-            if (Platform.OS === 'ios') void Speech.pause();
-            else {
-              token.current += 1;
-              void Speech.stop();
-            }
-          } else {
-            playingRef.current = true;
-            setPlaying(true);
-            if (Platform.OS === 'ios' && index > 0) void Speech.resume();
-            else speakFrom(indexRef.current >= queue.length ? 0 : indexRef.current);
-          }
-        },
-        onSkipBack: () => {
-          jump(skipSentences(queue, index, -SKIP_S), 'skip');
-        },
-        onSkipForward: () => {
-          jump(skipSentences(queue, index, SKIP_S), 'skip');
-        },
-        playLabel: t('play'),
-        pauseLabel: t('pause'),
-        skipBackLabel: t('back15'),
-        skipForwardLabel: t('forward15'),
-        skipCaption: String(SKIP_S),
-      }}
-      chapters={{
-        chapters: chapters.map((c, i) => ({
-          key: String(c.index),
-          index: String(i + 1),
-          title: c.title,
-          duration: clock(
-            queue.filter((s) => s.chapter === c.index).reduce((sum, s) => sum + s.durationS, 0),
-          ),
-        })),
-        activeKey: String(activeChapter),
-        onSelect: (key) => {
-          jump(chapterStart(queue, Number(key)), 'chapter');
-        },
-        playingLabel: t('nowPlaying'),
-      }}
-      testID="player.native"
-    />
-  );
-}
-
-/** Start of each synthesized file on the briefing timeline. */
-export function trackOffsets(tracks: readonly TtsTrack[]): number[] {
-  const offsets: number[] = [];
-  let at = 0;
-  for (const item of tracks) {
-    offsets.push(at);
-    at += item.durationS;
-  }
-  return offsets;
-}
-
-/** The file and the position inside it for a position on the whole timeline. */
-export function locateTrack(
-  tracks: readonly TtsTrack[],
-  seconds: number,
-): { index: number; offset: number } {
-  const offsets = trackOffsets(tracks);
-  let index = 0;
-  for (let i = 0; i < tracks.length; i++) {
-    if ((offsets[i] ?? 0) <= seconds) index = i;
-    else break;
-  }
-  const durationS = tracks[index]?.durationS ?? 0;
-  return { index, offset: Math.max(0, Math.min(durationS, seconds - (offsets[index] ?? 0))) };
-}
-
-/** The playlist speed is a property of the native shared object. */
-function setPlaylistRate(playlist: AudioPlaylist, rate: number): void {
-  playlist.playbackRate = rate;
-}
-
-/** Device voice synthesized to files (T-8.27): exact seeks, speeds and chapters. */
-function SynthesizedPlayer({
-  chrome,
-  tracks,
-  chapterTitles,
-  autoplay,
-}: {
-  readonly chrome: PlayerChrome;
-  readonly tracks: readonly TtsTrack[];
-  readonly chapterTitles: ReadonlyMap<number, string>;
-  readonly autoplay: boolean;
-}) {
-  const t = useTranslations('briefing.audio');
-  const sources = useMemo(() => tracks.map((item) => ({ uri: item.uri })), [tracks]);
-  const playlist = useAudioPlaylist({ sources });
-  const status = useAudioPlaylistStatus(playlist);
-  const [rate, setRate] = useState<Rate>(1);
-  const offsets = useMemo(() => trackOffsets(tracks), [tracks]);
-  const duration = tracks.reduce((sum, item) => sum + item.durationS, 0);
-  const position = Math.min(duration, (offsets[status.currentIndex] ?? 0) + status.currentTime);
-  const positionRef = useRef(0);
-  useEffect(() => {
-    positionRef.current = position;
-  }, [position]);
-
-  useEffect(() => {
-    void setAudioModeAsync({
-      playsInSilentMode: true,
-      shouldPlayInBackground: true,
-      interruptionMode: 'doNotMix',
-    });
-    if (autoplay) playlist.play();
-    return () => {
-      track('briefing_audio_played', {
-        kind: chrome.kind,
-        mode: 'native_tts',
-        completion_bucket: bucketOf(positionRef.current, duration),
-      });
-    };
-    // Set up once per playlist.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playlist]);
-
-  const seek = (seconds: number, method: 'skip' | 'scrub' | 'chapter') => {
-    track('briefing_audio_seek', { method });
-    const target = locateTrack(tracks, Math.max(0, Math.min(duration, seconds)));
-    if (target.index !== status.currentIndex) playlist.skipTo(target.index);
-    void playlist.seekTo(target.offset);
-  };
-  const chapters = [...new Set(tracks.map((item) => item.chapter))].map((chapter) => {
-    const first = tracks.findIndex((item) => item.chapter === chapter);
-    return {
-      key: String(chapter),
-      title: chapterTitles.get(chapter) ?? '',
-      startS: offsets[first] ?? 0,
-      durationS: tracks
-        .filter((item) => item.chapter === chapter)
-        .reduce((sum, item) => sum + item.durationS, 0),
-    };
-  });
-  const active = [...chapters].reverse().find((c) => c.startS <= position) ?? chapters[0];
-  const atEnd =
-    status.currentIndex === tracks.length - 1 &&
-    (status.didJustFinish || (duration > 0 && position >= duration - 0.25));
-  return (
-    <FullPlayer
-      kicker={chrome.kicker}
-      title={chrome.title}
-      meta={[chrome.date, clock(duration), active?.title ?? ''].filter((p) => p !== '').join(' · ')}
-      onCollapse={chrome.onClose}
-      collapseLabel={t('close')}
-      notice={t('nativeNotice')}
-      speed={{
-        label: t('rateLabel', { rate: rate === 1 ? '1.0' : String(rate) }),
-        accessibilityLabel: t('speedA11y', { rate: String(rate) }),
-        onPress: () => {
-          const next = nextRate(rate);
-          setRate(next);
-          setPlaylistRate(playlist, next);
-          track('briefing_audio_speed_changed', { rate: next === 1 ? '1' : String(next) });
-        },
-      }}
-      progress={duration > 0 ? position / duration : 0}
+      progress={status.durationS > 0 ? status.positionS / status.durationS : 0}
       playing={status.playing}
       scrubber={{
-        positionS: position,
-        durationS: duration,
-        onSeek: (seconds) => {
-          seek(seconds, 'scrub');
-        },
-        valueText: t('seekA11y', { position: clock(position), duration: clock(duration) }),
+        positionS: status.positionS,
+        durationS: status.durationS,
+        onSeek: (seconds) => controls?.seek(seconds, 'scrub'),
+        valueText: t('seekA11y', {
+          position: clock(status.positionS),
+          duration: clock(status.durationS),
+        }),
         accessibilityLabel: t('scrubber'),
         step: SKIP_S,
       }}
       transport={{
         playing: status.playing,
-        loading: !status.isLoaded,
-        onPlayPause: () => {
-          if (status.playing) {
-            playlist.pause();
-            track('briefing_audio_pause');
-          } else {
-            if (atEnd) {
-              playlist.skipTo(0);
-              void playlist.seekTo(0);
-            }
-            playlist.play();
-          }
-        },
-        onSkipBack: () => {
-          seek(clampSeek(position, -SKIP_S, duration), 'skip');
-        },
-        onSkipForward: () => {
-          seek(clampSeek(position, SKIP_S, duration), 'skip');
-        },
+        loading: controls === null || !status.loaded,
+        onPlayPause: () => controls?.toggle(),
+        onSkipBack: () => controls?.skip(-SKIP_S),
+        onSkipForward: () => controls?.skip(SKIP_S),
         playLabel: t('play'),
         pauseLabel: t('pause'),
         skipBackLabel: t('back15'),
@@ -525,103 +122,170 @@ function SynthesizedPlayer({
         skipCaption: String(SKIP_S),
       }}
       chapters={{
-        chapters: chapters.map((c, i) => ({
+        chapters: status.chapters.map((c, i) => ({
           key: c.key,
           index: String(i + 1),
           title: c.title,
           duration: clock(c.durationS),
         })),
         ...(active === undefined ? {} : { activeKey: active.key }),
-        onSelect: (key) => {
-          const chapter = chapters.find((c) => c.key === key);
-          if (chapter !== undefined) seek(chapter.startS, 'chapter');
-        },
+        onSelect: (key) => controls?.selectChapter(key),
         playingLabel: t('nowPlaying'),
       }}
-      testID="player.synthesized"
+      testID={
+        session.source.kind === 'file'
+          ? 'player.premium'
+          : session.source.kind === 'tracks'
+            ? 'player.synthesized'
+            : 'player.native'
+      }
     />
+  );
+}
+
+/** Hands a prepared source to the player session once. */
+function Begin({
+  source,
+  onBegin,
+  label,
+}: {
+  readonly source: PlayerSource;
+  readonly onBegin: (source: PlayerSource) => void;
+  readonly label: string;
+}) {
+  useEffect(() => {
+    onBegin(source);
+    // Start once per prepared source.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [source]);
+  return <Preparing label={label} />;
+}
+
+function Preparing({ label, onClose }: { readonly label: string; readonly onClose?: () => void }) {
+  const common = useTranslations('common');
+  return (
+    <View style={styles.loading} accessible accessibilityLabel={label} testID="listen.loading">
+      <Spinner tone="onGradient" size={22} />
+      <Text variant="body" tone="onGradient">
+        {label}
+      </Text>
+      {onClose === undefined ? null : (
+        <Button
+          label={common('actions.close')}
+          variant="ghost"
+          onPress={onClose}
+          testID="listen.synthesizing.close"
+        />
+      )}
+    </View>
   );
 }
 
 type DeviceVoiceState =
   | { readonly kind: 'synthesizing' }
-  | { readonly kind: 'files'; readonly tracks: readonly TtsTrack[] }
-  | { readonly kind: 'speech' };
+  | { readonly kind: 'files'; readonly source: PlayerSource }
+  | { readonly kind: 'speech'; readonly source: PlayerSource };
 
 /**
  * Native mode: synthesized files when `da-tts` is linked (T-8.27), expo-speech as the last resort.
  */
-function DeviceVoicePlayer({
-  chrome,
+function DeviceVoiceSource({
   briefingId,
   chapters,
   language,
-  autoplay,
+  onBegin,
+  onClose,
 }: {
-  readonly chrome: PlayerChrome;
   readonly briefingId: string;
   readonly chapters: readonly { index: number; title: string; text: string }[];
   readonly language: string;
-  readonly autoplay: boolean;
+  readonly onBegin: (source: PlayerSource) => void;
+  readonly onClose: () => void;
 }) {
   const t = useTranslations('briefing');
-  const common = useTranslations('common');
-  const [state, setState] = useState<DeviceVoiceState>(() =>
-    isTtsAvailable() && chapters.length > 0 ? { kind: 'synthesizing' } : { kind: 'speech' },
+  const speech = useMemo(
+    (): PlayerSource => ({ kind: 'speech', chapters, language }),
+    [chapters, language],
   );
-  const titles = useMemo(() => new Map(chapters.map((c) => [c.index, c.title])), [chapters]);
+  const [state, setState] = useState<DeviceVoiceState>(() =>
+    isTtsAvailable() && chapters.length > 0
+      ? { kind: 'synthesizing' }
+      : { kind: 'speech', source: speech },
+  );
 
   useEffect(() => {
     if (state.kind !== 'synthesizing') return;
     let active = true;
     synthesizeChapters({ key: briefingId, language, chapters }).then(
       (result) => {
-        if (active) setState({ kind: 'files', tracks: result.tracks });
+        if (!active) return;
+        setState({
+          kind: 'files',
+          source: {
+            kind: 'tracks',
+            tracks: result.tracks,
+            chapterTitles: Object.fromEntries(chapters.map((c) => [c.index, c.title])),
+          },
+        });
       },
       () => {
         if (!active) return;
         track('briefing_audio_fallback', { reason: 'tts_unavailable' });
-        setState({ kind: 'speech' });
+        setState({ kind: 'speech', source: speech });
       },
     );
     return () => {
       active = false;
     };
-  }, [state.kind, briefingId, language, chapters]);
+  }, [state.kind, briefingId, language, chapters, speech]);
 
   if (state.kind === 'synthesizing') {
     return (
-      <View
-        style={styles.loading}
-        accessible
-        accessibilityLabel={t('audio.preparing')}
-        testID="listen.synthesizing"
-      >
-        <Spinner tone="onGradient" size={22} />
-        <Text variant="body" tone="onGradient">
-          {t('audio.preparing')}
-        </Text>
-        <Button
-          label={common('actions.close')}
-          variant="ghost"
-          onPress={chrome.onClose}
-          testID="listen.synthesizing.close"
-        />
+      <View testID="listen.synthesizing" style={styles.fill}>
+        <Preparing label={t('audio.preparing')} onClose={onClose} />
       </View>
     );
   }
-  if (state.kind === 'files') {
-    return (
-      <SynthesizedPlayer
-        chrome={chrome}
-        tracks={state.tracks}
-        chapterTitles={titles}
-        autoplay={autoplay}
-      />
+  return <Begin source={state.source} onBegin={onBegin} label={t('audio.preparing')} />;
+}
+
+/**
+ * KPL-25: without an installed Turkish voice the device voice is poor or silent. Android offers
+ * the engine's voice-data install; iOS explains the Settings path (there is no install screen).
+ */
+function TurkishVoiceNote() {
+  const t = useTranslations('briefing.audio.voice');
+  const [missing, setMissing] = useState(false);
+  useEffect(() => {
+    let active = true;
+    hasTurkishVoice().then(
+      (has) => {
+        if (active) setMissing(!has);
+      },
+      () => undefined,
     );
-  }
+    return () => {
+      active = false;
+    };
+  }, []);
+  if (!missing) return null;
   return (
-    <NativePlayer chrome={chrome} chapters={chapters} language={language} autoplay={autoplay} />
+    <View style={styles.voiceNote} testID="listen.noTurkishVoice">
+      <Text variant="bodyXs" tone="onGradientSecondary" accessibilityRole="alert">
+        {Platform.OS === 'android' ? t('missing') : `${t('missing')} ${t('iosHelp')}`}
+      </Text>
+      {Platform.OS === 'android' ? (
+        <TextAction
+          label={t('install')}
+          onPress={() => {
+            void openVoiceDataInstall().then((opened) => {
+              if (!opened) showToast({ message: t('installFailed'), kind: 'error' });
+            });
+          }}
+          testID="listen.installVoice"
+        />
+      ) : null}
+    </View>
   );
 }
 
@@ -638,9 +302,16 @@ export function ListenScreen() {
   const id = params.id;
   const autoplay = params.autoplay === '1';
   const pro = isPro();
+  const session = usePlayerSession();
+  // Re-opened from the mini player: the running session is shown as it is.
+  const [attached] = useState(() => currentSession()?.briefingId === id);
+  const live = session !== null && session.briefingId === id ? session : null;
   const [prefer, setPrefer] = useState<'premium' | 'native'>('premium');
   const briefing = useBriefing(id);
-  const audio = useQuery({ ...briefingAudioQueryOptions(api, id, prefer), enabled: pro && online });
+  const audio = useQuery({
+    ...briefingAudioQueryOptions(api, id, prefer),
+    enabled: pro && online && !attached,
+  });
   const [fileUri, setFileUri] = useState<string | null>(null);
   const [downloadFailed, setDownloadFailed] = useState(false);
   const [cachedUri, setCachedUri] = useState<string | null>(null);
@@ -685,11 +356,10 @@ export function ListenScreen() {
   }, [id, online]);
 
   const row = briefing.data?.briefing;
-  const kind = row?.kind ?? 'morning';
+  const kind = row?.kind ?? live?.kind ?? 'morning';
   const lang = locale === 'en' ? 'en' : 'tr';
   const chrome: PlayerChrome = {
     kicker: t('audio.title'),
-    title: t(`kinds.${kind}`),
     date:
       row === undefined
         ? ''
@@ -699,21 +369,33 @@ export function ListenScreen() {
               ? {}
               : { timeZone: cachedBootstrap()?.preferences.timezone }),
           }),
-    kind,
     onClose: close,
+  };
+  const begin = (source: PlayerSource) => {
+    startSession({ briefingId: id, kind, title: t(`kinds.${kind}`), source, autoplay });
   };
 
   let body;
   if (!pro) {
     body = <ContextualGate feature="voice_briefing" onDismiss={close} testID="listen.gate" />;
+  } else if (live !== null) {
+    body = (
+      <>
+        <PlayerView session={live} chrome={chrome} />
+        {live.source.kind === 'file' ? null : <TurkishVoiceNote />}
+      </>
+    );
   } else if (!online && cachedUri !== null) {
     body = (
-      <PremiumPlayer
-        chrome={chrome}
-        uri={cachedUri}
-        chapters={[]}
-        durationS={row?.audio_duration_s ?? 0}
-        autoplay={autoplay}
+      <Begin
+        source={{
+          kind: 'file',
+          uri: cachedUri,
+          chapters: [],
+          durationS: row?.audio_duration_s ?? 0,
+        }}
+        onBegin={begin}
+        label={t('audio.preparing')}
       />
     );
   } else if (!online) {
@@ -743,46 +425,44 @@ export function ListenScreen() {
       />
     );
   } else if (audio.data === undefined || (audio.data.mode === 'premium' && fileUri === null)) {
-    body = (
-      <View
-        style={styles.loading}
-        accessible
-        accessibilityLabel={t('audio.preparing')}
-        testID="listen.loading"
-      >
-        <Spinner tone="onGradient" size={22} />
-        <Text variant="body" tone="onGradient">
-          {t('audio.preparing')}
-        </Text>
-      </View>
-    );
+    body = <Preparing label={t('audio.preparing')} />;
   } else if (audio.data.mode === 'premium' && fileUri !== null) {
     body = (
-      <PremiumPlayer
-        chrome={chrome}
-        uri={fileUri}
-        chapters={audio.data.chapters.map((c) => ({
-          key: String(c.index),
-          title: c.title,
-          startS: c.start_s,
-          durationS: c.duration_s,
-        }))}
-        durationS={audio.data.duration_s}
-        autoplay={autoplay}
+      <Begin
+        source={{
+          kind: 'file',
+          uri: fileUri,
+          chapters: audio.data.chapters.map((c) => ({
+            key: String(c.index),
+            title: c.title,
+            startS: c.start_s,
+            durationS: c.duration_s,
+          })),
+          durationS: audio.data.duration_s,
+        }}
+        onBegin={begin}
+        label={t('audio.preparing')}
       />
     );
   } else if (audio.data.mode === 'native') {
     body = (
-      <DeviceVoicePlayer
-        chrome={chrome}
+      <DeviceVoiceSource
         briefingId={id}
         chapters={audio.data.chapters}
         language={audio.data.language}
-        autoplay={autoplay}
+        onBegin={begin}
+        onClose={close}
       />
     );
   }
 
+  // The full player has its own collapse control; every other state offers "Kapat".
+  const hideClose =
+    pro &&
+    body !== undefined &&
+    (live !== null || audio.data !== undefined || cachedUri !== null) &&
+    !audio.isError &&
+    !downloadFailed;
   return (
     <GradientSurface gradient="night" radius="none" style={styles.fill}>
       <View
@@ -796,11 +476,7 @@ export function ListenScreen() {
         ]}
         testID="screen.listen"
       >
-        {pro &&
-        body !== undefined &&
-        (audio.data !== undefined || cachedUri !== null) &&
-        !audio.isError &&
-        !downloadFailed ? null : (
+        {hideClose ? null : (
           <Button
             label={common('actions.close')}
             variant="ghost"
@@ -817,4 +493,5 @@ export function ListenScreen() {
 const styles = StyleSheet.create({
   fill: { flex: 1 },
   loading: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
+  voiceNote: { gap: 6, paddingBottom: 12 },
 });

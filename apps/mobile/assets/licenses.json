@@ -1530,6 +1530,13 @@
     "kind": "package"
   },
   {
+    "name": "@shopify/flash-list",
+    "version": "2.0.2",
+    "license": "MIT",
+    "repository": "https://shopify.github.io/flash-list/",
+    "kind": "package"
+  },
+  {
     "name": "@sinclair/typebox",
     "version": "0.34.52",
     "license": "MIT",
@@ -2621,6 +2628,13 @@
     "kind": "package"
   },
   {
+    "name": "expo-blur",
+    "version": "57.0.3",
+    "license": "MIT",
+    "repository": "https://docs.expo.dev/versions/latest/sdk/blur-view/",
+    "kind": "package"
+  },
+  {
     "name": "expo-build-properties",
     "version": "57.0.21",
     "license": "MIT",
@@ -2681,6 +2695,13 @@
     "version": "57.0.0",
     "license": "MIT",
     "repository": "https://docs.expo.dev",
+    "kind": "package"
+  },
+  {
+    "name": "expo-document-picker",
+    "version": "57.0.2",
+    "license": "MIT",
+    "repository": "https://docs.expo.dev/versions/latest/sdk/document-picker/",
     "kind": "package"
   },
   {
@@ -2751,13 +2772,6 @@
     "version": "57.0.10",
     "license": "MIT",
     "repository": "https://docs.expo.dev/versions/latest/sdk/linking",
-    "kind": "package"
-  },
-  {
-    "name": "expo-local-authentication",
-    "version": "57.0.3",
-    "license": "MIT",
-    "repository": "https://docs.expo.dev/versions/latest/sdk/local-authentication/",
     "kind": "package"
   },
   {

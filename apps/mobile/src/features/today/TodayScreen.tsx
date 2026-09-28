@@ -63,6 +63,7 @@ import { INSIGHT_WHY_SHEET } from './sheets/WhySheet';
 import { routeForEntity, routeForSource } from './sources';
 import { cardIntentActions } from './intents';
 import { useCardIntents } from './useCardIntents';
+import { DeviceFreshnessNotes } from '../briefing/DeviceFreshnessNotes';
 
 export const MAX_PRIORITIES = 5;
 
@@ -748,6 +749,7 @@ export function TodayScreen() {
       <View style={styles.sections}>
         <AccountAlert data={bootstrap.data} />
         <Hero hero={hero} data={data} bootstrap={bootstrap.data} online={online} />
+        <DeviceFreshnessNotes briefing={hero.briefing} testID="today.deviceFreshness" />
         {weekly === undefined ? null : (
           <Card
             onPress={() => {

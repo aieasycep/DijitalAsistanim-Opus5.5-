@@ -19,7 +19,9 @@
  * `notification-intelligence` local module (T-8.26) adds the Android notification listener service
  * and the launcher `<queries>`. The WidgetKit target lives in `targets/widget`
  * (`@bacons/apple-targets` adds it and its EAS credentials); the `da-widgets` plugin (T-8.25)
- * publishes the App Group to the widget extension and declares the Android Glance receivers.
+ * publishes the App Group to the widget extension and declares the Android Glance receivers. The
+ * `da-platform` plugin (KPL-07, KPL-09) declares `SCHEDULE_EXACT_ALARM` and the Time Sensitive
+ * entitlement, the two capabilities its module reads.
  */
 import type { ConfigContext, ExpoConfig } from 'expo/config';
 import {
@@ -34,6 +36,7 @@ import nativeColors from '@da/design-tokens/native.json';
 import captureTr from '@da/i18n/messages/tr/capture.json';
 import { CLIENT_SECRET_SHAPES, ENV_KEYS, parseBuildEnv, type AppEnv } from '@da/validation/env';
 
+import { withDaPlatform } from './modules/da-platform/plugin/withDaPlatform.ts';
 import { createWithDaShare } from './modules/da-share/plugin/withDaShare.ts';
 import { createWithDaWidgets } from './modules/da-widgets/plugin/withDaWidgets.ts';
 import { createWithNotificationIntelligence } from './modules/notification-intelligence/plugin/withNotificationIntelligence.ts';
@@ -217,7 +220,7 @@ const ANDROID_PERMISSIONS = [
   'WRITE_CALENDAR',
   'RECORD_AUDIO',
   'CAMERA',
-  'SCHEDULE_EXACT_ALARM',
+  // SCHEDULE_EXACT_ALARM is added by the da-platform plugin (KPL-09), which reads the grant.
   'RECEIVE_BOOT_COMPLETED',
   'WAKE_LOCK',
 ];
@@ -280,20 +283,30 @@ function shareIntentOptions(variant: AppVariant) {
 
 type PluginEntry = string | [string, Record<string, unknown>];
 
+/** Sentry source-map and debug-symbol upload during the native build (ADR-39). */
+export function sentryUploadEnabled(env: Env): boolean {
+  return isSet(env.SENTRY_AUTH_TOKEN) && isSet(env.SENTRY_ORG);
+}
+
 function plugins(variant: AppVariant, env: Env): PluginEntry[] {
   const tr = IOS_PERMISSION_STRINGS.tr;
   const googleIosUrlScheme = env.GOOGLE_IOS_URL_SCHEME?.trim();
   const sentry: Record<string, unknown> = {
     project: isSet(env.SENTRY_PROJECT) ? env.SENTRY_PROJECT : 'da-mobile',
-    // Source maps and debug symbols are uploaded by CI only (ADR-39).
-    disableAutoUpload: true,
+    // Source maps and debug symbols are uploaded by the build (Xcode phase / Gradle task, read by
+    // sentry-cli from the environment) only when the CI secret `SENTRY_AUTH_TOKEN` and the org are
+    // present; otherwise uploading stays off and the build never fails for a missing token. The
+    // token itself never enters the config (it would be written into the app package).
+    disableAutoUpload: !sentryUploadEnabled(env),
   };
   if (isSet(env.SENTRY_ORG)) sentry.organization = env.SENTRY_ORG;
 
   return [
     'expo-router',
     ['expo-localization', { supportedLocales: { ios: ['tr', 'en'], android: ['tr', 'en'] } }],
-    'expo-secure-store',
+    // No SecureStore item uses biometric access control, so its default Face ID string is dropped
+    // (an unused usage string is an App Review risk; the prebuild smoke asserts its absence).
+    ['expo-secure-store', { faceIDPermission: false }],
     'expo-apple-authentication',
     'expo-background-task',
     [
@@ -343,7 +356,6 @@ function plugins(variant: AppVariant, env: Env): PluginEntry[] {
         speechRecognitionPermission: tr.NSSpeechRecognitionUsageDescription,
       },
     ],
-    ['expo-local-authentication', { faceIDPermission: tr.NSFaceIDUsageDescription }],
     // The reversed iOS client ID is an external credential (§15 GOOGLE_IOS_URL_SCHEME); without
     // it native Google sign-in on iOS reports "Harici kimlik bilgisi gerekli".
     ...(isSet(googleIosUrlScheme)
@@ -394,7 +406,8 @@ export function buildAppConfig(base: Partial<ExpoConfig>, env: Env): ExpoConfig 
 
   const withShare = (config: ExpoConfig) =>
     withNotificationIntelligence(withDaShare(config, { appGroup: variant.appGroup }));
-  const withWidgets = (config: ExpoConfig) => withDaWidgets(config, { appGroup: variant.appGroup });
+  const withWidgets = (config: ExpoConfig) =>
+    withDaPlatform(withDaWidgets(config, { appGroup: variant.appGroup }));
   return withWidgets(
     withShare(
       withUniqueAppGroups({
@@ -421,10 +434,8 @@ export function buildAppConfig(base: Partial<ExpoConfig>, env: Env): ExpoConfig 
           supportsTablet: false,
           usesAppleSignIn: true,
           associatedDomains: [`applinks:${variant.webHost}`, `webcredentials:${variant.webHost}`],
-          entitlements: {
-            [APP_GROUPS_ENTITLEMENT]: [variant.appGroup],
-            'com.apple.developer.usernotifications.time-sensitive': true,
-          },
+          // The Time Sensitive entitlement is added by the da-platform plugin (KPL-07).
+          entitlements: { [APP_GROUPS_ENTITLEMENT]: [variant.appGroup] },
           infoPlist: {
             CFBundleDevelopmentRegion: 'tr',
             UIBackgroundModes: ['remote-notification', 'processing', 'audio'],

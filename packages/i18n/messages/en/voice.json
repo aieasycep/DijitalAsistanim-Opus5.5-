@@ -35,5 +35,17 @@
     "today": "What's on today?",
     "briefing": "Read my briefing.",
     "tomorrow": "Am I busy tomorrow?"
+  },
+  "serverNotice": "On-device Turkish speech recognition isn't available on this device. Your voice is sent over a secure connection to our server to be transcribed and is deleted right away.",
+  "model": {
+    "missing": "The Turkish speech model isn't downloaded on this device. Download it to have your voice transcribed on your device.",
+    "download": "Download Turkish model",
+    "started": "The download has started. Voice input runs on your device when it finishes.",
+    "failed": "The model couldn't be downloaded. Try again later."
+  },
+  "install": {
+    "missing": "This device has no speech recognition service.",
+    "cta": "Install speech services",
+    "failed": "Couldn't open the store."
   }
 }

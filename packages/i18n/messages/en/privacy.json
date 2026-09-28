@@ -114,7 +114,10 @@
     "neverMessaging": "Messaging app content",
     "neverLocation": "Your location",
     "footnote": "Even if these appear in an email, they're removed before anything is sent to the AI, and they're never stored.",
-    "perAccount": "Per account"
+    "perAccount": "Per account",
+    "foldersGmail": "Inbox and Sent are analysed. Mail that a filter archives before it reaches the inbox is not included.",
+    "foldersOutlook": "Inbox and Sent Items are analysed. Mail that rules move to another folder is not included.",
+    "tasksPoll": "Google Tasks and Microsoft To Do update about every 15 minutes and when you open the app."
   },
   "sourceOff": {
     "mail_body": {

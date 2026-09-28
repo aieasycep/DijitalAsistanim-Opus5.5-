@@ -139,6 +139,10 @@ jest.mock('expo-notifications', () => ({
   addPushTokenListener: jest.fn(() => ({ remove: jest.fn() })),
   getAllScheduledNotificationsAsync: jest.fn(() => Promise.resolve([])),
   dismissNotificationAsync: jest.fn(() => Promise.resolve()),
+  // KPL-12 `da-background-notification` (the data-only device_refresh push).
+  BackgroundNotificationTaskResult: { NewData: 0, NoData: 1, Failed: 2 },
+  registerTaskAsync: jest.fn(() => Promise.resolve(null)),
+  unregisterTaskAsync: jest.fn(() => Promise.resolve(null)),
 }));
 
 // T-8.28: Sentry is initialised only with a DSN (unset in tests); the SDK surface is a double.
@@ -225,6 +229,8 @@ jest.mock('expo-audio', () => {
     setPlaybackRate: jest.fn(),
     setActiveForLockScreen: jest.fn(),
     updateLockScreenMetadata: jest.fn(),
+    // M-GL-14: closing the mini player releases the lock-screen controls.
+    clearLockScreenControls: jest.fn(),
     remove: jest.fn(),
   };
   const status = {
@@ -341,11 +347,27 @@ jest.mock('react-native-view-shot', () => ({
 }));
 
 // T-8.19…T-8.22: clipboard, store review and RevenueCat doubles (tests override per case).
-jest.mock('expo-clipboard', () => ({
-  setStringAsync: jest.fn(() => Promise.resolve(true)),
-  // T-8.29 capture "Yapıştır" (read only after the tap).
-  getStringAsync: jest.fn(() => Promise.resolve('')),
-}));
+jest.mock('expo-clipboard', () => {
+  const { View } = jest.requireActual<typeof ReactNative>('react-native');
+  const { createElement } = jest.requireActual<typeof React>('react');
+  return {
+    setStringAsync: jest.fn(() => Promise.resolve(true)),
+    // T-8.29 capture "Yapıştır" (read only after the tap).
+    getStringAsync: jest.fn(() => Promise.resolve('')),
+    // KPL-23: the iOS 16+ system paste control; off by default (tests turn it on).
+    isPasteButtonAvailable: false,
+    ClipboardPasteButton: (props: { onPress: (data: { type: 'text'; text: string }) => void }) =>
+      createElement(View, {
+        accessible: true,
+        accessibilityRole: 'button',
+        accessibilityLabel: 'Paste',
+        testID: 'system-paste-button',
+        onTouchEnd: () => {
+          props.onPress({ type: 'text', text: 'https://example.com/pasted' });
+        },
+      }),
+  };
+});
 
 jest.mock('expo-store-review', () => ({
   isAvailableAsync: jest.fn(() => Promise.resolve(false)),
@@ -393,6 +415,13 @@ jest.mock('expo-speech-recognition', () => ({
   ExpoSpeechRecognitionModule: {
     isRecognitionAvailable: jest.fn(() => true),
     supportsOnDeviceRecognition: jest.fn(() => true),
+    // KPL-24: Android 13+ offline models (installed vs downloadable locales) and the download.
+    getSupportedLocales: jest.fn(() =>
+      Promise.resolve({ locales: ['tr-TR', 'en-US'], installedLocales: ['tr-TR', 'en-US'] }),
+    ),
+    androidTriggerOfflineModelDownload: jest.fn(() =>
+      Promise.resolve({ status: 'opened_dialog', message: '' }),
+    ),
     requestPermissionsAsync: jest.fn(() => Promise.resolve({ granted: true, status: 'granted' })),
     start: jest.fn(),
     stop: jest.fn(),
@@ -466,3 +495,29 @@ jest.mock('expo-background-task', () => ({
 // T-8.27 `da-tts`: not linked by default (the player falls back to expo-speech); tests install
 // a double with `nativeTts.mockReturnValue(...)`.
 jest.mock('../../modules/da-tts/src/native', () => ({ nativeTts: jest.fn(() => null) }));
+
+// KPL-04/07/09 `da-platform`: not linked by default (every state reads as unknown); tests install
+// the double with `nativePlatform.mockReturnValue(__module)` and set its state.
+jest.mock('../../modules/da-platform/src/native', () => {
+  const state = {
+    exactAlarm: 'granted' as string,
+    timeSensitive: 'enabled' as string,
+    battery: 'optimized' as string,
+  };
+  const double = {
+    __state: state,
+    getExactAlarmState: jest.fn(() => state.exactAlarm),
+    openExactAlarmSettings: jest.fn(() => true),
+    getBatteryOptimization: jest.fn(() => state.battery),
+    openBatteryOptimizationSettings: jest.fn(() => true),
+    getTimeSensitiveSetting: jest.fn(() => Promise.resolve(state.timeSensitive)),
+    openNotificationSettings: jest.fn(() => Promise.resolve(true)),
+  };
+  return { __module: double, nativePlatform: jest.fn(() => null) };
+});
+
+// DEV-20: the iOS tab bar blur (a native view) renders as a plain view.
+jest.mock('expo-blur', () => {
+  const { View } = jest.requireActual<typeof ReactNative>('react-native');
+  return { BlurView: View };
+});

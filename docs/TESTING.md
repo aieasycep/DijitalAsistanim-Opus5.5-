@@ -77,7 +77,7 @@ Rules that hold across tiers:
 | --- | --- |
 | Live provider behaviour (Google, Microsoft, Apple, RevenueCat sandbox, Expo push, email delivery) | The owner sandbox checklist in the final implementation report, with real accounts |
 | AI quality against real models, STT word error rate | Live-provider eval runs with `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` / `VOYAGE_API_KEY` (the repository suites use the fixture provider) |
-| Native rendering and OS grants: widgets per family and theme, share extension under memory pressure, notification listener grant, exact alarms, on-device voices, background scheduling, lock-screen controls | Physical iPhone and Android devices ([KNOWN_PLATFORM_LIMITATIONS.md](KNOWN_PLATFORM_LIMITATIONS.md) marks each item "device") |
+| Native rendering and OS grants: widgets per family and theme, share extension under memory pressure, notification listener grant and rebind, exact alarms and the Time Sensitive setting, on-device voices and offline speech models, background scheduling and the data-only `device_refresh` push, lock-screen controls, the iOS system paste control and tab bar blur | Physical iPhone and Android devices ([KNOWN_PLATFORM_LIMITATIONS.md](KNOWN_PLATFORM_LIMITATIONS.md) marks each item "device") |
 
 ## Coverage
 

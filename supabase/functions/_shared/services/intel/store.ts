@@ -10,6 +10,7 @@ import type {
   Provider,
   TransientMailBody,
 } from '@da/domain';
+import type { DeviceSchedule } from '../briefings/device-refresh.ts';
 import type { LifeEventInsert } from '../life/classify.ts';
 import type {
   AccountRow,
@@ -170,6 +171,11 @@ export interface StatsStore {
   weekly(userId: string, from: Date, to: Date, timeZone: string): Promise<WeeklyCounts>;
   /** Account freshness at generation (`briefings.source_freshness`). */
   freshness(userId: string): Promise<Record<string, unknown>>;
+  /**
+   * KPL-12: the user's active device calendars (with the uploading installation) and their events
+   * overlapping [from, to). Optional so stores without device data keep working.
+   */
+  deviceSchedule?(userId: string, from: Date, to: Date): Promise<DeviceSchedule>;
 }
 
 export interface MemoryItem {

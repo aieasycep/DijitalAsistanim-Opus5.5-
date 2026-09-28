@@ -3,17 +3,20 @@
  * ADR-39). `@sentry/react-native` 8.27 starts only when `EXPO_PUBLIC_SENTRY_DSN` is set:
  * - `sendDefaultPii:false`, `attachScreenshot:false`, `attachViewHierarchy:false`, no Session
  *   Replay: no screenshot or view dump of a content screen ever leaves the device;
- * - no user id is set; tags are platform, app version, release and correlation id only;
+ * - no user id is set; tags are platform, app version, release and correlation id only, plus
+ *   `intl_fallback` on engines that needed the KPL-27 `Intl` repair (`lib/intl-setup.ts`);
  * - `beforeSend` and `beforeBreadcrumb` share one scrubber: e-mail addresses, bearer tokens, JWTs,
  *   Supabase keys, Expo push tokens and secret query parameters (`code`, `state`, `token`, …) are
  *   redacted; request bodies, cookies, headers and content-like fields (bodies, subjects, snippets,
  *   drafts, transcripts, titles) are removed; HTTP breadcrumbs keep only method, route template and
  *   status; UI and console breadcrumbs keep no text;
  * - `release` = `<application id>@<version>+<build>` and `dist` = the build number, from the app
- *   config; `environment` = the build variant (`EXPO_PUBLIC_APP_ENV`). Source maps are uploaded by
- *   CI only (`disableAutoUpload` in `app.config.ts`; the Metro serializer from
- *   `getSentryExpoConfig` adds the debug ids).
+ *   config; `environment` = the build variant (`EXPO_PUBLIC_APP_ENV`). Source maps are uploaded
+ *   by the EAS build when the Sentry upload credentials are present (`sentryUploadEnabled` in
+ *   `app.config.ts`) and skipped otherwise; the Metro serializer from `getSentryExpoConfig` adds the
+ *   debug ids.
  */
+import { intlFallbacks } from '@da/i18n';
 import type { ExpoClientEnv } from '@da/validation/env';
 import * as Sentry from '@sentry/react-native';
 import * as Application from 'expo-application';
@@ -21,6 +24,7 @@ import Constants from 'expo-constants';
 
 import { appVersion, buildNumber, platform } from './device';
 import { getClientEnv } from './env';
+import { intlReport } from './intl-setup';
 
 const REDACTED = '[Filtered]';
 
@@ -184,6 +188,8 @@ export function initSentry(env: ExpoClientEnv = getClientEnv()): boolean {
     beforeBreadcrumb: scrubBreadcrumb,
   });
   Sentry.setTags({ platform: platform(), app_version: appVersion() });
+  const fallbacks = intlFallbacks(intlReport);
+  if (fallbacks !== null) Sentry.setTag('intl_fallback', fallbacks);
   started = true;
   return true;
 }

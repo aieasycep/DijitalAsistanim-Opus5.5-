@@ -7,6 +7,10 @@
  * tap (`approved_via='voice_card'`, R-03, C-07): a spoken "onayla" never approves — it is answered
  * with "Onaylamak için ekrandaki Onayla'ya dokun." "Brifingimi oku." is a deterministic intent
  * (Pro: the briefing player; Free: the Pro gate).
+ * KPL-24: the on-device recognizer is probed on entry and on every return to the app
+ * (`availability.ts`). Android 13+ without the Turkish offline model offers its download; a device
+ * without any recognition service offers the speech-services install (Android) — until then the
+ * server path (with its privacy notice, shown until the first successful use) or "Metinle sor".
  */
 import { useBootstrap } from '@da/api-client/react';
 import { foldForSearch, toUpper } from '@da/i18n';
@@ -27,7 +31,7 @@ import {
 import * as Speech from 'expo-speech';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Linking, ScrollView, StyleSheet, View } from 'react-native';
+import { AppState, Linking, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslations } from 'use-intl';
 
@@ -42,7 +46,45 @@ import type { ApprovalModel } from '../approvals/model';
 import { ContextualGate, isPro } from '../pro-gate/ProGate';
 import { AnswerParts } from '../assistant/AnswerParts';
 import { useChatStream } from '../assistant/stream';
-import { speechEngine, useSpeechInput, type SpeechError } from './speech';
+import { encryptedStorage, isEncryptedStorageOpen } from '../../lib/storage';
+import { showToast } from '../../providers/ToastHost';
+import {
+  downloadOfflineModel,
+  onDeviceRecognition,
+  openSpeechServicesInstall,
+  type OnDeviceRecognition,
+} from './availability';
+import { engineFor, useSpeechInput, type SpeechError } from './speech';
+
+const SERVER_NOTICE_SEEN = 'voice.server_notice_seen';
+
+function serverNoticeSeen(): boolean {
+  return (
+    isEncryptedStorageOpen() && encryptedStorage().prefs.getBoolean(SERVER_NOTICE_SEEN) === true
+  );
+}
+
+/** KPL-24: the on-device recognizer state, re-probed when the user returns (model download). */
+function useOnDeviceRecognition(): OnDeviceRecognition {
+  const [state, setState] = useState<OnDeviceRecognition>('unknown');
+  useEffect(() => {
+    let alive = true;
+    const probe = () => {
+      void onDeviceRecognition('tr-TR').then((next) => {
+        if (alive) setState(next);
+      });
+    };
+    probe();
+    const sub = AppState.addEventListener('change', (next) => {
+      if (next === 'active') probe();
+    });
+    return () => {
+      alive = false;
+      sub.remove();
+    };
+  }, []);
+  return state;
+}
 
 type VoicePhase = 'idle' | 'listening' | 'processing' | 'answering' | 'error';
 
@@ -94,7 +136,9 @@ export function VoiceScreen() {
   const serverAllowed =
     bootstrap.data?.flags['voice.stt_server'] !== false &&
     bootstrap.data?.flags['feature.voice'] !== false;
-  const engine = speechEngine(serverAllowed);
+  const onDevice = useOnDeviceRecognition();
+  const engine = engineFor(onDevice, serverAllowed);
+  const [noticeSeen, setNoticeSeen] = useState(serverNoticeSeen);
   const [phase, setPhase] = useState<VoicePhase>('idle');
   const [transcript, setTranscript] = useState('');
   const [error, setError] = useState<SpeechError | null>(null);
@@ -171,6 +215,11 @@ export function VoiceScreen() {
         success: true,
         duration_bucket: durationBucket(durationMs),
       });
+      if (used === 'server' && !noticeSeen) {
+        // The privacy notice was on screen for this first server transcription.
+        if (isEncryptedStorageOpen()) encryptedStorage().prefs.set(SERVER_NOTICE_SEEN, true);
+        setNoticeSeen(true);
+      }
       void handleText(text);
     },
     onError: (next) => {
@@ -270,6 +319,47 @@ export function VoiceScreen() {
       <ScrollView
         contentContainerStyle={[styles.content, { paddingHorizontal: theme.layout.screenX }]}
       >
+        {engine === 'server' && !noticeSeen ? (
+          <Text variant="bodyXs" tone="onGradientSecondary" testID="voice.serverNotice">
+            {t('serverNotice')}
+          </Text>
+        ) : null}
+        {onDevice === 'downloadable' ? (
+          <View style={styles.block} testID="voice.model">
+            <Text variant="bodyXs" tone="onGradientSecondary">
+              {t('model.missing')}
+            </Text>
+            <TextAction
+              label={t('model.download')}
+              onPress={() => {
+                void downloadOfflineModel('tr-TR').then((result) => {
+                  if (result === 'failed') {
+                    showToast({ message: t('model.failed'), kind: 'error' });
+                  } else if (result === 'scheduled') {
+                    showToast({ message: t('model.started'), kind: 'neutral' });
+                  }
+                });
+              }}
+              testID="voice.downloadModel"
+            />
+          </View>
+        ) : null}
+        {onDevice === 'none' && Platform.OS === 'android' ? (
+          <View style={styles.block} testID="voice.noRecognizer">
+            <Text variant="bodyXs" tone="onGradientSecondary">
+              {t('install.missing')}
+            </Text>
+            <TextAction
+              label={t('install.cta')}
+              onPress={() => {
+                void openSpeechServicesInstall().then((opened) => {
+                  if (!opened) showToast({ message: t('install.failed'), kind: 'error' });
+                });
+              }}
+              testID="voice.installRecognizer"
+            />
+          </View>
+        ) : null}
         <View style={styles.orb}>
           <VoiceOrb
             listening={speech.listening}

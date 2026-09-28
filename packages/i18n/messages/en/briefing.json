@@ -54,7 +54,17 @@
     "nowPlaying": "now playing",
     "nativeNotice": "Read by the device voice",
     "useDevice": "Listen with device voice",
-    "offline": "Audio not downloaded · you're offline."
+    "offline": "Audio not downloaded · you're offline.",
+    "mini": {
+      "close": "Close audio briefing",
+      "expand": "Open audio briefing"
+    },
+    "voice": {
+      "missing": "No Turkish voice is installed on this device.",
+      "iosHelp": "For a more natural voice, go to Settings → Accessibility → Spoken Content → Voices → Turkish and download a voice.",
+      "install": "Download voice",
+      "installFailed": "Couldn't open the voice download screen."
+    }
   },
   "midday": {
     "noChange": "No important changes since this morning.",
@@ -173,5 +183,12 @@
     "emptyTitle": "No briefings yet.",
     "emptyBody": "Your first morning briefing will be ready at {time}.",
     "loadFailed": "Briefings couldn't be loaded."
+  },
+  "deviceFreshness": {
+    "stale": "{source} · last synced {time}. Changes after that are added when you open the app.",
+    "neverSynced": "{source} hasn't synced yet. Changes are added when you open the app.",
+    "changed": "Your calendar changed after this briefing.",
+    "seeCurrent": "See current schedule",
+    "region": "Calendar freshness"
   }
 }

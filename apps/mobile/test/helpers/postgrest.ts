@@ -1,7 +1,7 @@
 /**
  * PostgREST double for the fake Supabase client: `rpc(name, args)` answers from per-name handlers
  * (RPC-04 `today_overview` defaults to an empty overview), and `from(table)` returns a chainable
- * builder that filters the table's rows by `eq`/`neq`/`in`, honours `maybeSingle`/`single`, and
+ * builder that filters the table's rows by `eq`/`neq`/`in`/ranges, honours `maybeSingle`/`single`, and
  * records every write (`update`, `insert`, `delete`). Every call is recorded for assertions.
  */
 import { jest } from '@jest/globals';
@@ -90,6 +90,8 @@ export function fakePostgrest(): PostgrestFake {
     chain('is', (col, value) => filters.push([String(col), 'is', value]));
     chain('gte', (col, value) => filters.push([String(col), 'gte', value]));
     chain('lte', (col, value) => filters.push([String(col), 'lte', value]));
+    chain('lt', (col, value) => filters.push([String(col), 'lt', value]));
+    chain('gt', (col, value) => filters.push([String(col), 'gt', value]));
     chain('or');
     chain('range', (a, b) => {
       range = [Number(a), Number(b)];
@@ -121,6 +123,8 @@ export function fakePostgrest(): PostgrestFake {
           if (kind === 'is') return (row[col] ?? null) === value;
           if (kind === 'gte') return String(row[col]) >= String(value);
           if (kind === 'lte') return String(row[col]) <= String(value);
+          if (kind === 'lt') return String(row[col]) < String(value);
+          if (kind === 'gt') return String(row[col]) > String(value);
           return Array.isArray(value) && value.includes(row[col]);
         }),
       );

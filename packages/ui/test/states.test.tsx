@@ -26,6 +26,7 @@ import {
   SettingsValueSkeleton,
   sortStateCards,
   StaggerIn,
+  HeroIn,
   SuccessState,
   SyncDelayedCard,
   SyncLine,
@@ -393,6 +394,37 @@ describe('M-STATE-01 loading', () => {
         jest.advanceTimersByTime(700);
       });
       expect(screen.getByTestId('c')).toBeOnTheScreen();
+    });
+
+    it('starts the stagger after a hero entrance', async () => {
+      await renderUi(
+        <>
+          <HeroIn testID="hero">
+            <RNText>Günaydın</RNText>
+          </HeroIn>
+          <StaggerIn index={1} startMs={360}>
+            <RNText testID="late">Kart</RNText>
+          </StaggerIn>
+        </>,
+      );
+      await act(() => {
+        jest.advanceTimersByTime(700);
+      });
+      expect(screen.getByTestId('hero')).toBeOnTheScreen();
+      expect(screen.getByTestId('late')).toBeOnTheScreen();
+    });
+
+    it('keeps the hero entrance to opacity under reduce motion', async () => {
+      await renderUi(
+        <HeroIn testID="hero">
+          <RNText>Günaydın</RNText>
+        </HeroIn>,
+        { reduceMotion: true },
+      );
+      await act(() => {
+        jest.advanceTimersByTime(200);
+      });
+      expect(screen.getByTestId('hero')).toBeOnTheScreen();
     });
   });
 });

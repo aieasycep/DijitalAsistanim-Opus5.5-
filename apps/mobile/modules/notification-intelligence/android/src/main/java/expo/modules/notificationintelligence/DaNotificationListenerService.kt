@@ -19,17 +19,23 @@ class DaNotificationListenerService : NotificationListenerService() {
   override fun onListenerConnected() {
     super.onListenerConnected()
     current = WeakReference(this)
+    NiStore(this).markConnected()
     NiEvents.grantChanged(true)
+    NiEvents.listenerChanged()
   }
 
   override fun onListenerDisconnected() {
     current = null
+    NiStore(this).markDisconnected()
+    NiEvents.listenerChanged()
     super.onListenerDisconnected()
   }
 
   override fun onNotificationPosted(sbn: StatusBarNotification?) {
     if (sbn == null) return
     try {
+      // KPL-04 health: a timestamp only (throttled), so a silent listener can be told apart.
+      NiStore(this).recordEvent()
       handle(sbn)
     } catch (_: Exception) {
       // Never crash the listener and never log: an exception message could carry content.
@@ -88,7 +94,10 @@ class DaNotificationListenerService : NotificationListenerService() {
   }
 
   companion object {
-    private var current: WeakReference<DaNotificationListenerService>? = null
+    @Volatile private var current: WeakReference<DaNotificationListenerService>? = null
+
+    /** Whether the system has the listener bound in this process right now. */
+    fun isConnected(): Boolean = current?.get() != null
 
     /** `disable()`: asks the system to unbind the running listener until access is re-enabled. */
     fun unbind() {
@@ -102,9 +111,14 @@ class DaNotificationListenerService : NotificationListenerService() {
 object NiEvents {
   @Volatile var onGrantChanged: ((Boolean) -> Unit)? = null
   @Volatile var onSignalsChanged: (() -> Unit)? = null
+  @Volatile var onListenerChanged: (() -> Unit)? = null
 
   fun grantChanged(granted: Boolean) {
     onGrantChanged?.invoke(granted)
+  }
+
+  fun listenerChanged() {
+    onListenerChanged?.invoke()
   }
 
   fun signalsChanged() {

@@ -130,6 +130,7 @@ export function CodeSheet({
         autoCorrect={false}
         textContentType="none"
         onChangeText={(text) => {
+          // eslint-disable-next-line no-restricted-syntax -- referral codes are ASCII identifiers, not UI text
           setCode(text.toUpperCase().replace(/[^0-9A-Z]/g, ''));
           setError(undefined);
         }}
@@ -155,6 +156,7 @@ export function ReferralScreen() {
   const query = useQuery(referralMeQueryOptions(getApiClient()));
   const data = query.data;
   const [sheet, setSheet] = useState<{ code: string; source: ReferralSource } | null>(() => {
+    // eslint-disable-next-line no-restricted-syntax -- referral codes are ASCII identifiers, not UI text
     const code = params.code?.toUpperCase();
     if (code !== undefined && REFERRAL_CODE_PATTERN.test(code)) {
       return { code, source: 'deep_link' };

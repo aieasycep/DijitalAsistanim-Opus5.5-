@@ -10,10 +10,10 @@ Documented at `ec14e92`. What App Store and Google Play submission needs, answer
 | Extensions | Widget `com.dijitalasistan.app.widget`; share extension `com.dijitalasistan.app.share-extension` ("Dijital Asistan'a Ekle") | `targets/widget`, `expo-share-intent` |
 | App Group | `group.com.dijitalasistan.app` (app, widget, share extension) | `ios.entitlements` |
 | Scheme and links | `dijitalasistan://`; universal and app links for `https://<web>/app`, `/r`; `applinks:` and `webcredentials:` associated domains | `app.config.ts`, web `/.well-known/*` |
-| Entitlements | Sign in with Apple, App Group, Time Sensitive notifications | prebuild smoke asserts each |
+| Entitlements | Sign in with Apple, App Group, Time Sensitive notifications (added by the `da-platform` config plugin; the app reads the user's setting) | prebuild smoke asserts each |
 | Deployment targets | iOS 16.4 (iPhone only, `supportsTablet: false`); Android min SDK 24, target SDK 36 | `app.config.ts` |
 | Encryption export | `ITSAppUsesNonExemptEncryption = false` (standard HTTPS and OS encryption only) | `Info.plist` |
-| Background modes (iOS) | `remote-notification` (push), `processing` (`expo-background-task`: widgets, device calendar), `audio` (briefing player) | `Info.plist` |
+| Background modes (iOS) | `remote-notification` (push, including the data-only `device_refresh` push before a briefing), `processing` (`expo-background-task`: widgets, device calendar), `audio` (briefing player) | `Info.plist` |
 | Production profile | `eas.json` `production`: store distribution, remote app version, auto-incremented build number, demo mode off | [`eas.json`](../apps/mobile/eas.json) |
 
 **Owner:** EAS project and credentials (distribution certificate, provisioning profiles for the app and both extensions, APNs key, FCM service account), App Store Connect and Play Console apps, agreements, products.
@@ -105,9 +105,8 @@ Turkish is the development region; English comes from `en.lproj/InfoPlist.string
 | `NSSpeechRecognitionUsageDescription` | Same | "Söylediklerini yazıya çevirmek için. Mümkün olduğunda bu işlem cihazında yapılır." |
 | `NSCameraUsageDescription` | Capture › Fotoğraf › Kamera | "Fatura, bilet veya belgeyi fotoğraflayıp Dijital Asistan'a ekleyebilmen için." |
 | `NSPhotoLibraryUsageDescription` | Capture from the library (system picker) | "Seçtiğin ekran görüntüsü ve fotoğrafları analiz için ekleyebilmen için. Yalnızca seçtiklerine erişilir." |
-| `NSFaceIDUsageDescription` | Declared by the configured `expo-local-authentication` plugin; no screen currently asks for biometrics | "Hesap silme gibi hassas işlemleri onaylaman için." |
 
-Never present (asserted by the prebuild smoke): location keys, `NSContactsUsageDescription`, `NSUserTrackingUsageDescription`, `NSPhotoLibraryAddUsageDescription`.
+Never present (asserted by the prebuild smoke): location keys, `NSContactsUsageDescription`, `NSUserTrackingUsageDescription`, `NSPhotoLibraryAddUsageDescription`, `NSFaceIDUsageDescription` (no screen uses biometrics: `expo-local-authentication` is not a dependency and `expo-secure-store` is configured with `faceIDPermission: false`).
 
 ### Android
 
@@ -117,7 +116,7 @@ Never present (asserted by the prebuild smoke): location keys, `NSContactsUsageD
 | `READ_CALENDAR`, `WRITE_CALENDAR` | Device calendar snapshot; approved writes to the device calendar |
 | `RECORD_AUDIO` | Voice input |
 | `CAMERA` | Capture photos |
-| `SCHEDULE_EXACT_ALARM` | On-time user reminders (the OS may deliver inexactly while the user has not granted "Alarms & reminders") |
+| `SCHEDULE_EXACT_ALARM` | On-time user reminders, declared by the `da-platform` config plugin. The OS delivers inexactly while the user has not granted "Alarms & reminders"; the reminder sheet says so and opens that page. `USE_EXACT_ALARM` and `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` are never declared (the plugin refuses them; the prebuild smoke asserts it) |
 | `RECEIVE_BOOT_COMPLETED`, `WAKE_LOCK` | Rescheduling local reminders and background work |
 | `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_MEDIA_PLAYBACK` | Added by `expo-audio` for background briefing playback |
 | Notification listener service (`BIND_NOTIFICATION_LISTENER_SERVICE`, bound by the system only) | Android notification intelligence (opt-in, Pro) |
@@ -169,5 +168,5 @@ The PRIMARY design archive's `09 Pazarlama` canvas (store/01–06 at 1290×2796,
 | KPL-49 / ARCHITECTURE_DECISIONS proposal: a `rotate-siwa-secret` workflow | No workflow; regenerating the Apple web client secret every six months is an owner step | Not built. |
 | SECURITY_AND_PRIVACY_PLAN §4.12–4.13: Search History / In-app search history collected | Not collected | Search and memory queries are not stored server-side; assistant conversations are declared as user content instead. |
 | SECURITY_AND_PRIVACY_PLAN §4.13: crash logs "Required" | Optional, and only when Sentry is configured | Sentry starts only with `EXPO_PUBLIC_SENTRY_DSN`. |
-| App config declares `NSFaceIDUsageDescription` for deletion confirmation | No screen uses biometrics; deletion re-authenticates with a fresh sign-in | Re-auth by sign-in is what the server can verify (`amr` ≤10 min). The string can be removed with the plugin if App Review asks. |
+| App config declares `NSFaceIDUsageDescription` for deletion confirmation | Not declared; deletion re-authenticates with a fresh sign-in | Re-auth by sign-in is what the server can verify (`amr` ≤10 min); an unused usage string is an App Review risk. |
 | INTEGRATION_PLAN §10.4: sandbox purchases in production count for App Review | Counted only for allow-listed user ids | Owner decision: sandbox events from arbitrary users must not grant Pro in production. |

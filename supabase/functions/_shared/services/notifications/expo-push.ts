@@ -38,6 +38,19 @@ export interface ExpoMessage {
   readonly ttl: number;
 }
 
+/**
+ * A background (data-only) message (KPL-12 `device_refresh`): no title, body or sound, so nothing
+ * is displayed; `_contentAvailable` wakes the iOS app (`content-available: 1`), Android gets an FCM
+ * data message. The same `{type, entity_id, deeplink}` data shape as every push.
+ */
+export interface ExpoBackgroundMessage {
+  readonly to: string;
+  readonly data: ExpoMessage['data'];
+  readonly _contentAvailable: true;
+  readonly priority: 'normal';
+  readonly ttl: number;
+}
+
 export type ExpoTicket =
   | { readonly status: 'ok'; readonly id: string }
   | { readonly status: 'error'; readonly message: string; readonly error: ExpoErrorCode };
@@ -47,7 +60,7 @@ export type ExpoReceipt =
   | { readonly status: 'error'; readonly message: string; readonly error: ExpoErrorCode };
 
 export interface ExpoPushClient {
-  send(messages: readonly ExpoMessage[]): Promise<ExpoTicket[]>;
+  send(messages: readonly (ExpoMessage | ExpoBackgroundMessage)[]): Promise<ExpoTicket[]>;
   receipts(ids: readonly string[]): Promise<Record<string, ExpoReceipt>>;
 }
 

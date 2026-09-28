@@ -4,7 +4,9 @@
  * task (≥ 15 min, scheduled by the OS) re-uploads the selected calendars while the app is closed.
  * It is registered with the connection and removed at sign-out; the foreground and reconnect
  * uploads in `useDeviceCalendarSync` keep working when the OS restricts background work. Imported
- * by the root layout, because a task must be defined when the bundle starts.
+ * by the root layout, because a task must be defined when the bundle starts. The
+ * `da-background-notification` task for the pre-briefing `device_refresh` push (KPL-12,
+ * `device-refresh-push.ts`) is registered and removed with the same connection.
  */
 import * as BackgroundTask from 'expo-background-task';
 import * as TaskManager from 'expo-task-manager';
@@ -12,6 +14,7 @@ import * as TaskManager from 'expo-task-manager';
 import { LOGOUT_HOOKS, registerLogoutCleanup } from '../../lib/auth/logout';
 import { openEncryptedStorage } from '../../lib/storage';
 import { uploadDeviceSnapshot } from './device-calendar';
+import { syncBackgroundNotificationTask } from './device-refresh-push';
 
 export const DEVICE_CALENDAR_TASK = 'da-device-calendar-upload';
 const MINIMUM_INTERVAL_MIN = 15;
@@ -41,6 +44,7 @@ export async function syncDeviceCalendarTask(connected: boolean): Promise<void> 
   } catch {
     // Background work unavailable (restricted by the OS or a build without it): foreground only.
   }
+  await syncBackgroundNotificationTask(connected);
 }
 
 try {

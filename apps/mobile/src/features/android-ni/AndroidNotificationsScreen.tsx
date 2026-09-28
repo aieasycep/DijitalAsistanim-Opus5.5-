@@ -4,7 +4,8 @@
  * live system grant (re-checked on focus, foreground and `onGrantChanged`), the analysis switch,
  * "Seçili uygulamalar" / "Tüm uygulamalar", category presets and manual picks (M-ANI-03), the
  * locked denylist (M-ANI-04), the recent extracted signals with single and "Tümünü sil" deletes,
- * the R-15 assurance copy and the system-access handoff. Every change is mirrored to the server
+ * the R-15 assurance copy and the system-access handoff, and the KPL-04 listener health card
+ * (rebind, battery-optimisation handoff; `health.ts`). Every change is mirrored to the server
  * through `POST /devices/register {android_ni}` (API-DEV-01). Pro only (M-GATE-02 `android_ni`).
  */
 import {
@@ -52,6 +53,7 @@ import {
 import { reportAniState, syncBackgroundUpload } from './lifecycle';
 import { niCall } from './native';
 import { NiCategoryRows } from './NiChoiceList';
+import { useListenerHealth } from './health';
 import type { NiPresetKey } from './presets';
 import { AppPickerSheet, DenylistSheet, DisclosureSheet } from './sheets';
 import { openedState, useAniStatus, type AniStatus } from './status';
@@ -209,6 +211,8 @@ function AndroidNotificationsSettings() {
       }}
     >
       <StatusCard status={status} count={countLast24h(rows, now())} onOpenAccess={openAccess} />
+
+      <ListenerHealthCard active={status.kind === 'enabled'} />
 
       {status.kind === 'not_entitled' ? (
         <ContextualGate feature="android_ni" body={t('android_ni.pro')} testID="ani.gate" />
@@ -459,6 +463,52 @@ function StatusCard({
       );
     }
   }
+}
+
+/**
+ * KPL-04 health card (P5): access is on but the system unbound the listener, or nothing has
+ * arrived for a day. "Yeniden bağla" asks for a rebind; the battery handoff is offered unless the
+ * app is already exempt from battery optimisation.
+ */
+function ListenerHealthCard({ active }: { readonly active: boolean }) {
+  const t = useTranslations();
+  const health = useListenerHealth(active);
+  if (health.card === 'hidden') return null;
+  const stale = health.card === 'stale';
+  const checking = health.card === 'checking';
+  return (
+    <ErrorCard
+      icon="link_off"
+      tone="warning"
+      title={stale ? t('android_ni.health.staleTitle') : t('android_ni.health.disconnectedTitle')}
+      body={
+        health.battery === 'exempt'
+          ? t('android_ni.health.bodyExempt')
+          : stale
+            ? t('android_ni.health.staleBody')
+            : t('android_ni.health.disconnectedBody')
+      }
+      primaryAction={{
+        label: t('android_ni.health.rebind'),
+        onPress: health.rebind,
+        loading: checking,
+        loadingLabel: t('android_ni.health.checking'),
+      }}
+      {...(health.battery === 'exempt'
+        ? {}
+        : {
+            secondaryAction: {
+              label: t('android_ni.health.batteryCta'),
+              onPress: () => {
+                if (!health.openBattery()) {
+                  showToast({ message: t('android_ni.screen.settingsFailed'), kind: 'error' });
+                }
+              },
+            },
+          })}
+      testID={`ani.health.${health.card}`}
+    />
+  );
 }
 
 function SignalList({

@@ -8,6 +8,7 @@
  * retried when the connection returns.
  */
 import type { ApiClient } from '@da/api-client';
+import { calendarSyncWindow } from '@da/domain/calendar/sync-window';
 import * as Calendar from 'expo-calendar/legacy';
 import * as Crypto from 'expo-crypto';
 import { Linking, Platform } from 'react-native';
@@ -32,8 +33,6 @@ export interface DeviceCalendarInfo {
 }
 
 const SELECTION_KEY = 'device_calendar.selection';
-const WINDOW_BEFORE_MS = 24 * 60 * 60 * 1000;
-const WINDOW_AFTER_MS = 14 * 24 * 60 * 60 * 1000;
 const MAX_EVENTS = 3000;
 
 export function deviceProvider(): DeviceProvider {
@@ -135,8 +134,8 @@ export async function buildSnapshot(
   at: Date = now(),
 ) {
   const calendars = await listDeviceCalendars();
-  const start = new Date(at.getTime() - WINDOW_BEFORE_MS);
-  const end = new Date(at.getTime() + WINDOW_AFTER_MS);
+  // The shared device window (@da/domain `CALENDAR_SYNC_WINDOW_DAYS`: 1 day back, 14 ahead).
+  const { start, end } = calendarSyncWindow(deviceProvider(), at);
   const selected = calendars.filter((c) => selectedIds.includes(c.id));
   const hashes = new Map<string, string>();
   for (const calendar of calendars) hashes.set(calendar.id, await sha256(`cal:${calendar.id}`));

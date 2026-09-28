@@ -9,6 +9,7 @@ import { Platform } from 'react-native';
 import { androidNiRegistration } from '../features/android-ni/choice';
 import { deviceLocale, deviceTimeZone } from '../i18n/I18nProvider';
 import { cachedPushToken } from './notifications/token';
+import { platformCapabilities } from './platform-capabilities';
 import { getUiPrefs } from './ui-prefs';
 
 /** `1.2` → `1.2.0`; anything unparsable → `0.0.0` (the server then asks for an update). */
@@ -72,12 +73,14 @@ export async function pushPermission(): Promise<PushPermission> {
 /**
  * `POST /devices/register` body. The push token is the one this installation last obtained
  * (T-8.24 `lib/notifications/register.ts` fetches and stores it), sent only while permitted. On
- * Android it carries the `android_ni` mirror of the notification listener (T-8.26, API-DEV-01).
+ * Android it carries the `android_ni` mirror of the notification listener (T-8.26, API-DEV-01);
+ * on both platforms the `platform_capabilities` the OS reports (`platform-capabilities.ts`).
  */
 export async function deviceRegisterBody(installationId: string) {
   const androidNi = androidNiRegistration();
   const permission = await pushPermission();
   const permitted = permission === 'granted' || permission === 'provisional';
+  const capabilities = await platformCapabilities();
   return {
     installation_id: installationId,
     platform: platform(),
@@ -89,5 +92,6 @@ export async function deviceRegisterBody(installationId: string) {
     push: { permission, expo_push_token: permitted ? cachedPushToken() : null },
     device_fingerprint_hash: null,
     ...(androidNi === undefined ? {} : { android_ni: androidNi }),
+    platform_capabilities: capabilities,
   };
 }

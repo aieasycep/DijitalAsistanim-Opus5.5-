@@ -79,6 +79,9 @@ export const hold = {
 
 export const motionDistance = { heroY: 8, toastY: 16, completeY: -6 } as const;
 
+/** Starting opacities (P:08 "Brifing açılışı": "0 ms · hero solgun" = .4). */
+export const motionOpacity = { heroFrom: 0.4 } as const;
+
 export const motionScale = {
   buttonPressed: 0.97,
   cardPressed: 0.98,
@@ -98,6 +101,7 @@ export const motion = {
   loop,
   hold,
   distance: motionDistance,
+  opacity: motionOpacity,
   scale: motionScale,
   swipe,
   max: MAX_DURATION,

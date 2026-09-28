@@ -7,7 +7,9 @@
 # with a clean environment (identifier defaults only), and asserts the generated native projects:
 # bundle ID / package, URL scheme, App Group, entitlements, share extension, WidgetKit extension
 # and Glance receivers (T-8.25), SDK levels, usage strings and app links, plus the autolinking of
-# the local native modules (da-widgets, da-tts). Production must carry exactly the M§108 identifiers.
+# the local native modules (da-widgets, da-tts, da-platform) and the da-platform declarations
+# (SCHEDULE_EXACT_ALARM, the Time Sensitive entitlement). Production must carry exactly the M§108
+# identifiers.
 #
 # Usage: bash scripts/mobile/prebuild-smoke.sh [APP_ENV ...]   (default: all four variants)
 #        KEEP_PREBUILD=1 keeps the temp directory for inspection.
@@ -86,12 +88,13 @@ IOS_USAGE_KEYS=(
   NSCalendarsFullAccessUsageDescription NSCalendarsUsageDescription
   NSRemindersFullAccessUsageDescription NSRemindersUsageDescription
   NSMicrophoneUsageDescription NSSpeechRecognitionUsageDescription
-  NSCameraUsageDescription NSPhotoLibraryUsageDescription NSFaceIDUsageDescription
+  NSCameraUsageDescription NSPhotoLibraryUsageDescription
 )
+# NSFaceIDUsageDescription: no screen uses biometrics (expo-local-authentication was removed).
 IOS_NEVER_KEYS=(
   NSLocationWhenInUseUsageDescription NSLocationAlwaysAndWhenInUseUsageDescription
   NSLocationAlwaysUsageDescription NSContactsUsageDescription NSUserTrackingUsageDescription
-  NSPhotoLibraryAddUsageDescription
+  NSPhotoLibraryAddUsageDescription NSFaceIDUsageDescription
 )
 PRIVACY_REASONS=(
   "NSPrivacyAccessedAPICategoryUserDefaults:CA92.1"
@@ -198,8 +201,9 @@ assert_variant() {
   expect_once "$entitlements" "<string>$group</string>" "App Group $group"
   expect_contains "$entitlements" "<string>applinks:$WEB_HOST</string>" "associated domain"
   expect_contains "$entitlements" "com.apple.developer.applesignin" "Sign in with Apple"
-  expect_contains "$entitlements" "com.apple.developer.usernotifications.time-sensitive" \
-    "time-sensitive notifications"
+  # da-platform (KPL-07): the Time Sensitive entitlement its module reads.
+  expect_plist_value "$entitlements" com.apple.developer.usernotifications.time-sensitive \
+    "<true/>"
   expect_contains "$ios/$SHARE_TARGET/ShareExtension.entitlements" "<string>$group</string>" \
     "share extension App Group"
   expect_contains "$ios/$project/PrivacyInfo.xcprivacy" "1C8F.1" "App Group UserDefaults reason"
@@ -227,6 +231,13 @@ assert_variant() {
   expect_contains "$manifest" "android:autoVerify=\"true\"" "autoVerify"
   expect_contains "$manifest" "android:allowBackup=\"false\"" "allowBackup=false"
   expect_contains "$manifest" "android.permission.POST_NOTIFICATIONS" "POST_NOTIFICATIONS"
+  # da-platform (KPL-09): the exact-alarm special access its module reads, declared once.
+  expect_once "$manifest" \
+    "<uses-permission android:name=\"android.permission.SCHEDULE_EXACT_ALARM\"/>" \
+    "SCHEDULE_EXACT_ALARM"
+  expect_absent "$manifest" \
+    "<uses-permission android:name=\"android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS\"/>" \
+    "REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"
   expect_contains "$manifest" \
     "<uses-permission android:name=\"android.permission.READ_MEDIA_IMAGES\" tools:node=\"remove\"/>" \
     "blocked READ_MEDIA_IMAGES"
@@ -283,15 +294,17 @@ assert_variant() {
   fi
 }
 
-# The local native modules (modules/da-widgets, modules/da-tts) are autolinked on both platforms.
+# The local native modules (modules/da-widgets, modules/da-tts, modules/da-platform) are
+# autolinked on both platforms.
 assert_autolinking() {
   local dest="$1" apple android class
   apple="$(cd "$dest" && npx --no expo-modules-autolinking resolve --platform apple --json 2>/dev/null || true)"
   android="$(cd "$dest" && npx --no expo-modules-autolinking resolve --platform android --json 2>/dev/null || true)"
-  for class in DaWidgetsModule DaTtsModule; do
+  for class in DaWidgetsModule DaTtsModule DaPlatformModule; do
     [[ "$apple" == *"\"class\":\"$class\""* ]] || fail "iOS autolinking lacks $class"
   done
-  for class in expo.modules.dawidgets.DaWidgetsModule expo.modules.datts.DaTtsModule; do
+  for class in expo.modules.dawidgets.DaWidgetsModule expo.modules.datts.DaTtsModule \
+    expo.modules.daplatform.DaPlatformModule; do
     [[ "$android" == *"\"classifier\":\"$class\""* ]] || fail "Android autolinking lacks $class"
   done
 }

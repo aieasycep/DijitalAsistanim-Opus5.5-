@@ -153,6 +153,75 @@ Deno.test(
 );
 
 Deno.test(
+  'platform_capabilities: stored per platform, replaced when sent, kept when absent (KPL-04/07/09)',
+  async () => {
+    const h = await createHarness();
+    const jwt = await h.token(USER_A);
+    const register = async (body: Record<string, unknown>) => {
+      const res = await call(h, 'POST', '/devices/register', {
+        jwt,
+        key: crypto.randomUUID(),
+        body: registerBody(body),
+      });
+      assertEquals(res.status, 200);
+      await res.body?.cancel();
+    };
+    // iOS: an Android-only key a client might send is dropped, the iOS keys are kept.
+    await register({
+      platform_capabilities: {
+        ios_time_sensitive: false,
+        ios_show_previews: true,
+        background_task: true,
+        widget_small: true,
+        exact_alarm: true,
+      },
+    });
+    assertEquals(h.devices.installations.get(INSTALLATION)?.platform_capabilities, {
+      ios_time_sensitive: false,
+      ios_show_previews: true,
+      background_task: true,
+      widget_small: true,
+    });
+    // A later registration without the field (a token rotation) leaves the object unchanged.
+    await register({});
+    assertEquals(
+      h.devices.installations.get(INSTALLATION)?.platform_capabilities?.ios_time_sensitive,
+      false,
+    );
+    // Android: the reported object replaces the stored one; iOS-only keys are dropped.
+    await register({
+      platform: 'android',
+      os_version: '35',
+      platform_capabilities: {
+        exact_alarm: false,
+        ni_available: true,
+        ni_granted: true,
+        ni_connected: false,
+        widget_today: true,
+        ios_time_sensitive: true,
+      },
+    });
+    assertEquals(h.devices.installations.get(INSTALLATION)?.platform_capabilities, {
+      exact_alarm: false,
+      ni_available: true,
+      ni_granted: true,
+      ni_connected: false,
+      widget_today: true,
+    });
+    // Only booleans and only known keys pass validation (the column holds booleans only).
+    for (const platform_capabilities of [{ exact_alarm: 'denied' }, { channels_off: true }]) {
+      const bad = await call(h, 'POST', '/devices/register', {
+        jwt,
+        key: crypto.randomUUID(),
+        body: registerBody({ platform_capabilities }),
+      });
+      assertEquals(bad.status, 422);
+      await bad.body?.cancel();
+    }
+  },
+);
+
+Deno.test(
   'push permission off disables the installation tokens; auto timezone follows the device',
   async () => {
     const h = await createHarness();

@@ -15,6 +15,7 @@ import { setSupabaseForTests, type AppSupabaseClient } from '../../src/lib/auth/
 import { resetPendingLinksForTests } from '../../src/lib/deeplinks';
 import { resetAnalyticsForTests } from '../../src/lib/events';
 import { resetNotificationHandlersForTests } from '../../src/lib/notifications/handlers';
+import { resetPlayerForTests } from '../../src/features/briefing/player/store';
 import { resetMutationQueueForTests } from '../../src/lib/offline/mutations';
 import { createAppQueryClient, setQueryClientForTests } from '../../src/lib/query/client';
 import { setGuardSnapshot } from '../../src/lib/router-guards';
@@ -202,6 +203,7 @@ export async function resetAppState(): Promise<void> {
   }
   resetMutationQueueForTests();
   resetNotificationHandlersForTests();
+  resetPlayerForTests();
 }
 
 export function installFakeSupabase(initial: Session | null): FakeSupabase {

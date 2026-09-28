@@ -25,6 +25,33 @@ class NiStore(context: Context) {
 
   fun config(ownPackage: String) = NiConfig(enabled, mode, allowedPackages, ownPackage)
 
+  /** When the system last bound the listener (KPL-04 health). */
+  val lastConnectedAt: Long?
+    get() = prefs.getLong(KEY_CONNECTED_AT, 0L).takeIf { it > 0L }
+
+  /** When the system last unbound it. */
+  val lastDisconnectedAt: Long?
+    get() = prefs.getLong(KEY_DISCONNECTED_AT, 0L).takeIf { it > 0L }
+
+  /** When the listener last saw any posted notification (throttled to once a minute). */
+  val lastEventAt: Long?
+    get() = prefs.getLong(KEY_EVENT_AT, 0L).takeIf { it > 0L }
+
+  fun markConnected(now: Long = System.currentTimeMillis()) {
+    prefs.edit().putLong(KEY_CONNECTED_AT, now).apply()
+  }
+
+  fun markDisconnected(now: Long = System.currentTimeMillis()) {
+    prefs.edit().putLong(KEY_DISCONNECTED_AT, now).apply()
+  }
+
+  /** Records that notifications still arrive; only timestamps, never content or packages. */
+  fun recordEvent(now: Long = System.currentTimeMillis()) {
+    if (ListenerHealth.shouldRecordEvent(lastEventAt, now)) {
+      prefs.edit().putLong(KEY_EVENT_AT, now).apply()
+    }
+  }
+
   /** Counts one notification from [packageName] (locked packages are never counted). */
   @Synchronized
   fun recordSeen(packageName: String, now: Long = System.currentTimeMillis()) {
@@ -71,6 +98,9 @@ class NiStore(context: Context) {
     private const val KEY_MODE = "mode"
     private const val KEY_ALLOWED = "allowed_packages"
     private const val KEY_SEEN = "seen"
+    private const val KEY_CONNECTED_AT = "listener_connected_at"
+    private const val KEY_DISCONNECTED_AT = "listener_disconnected_at"
+    private const val KEY_EVENT_AT = "listener_event_at"
     private const val MAX_SEEN = 300
     private const val SEEN_WINDOW_MS = 7L * 24 * 60 * 60 * 1000
   }

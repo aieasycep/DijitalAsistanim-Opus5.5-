@@ -7,12 +7,24 @@
  * External destinations (Apple Anımsatıcılar, Google Görevler, Microsoft To Do) become approvals
  * (`reminder_create` / `task_create`) shown in the inline approval sheet. Snooze mode (`mode=snooze`)
  * offers the evening / morning / smart / custom presets and the "Zamanı gelince bildir" switch.
+ * Device-local reminders carry the platform notes (`da-platform`): Android without the
+ * "Alarms & reminders" access (KPL-09, reminder may arrive late → "İzni Aç") and iOS with Time
+ * Sensitive off (KPL-07, Focus may hold it → "Ayarları Aç"); both disappear once granted.
  */
 import { qk } from '@da/api-client';
 import { reminderResolveTimeMutationOptions } from '@da/api-client/react';
 import { resolvePreset, type PresetResolution } from '@da/domain';
 import { formatRelativeDay } from '@da/i18n';
-import { BottomSheet, Button, InlineErrorCard, ListRow, OptionRow, Text, useTheme } from '@da/ui';
+import {
+  BottomSheet,
+  Button,
+  InlineErrorCard,
+  ListRow,
+  OptionRow,
+  PartialDataNotice,
+  Text,
+  useTheme,
+} from '@da/ui';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import * as Calendar from 'expo-calendar/legacy';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -21,11 +33,16 @@ import { Platform, StyleSheet, View } from 'react-native';
 import { useTranslations } from 'use-intl';
 
 import { useApiClient } from '@da/api-client/react';
+import {
+  openExactAlarmSettings,
+  openNotificationSettings as openAppNotificationSettings,
+} from '../../../modules/da-platform/src';
 import { installationId } from '../../lib/auth/first-run-purge';
 import { getSupabase } from '../../lib/auth/supabase';
 import { now } from '../../lib/clock';
 import { isScreenAvailable } from '../../lib/deeplinks';
 import { track } from '../../lib/events';
+import { usePlatformState } from '../../lib/platform-state';
 import { cachedBootstrap } from '../../lib/postgrest';
 import { useOnline } from '../../lib/query/online-manager';
 import { DateTimeFields, useLang, userTimeZone } from '../common/DateTimeFields';
@@ -262,6 +279,7 @@ export function ReminderSheetScreen() {
     reason: null,
   }));
   const [permission, setPermission] = useState<'granted' | 'denied' | 'undetermined'>('granted');
+  const platform = usePlatformState();
   const [submitting, setSubmitting] = useState(false);
   const [appleDenied, setAppleDenied] = useState(false);
   const opened = useRef(false);
@@ -584,6 +602,40 @@ export function ReminderSheetScreen() {
           testID="reminder.destination"
         />
       )}
+      {/* KPL-09: without "Alarms & reminders" Android delivers the reminder inexactly. */}
+      {platform.exactAlarm === 'denied' && !external && (!snoozeMode || notify) ? (
+        <PartialDataNotice
+          title={t('exactAlarm.warning')}
+          action={{
+            label: t('exactAlarm.cta'),
+            onPress: () => {
+              track('permission_row_tapped', { permission: 'exact_alarm', state: 'denied' });
+              if (!openExactAlarmSettings()) void openAppNotificationSettings();
+            },
+          }}
+          regionLabel={t('exactAlarm.region')}
+          testID="reminder.exactAlarm"
+        />
+      ) : null}
+      {/* KPL-07: with Time Sensitive off, Focus or the Scheduled Summary can hold the reminder. */}
+      {platform.timeSensitive === 'disabled' &&
+      permission === 'granted' &&
+      !external &&
+      (!snoozeMode || notify) ? (
+        <PartialDataNotice
+          title={t('timeSensitive.title')}
+          body={t('timeSensitive.body')}
+          action={{
+            label: common('actions.openSettings'),
+            onPress: () => {
+              track('permission_row_tapped', { permission: 'notifications', state: 'granted' });
+              void openAppNotificationSettings();
+            },
+          }}
+          regionLabel={t('exactAlarm.region')}
+          testID="reminder.timeSensitive"
+        />
+      ) : null}
       {permission === 'denied' && !external ? (
         <InlineErrorCard
           icon="notifications_off"

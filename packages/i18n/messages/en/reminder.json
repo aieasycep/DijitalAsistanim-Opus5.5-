@@ -85,5 +85,14 @@
     "morning_time": "Tomorrow morning · {time}",
     "calendar_slot": "Based on your calendar: {time}",
     "custom": "Your chosen time · {time}"
+  },
+  "exactAlarm": {
+    "warning": "Turn on “Alarms & reminders” so I can remind you on time. Without it, reminders may arrive a few minutes late.",
+    "cta": "Turn On",
+    "region": "Reminder timing"
+  },
+  "timeSensitive": {
+    "title": "Time Sensitive Notifications are off",
+    "body": "Reminder notifications may be held by Focus or the Scheduled Summary."
   }
 }
