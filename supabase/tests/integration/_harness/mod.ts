@@ -14,6 +14,7 @@
  */
 import postgres from 'npm:postgres@3.4.7';
 import { SignJWT } from 'jose';
+import { createAuthUser } from './auth.ts';
 
 // ── env ────────────────────────────────────────────────────────────────────────────────────
 export function env(key: string): string {
@@ -341,10 +342,24 @@ export async function mintUserToken(
     .sign(secret);
 }
 
-/** A new end user (auth.users row → profile, preferences, referral code) with a session and JWT. */
+/**
+ * A new end user (auth.users row → profile, preferences, referral code) with a session and JWT.
+ * Tier C+ writes the Auth rows and mints the token; tier A goes through the real Auth server
+ * (`auth.ts`: admin API user, password-grant session, refresh-grant tokens).
+ */
 export async function createUser(
   options: { timezone?: string; email?: string; pro?: boolean; appleSub?: string } = {},
 ): Promise<TestUser> {
+  if (Deno.env.get('DA_IT_TIER') === 'a') {
+    const email = options.email ?? `it-${crypto.randomUUID().slice(0, 8)}@example.com`;
+    const user = await createAuthUser(q, {
+      email,
+      timezone: options.timezone ?? 'Europe/Istanbul',
+    });
+    if (options.appleSub !== undefined) await linkApple(user.id, options.appleSub, email);
+    if (options.pro === true) await makePro(user.id);
+    return { ...user, email };
+  }
   const id = crypto.randomUUID();
   const email = options.email ?? `it-${id.slice(0, 8)}@example.com`;
   authColumns ??= new Set(
@@ -386,13 +401,7 @@ export async function createUser(
     `insert into auth.sessions (id, user_id, aal, created_at, updated_at) values ($1, $2, 'aal1', now(), now())`,
     [sessionId, id],
   );
-  if (options.appleSub !== undefined) {
-    await q(
-      `insert into auth.identities (id, user_id, provider, provider_id, identity_data, created_at, updated_at)
-       values (gen_random_uuid(), $1, 'apple', $2, $3::text::jsonb, now(), now())`,
-      [id, options.appleSub, JSON.stringify({ sub: options.appleSub, email })],
-    );
-  }
+  if (options.appleSub !== undefined) await linkApple(id, options.appleSub, email);
   if (options.pro === true) await makePro(id);
   const jwt = await mintUserToken(id, sessionId, { email });
   return {
@@ -402,6 +411,15 @@ export async function createUser(
     jwt,
     token: (extra) => mintUserToken(id, sessionId, { email, ...(extra ?? {}) }),
   };
+}
+
+/** A linked Sign in with Apple identity (the SIWA `sub`). */
+async function linkApple(userId: string, sub: string, email: string): Promise<void> {
+  await q(
+    `insert into auth.identities (id, user_id, provider, provider_id, identity_data, created_at, updated_at)
+     values (gen_random_uuid(), $1, 'apple', $2, $3::text::jsonb, now(), now())`,
+    [userId, sub, JSON.stringify({ sub, email })],
+  );
 }
 
 /** An active production Pro store subscription mirror row. */
