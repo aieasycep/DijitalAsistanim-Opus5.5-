@@ -79,6 +79,7 @@ test('mobile-e2e.yml: PR, manual and nightly only; emulator API 35 x86_64 google
   // Installs wait for the package manager, not only sys.boot_completed, and retry a dropped stream.
   const prepare = readFileSync(join(ROOT, 'scripts/e2e/prepare-emulator.sh'), 'utf8');
   assert.match(prepare, /pm path android/);
+  assert.match(prepare, /am get-current-user/);
   assert.match(script, /install_apk\(\)/);
 });
 
