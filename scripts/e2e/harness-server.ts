@@ -23,7 +23,8 @@
  *
  * Env: SUPABASE_URL, SUPABASE_SECRET_KEY, DA_E2E_DB_URL (psql), CRON_SECRET, DA_FIXED_NOW,
  * E2E_RUN_ID, INBUCKET_URL (default http://127.0.0.1:54324), HARNESS_PORT (default 8790),
- * REVENUECAT_MOCK_URL (CI mock), ANDROID_SERIAL (adb).
+ * REVENUECAT_MOCK_URL (the mock provider server's `/revenuecat`, loopback or a private address such
+ * as the Docker bridge gateway; default http://127.0.0.1:8788/revenuecat), ANDROID_SERIAL (adb).
  */
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -40,6 +41,17 @@ export const E2E_DOMAIN = 'e2e.dijitalasistan.test';
 
 type Env = Readonly<Record<string, string | undefined>>;
 
+const LOOPBACK: readonly string[] = ['127.0.0.1', 'localhost', '::1', '[::1]'];
+
+/** Loopback or a private IPv4 address (e.g. the Docker bridge gateway): never beyond the runner. */
+function isRunnerLocal(host: string): boolean {
+  if (LOOPBACK.includes(host)) return true;
+  const octets = /^(\d{1,3})\.(\d{1,3})\.\d{1,3}\.\d{1,3}$/.exec(host);
+  if (octets === null) return false;
+  const [a, b] = [Number(octets[1]), Number(octets[2])];
+  return a === 127 || a === 10 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168);
+}
+
 /** Refuses anything but a local / CI stack on loopback (TEST_PLAN §9.1; APP_ENV per @da/validation). */
 export function assertSafeEnv(env: Env): { staging: boolean } {
   const staging = env.E2E_TARGET === 'staging';
@@ -48,15 +60,20 @@ export function assertSafeEnv(env: Env): { staging: boolean } {
     throw new Error('harness: APP_ENV must be e2e or development');
   }
   const host = new URL(env.SUPABASE_URL ?? 'http://invalid').hostname;
-  if (!['127.0.0.1', 'localhost', '::1', '[::1]'].includes(host)) {
+  if (!LOOPBACK.includes(host)) {
     throw new Error('harness: SUPABASE_URL must be a loopback address');
   }
   if ((env.SUPABASE_SECRET_KEY ?? '') === '')
     throw new Error('harness: SUPABASE_SECRET_KEY is required');
   if (env.DA_E2E_DB_URL !== undefined && env.DA_E2E_DB_URL !== '') {
     const db = new URL(env.DA_E2E_DB_URL.replace(/^postgres(ql)?:/, 'http:')).hostname;
-    if (!['127.0.0.1', 'localhost', '::1', '[::1]'].includes(db))
+    if (!LOOPBACK.includes(db))
       throw new Error('harness: DA_E2E_DB_URL must be a loopback address');
+  }
+  // start-stack.sh serves the mock on the Docker bridge gateway, so a private address is allowed.
+  const mock = env.REVENUECAT_MOCK_URL;
+  if (mock !== undefined && !(URL.canParse(mock) && isRunnerLocal(new URL(mock).hostname))) {
+    throw new Error('harness: REVENUECAT_MOCK_URL must be a loopback or private address');
   }
   return { staging };
 }

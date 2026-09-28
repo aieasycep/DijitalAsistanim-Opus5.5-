@@ -24,6 +24,16 @@ test('the harness refuses anything but a local / CI stack on loopback', () => {
   assert.deepEqual(assertSafeEnv({ E2E_TARGET: 'staging' }), { staging: true });
 });
 
+test('the RevenueCat mock is reached on loopback or the Docker bridge, never beyond the runner', () => {
+  const ok = { APP_ENV: 'e2e', SUPABASE_URL: 'http://127.0.0.1:54321', SUPABASE_SECRET_KEY: 'k' };
+  for (const url of ['http://127.0.0.1:8788/revenuecat', 'http://172.17.0.1:8788/revenuecat']) {
+    assert.deepEqual(assertSafeEnv({ ...ok, REVENUECAT_MOCK_URL: url }), { staging: false });
+  }
+  for (const url of ['https://api.revenuecat.com/v2', 'http://8.8.8.8:8788/revenuecat', 'nope']) {
+    assert.throws(() => assertSafeEnv({ ...ok, REVENUECAT_MOCK_URL: url }), /REVENUECAT_MOCK_URL/);
+  }
+});
+
 test('the seed session targets a loopback database with app.env ci | local (TEST_PLAN §12.2)', () => {
   const ok = { APP_ENV: 'e2e', SUPABASE_URL: 'http://127.0.0.1:54321', SUPABASE_SECRET_KEY: 'k' };
   const db = 'postgresql://postgres:postgres@127.0.0.1:54322/postgres';
