@@ -9,9 +9,11 @@ on:
   schedule:
     - cron: '17 1 * * *'
 
+# An emulator run takes 30+ minutes: a newer push replaces the queued run, never the one in
+# progress, so every run that starts also reports.
 concurrency:
   group: mobile-e2e-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
   contents: read
