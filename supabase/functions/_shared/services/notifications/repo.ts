@@ -302,7 +302,9 @@ export function supabaseTriggerRepo(system: DbClient): TriggerRepo {
       return one(
         system
           .from('calendar_events')
-          .select('id,title,start_at,end_at,status,all_day,attendee_count,provider_deleted_at')
+          .select(
+            'id,title,start_at,end_at,status,all_day,attendee_count,provider_deleted_at,merged_into_id',
+          )
           .eq('id', id)
           .eq('user_id', userId)
           .maybeSingle(),

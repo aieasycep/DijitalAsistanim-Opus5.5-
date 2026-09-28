@@ -47,6 +47,8 @@ export const MICROSOFT_CAPABILITY_SCOPES: Readonly<Record<Capability, readonly s
   calendar_write: ['Calendars.ReadWrite'],
   tasks_read: ['Tasks.Read'],
   tasks_write: ['Tasks.ReadWrite'],
+  // `calendar/getSchedule` needs Calendars.ReadBasic or higher: covered by calendar_read (KPL-46).
+  calendar_freebusy: ['Calendars.Read'],
 };
 
 /** Broader delegated permissions that also satisfy a capability. */
@@ -54,6 +56,7 @@ const ALTERNATIVES: Partial<Readonly<Record<Capability, readonly string[]>>> = {
   mail_read: ['Mail.ReadWrite'],
   calendar_read: ['Calendars.ReadWrite'],
   tasks_read: ['Tasks.ReadWrite'],
+  calendar_freebusy: ['Calendars.ReadWrite'],
 };
 
 const ORDER: readonly Capability[] = [
@@ -63,6 +66,7 @@ const ORDER: readonly Capability[] = [
   'calendar_write',
   'tasks_read',
   'tasks_write',
+  'calendar_freebusy',
 ];
 
 export function microsoftScopesFor(

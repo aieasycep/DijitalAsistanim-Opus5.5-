@@ -3,13 +3,16 @@
  * stored), the user's notes for it, and the prep from `POST /meetings/:eventId/prep` (R-23: a
  * precomputed prep answers 200; otherwise it is generated on open and polled every 2 s up to 60 s,
  * then shown as failed with "Tekrar Dene").
+ * The same meeting seen through several accounts is one event (KPL-15 cross-source merge): RLS hides
+ * the duplicates, `merge_sources` lists every source of the canonical row, and a link that names a
+ * duplicate is resolved with `calendar_event_canonical_id`.
  */
-import { qk } from '@da/api-client';
+import { ApiError, qk } from '@da/api-client';
 import { queryOptions } from '@tanstack/react-query';
 import { z } from 'zod';
 
 import { getSupabase } from '../../lib/auth/supabase';
-import { unwrap, unwrapMaybe } from '../../lib/data/rpc';
+import { callRpc, errorCodeOf, unwrap, unwrapMaybe } from '../../lib/data/rpc';
 
 const Attendee = z.looseObject({
   name: z.string().nullable().optional(),
@@ -19,6 +22,14 @@ const Attendee = z.looseObject({
   contact_id: z.string().nullable().optional(),
 });
 export type AttendeeData = z.infer<typeof Attendee>;
+
+const MergeSource = z.looseObject({
+  event_id: z.string(),
+  provider: z.string(),
+  connected_account_id: z.string(),
+  calendar_id: z.string(),
+});
+export type EventSource = z.infer<typeof MergeSource>;
 
 export interface CalendarEventDetail {
   readonly id: string;
@@ -40,6 +51,8 @@ export interface CalendarEventDetail {
   readonly daApprovalId: string | null;
   readonly status: string;
   readonly syncedAt: string | null;
+  /** Every source of a merged event (canonical first); empty when the event has one source. */
+  readonly sources: readonly EventSource[];
 }
 
 export interface MeetingNote {
@@ -49,21 +62,38 @@ export interface MeetingNote {
   readonly createdAt: string;
 }
 
+const EVENT_COLUMNS =
+  'id,title,start_at,end_at,all_day,location,conference_url,attendees,attendee_count,organizer_self,can_modify,description_excerpt,provider,calendar_id,connected_account_id,da_approval_id,status,provider_updated_at,device_last_synced_at,merge_sources';
+
+async function eventRow(id: string) {
+  const supabase = getSupabase();
+  const found = unwrapMaybe(
+    await supabase.from('calendar_events').select(EVENT_COLUMNS).eq('id', id).maybeSingle(),
+  );
+  if (found !== null) return found;
+  // A merged duplicate (hidden by RLS): open its canonical event instead.
+  let canonical: unknown = null;
+  try {
+    canonical = await callRpc('calendar_event_canonical_id', { p_event_id: id });
+  } catch (error) {
+    if (errorCodeOf(error) !== 'NOT_FOUND') throw error;
+  }
+  if (typeof canonical !== 'string' || canonical === id) {
+    throw new ApiError({ code: 'NOT_FOUND', kind: 'server', status: 404, message: 'no rows' });
+  }
+  return unwrap(
+    await supabase.from('calendar_events').select(EVENT_COLUMNS).eq('id', canonical).single(),
+  );
+}
+
 export async function fetchEvent(id: string): Promise<CalendarEventDetail> {
   const supabase = getSupabase();
-  const row = unwrap(
-    await supabase
-      .from('calendar_events')
-      .select(
-        'id,title,start_at,end_at,all_day,location,conference_url,attendees,attendee_count,organizer_self,can_modify,description_excerpt,provider,calendar_id,connected_account_id,da_approval_id,status,provider_updated_at,device_last_synced_at',
-      )
-      .eq('id', id)
-      .single(),
-  );
+  const row = await eventRow(id);
   const calendar = unwrapMaybe(
     await supabase.from('calendars').select('name').eq('id', row.calendar_id).maybeSingle(),
   );
   const attendees = z.array(Attendee).safeParse(row.attendees);
+  const sources = z.array(MergeSource).safeParse(row.merge_sources);
   return {
     id: row.id,
     title: row.title,
@@ -84,6 +114,7 @@ export async function fetchEvent(id: string): Promise<CalendarEventDetail> {
     daApprovalId: row.da_approval_id,
     status: row.status,
     syncedAt: row.device_last_synced_at ?? row.provider_updated_at,
+    sources: sources.success ? sources.data : [],
   };
 }
 

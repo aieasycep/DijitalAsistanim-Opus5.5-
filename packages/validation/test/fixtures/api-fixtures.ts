@@ -784,6 +784,56 @@ export const apiFixtures = {
       },
     ],
   },
+  'GET /mail/:messageId/attachments': {
+    valid: {
+      params: { messageId: uuid(90) },
+      response: ok({
+        message_id: uuid(90),
+        attachments: [
+          {
+            attachment_ref: `v2.${uuid(90)}.0.1790000000.${'A'.repeat(32)}`,
+            name: 'Hizmet_Sozlesmesi_v3.pdf',
+            mime: 'application/pdf',
+            size_bytes: 482113,
+            capturable: true,
+            blocked_reason: null,
+          },
+          {
+            attachment_ref: `v2.${uuid(90)}.1.1790000000.${'B'.repeat(32)}`,
+            name: 'bilet.pkpass',
+            mime: 'application/vnd.apple.pkpass',
+            size_bytes: 20480,
+            capturable: false,
+            blocked_reason: 'unsupported_type',
+          },
+        ],
+        source: 'stored',
+        refs_expire_at: TS_LATER,
+      }),
+    },
+    invalid: [
+      { part: 'params', why: 'message id is not a uuid', value: { messageId: 'abc' } },
+      {
+        part: 'response',
+        why: 'unknown blocked reason',
+        value: ok({
+          message_id: uuid(90),
+          attachments: [
+            {
+              attachment_ref: 'x',
+              name: 'a.exe',
+              mime: 'application/octet-stream',
+              size_bytes: 1,
+              capturable: false,
+              blocked_reason: 'virus',
+            },
+          ],
+          source: 'stored',
+          refs_expire_at: TS_LATER,
+        }),
+      },
+    ],
+  },
   'POST /mail/:messageId/reply-drafts': {
     valid: { params: { messageId: uuid(90) }, body: { tone: 'short' }, response: ok(replyDraft) },
     invalid: [
@@ -1267,11 +1317,58 @@ export const apiFixtures = {
             requires_capability: 'calendar_write',
             pro_required: true,
           },
+          {
+            option_id: 'move:x',
+            kind: 'move_event',
+            title: 'Toplantıyı kaydır',
+            description: 'Yarın 10:15',
+            feasibility: {
+              organizer: true,
+              attendee_availability: 'busy',
+              availability_reason: 'checked',
+              attendees: [
+                { email: 'ayse@acme.com', name: 'Ayşe', status: 'busy', reason: null },
+                { email: 'dis@ornek.com', name: null, status: 'unknown', reason: 'not_shared' },
+              ],
+            },
+            proposed_slot: { start: TS, end: TS_LATER },
+            side_effects: [],
+            requires_capability: 'calendar_write',
+            pro_required: true,
+          },
         ],
+        availability_upgrade: {
+          account_id: uuid(70),
+          provider: 'google',
+          capability: 'calendar_freebusy',
+        },
       }),
     },
     invalid: [
       { part: 'body', why: 'body takes no fields', value: { force: true } },
+      {
+        part: 'response',
+        why: 'unknown availability reason',
+        value: ok({
+          conflict: { insight_id: uuid(67), events: [conflictEvent(68), conflictEvent(69)] },
+          options: [
+            {
+              option_id: 'remind',
+              kind: 'remind_me',
+              title: 'Hatırlat',
+              description: '',
+              feasibility: {
+                organizer: false,
+                attendee_availability: 'unknown',
+                availability_reason: 'guessed',
+              },
+              side_effects: [],
+              requires_capability: null,
+              pro_required: false,
+            },
+          ],
+        }),
+      },
       {
         part: 'response',
         why: 'a conflict has exactly two events',

@@ -197,6 +197,103 @@ Deno.test(
   },
 );
 
+Deno.test(
+  'email_triage (DEV-41, M-CAP-03): kept mails keep attachment metadata only; bulk, low priority and the control are respected',
+  async () => {
+    const pdf = {
+      providerAttachmentId: 'att-1',
+      filename: 'Hizmet_Sozlesmesi_v3.pdf',
+      mimeType: 'application/pdf',
+      sizeBytes: 48211,
+      inline: false,
+    };
+    const run = async (mem: MemoryIntel, ids: string[], ai = fixtureServices()) =>
+      await runEmailTriage(
+        deps(mem, ai),
+        jobContext({
+          connected_account_id: ACCOUNT_ID,
+          email_message_ids: ids,
+          origin: 'incremental' as const,
+        }),
+      );
+    const setupMail = (
+      mem: MemoryIntel,
+      overrides: Parameters<typeof messageRow>[0],
+      body: string | null,
+      attachments: (typeof pdf)[],
+    ) => {
+      const t = threadRow({ subject: overrides?.subject ?? 'Konu' });
+      const row = messageRow({ thread_id: t.id, has_attachments: true, ...overrides });
+      mem.threads.push(t);
+      mem.messages.push(row);
+      if (body !== null) mem.bodies.set(row.provider_message_id, { text: body, html: null });
+      mem.attachments.set(row.provider_message_id, attachments);
+      return row;
+    };
+    const mem = new MemoryIntel();
+    const withBody = setupMail(
+      mem,
+      { subject: 'Sözleşme', from_email: 'mehmet@yilmazendustri.example' },
+      'Merhaba, sözleşme ekte. Cuma’ya kadar imzalayıp gönderebilir misin?',
+      [pdf, { ...pdf, providerAttachmentId: 'logo', filename: 'logo.png', inline: true }],
+    );
+    const bulk = setupMail(
+      mem,
+      { subject: 'Kampanya', list_unsubscribe: true, from_email: 'kampanya@magaza.example' },
+      null,
+      [pdf],
+    );
+    await run(mem, [withBody.id, bulk.id]);
+    const kept = mem.messages.find((m) => m.id === withBody.id)!;
+    assertEquals(kept.attachment_meta, [
+      {
+        name: 'Hizmet_Sozlesmesi_v3.pdf',
+        mime: 'application/pdf',
+        size: 48211,
+        provider_attachment_id: 'att-1',
+        kind: 'file',
+      },
+    ]);
+    assert(!JSON.stringify(kept.attachment_meta).includes('logo'), 'inline parts are not files');
+    assertEquals(mem.messages.find((m) => m.id === bulk.id)!.attachment_meta, undefined);
+    assertEquals(mem.attachmentListings, [], 'the body list is reused; bulk mail is never listed');
+
+    // mail_body off: no body is fetched, the metadata-only listing is used.
+    const noBody = new MemoryIntel();
+    const listed = setupMail(
+      noBody,
+      { subject: 'Teklif', from_email: 'ayse@yilmazendustri.example' },
+      'gövde okunmaz',
+      [pdf],
+    );
+    const ai = fixtureServices({
+      user: { dataAccess: { ...aiUser({}).dataAccess, mailBody: false } },
+    });
+    await run(noBody, [listed.id], ai);
+    assertEquals(noBody.attachmentListings, [listed.provider_message_id]);
+    assertEquals(
+      (noBody.messages[0]!.attachment_meta as { name: string }[] | undefined)?.[0]?.name,
+      'Hizmet_Sozlesmesi_v3.pdf',
+    );
+
+    // The attachments Data Source Control off: nothing is stored or listed.
+    const off = new MemoryIntel();
+    const blocked = setupMail(
+      off,
+      { subject: 'Fatura', from_email: 'muhasebe@firma.example' },
+      'Fatura ekte.',
+      [pdf],
+    );
+    await run(
+      off,
+      [blocked.id],
+      fixtureServices({ user: { dataAccess: { ...aiUser({}).dataAccess, attachments: false } } }),
+    );
+    assertEquals(off.messages[0]!.attachment_meta, undefined);
+    assertEquals(off.attachmentListings, []);
+  },
+);
+
 Deno.test('IT-AI-04 email_triage: re-running classified messages makes no model call', async () => {
   const mem = new MemoryIntel();
   const ids = canonInbox(mem);

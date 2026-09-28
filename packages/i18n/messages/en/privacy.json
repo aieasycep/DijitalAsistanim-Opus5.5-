@@ -84,7 +84,9 @@
       "calendar_write": "Create and move events (with your approval each time)",
       "tasks_read": "Read tasks",
       "tasks_write": "Create tasks (with your approval each time)",
-      "notRequested": "Not requested yet · asked at your first approved action"
+      "notRequested": "Not requested yet · asked at your first approved action",
+      "calendar_freebusy": "Attendees' free/busy times (conflict options)",
+      "notRequestedFreebusy": "Not requested yet · asked from conflict options"
     },
     "whyTitle": "Why is {permission} access needed?"
   },

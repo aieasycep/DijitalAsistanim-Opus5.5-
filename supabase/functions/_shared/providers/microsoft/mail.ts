@@ -16,6 +16,7 @@ import {
   type DeterministicHeaders,
   type IdempotencyMarker,
   type MailAddress,
+  type MailAttachmentMeta,
   type MailChangeSet,
   type MailCursor,
   type MailProvider,
@@ -37,6 +38,14 @@ import type { GraphClient } from './graph.ts';
 import type { GraphSubscriptions } from './subscriptions.ts';
 
 type Folder = 'inbox' | 'sentitems';
+
+/** `@odata.type` → attachment kind: only file attachments carry downloadable bytes. */
+function graphAttachmentKind(type: string | undefined): 'file' | 'item' | 'reference' {
+  const t = (type ?? '').toLowerCase();
+  if (t.endsWith('itemattachment')) return 'item';
+  if (t.endsWith('referenceattachment')) return 'reference';
+  return 'file';
+}
 
 interface GraphRecipient {
   readonly emailAddress?: { readonly address?: string; readonly name?: string };
@@ -262,6 +271,7 @@ export class OutlookMailAdapter implements MailProvider {
     const res = await this.graph.json<{
       body?: { contentType?: string; content?: string };
       attachments?: {
+        '@odata.type'?: string;
         id: string;
         name?: string;
         contentType?: string;
@@ -288,8 +298,41 @@ export class OutlookMailAdapter implements MailProvider {
         mimeType: a.contentType ?? 'application/octet-stream',
         sizeBytes: a.size ?? 0,
         inline: a.isInline === true,
+        kind: graphAttachmentKind(a['@odata.type']),
       })),
     };
+  }
+
+  /**
+   * Attachment metadata only (`contentBytes` is never selected). `#microsoft.graph.itemAttachment`
+   * and `referenceAttachment` (a cloud link) are listed with their kind and never downloaded.
+   */
+  async listAttachments(
+    ctx: ProviderContext,
+    providerMessageId: string,
+  ): Promise<MailAttachmentMeta[]> {
+    const res = await this.graph.json<{
+      value?: {
+        '@odata.type'?: string;
+        id: string;
+        name?: string;
+        contentType?: string;
+        size?: number;
+        isInline?: boolean;
+      }[];
+    }>(
+      ctx,
+      `/me/messages/${encodeURIComponent(providerMessageId)}/attachments?$select=id,name,contentType,size,isInline`,
+      { priority: 'interactive' },
+    );
+    return (res.value ?? []).slice(0, 50).map((a) => ({
+      providerAttachmentId: a.id,
+      filename: (a.name ?? '').slice(0, 255),
+      mimeType: (a.contentType ?? 'application/octet-stream').toLowerCase(),
+      sizeBytes: a.size ?? 0,
+      inline: a.isInline === true,
+      kind: graphAttachmentKind(a['@odata.type']),
+    }));
   }
 
   async getAttachment(

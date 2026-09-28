@@ -45,7 +45,7 @@ const hexIn = (v: string | null): string | null => (v === null ? null : `\\x${v}
 const DRAFT_COLUMNS =
   'id,user_id,thread_id,message_id,connected_account_id,kind,tone,to_emails,cc_emails,subject,body,version,status,generated_by,approval_action_id,ai_request_id,prompt_version_id,attachments,source_type,source_id,source_provider,source_timestamp,confidence,language,warnings,facts_used,content_key,created_at,updated_at';
 const EVENT_COLUMNS =
-  'id,user_id,connected_account_id,calendar_id,provider,title,start_at,end_at,all_day,status,location,is_online,organizer_self,organizer_email,can_modify,attendees,attendee_count,description_excerpt,conference_url,updated_at';
+  'id,user_id,connected_account_id,calendar_id,provider,title,start_at,end_at,all_day,status,location,is_online,organizer_self,organizer_email,can_modify,attendees,attendee_count,description_excerpt,conference_url,updated_at,merged_into_id,merge_sources';
 const PREP_COLUMNS =
   'id,user_id,calendar_event_id,status,purpose,purpose_evidence,primary_contact_id,last_interaction,recent_email_ids,open_loops,user_commitment_ids,their_commitment_ids,relevant_files,talking_points,summary_2min,reading_time_sec,sources,input_hash,generated_at,prompt_version_id,ai_request_id,updated_at';
 const NOTE_COLUMNS = 'id,user_id,calendar_event_id,kind,body,input,client_note_id,created_at';

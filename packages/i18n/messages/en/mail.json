@@ -115,6 +115,7 @@
     "vipRemoved": "Removed from VIPs.",
     "vipQueued": "Will be saved when you're back online.",
     "viewSender": "View sender",
-    "wasImportant": "It was important"
+    "wasImportant": "It was important",
+    "attachmentToCapture": "Send to Capture"
   }
 }

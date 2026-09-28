@@ -160,16 +160,25 @@ export function EventDetailScreen() {
     (event.provider === 'google' || event.provider === 'microsoft');
   const day = formats.localDate(event.startAt);
   const calendarUrl = calendarDayUrl(event.provider, event.startAt, day);
-  const providerLabel =
-    event.provider === 'google'
+  const labelOf = (provider: string) =>
+    provider === 'google'
       ? tc('providers.googleCalendar')
-      : event.provider === 'microsoft'
+      : provider === 'microsoft'
         ? tc('providers.outlookCalendar')
-        : event.provider === 'apple_device'
+        : provider === 'apple_device'
           ? tc('providers.appleCalendar')
-          : event.provider === 'android_device'
+          : provider === 'android_device'
             ? tc('providers.deviceCalendar')
             : tc('providers.demo');
+  const providerLabel = labelOf(event.provider);
+  // KPL-15: the same meeting from several calendars is shown once, naming every source.
+  const mergedFrom =
+    event.sources.length > 1
+      ? t('sources', {
+          count: event.sources.length,
+          providers: [...new Set(event.sources.map((s) => labelOf(s.provider)))].join(', '),
+        })
+      : null;
   const title = event.title ?? t('untitled');
   const noteSubtitle = `${title} · ${formats.time(event.startAt)}`;
   const approvalPath = event.daApprovalId === null ? null : `/approvals/${event.daApprovalId}`;
@@ -486,6 +495,7 @@ export function EventDetailScreen() {
           {[
             t('source', { provider: providerLabel }),
             event.calendarName,
+            mergedFrom,
             event.syncedAt === null
               ? null
               : tc('provenance.lastSynced', { time: formats.time(event.syncedAt) }),

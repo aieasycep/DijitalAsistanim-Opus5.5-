@@ -111,6 +111,8 @@ export function eventRowOf(event: NormalizedEvent, userTimeZone: string): EventR
       email: a.email.toLowerCase(),
       name: a.name,
       response: a.responseStatus,
+      // The user's own entry: meeting prep and attendee availability never ask about it.
+      ...(a.isSelf ? { self: true } : {}),
     })),
     attendee_count: event.attendees.length,
     da_approval_id: event.daApprovalId,

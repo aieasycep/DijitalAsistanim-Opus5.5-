@@ -200,10 +200,10 @@ iOS deployment target **16.4** (iPhone only); Android min SDK **24**, compile an
 
 - **Limitation.** A Google or Exchange account connected by OAuth may also be configured on the device, so its events appear again through EventKit or CalendarContract.
 - **Evidence.** [KNOW] https://developer.apple.com/documentation/eventkit/ekcalendaritem/calendaritemexternalidentifier ; [OFF] integrations audit §X.1
-- **As built.** The user picks which device calendars to share (holiday, birthday and subscribed calendars start deselected). The server stores `ical_uid` but does not merge duplicates across sources.
-- **User sees.** Possibly the same event twice when the same account is connected both ways.
-- **Verified.** —
-- **Plan difference.** Auto-deselecting device calendars that match an OAuth account and cross-source dedupe were not built.
+- **As built.** The user picks which device calendars to share (holiday, birthday and subscribed calendars start deselected). Duplicates are merged in the store ([`20260924003410_calendar_event_merge.sql`](../supabase/migrations/20260924003410_calendar_event_merge.sql)): after every insert, update or delete on `calendar_events` (statement triggers over the changed start range) and every change of a calendar's `selected`, `private.merge_calendar_events` regroups the user's live events (not cancelled, not provider-deleted, in a selected calendar). Provider events group by `ical_uid` + start, otherwise by normalised title + start + organiser email; a device event (no uid or organiser through EventKit / CalendarContract) joins the provider event with the same normalised title, start, end and all-day flag, otherwise other device copies with the same four values. Two events of the same calendar are never merged. The canonical row (organiser first, then modifiable, then more attendees, then oldest) carries `merge_sources` (event id, provider, account and calendar of every copy, canonical first); every other copy gets `merged_into_id`, which a restrictive RLS policy (`calendar_events_hide_merged`) hides from every user read, so Today, Plan (RPC-09 items list their `sources`), widgets, search, notifications and meeting prep show one event; service-role readers filter `merged_into_id is null`. `calendar_event_canonical_id(id)` resolves a link that names a copy (event detail, `GET /meetings/:eventId/prep`). Merging never edits provider data, and each change regroups from scratch, so a copy that disappears or changes splits off again.
+- **User sees.** One event; the event detail's provenance line names every source ("2 takvimde: Google Takvim, Outlook Takvim", `plan.eventScreen.sources`).
+- **Verified.** unit (pgTAP `20260924003410_calendar_merge`: uid, title + organiser and device matches, same-calendar and cancelled exclusions, canonical choice, split on change, RLS hiding, canonical-id lookup, `plan_range` sources; Deno notification and meeting-prep skips; Jest event provenance and duplicate link); integration (IT-SYNC-19: the same meeting through Google and Microsoft is one Plan item).
+- **Plan difference.** Device calendars that match an OAuth account are not deselected automatically; the merge makes the duplicate invisible instead.
 
 #### KPL-16 · Apple Reminders is iOS-only; Android has no system tasks store
 
@@ -477,10 +477,10 @@ iOS deployment target **16.4** (iPhone only); Android min SDK **24**, compile an
 
 - **Limitation.** Other people's availability is visible only through free/busy APIs where they share it (Google needs an extra scope; Graph `getSchedule` mostly within an organisation).
 - **Evidence.** [OFF] Calendar Discovery document (lists `calendar.freebusy`, `calendar.events.freebusy` scopes) ; [KNOW] https://developers.google.com/workspace/calendar/api/v3/reference/freebusy/query ; [KNOW] https://learn.microsoft.com/en-us/graph/api/calendar-getschedule ; M§20
-- **As built.** Slot suggestions use the user's own calendars; no free/busy lookup exists, so every option reports `attendee_availability: 'unknown'`; availability is never inferred.
-- **User sees.** Options without availability claims.
-- **Verified.** unit (Deno plan conflicts).
-- **Plan difference.** The progressive `calendar.events.freebusy` scope, `getSchedule` and the availability notes were not built.
+- **As built.** `POST /plan/conflicts/:insightId/options` (API-PLAN-03) asks the account that owns the event about its other attendees (the user's own address excluded, at most 20) over the search window: Google `freeBusy.query` needs the progressive capability `calendar_freebusy` (scope `calendar.events.freebusy`, requested only from the conflict screen's "Uygunluğu göster" through API-INT-02/07, never silently); Graph `getSchedule` runs under `Calendars.Read`, so Microsoft accounts with `calendar_read` hold `calendar_freebusy` (backfilled in the merge migration) ([`services/plan/availability.ts`](../supabase/functions/_shared/services/plan/availability.ts); adapters [`google/calendar.ts`](../supabase/functions/_shared/providers/google/calendar.ts), [`microsoft/calendar.ts`](../supabase/functions/_shared/providers/microsoft/calendar.ts)). The answering attendees' busy blocks (minus the moved event's own time) feed the free-slot finder, so a move option proposes a slot where they are free when one exists within 7 days. Each option states `attendee_availability` (`free` only when every other attendee answered free) with `availability_reason` (`checked`, `partial`, `not_shared`, `scope_missing`, `device_calendar`, `provider_unavailable`, `no_other_attendees`, `not_applicable`) and per-attendee lines; an attendee the provider did not answer for is `unknown` with the provider's reason (`not_found`, `not_shared`, `too_many`, `unavailable`). Availability is never inferred from names, domains or past meetings; device events carry no attendee identities.
+- **User sees.** Per option: "Bu saatte meşgul: {names}", "Katılımcılar bu saatte uygun." or why it is unknown; without the permission, "Uygunluğu göster" opens the scope sheet and the options reload after the grant (`plan.conflictScreen.availability.*`).
+- **Verified.** unit (Deno adapters' normalisers, availability computation, API-PLAN-03 route; Jest conflict screen); integration (IT-PLAN-01 Google after the upgrade, IT-PLAN-02 Graph `getSchedule`, against the mock provider).
+- **Plan difference.** None for the lookup; `proposedNewTime` stays unused (KPL-45).
 
 #### KPL-47 · Travel time and "leave by" times exist only if a source provides them
 
@@ -663,7 +663,7 @@ Facts tagged [KNOW] during planning, with their status as built.
 | 4 | Background notification delivery through Expo | 11, 12 | Implemented (`_contentAvailable` data-only push, `da-background-notification` task); open: delivery after force-quit (iOS) and in Doze (Android) on devices |
 | 5 | Graph attachment size without `Mail.ReadWrite` | 44 | Implemented as a 3 MB limit; confirm against the current Graph documentation |
 | 6 | Graph organiser updates send meeting mail automatically | 37 | Open: owner sandbox |
-| 7 | Google free/busy scope | 46 | Not needed (free/busy not built) |
+| 7 | Google free/busy scope | 46 | Implemented as `calendar.events.freebusy` (progressive `calendar_freebusy`); confirm consent-screen wording and Graph `getSchedule` sharing outside the tenant in the owner sandbox |
 | 8 | Google `guestsCanModify` semantics | 45 | Implemented via `can_modify`; confirm in owner sandbox |
 | 9 | Gmail quota table | 33 | Open |
 | 10 | Unverified publishing status and refresh-token expiry | 32 | Open: owner (Google console) |
@@ -677,7 +677,7 @@ Facts tagged [KNOW] during planning, with their status as built.
 | 18 | RevenueCat customer-delete endpoint | 51 | Open: marked for verification in [`revenuecat.ts`](../supabase/functions/_shared/services/billing/revenuecat.ts) |
 | 19 | Current store minimum SDK / target-API rules | 54, 59 | Open: owner at submission (target SDK 36 today) |
 | 20 | WidgetKit App Group file protection | 17 | Open: device reboot test |
-| 21 | Device calendar source names for duplicate detection | 15 | Not needed (dedupe not built) |
+| 21 | Device calendar source names for duplicate detection | 15 | Not needed (the merge matches on title, start, end and all-day, not on source names) |
 
 ## 12. Manual external steps and credentials implicated
 
@@ -705,8 +705,7 @@ This document replaced the planning register. The plan behaviours that were not 
 | --- | --- | --- |
 | `da-platform` native module | Built for exact alarms, Time Sensitive and the battery handoff; no AlarmKit / Clock handoff | 07, 09, 10 |
 | Device data freshness | The `device_refresh` push is sent by the `briefing` job (one 3-minute deferral), not `scheduler_tick()` at −40 min; three periodic tasks instead of one | 11, 12 |
-| Calendar dedupe | No auto-deselect of duplicate device calendars, no cross-source merge | 15 |
-| Free/busy | Attendee availability always unknown | 46 |
+| Calendar dedupe | No auto-deselect of duplicate device calendars (duplicates are merged and hidden instead) | 15 |
 | Platform capability reporting | Sent and stored; no backoffice view lists installation details, so it is visible through the database only | 04, 06, 07, 09, 11, 24, 25 |
 | Limitation copy | No `limits.*` namespace; the copy lives in the feature namespaces named above (`notifications`, `reminder`, `privacy`, `plan`, `briefing`, `voice`, `android_ni`) | 05, 34, 36, 38 |
 | Intl and casing | `ensureIntl()` with built-in fallbacks instead of the formatjs polyfills; catalogs not pre-uppercased | 27, 28 |

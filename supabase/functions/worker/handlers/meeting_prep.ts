@@ -34,6 +34,9 @@ export async function runMeetingPrep(
   if (!isOn(user.flags, 'feature.meeting_prep')) return { skipped: 'flag_off' };
   const event = await deps.store.meetingEvent(userId, eventId);
   if (event === null || event.status === 'cancelled') return { skipped: 'event_gone' };
+  // A cross-source duplicate (KPL-15): the prep belongs to its canonical event.
+  if (event.merged_into_id !== undefined && event.merged_into_id !== null)
+    return { skipped: 'merged_duplicate' };
   const now = ctx.now();
   const sources = await loadPrepSources(deps.store, userId, event, now, user.dataAccess);
   const existing = await deps.store.meetingPrep(userId, eventId);

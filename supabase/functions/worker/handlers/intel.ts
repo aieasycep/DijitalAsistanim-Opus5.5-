@@ -3,6 +3,7 @@
  * stores, the AI services, the transient mail-body source and the follow-up enqueue helpers with
  * the documented idempotency keys (API_CONTRACTS §11).
  */
+import type { TransientMailBody } from '@da/domain';
 import type { Json } from '../../_shared/jobs/types.ts';
 import type { JobContext } from '../../_shared/jobs/types.ts';
 import type { RawEnv } from '../../_shared/env.ts';
@@ -152,7 +153,11 @@ export async function fetchBody(
   deps: IntelDeps,
   ctx: JobContext<unknown>,
   input: { userId: string; accountId: string; provider: string; providerMessageId: string },
-): Promise<{ text: string; html: string | null } | null> {
+): Promise<{
+  text: string;
+  html: string | null;
+  attachments: TransientMailBody['attachments'];
+} | null> {
   if (deps.bodies === null) return null;
   try {
     const body = await deps.bodies.fetch({
@@ -164,7 +169,9 @@ export async function fetchBody(
       correlationId: ctx.correlationId,
       signal: ctx.signal,
     });
-    return body === null ? null : { text: body.text, html: body.html };
+    return body === null
+      ? null
+      : { text: body.text, html: body.html, attachments: body.attachments };
   } catch {
     ctx.log.warn('mail_body_unavailable');
     return null;

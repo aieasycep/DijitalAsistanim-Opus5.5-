@@ -130,7 +130,8 @@
       "calendar_read": "Takvimi okuma",
       "calendar_write": "Takvime etkinlik ekleme",
       "tasks_read": "Görevleri okuma",
-      "tasks_write": "Görev ekleme"
+      "tasks_write": "Görev ekleme",
+      "calendar_freebusy": "Katılımcıların dolu/boş saatlerini görme"
     }
   },
   "footer": {

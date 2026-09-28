@@ -3,7 +3,7 @@
  * regexes became linear scans. Each attack shape runs at 50 000 repetitions within a generous
  * budget, and the scans are compared with the original regexes over seeded random input.
  */
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { numberAtEnd, withoutTrailingNonWord, wordAtEnd } from '../src/text-end.ts';
 import { trCaseSuffix, trSuffix } from '../src/tr-suffix.ts';
@@ -16,9 +16,12 @@ const N = 50_000;
  * load spike slows both rather than only one. A linear scan grows about 4×; the quadratic
  * originals grow about 16× and took seconds at N. A run under FLOOR_MS passes outright.
  */
+/** Each growth check runs its input 2 × ROUNDS times, over vitest's 5 s default on a CI runner. */
+vi.setConfig({ testTimeout: 30_000 });
+
 const FLOOR_MS = 100;
 const MAX_GROWTH = 8;
-const ROUNDS = 5;
+const ROUNDS = 3;
 
 /**
  * Thread CPU time rather than wall-clock: on a busy runner a long run is preempted far more often

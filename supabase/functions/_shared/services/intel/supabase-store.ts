@@ -53,7 +53,7 @@ function check<T>(result: {
 }
 
 export const MESSAGE_COLUMNS =
-  'id,user_id,connected_account_id,thread_id,provider,provider_message_id,direction,from_email,from_name,to_emails,cc_emails,subject,snippet,sent_at,received_at,labels,list_unsubscribe,auto_submitted,precedence_bulk,dkim_pass,spf_pass,ai_status,classification,classification_tier,classification_reason,classification_rule_id,classification_confidence,key_points,ai_summary,analyzed_at,has_attachments,injection_suspected,life_signal,content_hash,expires_at';
+  'id,user_id,connected_account_id,thread_id,provider,provider_message_id,direction,from_email,from_name,to_emails,cc_emails,subject,snippet,sent_at,received_at,labels,list_unsubscribe,auto_submitted,precedence_bulk,dkim_pass,spf_pass,ai_status,classification,classification_tier,classification_reason,classification_rule_id,classification_confidence,key_points,ai_summary,analyzed_at,has_attachments,attachment_meta,injection_suspected,life_signal,content_hash,expires_at';
 export const THREAD_COLUMNS =
   'id,user_id,connected_account_id,provider,subject,participants,message_count,last_message_at,category,category_tier,category_reason,category_rule_id,category_confidence,urgency,reply_state,ai_summary,key_points,deadline_at,deadline_evidence,rolling_summary,last_processed_message_id,follow_up_state,awaiting_since,expects_reply_message_id,is_muted,analysis_hash,analyzed_at,prompt_version_id,topic_label,expires_at';
 const EVENT_COLUMNS =
@@ -286,6 +286,7 @@ export function supabaseMailStore(db: DbClient): MailStore {
           .select(EVENT_COLUMNS)
           .eq('user_id', userId)
           .is('provider_deleted_at', null)
+          .is('merged_into_id', null)
           .lt('start_at', to.toISOString())
           .gt('end_at', from.toISOString())
           .order('start_at'),
@@ -373,6 +374,7 @@ export function supabaseInsightStore(db: DbClient): InsightStore {
             .select(EVENT_COLUMNS)
             .eq('user_id', userId)
             .is('provider_deleted_at', null)
+            .is('merged_into_id', null)
             .gt('end_at', new Date(now.getTime() - 86_400_000).toISOString())
             .lt('start_at', new Date(now.getTime() + 8 * 86_400_000).toISOString())
             .order('start_at')
@@ -646,6 +648,7 @@ export function supabaseStatsStore(db: DbClient): StatsStore {
             .from('calendar_events')
             .select('id', { count: 'exact', head: true })
             .eq('user_id', userId)
+            .is('merged_into_id', null)
             .gte('start_at', from.toISOString())
             .lt('start_at', to.toISOString()),
         ),
@@ -743,6 +746,7 @@ export function supabaseStatsStore(db: DbClient): StatsStore {
           .select('start_at,end_at,status,all_day,attendee_count,is_online')
           .eq('user_id', userId)
           .is('provider_deleted_at', null)
+          .is('merged_into_id', null)
           .gte('start_at', f)
           .lt('start_at', t),
         db

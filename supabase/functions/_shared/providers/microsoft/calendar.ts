@@ -8,7 +8,10 @@
  *   allow-listed hosts; `transactionId` carries the approval id of events we created;
  * - writes: create with `transactionId = approvalId` (Graph de-duplicates) plus the `da_approval_id`
  *   extended property; update with `If-Match` (412 → `precondition_failed`) and `da_last_approval_id`;
- *   the probe matches `transactionId` inside a calendarView window.
+ *   the probe matches `transactionId` inside a calendarView window;
+ * - attendee availability with `POST /me/calendar/getSchedule` (`Calendars.Read`; KPL-46): busy,
+ *   tentative and out-of-office items are busy; `ErrorMailRecipientNotFound` → `not_found`, no
+ *   free/busy access (outside the organisation) → `not_shared`.
  */
 import {
   type CalendarChangeSet,
@@ -17,6 +20,9 @@ import {
   type CalendarWindow,
   checkConferencingUrl,
   type EventPatchSpec,
+  type FreeBusyAnswer,
+  type FreeBusyError,
+  type FreeBusyQuery,
   type EventTime,
   type EventWriteSpec,
   type IdempotencyMarker,
@@ -173,12 +179,108 @@ function toGraphTime(time: EventTime): { dateTime: string; timeZone: string } {
   return { dateTime: time.dateTime.replace(/Z$/, ''), timeZone: 'UTC' };
 }
 
+interface GraphScheduleItem {
+  readonly status?: string;
+  readonly start?: { dateTime?: string; timeZone?: string };
+  readonly end?: { dateTime?: string; timeZone?: string };
+}
+
+interface GraphSchedule {
+  readonly scheduleId?: string;
+  readonly availabilityView?: string;
+  readonly scheduleItems?: readonly GraphScheduleItem[];
+  readonly error?: { responseCode?: string };
+}
+
+const BUSY_STATUSES = new Set(['busy', 'tentative', 'oof']);
+/** `availabilityView` digits: 0 free, 1 tentative, 2 busy, 3 out of office, 4 working elsewhere. */
+const BUSY_DIGITS = new Set(['1', '2', '3']);
+export const GETSCHEDULE_INTERVAL_MIN = 15;
+
+/** A UTC wall time as Graph returns it (`2026-10-05T11:00:00.0000000`, `timeZone: 'UTC'`). */
+function utcIso(value: string | undefined): string | null {
+  if (value === undefined || value === '') return null;
+  return isoOrNull(/(Z|[+-]\d{2}:?\d{2})$/.test(value) ? value : `${value}Z`);
+}
+
+function scheduleError(code: string | undefined): FreeBusyError {
+  if (code === 'ErrorMailRecipientNotFound' || code === 'ErrorInvalidSmtpAddress')
+    return 'not_found';
+  if (/FreeBusy|Proxy|AccessDenied|NotAllowed/i.test(code ?? '')) return 'not_shared';
+  return 'unavailable';
+}
+
+/** `getSchedule` response → one answer per requested address (lower-case). */
+export function normalizeGraphSchedule(
+  emails: readonly string[],
+  window: CalendarWindow,
+  res: { value?: readonly GraphSchedule[] },
+): FreeBusyAnswer[] {
+  const byId = new Map((res.value ?? []).map((s) => [(s.scheduleId ?? '').toLowerCase(), s]));
+  return emails.map((raw) => {
+    const email = raw.toLowerCase();
+    const schedule = byId.get(email);
+    if (schedule === undefined) return { email, busy: [], error: 'unavailable' as const };
+    if (schedule.error !== undefined)
+      return { email, busy: [], error: scheduleError(schedule.error.responseCode) };
+    const busy: CalendarWindow[] = [];
+    if (schedule.scheduleItems !== undefined) {
+      for (const item of schedule.scheduleItems) {
+        if (!BUSY_STATUSES.has((item.status ?? '').toLowerCase())) continue;
+        const start = utcIso(item.start?.dateTime);
+        const end = utcIso(item.end?.dateTime);
+        if (start !== null && end !== null && Date.parse(end) > Date.parse(start))
+          busy.push({ start, end });
+      }
+    } else {
+      const view = schedule.availabilityView ?? '';
+      const origin = Date.parse(window.start);
+      for (let i = 0; i < view.length; i++) {
+        if (!BUSY_DIGITS.has(view[i] ?? '')) continue;
+        const start = origin + i * GETSCHEDULE_INTERVAL_MIN * 60_000;
+        busy.push({
+          start: new Date(start).toISOString(),
+          end: new Date(
+            Math.min(start + GETSCHEDULE_INTERVAL_MIN * 60_000, Date.parse(window.end)),
+          ).toISOString(),
+        });
+      }
+    }
+    return { email, busy, error: null };
+  });
+}
+
 export class GraphCalendarAdapter implements CalendarProvider {
   readonly provider = 'microsoft' as const;
   constructor(
     private readonly graph: GraphClient,
     private readonly subscriptions: GraphSubscriptions,
   ) {}
+
+  async freeBusy(ctx: ProviderContext, q: FreeBusyQuery): Promise<FreeBusyAnswer[]> {
+    const emails = [...new Set(q.emails.map((e) => e.trim().toLowerCase()))]
+      .filter((e) => e !== '')
+      .slice(0, 20);
+    if (emails.length === 0) return [];
+    const utc = (iso: string) => new Date(iso).toISOString().replace(/Z$/, '');
+    const res = await this.graph.json<{ value?: GraphSchedule[] }>(
+      ctx,
+      '/me/calendar/getSchedule',
+      {
+        method: 'POST',
+        prefer: ['outlook.timezone="UTC"'],
+        priority: 'interactive',
+        idempotent: true,
+        body: {
+          schedules: emails,
+          startTime: { dateTime: utc(q.window.start), timeZone: 'UTC' },
+          endTime: { dateTime: utc(q.window.end), timeZone: 'UTC' },
+          availabilityViewInterval: GETSCHEDULE_INTERVAL_MIN,
+        },
+      },
+    );
+    return normalizeGraphSchedule(emails, q.window, res);
+  }
 
   async listCalendars(ctx: ProviderContext): Promise<NormalizedCalendar[]> {
     const res = await this.graph.json<{

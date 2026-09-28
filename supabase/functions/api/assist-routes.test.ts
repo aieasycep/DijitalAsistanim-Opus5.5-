@@ -32,6 +32,10 @@ import type { IntelApi } from './routes/intel-api.ts';
 import type { AssistApi } from './routes/assist-api.ts';
 import type { RequestRepos } from './deps.ts';
 import type { AiDataAccess } from '../_shared/policy/data-access.ts';
+import type { IntegrationRuntime } from '../_shared/services/integrations/runtime.ts';
+import { activeDemoAccount, integrationHarness } from '../_shared/testing/integrations.ts';
+import { PEOPLE } from '../_shared/providers/demo/fixtures/index.ts';
+import { verifyStoredAttachmentRef } from '../_shared/services/integrations/attachments.ts';
 
 const M1 = '11111111-1111-4111-8111-000000000001';
 const T1 = '11111111-1111-4111-8111-000000000002';
@@ -84,9 +88,12 @@ async function setup(
     pro?: boolean;
     flags?: Record<string, boolean>;
     omit?: NonNullable<Parameters<typeof assistFixture>[1]>['omit'];
+    integrations?: IntegrationRuntime;
   } = {},
 ): Promise<Setup> {
-  const h = await createHarness();
+  const h = await createHarness(
+    options.integrations === undefined ? {} : { integrations: options.integrations },
+  );
   const pro = options.pro ?? true;
   if (pro) h.business.gate.plans.set(USER_A, 'pro');
   const mem = new MemoryIntel();
@@ -1150,6 +1157,456 @@ Deno.test(
       { key: key() },
     );
     assertEquals((await ignored.json()).data.insight_status, 'dismissed');
+  },
+);
+
+/** A conflict of the organiser's EVENT (connected through `accountId`) with a foreign meeting. */
+function conflictWith(s: Setup, accountId: string, attendees: MeetingEventRow['attendees']) {
+  const other = '11111111-1111-4111-8111-000000000010';
+  s.fx.store.meetingEvents[0] = event({
+    connected_account_id: accountId,
+    attendees,
+    attendee_count: attendees.length + 1,
+  });
+  s.fx.store.meetingEvents.push(
+    event({
+      id: other,
+      title: 'Müşteri ziyareti',
+      organizer_self: false,
+      can_modify: false,
+      organizer_email: 'mehmet@yilmazendustri.example',
+    }),
+  );
+  const insightId = uuid();
+  s.fx.store.planInsights.push({
+    id: insightId,
+    user_id: USER_A,
+    kind: 'conflict',
+    status: 'open',
+    title: 'Çakışma',
+    entity_type: 'calendar_event',
+    entity_id: EVENT,
+    dedupe_key: `conflict:calendar_event:${EVENT}:${EVENT}:${other}:1:2`,
+    suppression_key: null,
+    evidence: [],
+    payload: null,
+    source_type: 'calendar_event',
+    source_id: EVENT,
+    source_provider: 'google',
+    source_timestamp: NOW.toISOString(),
+  });
+  return insightId;
+}
+
+interface OptionOut {
+  option_id: string;
+  kind: string;
+  description: string;
+  proposed_slot?: { start: string; end: string } | null;
+  feasibility: {
+    organizer: boolean;
+    attendee_availability: string;
+    availability_reason?: string;
+    attendees?: { email: string; status: string; reason: string | null }[];
+  };
+}
+
+Deno.test(
+  'API-PLAN-03 (KPL-46): a move option proposes a slot with provider free/busy; resolve proposes that slot',
+  async () => {
+    const ih = await integrationHarness({ now: NOW });
+    const account = await activeDemoAccount(ih, {
+      userId: USER_A,
+      capabilities: ['calendar_read', 'calendar_freebusy'],
+      status: 'healthy',
+    });
+    const s = await setup({ integrations: ih.runtime });
+    // The approvals side knows the demo account and its calendar (the event's own account).
+    s.h.workflow.approvals.addAccount({
+      id: account.id,
+      userId: USER_A,
+      provider: 'demo',
+      can: ['calendar_read', 'calendar_write', 'calendar_freebusy'],
+    });
+    s.h.workflow.approvals.calendars.set(CAL, {
+      id: CAL,
+      user_id: USER_A,
+      connected_account_id: account.id,
+      provider: 'demo',
+      provider_calendar_id: 'demo-cal-is',
+      name: 'İş',
+      can_write: true,
+    });
+    s.h.workflow.approvals.calendarEvents.set(EVENT, {
+      id: EVENT,
+      user_id: USER_A,
+      connected_account_id: account.id,
+      calendar_id: CAL,
+      provider: 'demo',
+      provider_event_id: 'demo-evt-1',
+      etag: null,
+      title: 'Teklif görüşmesi',
+      location: null,
+      start_at: event().start_at,
+      end_at: event().end_at,
+      all_day: false,
+      start_date: null,
+      end_date: null,
+      time_zone: 'Europe/Istanbul',
+      status: 'confirmed',
+      organizer_self: true,
+      attendee_count: 3,
+      provider_deleted_at: null,
+    });
+    const insightId = conflictWith(s, account.id, [
+      { email: 'yunus@firma.example', self: true, response: 'accepted' },
+      { email: PEOPLE.mehmet.email, name: 'Mehmet Yılmaz', response: 'accepted' },
+      { email: 'yabanci@ornek.example', name: null, response: 'needs_action' },
+    ]);
+    const res = await s.request('POST', `/plan/conflicts/${insightId}/options`, {});
+    assertEquals(res.status, 200);
+    const data = (await res.json()).data as {
+      options: OptionOut[];
+      availability_upgrade: unknown;
+    };
+    assertEquals(data.availability_upgrade, null);
+    const move = data.options.find((o) => o.kind === 'move_event');
+    assertExists(move);
+    assertExists(move.proposed_slot);
+    assertEquals(
+      Date.parse(move.proposed_slot.end) - Date.parse(move.proposed_slot.start),
+      3_600_000,
+      'the event keeps its duration',
+    );
+    assertEquals(move.feasibility.availability_reason, 'partial');
+    assertEquals(move.feasibility.attendee_availability, 'unknown');
+    const lines = move.feasibility.attendees ?? [];
+    assertEquals(
+      lines.map((l) => [l.email, l.status, l.reason]),
+      [
+        [PEOPLE.mehmet.email, 'free', null],
+        ['yabanci@ornek.example', 'unknown', 'not_shared'],
+      ],
+      'Mehmet answered free (the slot avoids his demo meetings); the outsider is never guessed',
+    );
+    assert(!JSON.stringify(data).includes('event_id'), 'resolution data stays server-side');
+    for (const o of data.options.filter((x) => x.kind !== 'move_event')) {
+      assertEquals(o.feasibility.availability_reason, 'not_applicable');
+    }
+    const resolved = await s.request(
+      'POST',
+      `/plan/conflicts/${insightId}/resolve`,
+      { option_id: move.option_id },
+      { key: key() },
+    );
+    assertEquals(resolved.status, 200, await resolved.clone().text());
+    const approval = (await resolved.json()).data.approval;
+    assertEquals(approval.action_type, 'calendar_update');
+    const approvalRow = s.h.workflow.approvals.rows.get(approval.id);
+    const time = (approvalRow?.payload as { changes?: { time?: { start: string; end: string } } })
+      .changes?.time;
+    assertEquals([time?.start, time?.end], [move.proposed_slot.start, move.proposed_slot.end]);
+  },
+);
+
+Deno.test(
+  'API-PLAN-03 (KPL-46): without the free/busy grant the options ask for the upgrade; no runtime → unknown',
+  async () => {
+    const ih = await integrationHarness({ now: NOW });
+    const account = await activeDemoAccount(ih, {
+      userId: USER_A,
+      capabilities: ['calendar_read'],
+      status: 'healthy',
+    });
+    const s = await setup({ integrations: ih.runtime });
+    const insightId = conflictWith(s, account.id, [
+      { email: PEOPLE.mehmet.email, name: 'Mehmet Yılmaz', response: 'accepted' },
+    ]);
+    const data = (
+      await (await s.request('POST', `/plan/conflicts/${insightId}/options`, {})).json()
+    ).data as { options: OptionOut[]; availability_upgrade: unknown };
+    assertEquals(data.availability_upgrade, {
+      account_id: account.id,
+      provider: 'google',
+      capability: 'calendar_freebusy',
+    });
+    const move = data.options.find((o) => o.kind === 'move_event');
+    assertEquals(
+      [move?.feasibility.attendee_availability, move?.feasibility.availability_reason],
+      ['unknown', 'scope_missing'],
+    );
+    // Options waiting for the grant are not served from the 5-minute cache: after the upgrade the
+    // next call states availability.
+    ih.store.accounts.get(account.id)!.capabilities_granted = [
+      'calendar_read',
+      'calendar_freebusy',
+    ];
+    const again = (
+      await (await s.request('POST', `/plan/conflicts/${insightId}/options`, {})).json()
+    ).data as { options: OptionOut[]; availability_upgrade: unknown };
+    assertEquals(again.availability_upgrade, null);
+    assert(
+      again.options.find((o) => o.kind === 'move_event')?.feasibility.availability_reason !==
+        'scope_missing',
+    );
+
+    const bare = await setup();
+    const bareId = conflictWith(bare, ACCOUNT_ID, [
+      { email: 'mehmet@yilmazendustri.example', name: 'Mehmet', response: 'accepted' },
+    ]);
+    const plain = (
+      await (await bare.request('POST', `/plan/conflicts/${bareId}/options`, {})).json()
+    ).data as { options: OptionOut[] };
+    assertEquals(
+      plain.options.find((o) => o.kind === 'move_event')?.feasibility.availability_reason,
+      'provider_unavailable',
+    );
+  },
+);
+
+Deno.test(
+  'API-MEET-01 (DEV-41, KPL-15): "İLGİLİ DOSYALAR" from attendee mails; a merged duplicate id stands for its canonical event',
+  async () => {
+    const ih = await integrationHarness({ now: NOW });
+    const s = await setup({ integrations: ih.runtime });
+    const mailWithFile = uuid();
+    s.fx.mem.messages.push(
+      messageRow({
+        id: mailWithFile,
+        thread_id: T1,
+        from_email: 'mehmet@yilmazendustri.example',
+        subject: 'Sözleşme taslağı',
+        received_at: new Date(NOW.getTime() - 86_400_000).toISOString(),
+        has_attachments: true,
+        attachment_meta: [
+          {
+            name: 'Hizmet_Sozlesmesi_v3.pdf',
+            mime: 'application/pdf',
+            size: 48211,
+            provider_attachment_id: 'att-1',
+            kind: 'file',
+          },
+          {
+            name: 'Toplantı',
+            mime: 'message/rfc822',
+            size: 10,
+            provider_attachment_id: 'i',
+            kind: 'item',
+          },
+        ],
+      }),
+    );
+    const job = await runMeetingPrep(
+      s.fx.jobs,
+      jobContext({ user_id: USER_A, calendar_event_id: EVENT, trigger: 'user' } as never, {
+        type: 'meeting_prep',
+      }),
+    );
+    assert('prep_id' in job, JSON.stringify(job));
+    const stored = s.fx.store.preps.find((p) => p.calendar_event_id === EVENT);
+    assertEquals(stored?.relevant_files, [
+      { email_message_id: mailWithFile, index: 0, name: 'Hizmet_Sozlesmesi_v3.pdf' },
+    ]);
+    // A link naming a merged copy of the meeting resolves to the canonical event.
+    const duplicate = '11111111-1111-4111-8111-000000000011';
+    s.fx.store.meetingEvents.push(
+      event({ id: duplicate, provider: 'apple_device', merged_into_id: EVENT }),
+    );
+    const res = await s.request(
+      'POST',
+      `/meetings/${duplicate}/prep`,
+      { refresh: false },
+      { key: key() },
+    );
+    assertEquals(res.status, 200, await res.clone().text());
+    const prep = (await res.json()).data.prep;
+    assertEquals(prep.calendar_event_id, EVENT);
+    assertEquals(prep.relevant_files.length, 1);
+    assertEquals(prep.relevant_files[0].name, 'Hizmet_Sozlesmesi_v3.pdf');
+    assertEquals(
+      await verifyStoredAttachmentRef(
+        ih.runtime.config.pepper,
+        prep.relevant_files[0].attachment_ref,
+        NOW,
+      ),
+      { messageId: mailWithFile, index: 0 },
+    );
+    // The scheduler never prepares a merged copy.
+    const skipped = await runMeetingPrep(
+      s.fx.jobs,
+      jobContext({ user_id: USER_A, calendar_event_id: duplicate, trigger: 'schedule' } as never, {
+        type: 'meeting_prep',
+      }),
+    );
+    assertEquals(skipped, { skipped: 'merged_duplicate' });
+    // With the attachments Data Source Control off, no file is listed.
+    const user = await s.fx.ai.services.users.load(USER_A);
+    s.fx.ai.users.set(USER_A, { ...user, dataAccess: { ...user.dataAccess, attachments: false } });
+    const off = await s.request(
+      'POST',
+      `/meetings/${EVENT}/prep`,
+      { refresh: false },
+      { key: key() },
+    );
+    assertEquals((await off.json()).data.prep.relevant_files, []);
+  },
+);
+
+/** An integration runtime whose mail adapter serves one stored PDF attachment. */
+async function attachmentRuntime() {
+  const ih = await integrationHarness({ now: NOW });
+  const account = await activeDemoAccount(ih, { userId: USER_A, status: 'healthy' });
+  const [row] = await ih.store.upsertMail(account.id, [
+    {
+      provider_message_id: 'pm-att',
+      provider_thread_id: 'pt-att',
+      internet_message_id: null,
+      in_reply_to: null,
+      references_ids: [],
+      direction: 'inbound',
+      from_email: 'mehmet@yilmazendustri.example',
+      from_name: 'Mehmet',
+      to_emails: ['yunus@firma.example'],
+      cc_emails: [],
+      subject: 'Sözleşme',
+      snippet: 'Ekte',
+      sent_at: null,
+      received_at: NOW.toISOString(),
+      is_read: false,
+      importance: null,
+      labels: [],
+      has_attachments: true,
+      list_unsubscribe: false,
+      auto_submitted: false,
+      precedence_bulk: false,
+      dkim_pass: null,
+      spf_pass: null,
+      content_hash: 'c'.repeat(64),
+      web_link: null,
+      thread_web_link: null,
+      deleted: false,
+    },
+  ]);
+  assertExists(row);
+  await ih.store.setAttachmentMeta(row.id, [
+    {
+      name: 'Hizmet_Sozlesmesi_v3.pdf',
+      mime: 'application/pdf',
+      size: 9,
+      provider_attachment_id: 'att-1',
+      kind: 'file',
+    },
+    {
+      name: 'bilet.pkpass',
+      mime: 'application/vnd.apple.pkpass',
+      size: 20480,
+      provider_attachment_id: 'att-2',
+      kind: 'file',
+    },
+  ]);
+  const downloads: string[] = [];
+  const runtime: IntegrationRuntime = {
+    ...ih.runtime,
+    providers: {
+      available: () => ['demo'],
+      resolve: () =>
+        ({
+          oauth: {},
+          mail: {
+            getAttachment: (_ctx: unknown, _m: string, id: string) => {
+              downloads.push(id);
+              return Promise.resolve({
+                bytes: new TextEncoder().encode('%PDF-1.7\n'),
+                mimeType: 'application/octet-stream',
+              });
+            },
+          },
+        }) as never,
+    },
+  };
+  return { ih, runtime, messageId: row.id, downloads };
+}
+
+Deno.test(
+  'API-MAIL-09 + API-CAP-02 (M-CAP-03): attachment refs from stored metadata import a PDF through the provider',
+  async () => {
+    const rt = await attachmentRuntime();
+    const s = await setup({ integrations: rt.runtime });
+    const res = await s.request('GET', `/mail/${rt.messageId}/attachments`);
+    assertEquals(res.status, 200, await res.clone().text());
+    assertEquals(res.headers.get('Cache-Control'), 'no-store');
+    const data = (await res.json()).data as {
+      attachments: {
+        attachment_ref: string;
+        name: string;
+        capturable: boolean;
+        blocked_reason: string | null;
+      }[];
+      source: string;
+    };
+    assertEquals(data.source, 'stored');
+    assertEquals(
+      data.attachments.map((a) => [a.name, a.capturable, a.blocked_reason]),
+      [
+        ['Hizmet_Sozlesmesi_v3.pdf', true, null],
+        ['bilet.pkpass', false, 'unsupported_type'],
+      ],
+    );
+    assertEquals(rt.downloads, [], 'listing fetches no content');
+    const created = await s.request('POST', '/captures', {
+      client_capture_id: crypto.randomUUID(),
+      share_origin: 'in_app',
+      source: {
+        kind: 'file',
+        from_email_attachment: {
+          email_message_id: rt.messageId,
+          attachment_ref: data.attachments[0]!.attachment_ref,
+        },
+      },
+    });
+    assertEquals(created.status, 201, await created.clone().text());
+    const capture = (await created.json()).data;
+    assertEquals([capture.kind, capture.status], ['pdf', 'uploaded']);
+    assertEquals(rt.downloads, ['att-1']);
+    const row = s.fx.store.captures.find((c) => c.id === capture.id);
+    assertEquals(
+      [row?.mime_type, row?.original_filename],
+      ['application/pdf', 'Hizmet_Sozlesmesi_v3.pdf'],
+    );
+    assert(row?.storage_path?.startsWith(`${USER_A}/${capture.id}/`));
+    assert(s.fx.storage.objects.size >= 1);
+    // A ref bound to another message is refused; an unsupported type is never downloaded.
+    const foreign = await s.request('POST', '/captures', {
+      client_capture_id: crypto.randomUUID(),
+      share_origin: 'in_app',
+      source: {
+        kind: 'file',
+        from_email_attachment: {
+          email_message_id: uuid(),
+          attachment_ref: data.attachments[0]!.attachment_ref,
+        },
+      },
+    });
+    assertEquals((await foreign.json()).error.code, 'UPLOAD_INVALID');
+    const pass = await s.request('POST', '/captures', {
+      client_capture_id: crypto.randomUUID(),
+      share_origin: 'in_app',
+      source: {
+        kind: 'file',
+        from_email_attachment: {
+          email_message_id: rt.messageId,
+          attachment_ref: data.attachments[1]!.attachment_ref,
+        },
+      },
+    });
+    assertEquals((await pass.json()).error.code, 'UNSUPPORTED_MEDIA_TYPE');
+    assertEquals(rt.downloads, ['att-1']);
+    // The attachments Data Source Control off → nothing is listed or imported.
+    const user = await s.fx.ai.services.users.load(USER_A);
+    s.fx.ai.users.set(USER_A, { ...user, dataAccess: { ...user.dataAccess, attachments: false } });
+    const off = await s.request('GET', `/mail/${rt.messageId}/attachments`);
+    assertEquals([off.status, (await off.json()).error.code], [403, 'DATA_SOURCE_DISABLED']);
+    assertEquals((await s.request('GET', `/mail/${uuid()}/attachments`)).status, 403);
   },
 );
 

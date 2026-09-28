@@ -130,7 +130,8 @@
       "calendar_read": "Read the calendar",
       "calendar_write": "Add calendar events",
       "tasks_read": "Read tasks",
-      "tasks_write": "Add tasks"
+      "tasks_write": "Add tasks",
+      "calendar_freebusy": "See attendees' free/busy times"
     }
   },
   "footer": {

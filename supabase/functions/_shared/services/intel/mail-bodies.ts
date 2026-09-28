@@ -5,8 +5,11 @@
  * source (`_shared/providers/token-source.ts`) and the account's provider quota. The body is
  * returned to the caller only: never stored, never logged. Accounts that are disconnected, need
  * re-authentication or have `mail_read` off yield `null` (the pipeline degrades to metadata).
+ * `attachments` lists attachment metadata only (Gmail parts-only field mask, Graph
+ * `messages/{id}/attachments?$select=…`) for kept messages whose body was not fetched.
  */
-import type { Provider, TransientMailBody } from '@da/domain';
+import type { MailAttachmentMeta, Provider, TransientMailBody } from '@da/domain';
+import { providerAttachments } from '../integrations/attachments.ts';
 import type { Logger } from '../../logging/logger.ts';
 import { isServerProvider, providerContextFor } from '../integrations/context.ts';
 import type { IntegrationRuntime } from '../integrations/runtime.ts';
@@ -33,6 +36,21 @@ export function integrationMailBodySource(rt: IntegrationRuntime, log: Logger): 
       return await adapters.mail.getMessageBody(ctx, input.providerMessageId, {
         maxBytes: input.maxBytes,
       });
+    },
+    async attachments(input): Promise<MailAttachmentMeta[] | null> {
+      if (!isServerProvider(input.provider as Provider)) return null;
+      const account = await rt.store.getAccount(input.accountId);
+      if (account === null || account.user_id !== input.userId) return null;
+      if (!READABLE_STATUSES.has(account.status) || !togglesOf(account).mail_read) return null;
+      const adapters = rt.providers.resolve(account.provider as 'google' | 'microsoft' | 'demo');
+      if (adapters.mail === undefined) return null;
+      const ctx = await providerContextFor(rt, account, {
+        owner: `mail_attachments:${input.correlationId}`,
+        correlationId: input.correlationId,
+        log,
+        ...(input.signal === undefined ? {} : { signal: input.signal }),
+      });
+      return await providerAttachments(adapters.mail, ctx, input.providerMessageId);
     },
   };
 }

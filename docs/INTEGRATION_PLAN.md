@@ -660,12 +660,14 @@ export class ProviderError extends Error {
 | google | `calendar_write` | `…/auth/calendar.events.owned`; if it is refused on the consent screen, `…/auth/calendar.events` [verify availability on consent screen] | sensitive | "Etkinlik oluşturma/taşıma (onaylı)" |
 | google | `tasks_read` | `…/auth/tasks.readonly` | sensitive | "Görevleri okuma" |
 | google | `tasks_write` | `…/auth/tasks` | sensitive | "Görev oluşturma (onaylı)" |
+| google | `calendar_freebusy` | `…/auth/calendar.events.freebusy` (progressive, from the conflict options only; `calendar.readonly` or `calendar` also satisfy it) | sensitive | "Katılımcıların dolu/boş saatleri (çakışma seçenekleri)" |
 | microsoft | identity + `mail_read` | `openid profile email offline_access User.Read Mail.Read` | user-consentable [OFF] | "Mailleri okuma" |
 | microsoft | `mail_send` | `Mail.Send` | user-consentable | "Gönderme (onaylı)" |
 | microsoft | `calendar_read` | `Calendars.Read` (+ `offline_access`) | user-consentable | "Takvimi okuma" |
 | microsoft | `calendar_write` | `Calendars.ReadWrite` | user-consentable | "Etkinlik oluşturma/taşıma (onaylı)" |
 | microsoft | `tasks_read` | `Tasks.Read` | user-consentable | "Görevleri okuma" |
 | microsoft | `tasks_write` | `Tasks.ReadWrite` | user-consentable | "Görev oluşturma (onaylı)" |
+| microsoft | `calendar_freebusy` | `Calendars.Read` (`calendar/getSchedule`; held with `calendar_read`) | user-consentable | "Katılımcıların dolu/boş saatleri (çakışma seçenekleri)" |
 
 Rules:
 - **Never requested:** `gmail.compose`, `gmail.modify`, `gmail.metadata` (it is restricted as well and blocks `q`), `https://mail.google.com/`, `Mail.ReadWrite`, `Mail.ReadBasic`, `Calendars.Read.Shared` and any Graph application permission.
@@ -1343,7 +1345,7 @@ The scopes are listed in §2.11. Gmail `gmail.readonly` is **restricted**, which
 | Watch | `events.watch(calendarId, {id: uuid, type:"web_hook", address:"https://api.dijitalasistan.app/functions/v1/webhooks-google/calendar", token: base64url(HMAC-SHA256(WEBHOOK_HMAC_SECRET, channelId)), params:{ttl:"604800"}})`. Store `resourceId` and `expiration`. Renew when <24 h is left: create the new channel, then `channels.stop` the old one. |
 | Push verification | Recompute the HMAC from `X-Goog-Channel-ID` and compare constant-time with `X-Goog-Channel-Token`. `X-Goog-Resource-ID` must equal the stored `watch_resource_id`. `X-Goog-Resource-State: sync` → 200, ignored. `exists` / `not_exists` → coalesced `calendar_sync`. `external_id = channelId + ':' + X-Goog-Message-Number`. If channel creation fails with an unauthorized-webhook error, verify `api.dijitalasistan.app` in Search Console [verify]. |
 | Write | §3.12. `calendar_write` targets calendars with `access_role='owner'` (the `events.owned` scope). `sendUpdates` defaults to `none` when there are no attendees, and to `all` when the approval lists attendees (disclosed). Google warns that `none` "can have significant adverse effects" when attendees exist, so `none` is never used with attendees [OFF]. |
-| Attendee availability | Not checked; no free/busy scope is requested. The conflict UI states "Katılımcıların uygunluğu kontrol edilemiyor." (SREQ-20, M§91). |
+| Attendee availability | As built (KNOWN_PLATFORM_LIMITATIONS KPL-46): `POST /calendar/v3/freeBusy` for the event's other attendees with the progressive `calendar_freebusy` capability (`calendar.events.freebusy`), requested from the conflict screen's "Uygunluğu göster" only. `notFound` → `not_shared`; `groupTooBig` / `tooManyCalendarsRequested` → `too_many`; anyone not answered stays unknown. Nothing is inferred (SREQ-20, M§91). Graph uses `POST /me/calendar/getSchedule` under `Calendars.Read`. |
 
 ### 4.6 Google Tasks
 

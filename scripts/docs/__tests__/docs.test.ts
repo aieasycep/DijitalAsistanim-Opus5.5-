@@ -181,7 +181,7 @@ test('the static model agrees with database.types.ts and keeps every public tabl
   assert.equal(effectiveColumns(deletion, 'authenticated', 'select').includes('status_token_hash'), false);
   assert.equal(model.cronJobs.length, 8);
   const facts = modelFacts(model);
-  assert.equal(facts.functions.filter((f) => f.startsWith('public.') && f.endsWith(':authenticated')).length, 25);
+  assert.equal(facts.functions.filter((f) => f.startsWith('public.') && f.endsWith(':authenticated')).length, 26);
 });
 
 test('do-block loops expand like the database would run them', () => {

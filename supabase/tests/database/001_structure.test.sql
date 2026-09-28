@@ -118,7 +118,7 @@ select enums_are(
   'public has exactly the canonical enums (DATABASE_AND_RLS_PLAN §2)'
 );
 select enum_has_labels('public', 'provider', array['google', 'microsoft', 'apple_device', 'android_device', 'demo']);
-select enum_has_labels('public', 'capability', array['mail_read', 'mail_send', 'calendar_read', 'calendar_write', 'tasks_read', 'tasks_write']);
+select enum_has_labels('public', 'capability', array['mail_read', 'mail_send', 'calendar_read', 'calendar_write', 'tasks_read', 'tasks_write', 'calendar_freebusy']);
 select enum_has_labels('public', 'account_status', array['connecting', 'healthy', 'syncing', 'partial', 'needs_reauth', 'admin_consent_required', 'error', 'disconnected']);
 select enum_has_labels('public', 'mail_category', array['important', 'awaiting_my_reply', 'awaiting_their_reply', 'has_deadline', 'informational', 'low_priority']);
 select enum_has_labels('public', 'decision_tier', array['explicit_rule', 'learned_preference', 'deterministic_signal', 'ai_classification']);

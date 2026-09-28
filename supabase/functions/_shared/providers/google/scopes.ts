@@ -1,6 +1,9 @@
 /**
  * Google capability ↔ scope registry (INTEGRATION_PLAN §2.11; API_CONTRACTS §7). Least privilege:
  * read scopes at connect, write scopes only at the first approved write (progressive upgrade).
+ * `calendar_freebusy` (`calendar.events.freebusy`: availability of the calendars the user can see,
+ * KPL-46) is requested only through the progressive upgrade the conflict options offer;
+ * `calendar.events.readonly` does not cover `freeBusy.query` for other people.
  * Never requested: gmail.compose, gmail.modify, gmail.metadata, https://mail.google.com/.
  */
 import type { Capability } from '@da/domain';
@@ -21,6 +24,7 @@ export const GOOGLE_CAPABILITY_SCOPES: Readonly<Record<Capability, readonly stri
   calendar_write: [`${G}calendar.events.owned`],
   tasks_read: [`${G}tasks.readonly`],
   tasks_write: [`${G}tasks`],
+  calendar_freebusy: [`${G}calendar.events.freebusy`],
 };
 
 /** Broader grants that also satisfy a capability (a user may hold them from an earlier consent). */
@@ -28,6 +32,7 @@ const ALTERNATIVES: Partial<Readonly<Record<Capability, readonly (readonly strin
   calendar_read: [[`${G}calendar.readonly`], [`${G}calendar`]],
   calendar_write: [[`${G}calendar.events`], [`${G}calendar`]],
   tasks_read: [[`${G}tasks`]],
+  calendar_freebusy: [[`${G}calendar.readonly`], [`${G}calendar`]],
 };
 
 const ORDER: readonly Capability[] = [
@@ -37,6 +42,7 @@ const ORDER: readonly Capability[] = [
   'calendar_write',
   'tasks_read',
   'tasks_write',
+  'calendar_freebusy',
 ];
 
 export function googleScopesFor(

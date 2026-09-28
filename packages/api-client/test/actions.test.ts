@@ -10,6 +10,8 @@ import {
   discardReplyDraftMutationOptions,
   forceAnalysisMutationOptions,
   freeSlotsQueryOptions,
+  MAIL_ATTACHMENTS_GC_TIME_MS,
+  mailAttachmentsQueryOptions,
   mailOriginalQueryOptions,
   meetingPrepAudioQueryOptions,
   meetingPrepQueryOptions,
@@ -212,6 +214,36 @@ describe('query factories', () => {
     const data = await new QueryClient().query(options);
     expect(data.body.content).toBe('Merhaba');
     expect(mock.calls[0]?.url).toContain(`/mail/${uuid(21)}/original?remote_images=blocked`);
+  });
+
+  it('lists mail attachments (API-MAIL-09) in memory only, refs reused for 30 min', async () => {
+    const mock = mockFetch(() =>
+      json(
+        200,
+        ok({
+          message_id: uuid(22),
+          attachments: [
+            {
+              attachment_ref: `v2.${uuid(22)}.0.1790000000.${'A'.repeat(32)}`,
+              name: 'Hizmet_Sozlesmesi_v3.pdf',
+              mime: 'application/pdf',
+              size_bytes: 1200,
+              capturable: true,
+              blocked_reason: null,
+            },
+          ],
+          source: 'stored',
+          refs_expire_at: TS,
+        }),
+      ),
+    );
+    const options = mailAttachmentsQueryOptions(api(mock.fn), uuid(22));
+    expect(options.meta).toBeUndefined();
+    expect(options.gcTime).toBe(MAIL_ATTACHMENTS_GC_TIME_MS);
+    expect(options.queryKey).toEqual(['mail', 'attachments', uuid(22)]);
+    const data = await new QueryClient().query(options);
+    expect(data.attachments[0]?.capturable).toBe(true);
+    expect(mock.calls[0]?.url).toContain(`/mail/${uuid(22)}/attachments`);
   });
 
   it('builds the free-slot, conflict, prep and thread-summary requests', async () => {

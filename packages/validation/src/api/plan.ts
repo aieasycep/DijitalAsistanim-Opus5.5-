@@ -86,6 +86,31 @@ export const ConflictOptionKind = z.enum([
   'ignore',
 ]);
 export const ConflictOptionsBody = z.strictObject({});
+/** Attendee availability of an option (KPL-46): `free` = every other attendee answered free. */
+export const AttendeeAvailability = z.enum(['free', 'busy', 'unknown']);
+/**
+ * Why the availability is what it is: `checked` (every other attendee answered),
+ * `no_other_attendees`, `partial` (some answered, the rest did not share), `not_shared` (nobody
+ * shares free/busy with the user), `scope_missing` (the `calendar_freebusy` upgrade is needed),
+ * `device_calendar` (device events carry no attendee identities), `provider_unavailable`,
+ * `not_applicable` (the option does not set a new time).
+ */
+export const AvailabilityReason = z.enum([
+  'checked',
+  'no_other_attendees',
+  'partial',
+  'not_shared',
+  'scope_missing',
+  'device_calendar',
+  'provider_unavailable',
+  'not_applicable',
+]);
+export const AttendeeAvailabilityLine = z.object({
+  email: z.string().max(320),
+  name: z.string().max(200).nullable(),
+  status: AttendeeAvailability,
+  reason: z.enum(['not_found', 'not_shared', 'too_many', 'unavailable']).nullable(),
+});
 export const ConflictOptionsResponse = Success(
   z.object({
     conflict: z.object({
@@ -112,14 +137,27 @@ export const ConflictOptionsResponse = Success(
           description: z.string(),
           feasibility: z.object({
             organizer: z.boolean(),
-            attendee_availability: z.enum(['free', 'busy', 'unknown']),
+            attendee_availability: AttendeeAvailability,
+            availability_reason: AvailabilityReason.optional(),
+            attendees: z.array(AttendeeAvailabilityLine).max(20).optional(),
           }),
+          /** The new time a move option proposes (the free-slot finder's answer). */
+          proposed_slot: z.object({ start: IsoDateTime, end: IsoDateTime }).nullable().optional(),
           side_effects: z.array(z.string()),
           requires_capability: Capability.nullable(),
           pro_required: z.boolean(),
         }),
       )
       .max(6),
+    /** Set when a free/busy grant would let the options state attendee availability. */
+    availability_upgrade: z
+      .object({
+        account_id: Uuid,
+        provider: z.enum(['google', 'microsoft']),
+        capability: z.literal('calendar_freebusy'),
+      })
+      .nullable()
+      .optional(),
   }),
 );
 

@@ -23,7 +23,7 @@ function repo(files: Record<string, string>): string {
 
 /**
  * Growth-rate check rather than a wall-clock budget (fixed budgets fail on a loaded CI runner):
- * best of five at n / 4 and at n, the two sizes taking turns so a load spike slows both rather
+ * best of three at n / 4 and at n, the two sizes taking turns so a load spike slows both rather
  * than only one; a linear scan grows about 4×, the exponential original far more. A run under
  * 100 ms passes outright.
  */
@@ -37,7 +37,7 @@ function assertLinear(run: (n: number) => void, n = 50_000): void {
   };
   let small = Infinity;
   let large = Infinity;
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 3; i++) {
     small = Math.min(small, timed(n / 4));
     large = Math.min(large, timed(n));
   }

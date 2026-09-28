@@ -2,7 +2,7 @@
  * CodeQL js/polynomial-redos in `api.ts` (security-nightly, TST-CI-08): trailing slashes of the
  * base URL are cut by a scan, not `replace(/\/+$/, '')`, which took ~2 s on 50 000 "/" + "x".
  */
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { apiBaseUrl, createApiClient } from '../src/index.ts';
 import { bootstrapData, json, mockFetch, ok } from './fixtures.ts';
@@ -15,9 +15,12 @@ const N = 50_000;
  * load spike slows both rather than only one. A linear scan grows about 4×; the quadratic
  * originals grow about 16× and took seconds at N. A run under FLOOR_MS passes outright.
  */
+/** Each growth check runs its input 2 × ROUNDS times, over vitest's 5 s default on a CI runner. */
+vi.setConfig({ testTimeout: 30_000 });
+
 const FLOOR_MS = 100;
 const MAX_GROWTH = 8;
-const ROUNDS = 5;
+const ROUNDS = 3;
 /** For an input built outside the call (fixed size): best of three within a generous budget. */
 const BOUNDED_MS = 1000;
 

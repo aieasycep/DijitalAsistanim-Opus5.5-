@@ -86,6 +86,8 @@ export const qk = {
     threadSummary: (threadId: string) => ['mail', 'thread-summary', threadId] as const,
     /** Raw original body: memory only, never persisted (SCREEN_AND_FLOW_MAP Part 2 §0.7). */
     original: (id: string) => ['mail', 'original', id] as const,
+    /** API-MAIL-09 attachment metadata with 1-hour refs: memory only, never persisted. */
+    attachments: (id: string) => ['mail', 'attachments', id] as const,
   },
   replyDrafts: {
     all: ['reply-drafts'] as const,

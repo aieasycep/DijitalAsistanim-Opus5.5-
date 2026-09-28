@@ -180,6 +180,22 @@ export function mailOriginalQueryOptions(client: ApiClient, messageId: string) {
   });
 }
 
+/** API-MAIL-09 refs are valid for 1 hour: reuse them for 30 min, drop them after 50 min. */
+export const MAIL_ATTACHMENTS_STALE_MS = 30 * 60_000;
+export const MAIL_ATTACHMENTS_GC_TIME_MS = 50 * 60_000;
+
+/** API-MAIL-09: attachment metadata and capture refs of one mail (M-CAP-03, M-MAIL-03). */
+export function mailAttachmentsQueryOptions(client: ApiClient, messageId: string) {
+  return queryOptions({
+    queryKey: qk.mail.attachments(messageId),
+    queryFn: ({ signal }) =>
+      callRoute(client, 'GET /mail/:messageId/attachments', { params: { messageId } }, { signal }),
+    staleTime: MAIL_ATTACHMENTS_STALE_MS,
+    gcTime: MAIL_ATTACHMENTS_GC_TIME_MS,
+    retry: retryTransient(2),
+  });
+}
+
 /** API-MAIL-07: the thread summary (cached server-side; persisted as a derived field). */
 export function threadSummaryQueryOptions(client: ApiClient, threadId: string) {
   return queryOptions({

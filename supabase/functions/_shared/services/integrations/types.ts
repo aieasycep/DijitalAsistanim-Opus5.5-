@@ -325,6 +325,9 @@ export interface StoredMessage {
   readonly received_at: string;
   readonly web_link: string | null;
   readonly provider_deleted_at: string | null;
+  readonly has_attachments?: boolean;
+  /** `email_messages.attachment_meta` (metadata only; see services/integrations/attachments.ts). */
+  readonly attachment_meta?: unknown;
 }
 
 export interface DisconnectOutcome {
@@ -477,6 +480,17 @@ export interface IntegrationStore {
   ): Promise<{ label_changes: number; deleted: number }>;
   listRecentMessageIds(accountId: string, since: string): Promise<string[]>;
   getMessage(id: string): Promise<StoredMessage | null>;
+  /** Stores the attachment metadata of a message (API-MAIL-09 provider listing). */
+  setAttachmentMeta(
+    messageId: string,
+    meta: readonly {
+      name: string;
+      mime: string;
+      size: number;
+      provider_attachment_id: string;
+      kind: string;
+    }[],
+  ): Promise<void>;
   upsertEvents(
     accountId: string,
     calendarId: string,

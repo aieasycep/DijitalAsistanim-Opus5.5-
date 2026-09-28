@@ -84,7 +84,9 @@
       "calendar_write": "Etkinlik oluşturma ve taşıma (her seferinde onayınla)",
       "tasks_read": "Görevleri okuma",
       "tasks_write": "Görev oluşturma (her seferinde onayınla)",
-      "notRequested": "Henüz istenmedi · ilk onaylı işlemde istenir"
+      "notRequested": "Henüz istenmedi · ilk onaylı işlemde istenir",
+      "calendar_freebusy": "Katılımcıların dolu/boş saatleri (çakışma seçenekleri)",
+      "notRequestedFreebusy": "Henüz istenmedi · çakışma seçeneklerinde istenir"
     },
     "whyTitle": "{permission} izni neden gerekli?"
   },

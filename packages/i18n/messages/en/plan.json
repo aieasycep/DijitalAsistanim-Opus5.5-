@@ -50,7 +50,8 @@
     "options": {
       "move": {
         "title": "Move the event",
-        "description": "Pick a new time for {title}."
+        "description": "Pick a new time for {title}.",
+        "descriptionSlot": "{title} moves to {day} {start}–{end}."
       },
       "shorten": {
         "title": "Shorten the event",
@@ -139,7 +140,18 @@
     "options": "Resolution options",
     "pairA11y": "{a} at {aTime} conflicts with {b} at {bTime}. Open the event.",
     "resolveFailed": "The option could not be applied. Try again.",
-    "resolved": "Conflict resolved"
+    "resolved": "Conflict resolved",
+    "availability": {
+      "free": "Attendees are free at this time.",
+      "busyNames": "Busy at this time: {names}",
+      "partial": "Some attendees' availability is unknown.",
+      "not_shared": "Attendees don't share their availability.",
+      "scope_missing": "Permission is needed to see attendees' availability.",
+      "device_calendar": "The device calendar has no attendee details.",
+      "provider_unavailable": "Attendees' availability couldn't be checked right now.",
+      "upgrade": "Show availability",
+      "upgradeHint": "Asks for permission to read attendees' free/busy times."
+    }
   },
   "eventScreen": {
     "addedByDa": "Added by Digital Assistant · see approval",
@@ -182,7 +194,8 @@
     "takeNote": "Take a Note",
     "unknownAttendee": "Attendee",
     "untitled": "Untitled event",
-    "you": "{name} (you)"
+    "you": "{name} (you)",
+    "sources": "In {count, plural, one {# calendar} other {# calendars}}: {providers}"
   },
   "outsideWindow": {
     "title": "This date is outside the sync window; events appear as it gets closer.",

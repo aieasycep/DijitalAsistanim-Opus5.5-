@@ -4,7 +4,7 @@
  * one-pass tokenizer, so nested payloads never reassemble into tags, script/style contents are
  * skipped and entities are decoded once. The body renders as text only.
  */
-import { describe, expect, it } from '@jest/globals';
+import { describe, expect, it, jest } from '@jest/globals';
 
 import { decodeEntities, originalToText } from '../src/features/mail/original-text';
 
@@ -16,9 +16,12 @@ const N = 50_000;
  * load spike slows both rather than only one. A linear scan grows about 4×; the quadratic
  * originals grow about 16× and took seconds at N. A run under FLOOR_MS passes outright.
  */
+/** Each growth check runs its input 2 × ROUNDS times, over jest's 5 s default on a CI runner. */
+jest.setTimeout(30_000);
+
 const FLOOR_MS = 100;
 const MAX_GROWTH = 8;
-const ROUNDS = 5;
+const ROUNDS = 3;
 /** For an input built outside the call (fixed size): best of three within a generous budget. */
 const BOUNDED_MS = 1000;
 

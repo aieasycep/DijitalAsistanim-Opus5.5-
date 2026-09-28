@@ -523,7 +523,8 @@
       "calendar_read": "Takvim okuma",
       "calendar_write": "Takvime yazma",
       "tasks_read": "Görev okuma",
-      "tasks_write": "Görev yazma"
+      "tasks_write": "Görev yazma",
+      "calendar_freebusy": "Uygunluk (dolu/boş)"
     },
     "resource": {
       "mail": "E-posta",

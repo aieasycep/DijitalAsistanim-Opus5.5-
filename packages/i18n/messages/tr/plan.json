@@ -50,7 +50,8 @@
     "options": {
       "move": {
         "title": "Etkinliği taşı",
-        "description": "{title} için yeni bir saat seç."
+        "description": "{title} için yeni bir saat seç.",
+        "descriptionSlot": "{title}, {day} {start}–{end} aralığına taşınır."
       },
       "shorten": {
         "title": "Etkinliği kısalt",
@@ -139,7 +140,18 @@
     "options": "Çözüm seçenekleri",
     "pairA11y": "{a}, {aTime} ile {b}, {bTime} çakışıyor. Etkinliği aç.",
     "resolveFailed": "Seçenek uygulanamadı. Tekrar dene.",
-    "resolved": "Çakışma çözüldü"
+    "resolved": "Çakışma çözüldü",
+    "availability": {
+      "free": "Katılımcılar bu saatte uygun.",
+      "busyNames": "Bu saatte meşgul: {names}",
+      "partial": "Bazı katılımcıların uygunluğu bilinmiyor.",
+      "not_shared": "Katılımcılar uygunluk bilgisini paylaşmıyor.",
+      "scope_missing": "Katılımcıların uygunluğunu görmek için izin gerekiyor.",
+      "device_calendar": "Cihaz takviminde katılımcı bilgisi yok.",
+      "provider_unavailable": "Katılımcıların uygunluğu şu an kontrol edilemedi.",
+      "upgrade": "Uygunluğu göster",
+      "upgradeHint": "Katılımcıların dolu/boş saatlerini okuma izni ister."
+    }
   },
   "eventScreen": {
     "addedByDa": "Dijital Asistan ekledi · onayı gör",
@@ -182,7 +194,8 @@
     "takeNote": "Not Al",
     "unknownAttendee": "Katılımcı",
     "untitled": "Başlıksız etkinlik",
-    "you": "{name} (sen)"
+    "you": "{name} (sen)",
+    "sources": "{count} takvimde: {providers}"
   },
   "outsideWindow": {
     "title": "Bu tarih eşitleme aralığının dışında; etkinlikler yaklaştıkça görünür.",

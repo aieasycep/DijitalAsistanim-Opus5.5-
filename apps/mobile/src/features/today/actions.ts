@@ -51,10 +51,10 @@ function restore(client: QueryClient, localDate: string, snapshot: TodayData | u
 interface DelayedStatus {
   readonly item: TodayPriority;
   readonly localDate: string;
-  readonly status: 'done' | 'snoozed';
+  readonly status: 'done' | 'snoozed' | 'dismissed';
   readonly snoozedUntil?: string;
   readonly message: string;
-  readonly undoAction: 'done' | 'snooze';
+  readonly undoAction: 'done' | 'snooze' | 'dismiss';
 }
 
 function delayedStatus(change: DelayedStatus, client: QueryClient = getQueryClient()): void {
@@ -102,6 +102,17 @@ export function completeInsight(
     status: 'done',
     message: translator()('common.toast.completed'),
     undoAction: 'done',
+  });
+}
+
+/** "Böyle Kalsın" on a conflict (the Plan signal's keep): dismissed with the R-06 undo. */
+export function keepInsight(item: TodayPriority, localDate: string): void {
+  delayedStatus({
+    item,
+    localDate,
+    status: 'dismissed',
+    message: translator()('plan.screen.kept'),
+    undoAction: 'dismiss',
   });
 }
 

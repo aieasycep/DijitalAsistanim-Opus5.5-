@@ -634,6 +634,24 @@ Deno.test(
     });
     const skipped = await s.run({ trigger: 'meeting_prep', category: 'meeting', event_id: gone });
     assertEquals(skipped?.skipped, 'event_gone');
+
+    // A cross-source duplicate (KPL-15) is never notified; its canonical event is.
+    const copy = crypto.randomUUID();
+    s.t.state.events.set(copy, {
+      id: copy,
+      title: 'Müşteri toplantısı',
+      start_at: '2026-09-23T10:00:00.000Z',
+      end_at: '2026-09-23T11:00:00.000Z',
+      status: 'confirmed',
+      all_day: false,
+      attendee_count: 2,
+      provider_deleted_at: null,
+      merged_into_id: crypto.randomUUID(),
+    });
+    for (const trigger of ['meeting_prep', 'post_meeting'] as const) {
+      const out = await s.run({ trigger, category: 'meeting', event_id: copy });
+      assertEquals(out?.skipped, 'merged_duplicate', trigger);
+    }
   },
 );
 

@@ -169,6 +169,7 @@ const AttachmentMeta = z.looseObject({
   name: z.string(),
   mime: z.string().optional(),
   size: z.number().optional(),
+  kind: z.string().optional(),
 });
 
 export interface EmailDetail {
@@ -190,7 +191,12 @@ export interface EmailDetail {
     readonly tier: string | null;
     readonly reason: string | null;
     readonly confidence: number | null;
-    readonly attachments: readonly { readonly name: string; readonly size?: number }[];
+    readonly attachments: readonly {
+      readonly name: string;
+      readonly mime?: string | undefined;
+      readonly size?: number | undefined;
+      readonly kind?: string | undefined;
+    }[];
     readonly injectionSuspected: boolean;
     readonly webLink: string | null;
   };

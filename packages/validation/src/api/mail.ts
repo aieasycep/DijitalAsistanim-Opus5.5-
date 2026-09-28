@@ -50,6 +50,26 @@ export const MailOriginalData = z.object({
 });
 export const MailOriginalResponse = Success(MailOriginalData);
 
+// API-MAIL-09 · GET /mail/:messageId/attachments (metadata only; refs for API-CAP-02)
+export const MailAttachmentView = z.object({
+  attachment_ref: z.string().max(200),
+  name: z.string().max(255),
+  mime: z.string().max(255),
+  size_bytes: z.int().min(0),
+  /** Whether `POST /captures` can import it (a file attachment of a capture MIME within the cap). */
+  capturable: z.boolean(),
+  blocked_reason: z.enum(['unsupported_type', 'too_large', 'not_a_file']).nullable(),
+});
+export type MailAttachmentView = z.infer<typeof MailAttachmentView>;
+export const MailAttachmentsData = z.object({
+  message_id: Uuid,
+  attachments: z.array(MailAttachmentView).max(20),
+  /** `stored`: kept at sync; `provider`: listed now for a message synced before metadata existed. */
+  source: z.enum(['stored', 'provider']),
+  refs_expire_at: IsoDateTime,
+});
+export const MailAttachmentsResponse = Success(MailAttachmentsData);
+
 // API-MAIL-02 · POST /mail/:messageId/reply-drafts
 export const ReplyDraftCreateBody = z.strictObject({
   tone: Tone,

@@ -17,6 +17,8 @@ export interface EventInfo {
   readonly all_day: boolean;
   readonly attendee_count: number;
   readonly provider_deleted_at: string | null;
+  /** Set on a cross-source duplicate (KPL-15): its canonical event is notified instead. */
+  readonly merged_into_id?: string | null;
 }
 
 export interface ReminderInfo {

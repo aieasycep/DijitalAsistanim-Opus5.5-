@@ -7,6 +7,10 @@
  * The `demo_clock` cursor lists the whole current window (the dataset is small) and reports the
  * items of the days since the cursor that the current day no longer materialises as deleted, so the
  * account "keeps living day after day" without duplicate meetings.
+ *
+ * Free/busy (KPL-46): a demo person is busy during the demo meetings they attend (and have not
+ * declined); any other address answers `not_shared`, as a real provider does outside the
+ * organisation.
  */
 import {
   addDaysToLocalDate,
@@ -17,6 +21,8 @@ import {
   type EventPatchSpec,
   type EventTime,
   type EventWriteSpec,
+  type FreeBusyAnswer,
+  type FreeBusyQuery,
   type IdempotencyMarker,
   localDate,
   localDateDiffDays,
@@ -27,7 +33,7 @@ import {
   type WatchHandle,
   type WriteOutcome,
 } from '@da/domain';
-import { DEMO_SELF, demoDataset, type DemoFlavor } from './fixtures/index.ts';
+import { DEMO_SELF, demoDataset, type DemoFlavor, PEOPLE } from './fixtures/index.ts';
 import {
   type DemoAdapterDeps,
   type DemoEventUpdate,
@@ -172,6 +178,31 @@ export class DemoCalendarAdapter implements CalendarProvider {
 
   async listCalendars(ctx: ProviderContext): Promise<NormalizedCalendar[]> {
     return [...(await this.state(ctx)).calendars];
+  }
+
+  async freeBusy(ctx: ProviderContext, q: FreeBusyQuery): Promise<FreeBusyAnswer[]> {
+    const state = await this.state(ctx);
+    const known = new Set<string>(Object.values(PEOPLE).map((p) => p.email.toLowerCase()));
+    return [...new Set(q.emails.map((e) => e.trim().toLowerCase()))]
+      .filter((email) => email !== '')
+      .slice(0, 20)
+      .map((email) => {
+        if (!known.has(email)) return { email, busy: [], error: 'not_shared' as const };
+        const busy = state.events
+          .filter(
+            (e) =>
+              e.status !== 'cancelled' &&
+              inWindow(e, q.window) &&
+              e.attendees.some(
+                (a) => a.email.toLowerCase() === email && a.responseStatus !== 'declined',
+              ),
+          )
+          .map((e) => ({
+            start: new Date(instantOf(e.start)).toISOString(),
+            end: new Date(instantOf(e.end)).toISOString(),
+          }));
+        return { email, busy, error: null };
+      });
   }
 
   async getUserTimeZone(ctx: ProviderContext): Promise<string | null> {

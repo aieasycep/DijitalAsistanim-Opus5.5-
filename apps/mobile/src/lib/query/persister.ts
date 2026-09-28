@@ -45,6 +45,8 @@ export function createCachePersister(store: MMKV): Persister {
 export function isNeverPersisted(key: readonly unknown[]): boolean {
   const [root, second, third] = key;
   if (root === 'mail' && second === 'original') return true;
+  // API-MAIL-09 attachment refs are signed and short-lived.
+  if (root === 'mail' && second === 'attachments') return true;
   if (root === 'search' || root === 'auth') return true;
   if (root === 'briefings' && third === 'audio') return true;
   return false;

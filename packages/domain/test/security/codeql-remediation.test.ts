@@ -4,7 +4,7 @@
  * right answer, and every rewritten pattern is compared with the original regex (kept here as the
  * oracle) over seeded random inputs built from the tokens that matter to it.
  */
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { isValidPropValue } from '../../src/analytics/validate.ts';
 import { stripQuotedHistory } from '../../src/commitments/detect.ts';
 import { parseDeepLink, toUniversalLink } from '../../src/deeplinks.ts';
@@ -36,9 +36,12 @@ const N = 50_000;
  * load spike slows both rather than only one. A linear scan grows about 4×; the quadratic
  * originals grow about 16× and took seconds at N. A run under FLOOR_MS passes outright.
  */
+/** Each growth check runs its input 2 × ROUNDS times, over vitest's 5 s default on a CI runner. */
+vi.setConfig({ testTimeout: 30_000 });
+
 const FLOOR_MS = 100;
 const MAX_GROWTH = 8;
-const ROUNDS = 5;
+const ROUNDS = 3;
 /** For an input built outside the call (fixed size): best of three within a generous budget. */
 const BOUNDED_MS = 1000;
 

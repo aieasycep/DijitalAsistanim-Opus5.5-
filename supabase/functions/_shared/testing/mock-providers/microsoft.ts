@@ -5,7 +5,10 @@
  * `/graph/v1.0` (me, mail folder deltas with `@odata.nextLink` → `@odata.deltaLink`, message reads,
  * `reply` / `sendMail` with the extended-property marker, Sent Items search, calendars,
  * `calendarView` and its delta, events with `transactionId` de-duplication, subscriptions, To Do
- * lists / tasks / delta, `$batch`). `POST /__graph` seeds and mutates the state.
+ * lists / tasks / delta, `$batch`). `POST /__graph` seeds and mutates the state. `getSchedule`
+ * answers the seeded schedules (`op: 'schedules'`) and `ErrorNoFreeBusyAccess` for every other
+ * address (KPL-46); a message's `attachments` (seeded with the message) are listed without content
+ * and served by id.
  */
 import type { Context, Hono } from 'hono';
 import { decodeProtectedHeader, importSPKI, jwtVerify } from 'jose';
@@ -37,6 +40,8 @@ interface GraphState {
   events: Map<string, Item>;
   subscriptions: Map<string, Record<string, unknown>>;
   msTasks: Map<string, Item>;
+  /** Schedule items per address (lower case) for `calendar/getSchedule`. */
+  schedules: Map<string, { status: string; start: string; end: string }[]>;
   pageSize: number;
   assertions: { alg: string; x5tS256: string | null; aud: unknown; iss: unknown; valid: boolean }[];
 }
@@ -60,6 +65,7 @@ function freshState(): GraphState {
     events: new Map(),
     subscriptions: new Map(),
     msTasks: new Map(),
+    schedules: new Map(),
     pageSize: 50,
     assertions: [],
   };
@@ -122,6 +128,11 @@ export function mountMicrosoft(app: Hono<MockEnv>, state: MockState): void {
           removed: false,
           data: { ...t },
         });
+    } else if (op === 'schedules') {
+      const schedules =
+        (body.schedules as Record<string, { status: string; start: string; end: string }[]>) ?? {};
+      for (const [email, items] of Object.entries(schedules))
+        s.schedules.set(email.toLowerCase(), items);
     } else if (op === 'invalidate_refresh') {
       for (const entry of s.refresh.values()) entry.valid = false;
     } else if (op === 'state') {
@@ -365,7 +376,60 @@ export function mountMicrosoft(app: Hono<MockEnv>, state: MockState): void {
         },
         404,
       );
-    return c.json({ ...item.data, attachments: [] });
+    const attachments = (
+      (item.data.attachments as Record<string, unknown>[] | undefined) ?? []
+    ).map(({ contentBytes: _bytes, ...meta }) => meta);
+    return c.json({ ...item.data, attachments });
+  });
+  const messageAttachments = (id: string) => {
+    const item = s.messages.inbox.get(id) ?? s.messages.sentitems.get(id);
+    if (item === undefined || item.removed) return null;
+    return (item.data.attachments as Record<string, unknown>[] | undefined) ?? [];
+  };
+  app.get(`${g}/me/messages/:id/attachments`, (c) => {
+    const list = messageAttachments(c.req.param('id'));
+    if (list === null)
+      return c.json({ error: { code: 'ErrorItemNotFound', message: 'Not found.' } }, 404);
+    return c.json({ value: list.map(({ contentBytes: _bytes, ...meta }) => meta) });
+  });
+  app.get(`${g}/me/messages/:id/attachments/:aid`, (c) => {
+    const found = (messageAttachments(c.req.param('id')) ?? []).find(
+      (a) => a.id === c.req.param('aid'),
+    );
+    if (found === undefined)
+      return c.json({ error: { code: 'ErrorItemNotFound', message: 'Not found.' } }, 404);
+    return c.json(found);
+  });
+  app.post(`${g}/me/calendar/getSchedule`, (c) => {
+    const body = jsonOf<{
+      schedules?: string[];
+      startTime?: { dateTime: string };
+      endTime?: { dateTime: string };
+    }>(c);
+    const utc = (v: string | undefined) => Date.parse(/Z$/.test(v ?? '') ? String(v) : `${v}Z`);
+    const from = utc(body.startTime?.dateTime);
+    const to = utc(body.endTime?.dateTime);
+    const wall = (iso: string) => new Date(iso).toISOString().replace(/Z$/, '0000');
+    return c.json({
+      value: (body.schedules ?? []).map((email) => {
+        const items = s.schedules.get(email.toLowerCase());
+        if (items === undefined)
+          return {
+            scheduleId: email,
+            error: { message: 'No free/busy access.', responseCode: 'ErrorNoFreeBusyAccess' },
+          };
+        return {
+          scheduleId: email,
+          scheduleItems: items
+            .filter((i) => Date.parse(i.end) > from && Date.parse(i.start) < to)
+            .map((i) => ({
+              status: i.status,
+              start: { dateTime: wall(i.start), timeZone: 'UTC' },
+              end: { dateTime: wall(i.end), timeZone: 'UTC' },
+            })),
+        };
+      }),
+    });
   });
   const storeSent = (message: Record<string, unknown>, conversationId: string | null) => {
     const id = randomId('AAMkSent');

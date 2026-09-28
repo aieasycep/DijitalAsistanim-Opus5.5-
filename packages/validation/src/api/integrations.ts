@@ -46,6 +46,7 @@ export const IntegrationUpgradeBody = z.strictObject({
     'calendar_read',
     'tasks_read',
     'mail_read',
+    'calendar_freebusy',
   ]),
   resume: z.strictObject({ approval_id: Uuid }).optional(),
   device_nonce_hash: Sha256Hex,

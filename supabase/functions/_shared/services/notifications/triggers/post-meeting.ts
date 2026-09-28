@@ -17,6 +17,9 @@ export async function postMeetingTrigger(ctx: TriggerContext): Promise<TriggerOu
   if (event === null || event.status === 'cancelled' || event.provider_deleted_at !== null) {
     return skip('event_gone');
   }
+  if (event.merged_into_id !== undefined && event.merged_into_id !== null) {
+    return skip('merged_duplicate');
+  }
   if (event.attendee_count < 1 || event.all_day) return skip('not_a_meeting');
   const end = new Date(event.end_at);
   return {

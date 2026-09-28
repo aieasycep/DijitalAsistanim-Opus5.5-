@@ -8,6 +8,7 @@ import type {
   AiFeature,
   BriefingKind,
   LearnedPreference,
+  MailAttachmentMeta,
   PriorityRule,
   Provider,
 } from '@da/domain';
@@ -475,6 +476,10 @@ export class MemoryIntel {
       attachments?: { filename: string; mimeType: string; sizeBytes: number; inline: boolean }[];
     }
   >();
+  /** Attachment metadata per provider message id (the body's list and the metadata listing). */
+  attachments = new Map<string, MailAttachmentMeta[]>();
+  /** Provider message ids whose attachments were listed without a body fetch. */
+  attachmentListings: string[] = [];
   own = ['yunus@firma.example'];
   contactStatsRefreshed: (readonly string[] | null)[] = [];
 
@@ -879,12 +884,18 @@ export class MemoryIntel {
                 text: body.text,
                 html: body.html,
                 truncated: false,
-                attachments: (body.attachments ?? []).map((a, i) => ({
-                  providerAttachmentId: `att-${i + 1}`,
-                  ...a,
-                })),
+                attachments:
+                  this.attachments.get(providerMessageId) ??
+                  (body.attachments ?? []).map((a, i) => ({
+                    providerAttachmentId: `att-${i + 1}`,
+                    ...a,
+                  })),
               },
         );
+      },
+      attachments: ({ providerMessageId }) => {
+        this.attachmentListings.push(providerMessageId);
+        return Promise.resolve(this.attachments.get(providerMessageId) ?? null);
       },
     };
   }

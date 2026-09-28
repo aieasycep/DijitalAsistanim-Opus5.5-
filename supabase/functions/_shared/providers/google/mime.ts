@@ -9,7 +9,7 @@
  * - `parseGmailPayload`: `format=full` payload → `TransientMailBody` (text, html, attachments),
  *   decoded per part charset and capped at `maxBytes`. Never persisted, never logged.
  */
-import type { MailAddress, OutboundReply, TransientMailBody } from '@da/domain';
+import type { MailAddress, MailAttachmentMeta, OutboundReply, TransientMailBody } from '@da/domain';
 import { fromBase64Url, toBase64, toBase64Url, utf8 } from '../../crypto/encoding.ts';
 import { htmlToText } from '../common.ts';
 
@@ -140,6 +140,43 @@ function capBytes(text: string, maxBytes: number): { text: string; truncated: bo
     text: new TextDecoder().decode(bytes.slice(0, maxBytes)).replace(/\uFFFD+$/, ''),
     truncated: true,
   };
+}
+
+/**
+ * Field mask of a `messages.get` that returns the MIME tree without any body data (attachment
+ * metadata only): part ids, types, file names, part headers (disposition / Content-ID) and the
+ * attachment ids and sizes, four levels deep.
+ */
+export const GMAIL_ATTACHMENT_FIELDS = (() => {
+  const part = 'partId,mimeType,filename,headers,body/attachmentId,body/size';
+  let mask = part;
+  for (let depth = 0; depth < 4; depth++) mask = `${part},parts(${mask})`;
+  return `payload(${mask})`;
+})();
+
+/** The attachments of a payload (from a full or a parts-only `messages.get`). */
+export function gmailAttachments(payload: GmailPart | undefined): MailAttachmentMeta[] {
+  const out: MailAttachmentMeta[] = [];
+  const walk = (part: GmailPart) => {
+    const type = (part.mimeType ?? '').toLowerCase();
+    const disposition = (header(part, 'Content-Disposition') ?? '').toLowerCase();
+    const isAttachment =
+      (part.filename !== undefined && part.filename !== '') || disposition.startsWith('attachment');
+    if (isAttachment && part.body?.attachmentId !== undefined) {
+      out.push({
+        providerAttachmentId: part.body.attachmentId,
+        filename: (part.filename ?? '').slice(0, 255),
+        mimeType: type === '' ? 'application/octet-stream' : type,
+        sizeBytes: part.body.size ?? 0,
+        inline: disposition.startsWith('inline') || header(part, 'Content-ID') !== null,
+        kind: 'file',
+      });
+      return;
+    }
+    for (const child of part.parts ?? []) walk(child);
+  };
+  if (payload !== undefined) walk(payload);
+  return out.slice(0, 50);
 }
 
 /** Walks a `format=full` payload into the transient body model. */

@@ -15,6 +15,9 @@ export async function meetingPrepTrigger(ctx: TriggerContext): Promise<TriggerOu
   if (event === null || event.status === 'cancelled' || event.provider_deleted_at !== null) {
     return skip('event_gone');
   }
+  if (event.merged_into_id !== undefined && event.merged_into_id !== null) {
+    return skip('merged_duplicate');
+  }
   const start = new Date(event.start_at);
   const minutes = Math.round((start.getTime() - ctx.now.getTime()) / 60_000);
   if (minutes <= 0) return skip('meeting_started');

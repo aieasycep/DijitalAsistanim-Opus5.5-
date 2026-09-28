@@ -170,6 +170,20 @@ export interface NormalizedMailMessage {
 /** The WBS name for the normalised mail DTO (T-1.15). */
 export type NormalizedMessage = NormalizedMailMessage;
 
+/**
+ * Attachment metadata (no content): what `email_messages.attachment_meta` keeps for messages the
+ * pipeline keeps. `kind` separates file attachments (downloadable bytes) from Graph item and
+ * reference attachments, whose content is never fetched (a reference points at a cloud URL).
+ */
+export interface MailAttachmentMeta {
+  providerAttachmentId: string;
+  filename: string;
+  mimeType: string;
+  sizeBytes: number;
+  inline: boolean;
+  kind?: 'file' | 'item' | 'reference';
+}
+
 /** Never persisted, never logged; lives only inside one pipeline step. */
 export interface TransientMailBody {
   /** Plain text, ≤ 200 KB. */
@@ -177,13 +191,7 @@ export interface TransientMailBody {
   /** Raw HTML (sanitised only when returned by GET /mail/:id/original). */
   html: string | null;
   truncated: boolean;
-  attachments: {
-    providerAttachmentId: string;
-    filename: string;
-    mimeType: string;
-    sizeBytes: number;
-    inline: boolean;
-  }[];
+  attachments: MailAttachmentMeta[];
 }
 
 export interface NormalizedCalendar {
@@ -469,6 +477,12 @@ export interface MailProvider {
     providerAttachmentId: string,
     opts: { maxBytes: number },
   ): Promise<{ bytes: Uint8Array; mimeType: string }>;
+  /**
+   * Attachment metadata only (Gmail `messages.get` with a parts-only field mask, Graph
+   * `messages/{id}/attachments?$select=…`); no body and no content is read. Optional: callers fall
+   * back to `getMessageBody(…).attachments`.
+   */
+  listAttachments?(ctx: ProviderContext, providerMessageId: string): Promise<MailAttachmentMeta[]>;
   baseline(ctx: ProviderContext, folder: 'inbox' | 'sentitems'): Promise<MailCursor>;
   /** Throws ProviderError('cursor_invalid') when the cursor is gone. */
   changesSince(
@@ -513,8 +527,35 @@ export interface CalendarChangeSet {
   pageToken: string | null;
 }
 
+/** Attendee availability query (Google `freeBusy.query`, Graph `calendar/getSchedule`); KPL-46. */
+export interface FreeBusyQuery {
+  /** Lower-case addresses, ≤ 20 (both providers' per-call limit is higher). */
+  emails: string[];
+  window: CalendarWindow;
+}
+
+/**
+ * Why a calendar has no availability answer: `not_found` (unknown address), `not_shared` (the
+ * owner does not share free/busy with the user, e.g. outside the organisation), `too_many`
+ * (provider limit), `unavailable` (any other per-calendar error).
+ */
+export type FreeBusyError = 'not_found' | 'not_shared' | 'too_many' | 'unavailable';
+
+export interface FreeBusyAnswer {
+  email: string;
+  /** Busy (and tentative / out-of-office) intervals inside the window; empty when free. */
+  busy: CalendarWindow[];
+  /** Null when the provider answered for this calendar. */
+  error: FreeBusyError | null;
+}
+
 export interface CalendarProvider {
   readonly provider: ServerProvider;
+  /**
+   * Other people's availability; requires the `calendar_freebusy` capability. Optional: a provider
+   * without it answers every attendee as unknown.
+   */
+  freeBusy?(ctx: ProviderContext, q: FreeBusyQuery): Promise<FreeBusyAnswer[]>;
   listCalendars(ctx: ProviderContext): Promise<NormalizedCalendar[]>;
   getUserTimeZone(ctx: ProviderContext): Promise<string | null>;
   fullSync(
