@@ -21,20 +21,40 @@ function repo(files: Record<string, string>): string {
   return root;
 }
 
+/**
+ * Growth-rate check rather than a wall-clock budget (fixed budgets fail on a loaded CI runner):
+ * best of three at n / 4 and at n; a linear scan grows about 4×, the exponential original far
+ * more. A run under 100 ms passes outright.
+ */
+function assertLinear(run: (n: number) => void, n = 50_000): void {
+  const best = (size: number): number =>
+    Math.min(
+      ...[0, 1, 2].map(() => {
+        const start = performance.now();
+        run(size);
+        return performance.now() - start;
+      }),
+    );
+  const small = best(n / 4);
+  const large = best(n);
+  assert.ok(
+    large < 100 || large < 8 * Math.max(small, 1),
+    `${large.toFixed(1)} ms at n vs ${small.toFixed(1)} ms at n / 4`,
+  );
+}
+
 test('CodeQL js/redos: lib.ts:246 a config block of "/*" + 50 000 × "*//*" is read quickly', () => {
-  const comments = `/*${'*//*'.repeat(50_000)}*/`;
-  const source = `export default [{ ${comments} rules: { 'no-console': 'off' } }];`;
-  const start = performance.now();
-  const problem = eslintRuleProblem(source, 'no-console', false);
-  assert.ok(performance.now() - start < 200);
-  assert.equal(problem, "'no-console': 'off'");
+  assertLinear((n) => {
+    const source = `export default [{ /*${'*//*'.repeat(n)}*/ rules: { 'no-console': 'off' } }];`;
+    assert.equal(eslintRuleProblem(source, 'no-console', false), "'no-console': 'off'");
+  });
 });
 
 test('CodeQL js/redos: an unterminated comment run is read quickly and is not a files: block', () => {
-  const source = `export default [{ /*${'*//*'.repeat(50_000)} rules: { 'no-console': 'off' } }];`;
-  const start = performance.now();
-  assert.equal(eslintRuleProblem(source, 'no-console', false), "'no-console': 'off'");
-  assert.ok(performance.now() - start < 200);
+  assertLinear((n) => {
+    const source = `export default [{ /*${'*//*'.repeat(n)} rules: { 'no-console': 'off' } }];`;
+    assert.equal(eslintRuleProblem(source, 'no-console', false), "'no-console': 'off'");
+  });
 });
 
 test('test-only override blocks are still recognised after comments', () => {

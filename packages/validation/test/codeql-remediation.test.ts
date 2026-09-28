@@ -9,14 +9,38 @@ import { looksLikeContact } from '../src/analytics-events.ts';
 import { decodeBase64Utf8 } from '../src/webhooks/index.ts';
 
 const N = 50_000;
-/** Generous: the fixed code takes a few ms; the original regexes took 2–4 s at this size. */
-const BUDGET_MS = 200;
 
-function fast<T>(fn: () => T): T {
+/**
+ * Growth-rate check rather than a wall-clock budget (a fixed 200 ms budget failed on a loaded CI
+ * runner): `fn(n)` runs at N / 4 and at N, best of three each. A linear scan grows about 4×; the
+ * quadratic originals grow about 16× and took seconds at N. A run under FLOOR_MS passes outright.
+ */
+const FLOOR_MS = 100;
+const MAX_GROWTH = 8;
+
+function timedRun<T>(fn: () => T): { value: T; ms: number } {
   const start = performance.now();
   const value = fn();
-  expect(performance.now() - start).toBeLessThan(BUDGET_MS);
-  return value;
+  return { value, ms: performance.now() - start };
+}
+
+function best<T>(fn: () => T): { value: T; ms: number } {
+  let run = timedRun(fn);
+  for (let i = 0; i < 2; i++) {
+    const next = timedRun(fn);
+    if (next.ms < run.ms) run = next;
+  }
+  return run;
+}
+
+function linear<T>(fn: (n: number) => T): T {
+  const small = best(() => fn(N / 4));
+  const large = best(() => fn(N));
+  const ok = large.ms < FLOOR_MS || large.ms < MAX_GROWTH * Math.max(small.ms, 1);
+  expect(
+    ok ? 'linear' : `${large.ms.toFixed(1)} ms at N vs ${small.ms.toFixed(1)} ms at N / 4`,
+  ).toBe('linear');
+  return large.value;
 }
 
 /** Deterministic PRNG (mulberry32). */
@@ -43,8 +67,8 @@ function samples(seed: number, tokens: readonly string[], count = 3000): string[
 
 describe('CodeQL js/polynomial-redos: ai/common.ts:104 cleanText', () => {
   it('50 000 × "<" is cleaned quickly', () => {
-    expect(fast(() => cleanText('<'.repeat(N)))).toBe('<'.repeat(N));
-    expect(fast(() => cleanText(`${'<'.repeat(N)}b>metin`))).toBe('metin');
+    expect(linear((N) => cleanText('<'.repeat(N)))).toBe('<'.repeat(N));
+    expect(linear((N) => cleanText(`${'<'.repeat(N)}b>metin`))).toBe('metin');
   });
 
   it('tags become spaces exactly as replace(/<[^>]*>/g, " ") did', () => {
@@ -66,8 +90,8 @@ describe('CodeQL js/polynomial-redos: ai/reply-drafts.ts:63 e-mail addresses', (
   const thread = 'Merhaba, mehmet@yilmaz-endustri.com.tr adresine yazın.';
 
   it('50 000 × "%" is checked quickly', () => {
-    expect(fast(() => draftViolations('%'.repeat(N), thread))).toEqual([]);
-    expect(fast(() => draftViolations(`${'%'.repeat(N)} x@evil.example.com`, thread))).toEqual([
+    expect(linear((N) => draftViolations('%'.repeat(N), thread))).toEqual([]);
+    expect(linear((N) => draftViolations(`${'%'.repeat(N)} x@evil.example.com`, thread))).toEqual([
       'email_not_in_source',
     ]);
   });
@@ -86,8 +110,8 @@ describe('CodeQL js/polynomial-redos: ai/reply-drafts.ts:63 e-mail addresses', (
 
 describe('CodeQL js/polynomial-redos: analytics-events.ts:136 looksLikeContact', () => {
   it('50 000 × "!" is checked quickly', () => {
-    expect(fast(() => looksLikeContact('!'.repeat(N)))).toBe(false);
-    expect(fast(() => looksLikeContact(`${'!'.repeat(N)}@x.co`))).toBe(true);
+    expect(linear((N) => looksLikeContact('!'.repeat(N)))).toBe(false);
+    expect(linear((N) => looksLikeContact(`${'!'.repeat(N)}@x.co`))).toBe(true);
   });
 
   it('matches the original /[^\\s@]+@[^\\s@]+\\.[^\\s@]+/ on random input', () => {
@@ -101,9 +125,9 @@ describe('CodeQL js/polynomial-redos: analytics-events.ts:136 looksLikeContact',
 
 describe('CodeQL js/polynomial-redos: webhooks/pubsub.ts:37 base64 padding', () => {
   it('50 000 × "=" is handled quickly', () => {
-    expect(fast(() => decodeBase64Utf8(`${'='.repeat(N)}x`))).toBeNull();
+    expect(linear((N) => decodeBase64Utf8(`${'='.repeat(N)}x`))).toBeNull();
     expect(
-      fast(() => decodeBase64Utf8(`${Buffer.from('ok').toString('base64')}${'='.repeat(N)}`)),
+      linear((N) => decodeBase64Utf8(`${Buffer.from('ok').toString('base64')}${'='.repeat(N)}`)),
     ).toBe('ok');
   });
 

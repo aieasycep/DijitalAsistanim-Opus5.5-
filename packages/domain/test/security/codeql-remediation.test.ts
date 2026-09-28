@@ -29,29 +29,46 @@ import { trimEndChars, trimStartChars } from '../../src/strings.ts';
 import { hostInText, normalizeLinkHost } from '../../src/url-safety.ts';
 
 const N = 50_000;
-/** Generous: the fixed code takes a few ms; the quadratic originals took 2–8 s at this size. */
-const BUDGET_MS = 200;
-/**
- * For calls through the public guards and extractors, which also run the (linear, but about 1 µs
- * per character) Turkish text normalisation over the whole input: still far below the seconds
- * the original patterns needed, and safe on a loaded CI runner.
- */
-const PIPELINE_BUDGET_MS = 1000;
 
-function timed<T>(fn: () => T): { value: T; ms: number } {
+/**
+ * Growth-rate check rather than a wall-clock budget (a fixed 200 ms budget failed on a loaded CI
+ * runner): `fn(n)` runs at N / 4 and at N, best of three each. A linear scan grows about 4×; the
+ * quadratic originals grow about 16× and took seconds at N. A run under FLOOR_MS passes outright.
+ */
+const FLOOR_MS = 100;
+const MAX_GROWTH = 8;
+/** For an input built outside the call (fixed size): best of three within a generous budget. */
+const BOUNDED_MS = 1000;
+
+function timedRun<T>(fn: () => T): { value: T; ms: number } {
   const start = performance.now();
   const value = fn();
   return { value, ms: performance.now() - start };
 }
 
-function fast<T>(fn: () => T, budgetMs = BUDGET_MS): T {
-  const { value, ms } = timed(fn);
-  expect(ms).toBeLessThan(budgetMs);
-  return value;
+function best<T>(fn: () => T): { value: T; ms: number } {
+  let run = timedRun(fn);
+  for (let i = 0; i < 2; i++) {
+    const next = timedRun(fn);
+    if (next.ms < run.ms) run = next;
+  }
+  return run;
 }
 
-function fastPipeline<T>(fn: () => T): T {
-  return fast(fn, PIPELINE_BUDGET_MS);
+function linear<T>(fn: (n: number) => T): T {
+  const small = best(() => fn(N / 4));
+  const large = best(() => fn(N));
+  const ok = large.ms < FLOOR_MS || large.ms < MAX_GROWTH * Math.max(small.ms, 1);
+  expect(
+    ok ? 'linear' : `${large.ms.toFixed(1)} ms at N vs ${small.ms.toFixed(1)} ms at N / 4`,
+  ).toBe('linear');
+  return large.value;
+}
+
+function bounded<T>(fn: () => T): T {
+  const run = best(fn);
+  expect(run.ms).toBeLessThan(BOUNDED_MS);
+  return run.value;
 }
 
 /** Deterministic PRNG (mulberry32) so the differential cases are reproducible. */
@@ -95,31 +112,31 @@ describe('CodeQL js/polynomial-redos: trailing "/" (deeplinks, markers, referral
   const web = 'https://dijitalasistan.app';
 
   it('deeplinks.ts:255 parseDeepLink trims a web origin ending in 50 000 "/"', () => {
-    const r = fast(() =>
+    const r = linear((N) =>
       parseDeepLink(`${web}/app/today`, { webOrigin: `${web}${'/'.repeat(N)}` }),
     );
     expect(r.ok && r.route.pattern).toBe('/today');
     const slow = `${web}${'/'.repeat(N)}x`;
-    expect(fast(() => parseDeepLink(`${web}/app/today`, { webOrigin: slow })).ok).toBe(false);
+    expect(bounded(() => parseDeepLink(`${web}/app/today`, { webOrigin: slow })).ok).toBe(false);
   });
 
   it('deeplinks.ts:383 toUniversalLink', () => {
-    expect(fast(() => toUniversalLink('/today', `${web}${'/'.repeat(N)}`))).toBe(
+    expect(linear((N) => toUniversalLink('/today', `${web}${'/'.repeat(N)}`))).toBe(
       `${web}/app/today`,
     );
     const odd = `${web}${'/'.repeat(N)}x`;
-    expect(fast(() => toUniversalLink('/today', odd))).toBe(`${odd}/app/today`);
+    expect(bounded(() => toUniversalLink('/today', odd))).toBe(`${odd}/app/today`);
   });
 
   it('providers/markers.ts:73 deriveMarker deep link', () => {
-    const marker = fast(() =>
+    const marker = linear((N) =>
       deriveMarker(UUID, 'k', { mailDomain: 'mail.example', webUrl: `${web}${'/'.repeat(N)}` }),
     );
     expect(marker.deepLinkUrl).toBe(`${web}/app/approvals/${UUID}`);
   });
 
   it('referrals/code.ts:119 referralShareUrl', () => {
-    expect(fast(() => referralShareUrl(`${web}${'/'.repeat(N)}`, '7K3M9PQ'))).toBe(
+    expect(linear((N) => referralShareUrl(`${web}${'/'.repeat(N)}`, '7K3M9PQ'))).toBe(
       `${web}/r/7K3M9PQ`,
     );
   });
@@ -129,8 +146,8 @@ describe('CodeQL js/polynomial-redos: analytics/validate.ts:75 e-mail-like value
   const spec = { type: 'enum', values: ['a'] } as const;
 
   it('50 000 "!" is checked quickly and is not an address', () => {
-    expect(fast(() => isValidPropValue(spec, '!'.repeat(N)))).toBe(false);
-    expect(fast(() => isValidPropValue({ type: 'boolean' }, `${'a'.repeat(N)}@`))).toBe(false);
+    expect(linear((N) => isValidPropValue(spec, '!'.repeat(N)))).toBe(false);
+    expect(linear((N) => isValidPropValue({ type: 'boolean' }, `${'a'.repeat(N)}@`))).toBe(false);
   });
 
   it('matches the original /[^\\s@]+@[^\\s@]+\\.[^\\s@]+/ on random input', () => {
@@ -147,8 +164,8 @@ describe('CodeQL js/polynomial-redos: commitments/detect.ts:73 reply headers', (
   it('a line of 50 000 × "a tarihinde ş" is scanned quickly', () => {
     // With an "ş" present V8 cannot rule the pattern out up front: 20 000 repetitions took 25 s.
     const line = 'a tarihinde ş'.repeat(N);
-    expect(fast(() => stripQuotedHistory(`ilk\n${line}`))).toBe(`ilk\n${line}`);
-    expect(fast(() => stripQuotedHistory(`ilk\n${line}x şunu yazdı:\nalıntı`))).toBe('ilk');
+    expect(bounded(() => stripQuotedHistory(`ilk\n${line}`))).toBe(`ilk\n${line}`);
+    expect(bounded(() => stripQuotedHistory(`ilk\n${line}x şunu yazdı:\nalıntı`))).toBe('ilk');
   });
 
   it('still cuts at Turkish and English reply headers', () => {
@@ -193,8 +210,8 @@ describe('CodeQL js/polynomial-redos: commitments/detect.ts:73 reply headers', (
 
 describe('CodeQL js/polynomial-redos: extract/pnr.ts:50 labels followed by spaces', () => {
   it('"pnr" + 50 000 spaces is scanned quickly', () => {
-    expect(fast(() => findPnrs(`pnr${' '.repeat(N)}`))).toEqual([]);
-    expect(fast(() => findPnrs(`PNR${' '.repeat(N)}: X7K2QA`)).map((p) => p.code)).toEqual([
+    expect(linear((N) => findPnrs(`pnr${' '.repeat(N)}`))).toEqual([]);
+    expect(linear((N) => findPnrs(`PNR${' '.repeat(N)}: X7K2QA`)).map((p) => p.code)).toEqual([
       'X7K2QA',
     ]);
   });
@@ -234,9 +251,9 @@ describe('CodeQL js/polynomial-redos: extract/pnr.ts:50 labels followed by space
 describe('CodeQL js/polynomial-redos: extract/tracking.ts', () => {
   it(':147 "barkod" + 50 000 spaces is scanned quickly (domestic carrier context)', () => {
     const text = `Aras Kargo barkod${' '.repeat(N)}`;
-    expect(fastPipeline(() => findTrackingNumbers(text))).toEqual([]);
+    expect(bounded(() => findTrackingNumbers(text))).toEqual([]);
     const labelled = `Aras Kargo barkod${' '.repeat(N)}# AR12345678`;
-    const [t] = fastPipeline(() => findTrackingNumbers(labelled));
+    const [t] = bounded(() => findTrackingNumbers(labelled));
     expect(t).toMatchObject({ value: 'AR12345678', kind: 'domestic', carrier: 'aras' });
   });
 
@@ -245,9 +262,9 @@ describe('CodeQL js/polynomial-redos: extract/tracking.ts', () => {
     // normalisation of carrier detection stays out of the measurement.
     const opts = { senderDomain: 'bildirim.yurticikargo.com' };
     const text = 'https://-/'.repeat(N);
-    expect(fastPipeline(() => findTrackingNumbers(text, opts))).toEqual([]);
+    expect(bounded(() => findTrackingNumbers(text, opts))).toEqual([]);
     const withParam = `${text}?code=7301234567 https://www.yurticikargo.com/q?code=7301234567`;
-    const found = fastPipeline(() => findTrackingNumbers(withParam, opts));
+    const found = bounded(() => findTrackingNumbers(withParam, opts));
     expect(found).toEqual([
       expect.objectContaining({ value: '7301234567', kind: 'link_param', carrier: 'yurtici' }),
     ]);
@@ -322,8 +339,8 @@ describe('CodeQL js/polynomial-redos: extract/tracking.ts', () => {
 
 describe('CodeQL js/polynomial-redos: grounding/output-guards.ts', () => {
   it(':49 mixed-script domains: 50 000 "-" is scanned quickly', () => {
-    expect(fastPipeline(() => prescanInjection('-'.repeat(N)).signals)).toEqual([]);
-    expect(fastPipeline(() => prescanInjection(`${'-'.repeat(N)} аpple.com`).signals)).toContain(
+    expect(linear((N) => prescanInjection('-'.repeat(N)).signals)).toEqual([]);
+    expect(linear((N) => prescanInjection(`${'-'.repeat(N)} аpple.com`).signals)).toContain(
       'mixed_script_domain',
     );
   });
@@ -346,23 +363,23 @@ describe('CodeQL js/polynomial-redos: grounding/output-guards.ts', () => {
   it(':130 a URL ending in 50 000 "!" is trimmed quickly', () => {
     const url = `https://example.com/a${'!'.repeat(N)}`;
     const sources = ['https://example.com/a'];
-    const g = fastPipeline(() => guardOutputText(`bak ${url}`, { sources }));
+    const g = bounded(() => guardOutputText(`bak ${url}`, { sources }));
     expect(g.value).toBe(`bak ${url}`);
-    const dropped = fastPipeline(() => guardOutputText(`bak ${url}x`, { sources: [] }));
+    const dropped = bounded(() => guardOutputText(`bak ${url}x`, { sources: [] }));
     expect(dropped.droppedUrls).toEqual([`${url}x`]);
   });
 
   it(':205 proper nouns: 50 000 apostrophes are scanned quickly', () => {
-    const r = fastPipeline(() => guardFreeText(`Toplantı Ahmet${"'".repeat(N)}in.`, ['Ahmet']));
+    const r = linear((N) => guardFreeText(`Toplantı Ahmet${"'".repeat(N)}in.`, ['Ahmet']));
     expect(r.removed).toBe(0);
     expect(guardFreeText("Sonra Ayşe'ye ilettim.", ['Ahmet']).removed).toBe(1);
     expect(guardFreeText("Sonra Ayşe'ye ilettim.", ['Ayşe']).removed).toBe(0);
   });
 
   it('e-mail addresses: 50 000 local-part characters without "@" are scanned quickly', () => {
-    const g = fastPipeline(() => guardOutputText('a'.repeat(N), { sources: [] }));
+    const g = linear((N) => guardOutputText('a'.repeat(N), { sources: [] }));
     expect(g.value).toBe('a'.repeat(N));
-    const mail = fastPipeline(() =>
+    const mail = linear((N) =>
       guardOutputText(`${'%'.repeat(N)} yaz: x@evil.com`, { sources: [], maxLength: 10 }),
     );
     expect(mail.droppedEmails).toEqual(['x@evil.com']);
@@ -407,21 +424,21 @@ describe('CodeQL js/incomplete-multi-character-sanitization: grounding/output-gu
     for (const s of samples(8, ['<', '>', 'a', '<b>', '</', ' '])) {
       expect(removeTags(s)).toBe(s.replace(/<[^>]*>/g, ''));
     }
-    expect(fast(() => removeTags('<'.repeat(N)))).toBe('<'.repeat(N));
+    expect(linear((N) => removeTags('<'.repeat(N)))).toBe('<'.repeat(N));
   });
 
   it('unlinkMarkdown matches the markdown-link replace and is linear on "[a](" runs', () => {
     for (const s of samples(9, ['[', ']', '(', ')', 'a', '](', '[a](b)', ' '])) {
       expect(unlinkMarkdown(s)).toBe(s.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1'));
     }
-    expect(fast(() => unlinkMarkdown('[a]('.repeat(N)))).toBe('[a]('.repeat(N));
-    expect(fast(() => unlinkMarkdown('['.repeat(N)))).toBe('['.repeat(N));
+    expect(linear((N) => unlinkMarkdown('[a]('.repeat(N)))).toBe('[a]('.repeat(N));
+    expect(linear((N) => unlinkMarkdown('['.repeat(N)))).toBe('['.repeat(N));
   });
 
   it('dropTagOpeners keeps every "<" that cannot open a tag', () => {
     expect(dropTagOpeners('<<a <b < c <')).toBe('a b < c <');
     expect(dropTagOpeners('x </y <!z <?w')).toBe('x /y !z ?w');
-    expect(fast(() => dropTagOpeners(`${'<'.repeat(N)}a`))).toBe('a');
+    expect(linear((N) => dropTagOpeners(`${'<'.repeat(N)}a`))).toBe('a');
   });
 });
 
@@ -448,10 +465,10 @@ describe('CodeQL js/polynomial-redos: url-safety.ts:393 hostInText', () => {
   };
 
   it('50 000 "!" around a host and 25 000 × "a." are scanned quickly', () => {
-    expect(fast(() => hostInText(`example.com${'!'.repeat(N)}`))).toBe('example.com');
-    expect(fast(() => hostInText(`${'!'.repeat(N)}x`))).toBeNull();
-    expect(fast(() => hostInText('a.'.repeat(N / 2)))).toBeNull();
-    expect(fast(() => hostInText(`${'a-'.repeat(N / 2)} https://x.example.com`))).toBe(
+    expect(linear((N) => hostInText(`example.com${'!'.repeat(N)}`))).toBe('example.com');
+    expect(linear((N) => hostInText(`${'!'.repeat(N)}x`))).toBeNull();
+    expect(linear((N) => hostInText('a.'.repeat(N / 2)))).toBeNull();
+    expect(linear((N) => hostInText(`${'a-'.repeat(N / 2)} https://x.example.com`))).toBe(
       'x.example.com',
     );
   });

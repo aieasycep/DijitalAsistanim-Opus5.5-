@@ -9,19 +9,48 @@ import { describe, expect, it } from '@jest/globals';
 import { decodeEntities, originalToText } from '../src/features/mail/original-text';
 
 const N = 50_000;
-/**
- * Generous for a coverage-instrumented Jest run next to other suites; the tokenizer is linear,
- * while the regexes it replaced needed about 2 s for 50 000 "<" without instrumentation.
- */
-const BUDGET_MS = 1000;
-const TAG_OPENER = /<[A-Za-z!/?]/;
 
-function fast<T>(fn: () => T): T {
+/**
+ * Growth-rate check rather than a wall-clock budget (a fixed 200 ms budget failed on a loaded CI
+ * runner): `fn(n)` runs at N / 4 and at N, best of three each. A linear scan grows about 4×; the
+ * quadratic originals grow about 16× and took seconds at N. A run under FLOOR_MS passes outright.
+ */
+const FLOOR_MS = 100;
+const MAX_GROWTH = 8;
+/** For an input built outside the call (fixed size): best of three within a generous budget. */
+const BOUNDED_MS = 1000;
+
+function timedRun<T>(fn: () => T): { value: T; ms: number } {
   const start = performance.now();
   const value = fn();
-  expect(performance.now() - start).toBeLessThan(BUDGET_MS);
-  return value;
+  return { value, ms: performance.now() - start };
 }
+
+function best<T>(fn: () => T): { value: T; ms: number } {
+  let run = timedRun(fn);
+  for (let i = 0; i < 2; i++) {
+    const next = timedRun(fn);
+    if (next.ms < run.ms) run = next;
+  }
+  return run;
+}
+
+function linear<T>(fn: (n: number) => T): T {
+  const small = best(() => fn(N / 4));
+  const large = best(() => fn(N));
+  const ok = large.ms < FLOOR_MS || large.ms < MAX_GROWTH * Math.max(small.ms, 1);
+  expect(
+    ok ? 'linear' : `${large.ms.toFixed(1)} ms at N vs ${small.ms.toFixed(1)} ms at N / 4`,
+  ).toBe('linear');
+  return large.value;
+}
+
+function bounded<T>(fn: () => T): T {
+  const run = best(fn);
+  expect(run.ms).toBeLessThan(BOUNDED_MS);
+  return run.value;
+}
+const TAG_OPENER = /<[A-Za-z!/?]/;
 
 describe('originalToText: sanitised mail as text', () => {
   it('reads the sanitiser output: blocks become lines, links come from data-href', () => {
@@ -110,13 +139,15 @@ describe('CodeQL js/incomplete-multi-character-sanitization: EmailDetailScreen.t
   });
 
   it('is linear on long runs of "<", unterminated tags and many elements', () => {
-    expect(fast(() => originalToText('html_sanitized', '<'.repeat(N)).text)).toBe('<'.repeat(N));
-    expect(fast(() => originalToText('html_sanitized', '<a '.repeat(N)).text)).toBe('');
-    expect(fast(() => originalToText('html_sanitized', '<p>a</p>'.repeat(N)).text)).toBe(
+    expect(linear((N) => originalToText('html_sanitized', '<'.repeat(N)).text)).toBe('<'.repeat(N));
+    expect(linear((N) => originalToText('html_sanitized', '<a '.repeat(N)).text)).toBe('');
+    expect(linear((N) => originalToText('html_sanitized', '<p>a</p>'.repeat(N)).text)).toBe(
       Array.from({ length: N }, () => 'a').join('\n'),
     );
     const anchors = '<a data-href="https://x.example">x</a>'.repeat(N / 10);
-    expect(fast(() => originalToText('html_sanitized', anchors).links)).toHaveLength(N / 10);
-    expect(fast(() => originalToText('html_sanitized', `<script>${'<'.repeat(N)}`).text)).toBe('');
+    expect(bounded(() => originalToText('html_sanitized', anchors).links)).toHaveLength(N / 10);
+    expect(linear((N) => originalToText('html_sanitized', `<script>${'<'.repeat(N)}`).text)).toBe(
+      '',
+    );
   });
 });

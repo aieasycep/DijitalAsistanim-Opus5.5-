@@ -9,14 +9,38 @@ import { numberAtEnd, withoutTrailingNonWord, wordAtEnd } from '../src/text-end.
 import { trCaseSuffix, trSuffix } from '../src/tr-suffix.ts';
 
 const N = 50_000;
-/** Generous: the scans take a few ms; the original regexes took 3–4 s at this size. */
-const BUDGET_MS = 200;
 
-function fast<T>(fn: () => T): T {
+/**
+ * Growth-rate check rather than a wall-clock budget (a fixed 200 ms budget failed on a loaded CI
+ * runner): `fn(n)` runs at N / 4 and at N, best of three each. A linear scan grows about 4×; the
+ * quadratic originals grow about 16× and took seconds at N. A run under FLOOR_MS passes outright.
+ */
+const FLOOR_MS = 100;
+const MAX_GROWTH = 8;
+
+function timedRun<T>(fn: () => T): { value: T; ms: number } {
   const start = performance.now();
   const value = fn();
-  expect(performance.now() - start).toBeLessThan(BUDGET_MS);
-  return value;
+  return { value, ms: performance.now() - start };
+}
+
+function best<T>(fn: () => T): { value: T; ms: number } {
+  let run = timedRun(fn);
+  for (let i = 0; i < 2; i++) {
+    const next = timedRun(fn);
+    if (next.ms < run.ms) run = next;
+  }
+  return run;
+}
+
+function linear<T>(fn: (n: number) => T): T {
+  const small = best(() => fn(N / 4));
+  const large = best(() => fn(N));
+  const ok = large.ms < FLOOR_MS || large.ms < MAX_GROWTH * Math.max(small.ms, 1);
+  expect(
+    ok ? 'linear' : `${large.ms.toFixed(1)} ms at N vs ${small.ms.toFixed(1)} ms at N / 4`,
+  ).toBe('linear');
+  return large.value;
 }
 
 /** Deterministic PRNG (mulberry32). */
@@ -78,19 +102,19 @@ describe('CodeQL js/polynomial-redos: tr-suffix.ts:304 (numbers, words at the en
   });
 
   it('50 000 × "0" before a letter, "!" before a word and letters before "!" stay linear', () => {
-    expect(fast(() => numberAtEnd(`${'0'.repeat(N)}a`))).toBeNull();
-    expect(fast(() => numberAtEnd(`x ${'0'.repeat(N)}`))).toBe('0'.repeat(N));
-    expect(fast(() => withoutTrailingNonWord(`${'!'.repeat(N)}a`))).toBe(`${'!'.repeat(N)}a`);
-    expect(fast(() => withoutTrailingNonWord(`a${'!'.repeat(N)}`))).toBe('a');
-    expect(fast(() => wordAtEnd(`${'a'.repeat(N)}!b`))).toBe('b');
+    expect(linear((N) => numberAtEnd(`${'0'.repeat(N)}a`))).toBeNull();
+    expect(linear((N) => numberAtEnd(`x ${'0'.repeat(N)}`))).toBe('0'.repeat(N));
+    expect(linear((N) => withoutTrailingNonWord(`${'!'.repeat(N)}a`))).toBe(`${'!'.repeat(N)}a`);
+    expect(linear((N) => withoutTrailingNonWord(`a${'!'.repeat(N)}`))).toBe('a');
+    expect(linear((N) => wordAtEnd(`${'a'.repeat(N)}!b`))).toBe('b');
   });
 
   it('suffixes long values quickly and still reads the last number or word', () => {
-    expect(fast(() => trSuffix(`${'0'.repeat(N)}a`, 'dative'))).toBe(`${'0'.repeat(N)}a'ya`);
-    expect(fast(() => trCaseSuffix(`${'!'.repeat(N)}6`, 'dative'))).toBe('ya');
-    expect(fast(() => trCaseSuffix(`${'a'.repeat(N)}!Ahmet`, 'locative'))).toBe('te');
+    expect(linear((N) => trSuffix(`${'0'.repeat(N)}a`, 'dative'))).toBe(`${'0'.repeat(N)}a'ya`);
+    expect(linear((N) => trCaseSuffix(`${'!'.repeat(N)}6`, 'dative'))).toBe('ya');
+    expect(linear((N) => trCaseSuffix(`${'a'.repeat(N)}!Ahmet`, 'locative'))).toBe('te');
     expect(
-      fast(() => trSuffix(`${'kitap '.repeat(N / 10)}kitap`, 'dative', { apostrophe: false })),
+      linear((N) => trSuffix(`${'kitap '.repeat(N / 10)}kitap`, 'dative', { apostrophe: false })),
     ).toMatch(/kitaba$/);
   });
 });
