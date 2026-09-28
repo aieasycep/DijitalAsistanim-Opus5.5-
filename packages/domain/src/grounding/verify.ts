@@ -224,7 +224,10 @@ export const AMOUNT_MAX_MINOR = 1_000_000_000_000;
  * field-specific `explain.unverified.*` sentence, or the generic `common.provenance.notConfirmed`.
  */
 export function unverifiedMessage(field: string, kind: FieldKind): MessageRef {
-  if (/^(due|deadline)/.test(field) || (kind === 'date' && /date|due|at$/.test(field))) {
+  const dueLike = field.startsWith('due') || field.startsWith('deadline');
+  // A date field whose name contains `date` or `due`, or ends in `at` (`starts_at`, `remind_at`).
+  const dateLike = field.includes('date') || field.includes('due') || field.endsWith('at');
+  if (dueLike || (kind === 'date' && dateLike)) {
     return messageRef('explain.unverified.due_at');
   }
   if (kind === 'amount' || field.includes('amount')) return messageRef('explain.unverified.amount');

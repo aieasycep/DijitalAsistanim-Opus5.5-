@@ -42,12 +42,22 @@ export interface ReplyDraftsRefineContext extends DraftRefineContext {
 }
 
 const URL_PATTERN = /\bhttps?:\/\/[^\s<>)"']+|\bwww\.[^\s<>)"']+/gi;
-const EMAIL_PATTERN = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi;
+/**
+ * A run of local-part characters, with `@domain.tld` (group 1) when an address follows. Whole
+ * runs are consumed, so a long run without `@` is read once; `[…]+@…` alone retried every start
+ * inside it (O(n²) on 50 000 × "%"). `emailsIn` keeps the runs that are addresses.
+ */
+const EMAIL_PATTERN = /[A-Z0-9._%+-]+(@[A-Z0-9.-]+\.[A-Z]{2,})?/gi;
 const PHONE_PATTERN = /\+?\d[\d\s().-]{7,}\d/g;
 const FILL_IN_PATTERN = /\[[^\]]{1,40}\]/;
 const SUBJECT_LINE_PATTERN = /^\s*(konu|subject)\s*:/im;
 
 const digitsOnly = (value: string) => value.replace(/\D/g, '');
+
+/** The e-mail addresses in `text`, as `text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi)`. */
+function emailsIn(text: string): string[] {
+  return [...text.matchAll(EMAIL_PATTERN)].filter((m) => m[1] !== undefined).map((m) => m[0]);
+}
 
 /**
  * Output validators (AI_PIPELINE_PLAN §9.6): no URL, email address or phone number that is not in the
@@ -60,7 +70,7 @@ export function draftViolations(body: string, threadText: string): string[] {
   if ((body.match(URL_PATTERN) ?? []).some((url) => !thread.includes(url.toLowerCase()))) {
     violations.push('url_not_in_source');
   }
-  if ((body.match(EMAIL_PATTERN) ?? []).some((email) => !thread.includes(email.toLowerCase()))) {
+  if (emailsIn(body).some((email) => !thread.includes(email.toLowerCase()))) {
     violations.push('email_not_in_source');
   }
   if (

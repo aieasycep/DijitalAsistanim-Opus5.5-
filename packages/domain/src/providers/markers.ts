@@ -9,6 +9,7 @@
  * - deep link `${PUBLIC_WEB_URL}/app/approvals/{approvalId}` (To Do linkedResources, EventKit url).
  */
 import { isUuid, sha256Hex } from '../ids.ts';
+import { trimEndChars } from '../strings.ts';
 import type { IdempotencyMarker } from './types.ts';
 
 const BASE32HEX = '0123456789abcdefghijklmnopqrstuv';
@@ -70,6 +71,6 @@ export function deriveMarker(
     googleEventId: googleEventIdFor(id),
     graphTransactionId: id,
     textMarker: textMarkerFor(idempotencyKey),
-    deepLinkUrl: `${cfg.webUrl.replace(/\/+$/, '')}/app/approvals/${id}`,
+    deepLinkUrl: `${trimEndChars(cfg.webUrl, '/')}/app/approvals/${id}`,
   };
 }

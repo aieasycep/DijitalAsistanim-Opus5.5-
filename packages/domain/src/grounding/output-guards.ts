@@ -11,6 +11,8 @@
  *   proper nouns are not grounded.
  */
 import { foldTR, normalizeTR } from '../extract/normalize-tr.ts';
+import { trimEndChars } from '../strings.ts';
+import { stripMarkup } from './markup.ts';
 
 const INSTRUCTION_PATTERNS: readonly RegExp[] = [
   /ignore (?:all |the )?(?:previous|prior|above) (?:instructions|prompts?)/iu,
@@ -32,7 +34,11 @@ const BASE64_BLOB = /[A-Za-z0-9+/]{200,}={0,2}/;
 const HIDDEN_HTML = /(?:display\s*:\s*none|font-size\s*:\s*0|visibility\s*:\s*hidden)/iu;
 const UUID_LIKE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/iu;
 const URL_RE = /\b(?:https?|ftp|javascript|data|file):\/?\/?[^\s<>"')\]]+/giu;
-const EMAIL_RE = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/gu;
+/**
+ * A run of local-part characters, with `@domain.tld` when an address follows (group 1). Matching
+ * whole runs keeps this linear: `[…]+@…` alone retries every start inside a long run without `@`.
+ */
+const EMAIL_RE = /[A-Za-z0-9._%+-]+(@[A-Za-z0-9.-]+\.[A-Za-z]{2,})?/gu;
 const PHONE_RE =
   /(?<![\d])(?:\+?90[\s-]?)?0?\(?5\d{2}\)?[\s-]?\d{3}[\s-]?\d{2}[\s-]?\d{2}(?![\d])|(?<![\d])(?:\+\d{1,3}[\s-]?)?\(?\d{3}\)?[\s-]\d{3}[\s-]\d{4}(?![\d])/gu;
 
@@ -44,9 +50,16 @@ export interface InjectionScan {
   readonly signals: readonly InjectionSignal[];
 }
 
+/**
+ * Dot-joined label runs. Every run is matched (not only dotted ones) so a long run without a dot is
+ * consumed once instead of being retried from each of its positions; single labels are skipped.
+ */
+const LABEL_RUNS = /[\p{L}\p{N}-]+(?:\.[\p{L}\p{N}-]+)*/gu;
+
 /** A domain label mixing Latin with Cyrillic/Greek letters (homoglyph lure). */
 function hasMixedScriptDomain(text: string): boolean {
-  for (const m of text.matchAll(/[\p{L}\p{N}-]+(?:\.[\p{L}\p{N}-]+)+/gu)) {
+  for (const m of text.matchAll(LABEL_RUNS)) {
+    if (!m[0].includes('.')) continue;
     for (const label of m[0].split('.')) {
       const latin = /\p{Script=Latin}/u.test(label);
       const other = /[\p{Script=Cyrillic}\p{Script=Greek}]/u.test(label);
@@ -92,15 +105,6 @@ export interface GuardedText {
   readonly droppedPhones: readonly string[];
 }
 
-function stripMarkup(s: string): string {
-  return s
-    .replace(/<[^>]*>/g, '')
-    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
-    .replace(/[*_`#>~]+/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
 function presentIn(value: string, sources: readonly string[], suspected: boolean): boolean {
   if (suspected) return false;
   const v = value.toLowerCase();
@@ -127,13 +131,13 @@ export function guardOutputText(value: string, ctx: OutputGuardContext): Guarded
   const droppedEmails: string[] = [];
   const droppedPhones: string[] = [];
   let out = value.replace(URL_RE, (url) => {
-    const clean = url.replace(/[.,;:!?]+$/, '');
+    const clean = trimEndChars(url, '.,;:!?');
     if (clean.startsWith('https://') && presentIn(clean, ctx.sources, suspected)) return url;
     droppedUrls.push(clean);
     return '';
   });
-  out = out.replace(EMAIL_RE, (email) => {
-    if (presentIn(email, ctx.sources, suspected)) return email;
+  out = out.replace(EMAIL_RE, (email, domain: string | undefined) => {
+    if (domain === undefined || presentIn(email, ctx.sources, suspected)) return email;
     droppedEmails.push(email);
     return '';
   });
@@ -160,6 +164,12 @@ export function guardRefs(refs: readonly string[], aliases: ReadonlySet<string>)
  */
 export function guardProposals<T>(proposals: readonly T[], scan: InjectionScan): T[] {
   return scan.suspected ? [] : [...proposals];
+}
+
+/** The word up to its first apostrophe ("Ahmet'in" → "Ahmet"); the input holds no line breaks. */
+function beforeApostrophe(word: string): string {
+  const quote = word.indexOf("'");
+  return quote === -1 ? word : word.slice(0, quote);
 }
 
 const MONTHS_WEEKDAYS =
@@ -202,7 +212,7 @@ export function guardFreeText(
     ];
     const words = s.split(/\s+/).slice(1);
     const properNouns = words
-      .map((w) => w.replace(/[^\p{L}'-]/gu, '').replace(/'.*$/u, ''))
+      .map((w) => beforeApostrophe(w.replace(/[^\p{L}'-]/gu, '')))
       .filter((w) => /^\p{Lu}\p{Ll}+/u.test(w))
       .map((w) => foldTR(normalizeTR(w)));
     const all = [...facts, ...properNouns];

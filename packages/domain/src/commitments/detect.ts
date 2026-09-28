@@ -63,14 +63,33 @@ const STOPLIST =
 const HEDGE =
   /(?<!\p{L})(?:belki|sanirim|galiba|bakariz|musait olursam|umarim|insallah bakarim|\p{L}+(?:ebilirim|abilirim|ebiliriz|abiliriz))(?!\p{L})/u;
 const QUOTE_HEADER =
-  /^(?:>|-{2,}\s*(?:original message|orijinal ileti|özgün ileti)|on .+ wrote:|.+ tarihinde .+ şunu yazdı:|kimden:|from:)/iu;
+  /^(?:>|-{2,}\s*(?:original message|orijinal ileti|özgün ileti)|on .+ wrote:|kimden:|from:)/iu;
+const TR_REPLY_DATE = / tarihinde /iu;
+const TR_REPLY_WROTE = / şunu yazdı:/iu;
+const LINE_TERMINATOR = /[\n\r\u2028\u2029]/u;
+
+/**
+ * The Turkish reply header `/^.+ tarihinde .+ şunu yazdı:/iu` ("25 Eyl 2026 Per 10:00 tarihinde
+ * Ahmet <a@b.c> şunu yazdı:") without its two `.+`, which backtracked over each other: a line of
+ * repeated "a tarihinde " was quadratic. `.` stops at a line terminator, so only the text before
+ * the first one counts; the earliest " tarihinde " (after at least one character) leaves the most
+ * room, and " şunu yazdı:" must start at least one character after it.
+ */
+function isTurkishReplyHeader(line: string): boolean {
+  const cut = line.search(LINE_TERMINATOR);
+  const head = cut === -1 ? line : line.slice(0, cut);
+  const date = head.slice(1).search(TR_REPLY_DATE);
+  if (date === -1) return false;
+  const afterDate = 1 + date + ' tarihinde '.length + 1;
+  return head.slice(afterDate).search(TR_REPLY_WROTE) !== -1;
+}
 
 /** Removes quoted history (UT-COM-10): `>` lines and everything after a reply header. */
 export function stripQuotedHistory(text: string): string {
   const out: string[] = [];
   for (const line of text.split(/\r?\n/)) {
     const t = line.trim();
-    if (QUOTE_HEADER.test(t)) {
+    if (QUOTE_HEADER.test(t) || isTurkishReplyHeader(t)) {
       if (t.startsWith('>')) continue;
       break;
     }

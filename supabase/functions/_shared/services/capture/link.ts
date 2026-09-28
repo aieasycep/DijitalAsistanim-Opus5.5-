@@ -36,20 +36,31 @@ export function assertLinkAllowed(url: string): URL {
   return parsed;
 }
 
+const TITLE_ENTITIES: Readonly<Record<string, string>> = {
+  amp: '&',
+  quot: '"',
+  '#39': "'",
+  lt: '<',
+  gt: '>',
+};
+
+/**
+ * The five title entities decoded in one pass: every entity is read once, so `&amp;lt;` stays
+ * the text `&lt;` (chained replaces decoded `&amp;` first and then the `&lt;` it produced).
+ */
+export function decodeTitleEntities(value: string): string {
+  return value.replace(/&(amp|quot|#39|lt|gt);/g, (whole, name: string) => {
+    return TITLE_ENTITIES[name] ?? whole;
+  });
+}
+
 function titleOf(html: string): string | null {
   const og =
     /<meta[^>]+property=["']og:title["'][^>]*content=["']([^"']{1,300})["']/i.exec(html) ??
     /<meta[^>]+content=["']([^"']{1,300})["'][^>]*property=["']og:title["']/i.exec(html);
   const title = og?.[1] ?? /<title[^>]*>([^<]{1,300})<\/title>/i.exec(html)?.[1];
   if (title === undefined) return null;
-  const clean = title
-    .replace(/&amp;/g, '&')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/\s+/g, ' ')
-    .trim();
+  const clean = decodeTitleEntities(title).replace(/\s+/g, ' ').trim();
   return clean === '' ? null : clean.slice(0, 300);
 }
 

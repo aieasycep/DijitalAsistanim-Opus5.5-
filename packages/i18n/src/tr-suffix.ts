@@ -19,6 +19,7 @@
  *   writing (Ahmet'e, Zeynep'i, Tarık'ın). Common nouns attach directly and soften p ç t k → b c d ğ
  *   before a vowel (kitap → kitaba, renk → rengi) when `apostrophe: false`.
  */
+import { numberAtEnd, withoutTrailingNonWord, wordAtEnd } from './text-end.ts';
 
 export const TR_CASES = [
   'dative',
@@ -266,10 +267,7 @@ function readFormattedNumber(token: string): string {
 }
 
 const TIME_AT_END = /(?:^|[^\d.,:])(\d{1,2})([:.])(\d{2})$/;
-const NUMBER_AT_END = /\d[\d.,]*$/;
-const WORD_AT_END = /[\p{L}\p{N}]+$/u;
 const UPPER_ACRONYM = /^[A-ZÇĞİIÖŞÜQWX]{2,}$/u;
-const TRAILING_NON_WORD = /[^\p{L}\p{N}]+$/u;
 
 interface Reading {
   /** Lower-case Turkish reading of the final sound group. */
@@ -287,7 +285,7 @@ function readAcronym(token: string): string | undefined {
 
 function readingOf(value: string, options: TrSuffixOptions): Reading {
   if (options.reading !== undefined) return { text: trLower(options.reading), front: false };
-  const text = value.trim().replace(TRAILING_NON_WORD, '');
+  const text = withoutTrailingNonWord(value.trim());
 
   const time = TIME_AT_END.exec(text);
   if (time) {
@@ -301,10 +299,10 @@ function readingOf(value: string, options: TrSuffixOptions): Reading {
     }
   }
 
-  const number = NUMBER_AT_END.exec(text);
-  if (number) return { text: readFormattedNumber(number[0]), front: false };
+  const number = numberAtEnd(text);
+  if (number !== null) return { text: readFormattedNumber(number), front: false };
 
-  const word = WORD_AT_END.exec(text)?.[0] ?? text;
+  const word = wordAtEnd(text) ?? text;
   const lower = trLower(word);
   const pronunciation = PRONUNCIATIONS[word.toLowerCase()] ?? PRONUNCIATIONS[lower];
   if (pronunciation !== undefined) return { text: pronunciation, front: false };
@@ -402,7 +400,7 @@ function softenedStem(word: string, suffix: string, options: TrSuffixOptions): s
   const last = word.slice(-1);
   const replacement = SOFTENING[last];
   if (replacement === undefined) return word;
-  const lastWord = trLower(WORD_AT_END.exec(word)?.[0] ?? word);
+  const lastWord = trLower(wordAtEnd(word) ?? word);
   const syllables = lastWord.match(/[aeıioöuü]/g)?.length ?? 0;
   // Polysyllabic words soften (kitap → kitaba); "nk" always becomes "ng" (renk → rengi).
   const auto = (syllables >= 2 || lastWord.endsWith('nk')) && !NO_SOFTENING.has(lastWord);

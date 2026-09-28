@@ -50,10 +50,40 @@ function sendJson(res: ServerResponse, status: number, body: unknown): void {
   res.end(text);
 }
 
-function bearer(req: IncomingMessage): string | null {
-  const header = req.headers.authorization ?? '';
-  const match = /^Bearer\s+(\S+)$/i.exec(header);
-  return match?.[1] ?? null;
+/** The bearer token of an `Authorization` header; '' when there is none (and '' never verifies). */
+function bearerToken(authorization: string | undefined): string {
+  const match = /^Bearer\s+(\S+)$/i.exec(authorization ?? '');
+  return match?.[1] ?? '';
+}
+
+export interface GatewayReply {
+  readonly status: number;
+  readonly body: unknown;
+}
+
+/**
+ * `GET /auth/v1/user`: the GoTrue user for an HS256 access token. Every request goes through
+ * `verifyHs256` (signature, `alg`, expiry) and the answer is decided by the verified claims only,
+ * never by whether a raw header is present (CodeQL js/user-controlled-bypass).
+ */
+export function authUserReply(authorization: string | undefined, jwtSecret: string): GatewayReply {
+  const claims = verifyHs256(bearerToken(authorization), jwtSecret);
+  if (claims === null || typeof claims.sub !== 'string') {
+    return { status: 403, body: { code: 403, error_code: 'bad_jwt', msg: 'invalid JWT' } };
+  }
+  return {
+    status: 200,
+    body: {
+      id: claims.sub,
+      aud: claims.aud ?? 'authenticated',
+      role: claims.role ?? 'authenticated',
+      email: claims.email ?? null,
+      app_metadata: claims.app_metadata ?? {},
+      user_metadata: claims.user_metadata ?? {},
+      is_anonymous: claims.is_anonymous === true,
+      created_at: new Date(0).toISOString(),
+    },
+  };
 }
 
 async function proxy(req: IncomingMessage, res: ServerResponse, target: string): Promise<void> {
@@ -92,22 +122,8 @@ export function startGateway(options: {
       return;
     }
     if (path === '/auth/v1/user' && req.method === 'GET') {
-      const token = bearer(req);
-      const claims = token === null ? null : verifyHs256(token, options.jwtSecret);
-      if (claims === null || typeof claims.sub !== 'string') {
-        sendJson(res, 403, { code: 403, error_code: 'bad_jwt', msg: 'invalid JWT' });
-        return;
-      }
-      sendJson(res, 200, {
-        id: claims.sub,
-        aud: claims.aud ?? 'authenticated',
-        role: claims.role ?? 'authenticated',
-        email: claims.email ?? null,
-        app_metadata: claims.app_metadata ?? {},
-        user_metadata: claims.user_metadata ?? {},
-        is_anonymous: claims.is_anonymous === true,
-        created_at: new Date(0).toISOString(),
-      });
+      const reply = authUserReply(req.headers.authorization, options.jwtSecret);
+      sendJson(res, reply.status, reply.body);
       return;
     }
     if (path === '/auth/v1/.well-known/jwks.json') {

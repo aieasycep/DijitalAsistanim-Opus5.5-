@@ -305,8 +305,9 @@ export const i18nKeys: Check = {
           missingKeys =
             tr.get(pattern) === 'string' && en.get(pattern) === 'string' ? [] : [pattern];
         } else if (sets.has(pattern)) {
+          // Every `*` of the pattern stands for the declared value (`replaceAll`, not the first only).
           missingKeys = (sets.get(pattern) ?? [])
-            .map((v) => pattern.replace('*', v))
+            .map((v) => pattern.replaceAll('*', v))
             .filter((k) => tr.get(k) !== 'string' || en.get(k) !== 'string');
         } else {
           const both = expand(pattern, tr).filter((k) => en.get(k) === 'string');

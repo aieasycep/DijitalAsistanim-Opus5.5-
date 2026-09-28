@@ -99,10 +99,66 @@ export function detectCarrier(text: string, senderDomain?: string | null): Carri
 
 const S10_RE = /(?<![A-Z0-9])[A-Z]{2}\d{9}[A-Z]{2}(?![A-Z0-9])/g;
 const UPS_RE = /(?<![A-Z0-9])1Z[0-9A-Z]{16}(?![A-Z0-9])/g;
+/**
+ * Label, optional `:`/`#`, value. The separator is `\s*(?:[:#]\s*)?`, not `\s*[:#]?\s*`: two
+ * adjacent `\s*` split a run of spaces in O(n) ways (quadratic after "barkod" + many spaces).
+ */
 const LABEL_RE =
-  /(?:kargo\s*takip\s*(?:no|numarası|numarasi|kodu)|gönderi\s*(?:no|kodu|numarası|numarasi)|gonderi\s*(?:no|kodu|numarasi)|takip\s*(?:no|numarası|numarasi|kodu)|barkod(?:\s*no)?|tracking\s*(?:number|no|id))\s*[:#]?\s*([A-Z0-9-]{8,24})(?![A-Z0-9-])/giu;
-const LINK_RE =
-  /https:\/\/([a-z0-9.-]+)\/[^\s"'<>]*?[?&](?:code|barcode|trackingNumber|takipNo|kargoTakipNo)=([A-Za-z0-9-]{8,30})/g;
+  /(?:kargo\s*takip\s*(?:no|numarası|numarasi|kodu)|gönderi\s*(?:no|kodu|numarası|numarasi)|gonderi\s*(?:no|kodu|numarasi)|takip\s*(?:no|numarası|numarasi|kodu)|barkod(?:\s*no)?|tracking\s*(?:number|no|id))\s*(?:[:#]\s*)?([A-Z0-9-]{8,24})(?![A-Z0-9-])/giu;
+
+const HTTPS = 'https://';
+const LINK_HOST_CHAR = /[a-z0-9.-]/;
+const LINK_END_CHAR = /[\s"'<>]/;
+/** A tracking parameter at one `?` / `&` position (sticky, bounded). */
+const LINK_PARAM = /[?&](?:code|barcode|trackingNumber|takipNo|kargoTakipNo)=([A-Za-z0-9-]{8,30})/y;
+
+interface LinkParam {
+  readonly host: string;
+  readonly value: string;
+  /** Index of `value` in the text. */
+  readonly start: number;
+}
+
+/**
+ * Carrier-link parameters with the semantics of
+ * `/https:\/\/([a-z0-9.-]+)\/[^\s"'<>]*?[?&](?:code|…)=([A-Za-z0-9-]{8,30})/g` (per link, the
+ * first tracking parameter) in one linear scan. The regex rescanned the rest of the link from
+ * every later `https://` inside it, so "https://-/https://-/…" was quadratic. Here a link whose
+ * path holds no parameter is skipped whole: each later `https://` inside it sees a suffix of the
+ * same path with the same end, so it cannot match either.
+ */
+function findLinkParams(text: string): LinkParam[] {
+  const out: LinkParam[] = [];
+  let from = 0;
+  for (;;) {
+    const at = text.indexOf(HTTPS, from);
+    if (at === -1) return out;
+    const hostStart = at + HTTPS.length;
+    let slash = hostStart;
+    while (slash < text.length && LINK_HOST_CHAR.test(text.charAt(slash))) slash += 1;
+    if (slash === hostStart || text.charAt(slash) !== '/') {
+      from = at + 1;
+      continue;
+    }
+    let p = slash + 1;
+    let found: RegExpExecArray | null = null;
+    for (; p < text.length && !LINK_END_CHAR.test(text.charAt(p)); p += 1) {
+      const c = text.charAt(p);
+      if (c !== '?' && c !== '&') continue;
+      LINK_PARAM.lastIndex = p;
+      found = LINK_PARAM.exec(text);
+      if (found !== null) break;
+    }
+    if (found === null) {
+      from = p;
+      continue;
+    }
+    const value = found[1] ?? '';
+    const end = p + found[0].length;
+    out.push({ host: text.slice(hostStart, slash), value, start: end - value.length });
+    from = end;
+  }
+}
 
 function within(text: string, index: number, re: RegExp, radius = 60): boolean {
   return re.test(text.slice(Math.max(0, index - radius), index + radius));
@@ -151,12 +207,9 @@ export function findTrackingNumbers(text: string, opts: TrackingOptions = {}): T
       push({ value: v, kind: 'domestic', carrier: carrier.id, span: [start, start + v.length] });
     }
   }
-  for (const m of text.matchAll(LINK_RE)) {
-    const host = m[1] ?? '';
+  for (const { host, value: v, start } of findLinkParams(text)) {
     const linkCarrier = CARRIERS.find((c) => c.domains.some((d) => domainMatches(host, d)));
     if (!linkCarrier) continue;
-    const v = m[2] ?? '';
-    const start = m.index + m[0].length - v.length;
     push({
       value: v,
       kind: 'link_param',
