@@ -23,5 +23,16 @@ export default defineConfig({
     setupFiles: ['./test/setup.ts'],
     restoreMocks: true,
     unstubEnvs: true,
+    // TEST_PLAN §16 / T-12.04: `pnpm test` enforces 80% lines and functions, 70% branches over
+    // every source file. The icon components under `components/icons/generated/` are emitted by
+    // `scripts/gen-icons.ts` and excluded.
+    coverage: {
+      enabled: true,
+      provider: 'v8',
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: ['src/components/icons/generated/**'],
+      reporter: ['text-summary'],
+      thresholds: { lines: 80, branches: 70, functions: 80 },
+    },
   },
 });

@@ -12,10 +12,15 @@ module.exports = {
   resolver: require.resolve('react-native-worklets/jest/resolver.js'),
   setupFiles: ['react-native-gesture-handler/jestSetup'],
   setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
-  // TEST_PLAN §16 / T-12.04: `pnpm test` runs with coverage and enforces 85% lines for the kit.
-  collectCoverageFrom: ['<rootDir>/src/**/*.{ts,tsx}'],
+  // Sheet / BottomSheet tests run Reanimated layout and focus timers; under a parallel
+  // `turbo run test` (mobile, web and backoffice suites with coverage) they exceed Jest's 5 s default.
+  testTimeout: 30_000,
+  // TEST_PLAN §16 / T-12.04: `pnpm test` runs with coverage and enforces 85% lines and functions,
+  // 75% branches. The icon glyphs under `src/icons/generated/` are emitted by
+  // `scripts/gen-icons.ts` (Material Symbols paths) and excluded.
+  collectCoverageFrom: ['<rootDir>/src/**/*.{ts,tsx}', '!<rootDir>/src/icons/generated/**'],
   coverageReporters: ['text-summary'],
-  coverageThreshold: { global: { lines: 85 } },
+  coverageThreshold: { global: { lines: 85, branches: 75, functions: 85 } },
   transformIgnorePatterns: [
     'node_modules/(?!(\\.pnpm|(jest-)?react-native|@react-native(-community)?|react-native-(svg|reanimated|worklets|gesture-handler|safe-area-context)|@formatjs|@date-fns|date-fns)/)',
   ],
