@@ -1,8 +1,17 @@
 # Dijital Asistan: Security
 
+Documented at `ec14e92`.
+
 This file is the operational security summary of the repository. The design, threat model and control
 specifications live in [SECURITY_AND_PRIVACY_PLAN.md](SECURITY_AND_PRIVACY_PLAN.md); this file records
 how each threat is verified in code and what risk remains.
+
+Contents: the [threat-model verification checklist](#threat-model-verification-checklist-m113-m114-implementation_plan-t-1105)
+(tests per threat), the [threat model summary as built](#threat-model-summary-as-built), the
+[security gate](#security-gate), [secrets handling](#secrets-handling) and the
+[differences from the plan](#differences-from-the-plan). Related: [ARCHITECTURE.md](ARCHITECTURE.md)
+(boundaries), [OAUTH.md](OAUTH.md), [PRIVACY.md](PRIVACY.md), [DATABASE.md](DATABASE.md) (RLS
+reference), [TESTING.md](TESTING.md), [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ## Threat-model verification checklist (M§113, M§114; IMPLEMENTATION_PLAN T-11.05)
 
@@ -63,3 +72,90 @@ The threats outside M§113 are verified elsewhere:
    - Fix: migration `20260924002700_referral_loop_edges.sql` keeps legs that were rejected as `loop`
      in the walk. The in-memory repository in `_shared/testing/business.ts` mirrors the change.
    - Tests: `tests/security/referral-abuse.test.ts` and `300_threats_writes.test.sql`.
+
+## Threat model summary (as built)
+
+One line per threat of [SECURITY_AND_PRIVACY_PLAN §2](SECURITY_AND_PRIVACY_PLAN.md#2-threat-model):
+the mitigation as implemented and the risk that remains. THR-01 to THR-15 are verified by the
+tests in the checklist above.
+
+| Threat | Mitigation as built | Residual risk |
+|---|---|---|
+| THR-01 Token theft | AES-256-GCM tokens bound by AAD to account, provider and kind; `oauth_credentials` without client grants; decryption only in Edge Functions; the logger denies OAuth secrets by key ([OAUTH.md](OAUTH.md#token-storage-encryption-and-rotation)) | Supabase owner account plus Edge secrets together expose tokens; Microsoft has no per-app revoke |
+| THR-02 Session theft, THR-03 Account takeover | Supabase sessions (1 h JWT, rotating refresh tokens) in the app's encrypted store; JWKS verification; admin identities refused by `api` and `public-api`; admin sessions need the BFF key, `aal2` and a live `admin_sessions` row (30 min idle, 12 h absolute); privacy deletions need a sign-in at most 10 minutes old | A revoked session's access token stays valid up to 1 h on read-only RLS routes; no certificate pinning |
+| THR-04 OAuth misconfiguration | PKCE S256, single-use hashed state (10 min), exact redirect URIs, OIDC nonce, the R-07 completion bound to user and device nonce, identity collision checks | Unverified-app screen and the 100-user cap until Google CASA (manual step) |
+| THR-05 Webhook forgery and replay | Pub/Sub OIDC, Calendar channel HMAC, Graph `clientState`, constant-time RevenueCat secret; payloads are triggers only; `webhook_events` dedupe; body caps | A leaked RevenueCat secret only triggers re-fetches |
+| THR-06 Privilege escalation | Column grants; no client write on entitlements, approvals, credits or audit; `private` not exposed; `admin_role` only from the access-token hook; RBAC in `admin-api` and in SQL; definer functions pin `search_path` | A logic bug inside a definer function |
+| THR-07 SSRF | `https:` on 443 only, every resolved address checked, each redirect re-validated (≤ 3), size, time and type caps, no credentials; worker only | DNS rebinding between the check and the connect |
+| THR-08 Malicious uploads | Server-chosen paths; MIME, extension, size and magic bytes must agree; SVG, executables and archives refused; private buckets; signed URLs | Provider-side parser bugs |
+| THR-09 Prompt injection | Nonce-delimited escaped untrusted blocks, canary, pre-scan, no tools, flagged sources yield no proposals, every side effect is an approval tap ([AI_PIPELINE.md](AI_PIPELINE.md#prompt-assembly-and-injection-defences)) | Misleading but schema-valid summaries |
+| THR-10 AI data exfiltration | Output allow-list for URLs, e-mails and phones; markup stripped; cross-user ref guard; retrieval under the caller's RLS; content-free telemetry | A user approving an attacker-authored draft after seeing the recipients |
+| THR-11 Cross-tenant access | RLS forced on all 81 tables; `with check` on inserts; the secret-key client only in allow-listed modules; user ids from verified claims | New repositories must add a scoped test |
+| THR-12 Admin abuse | PII masked in SQL; reasoned, rate-limited, audited reveals; time-boxed Support Access; no impersonation; hash-chained append-only audit log | Colluding super admins or direct database access; tail truncation by a superuser |
+| THR-13 Replayed write action | Idempotency key + payload version; the approval state machine; one `approval_execute:{id}:v{n}` job; provider markers checked before a retry | Unknown result after a provider outage ("Sonuç doğrulanamadı") |
+| THR-14 Notification leakage | `title_only` default, `generic` mode, server-rendered text, payload exactly `{type, entity_id, deeplink}`, allow-listed deep links, lock-screen cap | Users who choose `full` with lock-screen privacy off |
+| THR-15 Referral abuse | Qualification rules, hashed signals, self, shared-installation, loop, velocity and tombstone checks, yearly cap, idempotent credits | Real-device farms with distinct identities, bounded by the cap |
+| THR-16 Supply chain | `pnpm install --frozen-lockfile`; `minimumReleaseAge: 1440`; an explicit `allowBuilds` list for install scripts; exact `npm:` / `jsr:` versions in the generated Edge import map; workflow `permissions` blocks | No `pnpm audit` gate, no Dependabot configuration, GitHub Actions pinned to major tags rather than SHAs, no Deno lock file (`"lock": false`) ([differences](#differences-from-the-plan)) |
+| THR-17 Secrets leakage | Names-only `.env.example`; env schemas refuse server keys in client scopes and test-only keys in preview and production; env-split and bundle scans in CI; the backoffice refuses to boot with server secrets; logger and Sentry scrubbing ([below](#secrets-handling)) | A person sharing a secret outside the repository; no history secret scanner runs in CI |
+| THR-18 Logging leakage | Structured logger with a key denylist and a value scrubber (e-mails masked; JWTs, keys, PEM blocks and long base64 redacted); content-named fields dropped; `ai_requests` allow-listed columns; Sentry events without bodies, headers or user ids | PII formats the patterns do not know |
+| THR-19 Device loss | SecureStore keys `AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY`; session, cache and preferences in AES-256 MMKV; `allowBackup: false`; lock-screen privacy by default; widgets show counts and times; the Android signal buffer is Keystore-encrypted and excluded from backups | An unlocked stolen device until the sessions are revoked |
+
+## Security gate
+
+What blocks a merge at `ec14e92` (CI [`ci.yml`](../.github/workflows/ci.yml); commands in
+[TESTING.md](TESTING.md)):
+
+| Check | Command | Catches |
+|---|---|---|
+| Quality gate | `pnpm quality-gate` ([`scripts/quality-gate`](../scripts/quality-gate)) | Work markers and unfinished-feature copy (R-17), banned product claims, positive claims of unbounded usage, retired canonical names (including excluded model families) |
+| Edge guards | `pnpm functions:lint` (`deno lint` + [`check-guards.ts`](../scripts/functions/check-guards.ts)) | The secret-key client imported outside the allow-list; model-id literals in function code |
+| Edge security suite | `pnpm functions:test`, `pnpm functions:coverage` | `supabase/functions/tests/security/*.test.ts` (the checklist above) without network permission; the `_shared` line-coverage gate |
+| SQL threat suite | Tier A in CI, `bash scripts/db/tier-c.sh` locally | `300_threats_*.test.sql` and the RLS and privilege invariants (`002_global_invariants`, `150_column_grants`, `120_admin_rbac`) |
+| Migration lint | `pnpm db:lint`; `supabase db lint` in tier A | squawk rules; `plpgsql_check` errors |
+| Env split and headers | `pnpm check:env-split` ([`check-env-split.ts`](../scripts/security/check-env-split.ts)) | `EXPO_PUBLIC_*` / `NEXT_PUBLIC_*` keys tagged server-only, client schemas or client code naming a server-only key, missing security headers (HSTS, `nosniff`, frame denial, COOP, Permissions-Policy, Referrer-Policy, CSP `frame-ancestors 'none'`; for the backoffice also `noindex`, `no-store` and CORP) |
+| Bundle scan | `pnpm scan:bundles` (CI `security` job after building web and backoffice and exporting the mobile bundle) | Secret-shaped values in browser bundles and prerendered server output; server-only key names in browser code |
+| Integration | `pnpm test:integration` (CI) | OAuth, webhook, approval, privacy and AI flows through the real functions against mock providers |
+| Deploy | [`scripts/deploy/check-secrets.ts`](../scripts/deploy/check-secrets.ts) in `deploy-supabase.yml` | Missing boot, production or deploy-job secret names on the hosted project (names only, never values) |
+
+## Secrets handling
+
+- **Inventory:** [`.env.example`](../.env.example) lists every key name with a tag: `client-safe`
+  (may ship in bundles), `SERVER-ONLY` (Edge Functions and server runtimes) or `build-time` (CI, EAS,
+  Vercel). No value is committed; `.env` is git-ignored. `bash scripts/dev/env.sh --init` generates
+  local values for the keys the stack creates itself (`TOKEN_ENC_KEY_V1`, `HASH_PEPPER`,
+  `AI_HASH_PEPPER`, `CRON_SECRET`, `WEBHOOK_HMAC_SECRET`, `ADMIN_BFF_SECRET`,
+  `ADMIN_GATEWAY_SECRET`, `RECOVERY_CODE_PEPPER`, `PII_LOOKUP_PEPPER`, `AUDIT_SUBJECT_PEPPER`).
+- **Where they live:** Supabase function secrets (Edge), Vault (`da_project_url` and `da_cron_secret`
+  for pg_net, written by the deploy job), `app_settings.admin.gateway_secret_sha256` (a hash, not the
+  secret), Vercel environment variables, EAS secrets and GitHub environment secrets. Who holds which
+  secret is tabled in [ARCHITECTURE.md](ARCHITECTURE.md#who-holds-which-secret).
+- **Validation:** the Edge environment is parsed once per isolate with the `@da/validation` server
+  schema; errors name keys, never values. Only the Supabase URL, `HASH_PEPPER` and the active token
+  key are required at boot; provider credentials are grouped (`CREDENTIALS` in
+  [`_shared/env.ts`](../supabase/functions/_shared/env.ts)) and a missing group surfaces as
+  `EXTERNAL_CREDENTIAL_REQUIRED` with the key names. Test-only overrides (`*_BASE_URL`,
+  `DA_FIXED_NOW`) are refused in preview and production, and demo mode refuses to boot in
+  production unless `ALLOW_DEMO_IN_PRODUCTION=true`.
+- **Boundaries:** the mobile and web bundles carry `EXPO_PUBLIC_*` / `NEXT_PUBLIC_*` values only; the
+  backoffice server holds `ADMIN_BFF_SECRET` and refuses to boot with the Supabase secret key, the DB
+  URL, token keys, peppers, the gateway, cron or webhook secrets, AI keys or RevenueCat secret keys;
+  only allow-listed Edge modules may use the secret-key client.
+- **Comparisons and derived values:** shared secrets (`CRON_SECRET`, `ADMIN_BFF_SECRET`, the
+  RevenueCat `Authorization`) are compared in constant time; peppers turn identifiers into HMACs
+  (log user hashes, AI cache keys, provider pseudonyms, OAuth state and nonce, anti-abuse signals);
+  admin recovery codes are stored as HMAC hashes only.
+- **Rotation:** token keys are versioned (`TOKEN_ENC_KEY_V{n}` + `TOKEN_ENC_ACTIVE_VERSION`) and
+  `credential_reencrypt` moves rows to the active key; other secrets are replaced in the secret store
+  and redeployed (`CRON_SECRET` also in Vault through the deploy job). `MICROSOFT_CERT_NOT_AFTER`,
+  `MICROSOFT_LOGIN_SECRET_NOT_AFTER` and `APPLE_SIWA_WEB_SECRET_NOT_AFTER` appear as expiry cards
+  on the backoffice health summary, and the `microsoft_oauth` probe turns `degraded` 30 days before
+  the certificate expires. Procedures: [DEPLOYMENT.md](DEPLOYMENT.md).
+- **Never in output:** logs, Sentry events, `ai_requests`, job payloads, audit rows and the backoffice
+  (which shows only "Yapılandırıldı / Yapılandırılmadı" for credentials) never carry secret values.
+
+## Differences from the plan
+
+| Plan | As built | Reason (source) |
+|---|---|---|
+| `pnpm audit` gate, Dependabot, SHA-pinned Actions, a `deno.lock` per function and gitleaks on history (CTL-3.19, THR-16, THR-17) | Frozen lockfile, `minimumReleaseAge: 1440`, the `allowBuilds` list, exact import-map versions and workflow `permissions`; no audit gate, Dependabot configuration, SHA pins, Deno lock file or history secret scan in the repository | Absent at `ec14e92`; listed as residual supply-chain risk above |
+| The SSRF fetcher connects to the vetted address | The runtime `fetch` resolves the name again (Deno cannot pin an IP while keeping SNI) | Platform limit; residual DNS-rebinding window (THR-07) |
