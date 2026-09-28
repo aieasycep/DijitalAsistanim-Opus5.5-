@@ -4,7 +4,7 @@
  * offline), including skipped middays ("Değişiklik yoktu"). A row opens `briefing/{id}` or
  * `weekly/{id}`.
  */
-import { formatDatePattern, toLocalDateString, toUpper } from '@da/i18n';
+import { formatDatePattern, toLocalDateString, toUpper, withTrCases } from '@da/i18n';
 import {
   DetailHeader,
   EmptyState,
@@ -115,7 +115,7 @@ export function BriefingHistoryScreen() {
         icon="wb_twilight"
         tone="primary"
         title={t('emptyTitle')}
-        body={t('emptyBody', { time: morning, time_loc: morning })}
+        body={t('emptyBody', withTrCases({ time: morning }, ['time']))}
         testID="history.empty"
       />
     );
