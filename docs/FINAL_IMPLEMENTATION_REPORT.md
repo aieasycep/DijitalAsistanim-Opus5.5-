@@ -315,11 +315,10 @@ Evidence compiled read-only at `d59d471` (branch `claude/magical-pascal-edvjgn`)
   - canonical-name drift;
   - the No-Dead-Action inventory.
 - **Security job (CI):** a gitleaks scan over the full history, a bundle secret scan over the web, backoffice and mobile outputs (`scan:bundles`, also clean in the container), the env split, and header checks.
-- **security-nightly (CI)** was green on `d87e339`:
+- **security-nightly (CI)** is green on `4b74183`, which includes all the gap-closure code:
   - `pnpm security:audit`: high and critical advisories block, and the allow-list entries expire.
-  - CodeQL `security-extended`: 0 results after the remediation merge `e633f43`; SARIF findings at severity 7.0 or above block.
+  - CodeQL `security-extended`: 0 results since the remediation merge `e633f43`; SARIF findings at severity 7.0 or above block.
   - ZAP 2.17.0 baseline against web and backoffice.
-  - A re-run on the final head was dispatched with this report.
 - **Threat model:** each threat in [SECURITY.md](SECURITY.md) has a mitigation and a residual risk. Covered by the threat-model suites: pgTAP `300_threats_*` and the Deno and integration threat tests.
 - **ReDoS regression tests** measure growth rate on thread CPU time, so they don't trip under load.
 - **Residual risks:**
@@ -358,7 +357,7 @@ Where each tier ran, with counts at `1f85dfb` (details in [TESTING.md](TESTING.m
 | Backoffice E2E (Playwright, contract project) | CI `backoffice` | green on `b66acb3` |
 | Mobile E2E (Maestro, Android) | CI Mobile E2E | not yet green (see [Mobile](#mobile)) |
 | Mobile E2E (Maestro, iOS) | EAS | not run (owner: `EXPO_TOKEN`, staging project) |
-| Security (audit, CodeQL, ZAP) | CI security-nightly | green on `d87e339` |
+| Security (audit, CodeQL, ZAP) | CI security-nightly | green on `4b74183` |
 | Live AI evals | CI `ai-eval` (staging) | not run (owner: staging keys) |
 
 **Planned suites not built:**
@@ -374,6 +373,7 @@ Where each tier ran, with counts at `1f85dfb` (details in [TESTING.md](TESTING.m
 - The `090_jobs_scheduler` pgTAP suite collided with the live `da_health_check` cron. The suite now takes the scheduler advisory lock and then locks the table.
 - The emulator failed in CI after the framework restarted post-boot. A readiness wait and install retries fixed it.
 - The CI security job failed once fetching Google Fonts. The push run of the same commit passed.
+- The backoffice eval-run spec (`e2e/ai.spec.ts`) failed on `17b7937`. This was a test bug, not a flake: the toast text also matched the `aria-live` announcer, and during streaming a hidden copy of the version panel can sit next to the swapped-in one. The assertions now take the first match, as the sibling specs do. It passed 12/12 when repeated locally.
 
 ### Build
 

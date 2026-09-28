@@ -69,13 +69,14 @@ test.describe('AI operations', () => {
   }) => {
     await signInAs(page, request, 'ai_ops');
     await page.goto('/ai/prompts/post_meeting?version=2');
-    const panel = page.getByTestId('prompt-version');
+    // Streaming can briefly keep a hidden copy of the panel next to the swapped-in one.
+    const panel = page.getByTestId('prompt-version').first();
     await expect(panel.getByTestId('prompt-eval-report')).toContainText('anthropic · mock-primary');
     await panel.getByTestId('prompt-eval').click();
     await confirmDialog(page, 'v2 için değerlendirme çalıştırılsın mı?', {
       reason: 'Model yönlendirmesi değişti, kapı yeniden çalışsın',
     });
-    await expect(page.getByText('Değerlendirme kuyruğa alındı.', { exact: false })).toBeVisible();
+    await expect(page.getByText('Değerlendirme kuyruğa alındı.').first()).toBeVisible();
     expect(
       (await mockCalls(request)).some(
         (c) => c.method === 'POST' && c.path === '/ai/prompts/post_meeting/versions/2/eval',
