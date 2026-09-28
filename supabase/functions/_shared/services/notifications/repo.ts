@@ -9,6 +9,7 @@ import {
   type NotificationPreferences,
 } from '@da/domain';
 import type { DbClient } from '../../db/clients.ts';
+import { inChunks } from '../../db/in-chunks.ts';
 import { mapDbError } from '../../errors.ts';
 import type { NotificationRow, NotificationsRepo, PendingTicket, PushTarget } from './model.ts';
 import type { TriggerRepo } from './triggers/types.ts';
@@ -162,17 +163,18 @@ export function supabaseNotificationsRepo(system: DbClient): NotificationsRepo {
         >(query)) ?? [];
       const live = rows.filter((r) => r.app_installations.signed_out_at === null);
       if (live.length === 0) return [];
-      const backoff =
-        (await one<{ key: string }[]>(
-          system
-            .from('rate_limits')
-            .select('key')
-            .in(
-              'key',
-              live.map((r) => `push_backoff:${r.id}`),
-            )
-            .gt('window_start', now.toISOString()),
-        )) ?? [];
+      // One back-off key per device: chunked so the `in` filter stays inside the gateway's URL limit.
+      const backoff = await inChunks(
+        live.map((r) => `push_backoff:${r.id}`),
+        async (keys) =>
+          (await one<{ key: string }[]>(
+            system
+              .from('rate_limits')
+              .select('key')
+              .in('key', keys)
+              .gt('window_start', now.toISOString()),
+          )) ?? [],
+      );
       const blocked = new Set(backoff.map((b) => b.key));
       return live
         .filter((r) => !blocked.has(`push_backoff:${r.id}`))
@@ -249,16 +251,22 @@ export function supabaseNotificationsRepo(system: DbClient): NotificationsRepo {
       );
     },
     async pendingTickets(sentBefore, limit, ids) {
-      let query = system
-        .from('push_tickets')
-        .select('id,expo_ticket_id,push_token_id,sent_at')
-        .eq('status', 'pending_receipt')
-        .not('expo_ticket_id', 'is', null)
-        .lt('sent_at', sentBefore.toISOString())
-        .order('sent_at')
-        .limit(limit);
-      if (ids !== undefined && ids.length > 0) query = query.in('expo_ticket_id', [...ids]);
-      return (await one<PendingTicket[]>(query)) ?? [];
+      const base = () =>
+        system
+          .from('push_tickets')
+          .select('id,expo_ticket_id,push_token_id,sent_at')
+          .eq('status', 'pending_receipt')
+          .not('expo_ticket_id', 'is', null)
+          .lt('sent_at', sentBefore.toISOString())
+          .order('sent_at')
+          .limit(limit);
+      if (ids === undefined || ids.length === 0) return (await one<PendingTicket[]>(base())) ?? [];
+      // The ticket ids of one send (one per device) are looked up in URL-sized chunks.
+      const rows = await inChunks(
+        [...ids],
+        async (chunk) => (await one<PendingTicket[]>(base().in('expo_ticket_id', chunk))) ?? [],
+      );
+      return rows.sort((a, b) => Date.parse(a.sent_at) - Date.parse(b.sent_at)).slice(0, limit);
     },
     resolveTicket(id, status, errorCode, checkedAt) {
       return exec(

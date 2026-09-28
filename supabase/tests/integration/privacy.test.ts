@@ -148,16 +148,18 @@ it(
     const files = unzipSync(zip);
     const names = Object.keys(files);
     assert(names.includes('manifest.json'), names.join(','));
+    // `ManifestFile` in services/privacy/export.ts: the ZIP entry `name`, its row count and sha256.
     const manifest = JSON.parse(strFromU8(files['manifest.json'] as Uint8Array)) as {
-      files?: { path: string; sha256: string }[];
+      files?: { name: string; rows: number; sha256: string }[];
     };
+    assert((manifest.files ?? []).length > 0, 'the manifest lists the exported files');
     for (const f of manifest.files ?? []) {
-      const data = files[f.path];
-      assert(data !== undefined, f.path);
+      const data = files[f.name];
+      assert(data !== undefined, `${f.name} is listed in the manifest but not in the ZIP`);
       const digest = [...new Uint8Array(await crypto.subtle.digest('SHA-256', data))]
         .map((b) => b.toString(16).padStart(2, '0'))
         .join('');
-      assertEquals(digest, f.sha256, f.path);
+      assertEquals(digest, f.sha256, f.name);
     }
     for (const [name, data] of Object.entries(files)) {
       const text = strFromU8(data);
@@ -234,6 +236,23 @@ it(
   },
 );
 
+/**
+ * A user signed in with Apple whose SIWA refresh token is stored (`POST /auth/apple/exchange`), so
+ * account deletion has an Apple revoke step.
+ */
+async function siwaUser(options: { pro?: boolean } = {}): Promise<TestUser> {
+  const sub = `001234.${crypto.randomUUID().replace(/-/g, '')}.1234`;
+  const user = await createUser({ appleSub: sub, ...options });
+  await mock.apple({ op: 'identity', sub });
+  const exchange = await call('api', 'POST', '/auth/apple/exchange', {
+    jwt: user.jwt,
+    key: crypto.randomUUID(),
+    body: { authorization_code: 'c1a2b3c4d5e6f7.0.mock.apple', identity_token_sub: sub },
+  });
+  assertEquals(exchange.status, 200, await exchange.text());
+  return user;
+}
+
 async function requestDeletion(user: TestUser): Promise<string> {
   const res = await call('api', 'POST', '/privacy/delete-account', {
     jwt: await recent(user),
@@ -252,16 +271,8 @@ it(
   'IT-RC-10',
   'account deletion revokes Google, SIWA and deletes the RevenueCat customer; the notice says the store subscription continues',
   async () => {
-    const sub = `001234.${crypto.randomUUID().replace(/-/g, '')}.1234`;
-    const user = await createUser({ appleSub: sub });
+    const user = await siwaUser();
     await makePro(user.id);
-    await mock.apple({ op: 'identity', sub });
-    const exchange = await call('api', 'POST', '/auth/apple/exchange', {
-      jwt: user.jwt,
-      key: crypto.randomUUID(),
-      body: { authorization_code: 'c1a2b3c4d5e6f7.0.mock.apple', identity_token_sub: sub },
-    });
-    assertEquals(exchange.status, 200, await exchange.text());
     await syncedGoogle(user);
     await mock.revenuecat({
       op: 'customer',
@@ -325,7 +336,8 @@ it(
   'IT-PRIV-04',
   'account deletion: every step against the mocks, zero rows left, resumable, never completed early',
   async () => {
-    const user = await createUser({ pro: true });
+    // Apple sign-in with a stored SIWA token: the deletion has its Apple revoke step to crash in.
+    const user = await siwaUser({ pro: true });
     await syncedGoogle(user);
     await mock.revenuecat({
       op: 'customer',
@@ -341,6 +353,7 @@ it(
       `select status from public.data_deletion_requests where id = $1`,
       [requestId],
     );
+    assertEquals((await mock.requests('/apple/auth/revoke')).length, 1, 'the crash point was hit');
     assertNotEquals(midway.status, 'completed');
     for (let i = 0; i < 6; i++) {
       await releaseJobs();

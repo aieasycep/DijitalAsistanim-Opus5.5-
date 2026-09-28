@@ -117,6 +117,19 @@ jobs:
           restore-keys: deno-${{ runner.os }}-
       - run: pnpm exec supabase start -x studio,imgproxy
       - run: pnpm test:integration
+      # The functions run in the local stack's edge runtime container, whose output is not in the
+      # artifact; the gateway log shows refused requests (e.g. 414). Test stack, run-scoped values.
+      - name: Edge runtime, gateway and mock provider logs
+        if: failure()
+        run: |
+          for c in $(docker ps --format '{{.Names}}' | grep -E '^supabase_(edge_runtime|kong)_'); do
+            echo "::group::$c"
+            docker logs --tail 400 "$c" 2>&1
+            echo "::endgroup::"
+          done
+          echo "::group::mock-providers.log"
+          tail -n 200 .cache/integration/logs/mock-providers.log || true
+          echo "::endgroup::"
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

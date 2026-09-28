@@ -161,6 +161,53 @@ Deno.test(
   },
 );
 
+Deno.test(
+  'notifications repo (IT-NTF-02): 250 devices → backoff and ticket lookups stay inside the URL limit',
+  async () => {
+    const tokens = Array.from({ length: 250 }, (_, i) => ({
+      id: `t${i}`,
+      expo_push_token: `ExponentPushToken[${i}]`,
+      installation_id: `i${i}`,
+      app_installations: { id: `i${i}`, platform: 'ios', signed_out_at: null },
+    }));
+    const tickets = (ids: string[]) =>
+      ids.map((id, i) => ({
+        id: `pt-${id}`,
+        expo_ticket_id: id,
+        push_token_id: null,
+        sent_at: new Date(Date.UTC(2026, 8, 24, 6, 0, 250 - Number(id.slice(3)) - i)).toISOString(),
+      }));
+    const pg = postgrest((req) => {
+      if (req.path === 'push_tokens') return tokens;
+      if (req.path === 'rate_limits') return [{ key: 'push_backoff:t120' }];
+      const list = /in\.\(([^)]*)\)/.exec(req.params.expo_ticket_id ?? '')?.[1];
+      return tickets(list === undefined ? [] : list.split(','));
+    });
+    const repo = supabaseNotificationsRepo(pg.db);
+    const targets = await repo.activeTargets(USER_A, null, NOW);
+    assertEquals(targets.length, 249);
+    assert(!targets.some((t) => t.tokenId === 't120'), 'a backed-off device in a later chunk');
+    const lookups = pg.to('rate_limits');
+    assertEquals(
+      lookups.map((r) => (r.params.key ?? '').split(',').length),
+      [100, 100, 50],
+    );
+    for (const r of lookups) assert(r.url.length < 8_000, `URL of ${r.url.length} bytes`);
+
+    const ids = Array.from({ length: 250 }, (_, i) => `tk-${i}`);
+    const pending = await repo.pendingTickets(NOW, 1000, ids);
+    assertEquals(pg.to('push_tickets', 'GET').length, 3);
+    assertEquals(pending.length, 250);
+    const order = pending.map((t) => Date.parse(t.sent_at));
+    assertEquals(
+      order,
+      [...order].sort((a, b) => a - b),
+      'merged in sent_at order',
+    );
+    assertEquals((await repo.pendingTickets(NOW, 10, ids)).length, 10, 'the limit holds overall');
+  },
+);
+
 Deno.test('notifications repo: recent sends, category caps and tickets', async () => {
   const pg = postgrest((req) => {
     switch (`${req.method} ${req.path}`) {
