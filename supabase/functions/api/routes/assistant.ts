@@ -20,6 +20,7 @@ import {
 import type { ApprovalView, AssistantAnswerV1, AssistantRichCardV1 } from '@da/validation';
 import { parseDatesTR, routes as links } from '@da/domain';
 import { currentUser } from '../../_shared/auth/user.ts';
+import { admitRetrieved } from '../../_shared/policy/data-access.ts';
 import { AppError, isAppError, normalizeError, toErrorBody } from '../../_shared/errors.ts';
 import type { AppContext, UserAuth } from '../../_shared/http/context.ts';
 import { sendData } from '../../_shared/http/respond.ts';
@@ -34,7 +35,11 @@ import { interactiveAiError } from '../../_shared/services/assist/common.ts';
 import type { AssistantMessageRow, ContactMatch } from '../../_shared/services/assist/store.ts';
 import type { AiUser } from '../../_shared/services/ai/runtime.ts';
 import { proposeApproval } from '../../_shared/services/approvals/propose.ts';
-import { answerGrounded, planQa, type QaResult } from '../../_shared/services/assistant/answer.ts';
+import {
+  answerGroundedEscalating,
+  planQa,
+  type QaResult,
+} from '../../_shared/services/assistant/answer.ts';
 import {
   detectIntent,
   type DetectedIntent,
@@ -49,7 +54,7 @@ import {
 } from '../../_shared/services/assistant/tools.ts';
 import { clip, copy, formatDay, message } from '../../_shared/services/copy.ts';
 import { isOn } from '../../_shared/services/flags.ts';
-import { embedTexts } from '../../_shared/services/memory/embed.ts';
+import { embedQueryText } from '../../_shared/services/memory/dr.ts';
 import { runSearch } from '../../_shared/services/memory/search.ts';
 import { transcribeAudio } from '../../_shared/services/voice/speech.ts';
 import type { RequestRepos, RouteKit, RouteRegistrar } from '../deps.ts';
@@ -556,18 +561,7 @@ async function answer(
       contactsNamed: (names) => repo.contactsNamed(names),
       ownsContact: (id) => repo.ownsContact(id),
       semanticQuota: () => repo.semanticQuota(),
-      embedQuery: user.isPro
-        ? (text) =>
-            embedTexts(intel.ai.runtime, {
-              feature: 'embedding_query',
-              userId: user.userId,
-              plan: user.plan,
-              profile: user.profile,
-              flags: user.flags,
-              inputs: [text],
-              correlationId,
-            })
-        : null,
+      embedQuery: user.isPro ? (text) => embedQueryText(intel.ai, user, text, correlationId) : null,
     },
     {
       q: input.text.slice(0, 200).padEnd(2, ' '),
@@ -580,12 +574,13 @@ async function answer(
     },
     { isPro: user.isPro, now, timeZone: user.timeZone, locale: L },
   );
-  const retrieved = retrievalDocs(search.data.results);
+  // Data Source Controls: retrieved rows of a disabled class never become `search_result` blocks.
+  const retrieved = retrievalDocs(admitRetrieved(user.dataAccess, search.data.results));
   const plan = await planQa(intel.ai.runtime, user, intel.ai.canary);
   if (plan.kind !== 'ok') throw interactiveAiError(plan.reason);
   out.route = 'grounded_qa';
   await send('status', { stage: 'generating' });
-  const qa = await answerGrounded(
+  const qa = await answerGroundedEscalating(
     intel.ai.runtime,
     plan,
     {
@@ -595,7 +590,10 @@ async function answer(
       results: retrieved.docs,
       correlationId,
       signal,
-      ...(person === null ? {} : { scopeLine: `Kişi: ${person.display_name}` }),
+      // The person scope is contact-book data (`ai_data_access.contacts`).
+      ...(person === null || !user.dataAccess.contacts
+        ? {}
+        : { scopeLine: `Kişi: ${person.display_name}` }),
     },
     {
       delta: async (text) => {

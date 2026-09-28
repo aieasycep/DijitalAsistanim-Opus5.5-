@@ -21,6 +21,7 @@ import type { MiddlewareHandler } from 'hono';
 import { currentUser } from '../../_shared/auth/user.ts';
 import { sha256Hex } from '../../_shared/crypto/hmac.ts';
 import { AppError } from '../../_shared/errors.ts';
+import { assertDataAllowed } from '../../_shared/policy/data-access.ts';
 import type { AppContext, AppEnv, UserAuth } from '../../_shared/http/context.ts';
 import { sendData } from '../../_shared/http/respond.ts';
 import {
@@ -375,11 +376,7 @@ export const registerCaptureRoutes: RouteRegistrar = (app, kit) => {
             });
           }
           if (FILE_KINDS.has(row.kind) || row.storage_path !== null) {
-            if (!user.dataAccess.attachments) {
-              throw new AppError('DATA_SOURCE_DISABLED', {
-                details: { toggle: 'ai_data_access.attachments' },
-              });
-            }
+            assertDataAllowed(user.dataAccess, 'attachments');
             const stat =
               row.storage_path === null
                 ? null

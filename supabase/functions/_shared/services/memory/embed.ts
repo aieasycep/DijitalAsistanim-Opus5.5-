@@ -6,6 +6,10 @@
  * is no hot cross-provider fallback: a missing key, a kill switch, an open breaker or a provider
  * failure returns `unavailable` and the caller degrades (chunks stored without a vector, search
  * on FTS only). Every attempt writes `ai_requests`; the cost settles into `ai_usage_daily`.
+ *
+ * An explicit `target` (the disaster-recovery model of `ai.embedding_dr`, `services/memory/dr.ts`)
+ * bypasses the route but not the kill switches (`ai.global.enabled`, the provider switch) nor the
+ * credential check. System work (the DR re-embed) passes no user: no budget is reserved.
  */
 import type { AiFeature } from '@da/domain';
 import type { AiRuntime } from '../../ai/call.ts';
@@ -13,8 +17,8 @@ import { AiError } from '../../ai/errors.ts';
 import { costMicros, estimateMicros } from '../../ai/pricing.ts';
 import { resolveRoute } from '../../ai/router.ts';
 import { recordAttempt } from '../../ai/telemetry.ts';
-import { emptyUsage, type RoutingProfile } from '../../ai/types.ts';
-import type { FlagMap } from '../flags.ts';
+import { type AiTier, emptyUsage, type ModelTarget, type RoutingProfile } from '../../ai/types.ts';
+import { type FlagMap, isOn } from '../flags.ts';
 
 export const EMBEDDING_DIMENSIONS = 1024;
 /** Provider batch limit (Voyage ≤128 inputs). */
@@ -22,14 +26,16 @@ export const EMBED_BATCH = 128;
 
 export interface EmbedInput {
   readonly feature: Extract<AiFeature, 'embedding_doc' | 'embedding_query'>;
-  readonly userId: string;
-  readonly plan: 'free' | 'pro';
+  readonly userId: string | null;
+  readonly plan: 'free' | 'pro' | null;
   readonly profile: RoutingProfile;
   readonly flags: FlagMap;
   readonly inputs: readonly string[];
   readonly correlationId: string;
   readonly jobId?: string | null;
   readonly signal?: AbortSignal;
+  /** The disaster-recovery target instead of the route's primary (see the file header). */
+  readonly target?: ModelTarget;
 }
 
 export type EmbedOutcome =
@@ -46,26 +52,45 @@ const approxTokens = (inputs: readonly string[]): number =>
 
 export async function embedTexts(runtime: AiRuntime, input: EmbedInput): Promise<EmbedOutcome> {
   if (input.inputs.length === 0) return { kind: 'ok', vectors: [], model: '' };
-  const decision = await resolveRoute(runtime.router, {
-    feature: input.feature,
-    profile: input.profile,
-    flags: input.flags,
-    role: 'embedding',
-  });
-  if (decision.kind !== 'route')
-    return { kind: 'unavailable', reason: decision.reason, retryable: false };
-  const target = decision.route.chain[0];
+  let target: ModelTarget | undefined;
+  let tier: AiTier = 't1';
+  if (input.target !== undefined) {
+    if (
+      !isOn(input.flags, 'ai.global.enabled') ||
+      !isOn(input.flags, `ai.provider.${input.target.provider}.enabled`)
+    ) {
+      return { kind: 'unavailable', reason: 'kill_switch', retryable: false };
+    }
+    if (!runtime.router.providerAvailable(input.target.provider)) {
+      return { kind: 'unavailable', reason: 'no_target', retryable: false };
+    }
+    target = input.target;
+  } else {
+    const decision = await resolveRoute(runtime.router, {
+      feature: input.feature,
+      profile: input.profile,
+      flags: input.flags,
+      role: 'embedding',
+    });
+    if (decision.kind !== 'route')
+      return { kind: 'unavailable', reason: decision.reason, retryable: false };
+    target = decision.route.chain[0];
+    tier = decision.route.tier;
+  }
   const provider = target === undefined ? null : runtime.provider(target.provider);
   if (target === undefined || provider === null || provider.embed === undefined) {
     return { kind: 'unavailable', reason: 'no_target', retryable: false };
   }
   const price = await runtime.prices.price(target.provider, target.model);
-  const reservation = await runtime.budget.reserve({
-    userId: input.userId,
-    feature: input.feature,
-    estCostMicros: estimateMicros(price, approxTokens(input.inputs), 0),
-    units: 0,
-  });
+  const reservation =
+    input.userId === null
+      ? { allow: true, level: 'l0' as const, reason: null, reservationId: null }
+      : await runtime.budget.reserve({
+          userId: input.userId,
+          feature: input.feature,
+          estCostMicros: estimateMicros(price, approxTokens(input.inputs), 0),
+          units: 0,
+        });
   if (!reservation.allow) {
     return { kind: 'unavailable', reason: reservation.reason ?? 'budget', retryable: false };
   }
@@ -98,7 +123,7 @@ export async function embedTexts(runtime: AiRuntime, input: EmbedInput): Promise
       plan: input.plan,
       profile: input.profile,
       feature: input.feature,
-      tier: decision.route.tier,
+      tier,
       provider: target.provider,
       model: target.model,
       operation: 'embed',
@@ -127,7 +152,7 @@ export async function embedTexts(runtime: AiRuntime, input: EmbedInput): Promise
     plan: input.plan,
     profile: input.profile,
     feature: input.feature,
-    tier: decision.route.tier,
+    tier,
     provider: target.provider,
     model: target.model,
     operation: 'embed',

@@ -24,6 +24,7 @@ export interface InstallationRow {
   readonly user_id: string;
   readonly installation_id: string;
   readonly signed_out_at: string | null;
+  readonly push_enabled?: boolean;
 }
 
 export interface PushTokenRow {
@@ -94,12 +95,21 @@ export interface RegisterResult {
   readonly timezone_applied: boolean;
 }
 
+/** What a registration changed, for the §17.1 `device_registered` / `push_permission_changed`. */
+export interface DeviceRegistrationChange {
+  /** A new installation for this user: first registration, another user's device, or after sign-out. */
+  readonly firstRegistration: boolean;
+  /** Push delivery turned on or off on an installation this user already had. */
+  readonly pushChanged: boolean;
+}
+
 export async function registerDevice(
   repo: DevicesRepo,
   pepper: Pepper,
   userId: string,
   input: RegisterInput,
   now: Date = new Date(),
+  observe?: (change: DeviceRegistrationChange) => void,
 ): Promise<RegisterResult> {
   const at = now.toISOString();
   const pushAllowed =
@@ -177,6 +187,16 @@ export async function registerDevice(
     timezoneApplied = true;
   }
 
+  const firstRegistration =
+    existing === null || existing.user_id !== userId || existing.signed_out_at !== null;
+  observe?.({
+    firstRegistration,
+    pushChanged:
+      !firstRegistration &&
+      existing?.push_enabled !== undefined &&
+      existing.push_enabled !== (token !== null),
+  });
+
   return {
     installation_id: input.installation_id,
     push_enabled: token !== null,
@@ -213,7 +233,7 @@ export function supabaseDevicesRepo(clients: { system: DbClient; user: DbClient 
     async findInstallation(installationId) {
       const { data, error } = await system
         .from('app_installations')
-        .select('id,user_id,installation_id,signed_out_at')
+        .select('id,user_id,installation_id,signed_out_at,push_enabled')
         .eq('installation_id', installationId)
         .maybeSingle();
       if (error !== null) throw mapDbError(error);

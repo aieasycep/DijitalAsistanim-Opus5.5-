@@ -20,7 +20,7 @@ orchestration, budget, cache, pricing, telemetry, prompt registry, provider adap
 | T0 | Code only | Mail prefilters (Gmail categories, `List-Unsubscribe`, `Precedence`, `Auto-Submitted`, no-reply, ESP DKIM domains, Cc-only), `priority_rules`, VIP, learned preferences, Turkish extractors (dates, times, amounts, tracking, flight, PNR), JSON-LD and sender parsers for life events, the commitment pre-signal, thread follow-up state, the slot finder, the assistant intent grammar, deterministic midday and evening briefings, template morning briefing |
 | T1 | Small, fast model | Triage (≤ 5 mails per request), commitments, life-intel fallback, post-meeting notes, text and link capture, assistant intent, optional briefing polish |
 | T2 | Large model | Morning briefing, thread summary, deep extraction, meeting prep, weekly review, reply and follow-up drafts, vision and PDF capture, grounded assistant answers |
-| T3 | Escalation target | Configured on `capture_extract` (reasoning) and `assistant_qa` in the `balanced` profile; resolved by the router but not called by any feature at `ec14e92` ([Known gaps](#known-gaps)) |
+| T3 | Escalation target | Configured on `capture_extract` (reasoning) and `assistant_qa` in the `balanced` profile and resolved only with `ai.model.large.enabled` and `ai.model.opus_escalation` on. Called once (`generateStructured({escalate:true})`: the escalation target alone, budget-reserved at its price, an `ai_requests` row with tier `t3`, cached apart from the T2 result): scanned PDFs go to it first; photo and text-PDF captures whose quotes failed verification, deep extractions that lost a field to grounding, and grounded assistant answers with coverage below 0.8 are asked again and the better result wins. No target, a refusal or a failure keeps the T2 result |
 
 Every AI step has a T0 path: a refusal (kill switch, missing configuration, exhausted budget,
 unavailable chain) returns `{kind:'t0', reason}` instead of throwing, background jobs keep the
@@ -182,10 +182,10 @@ once per day and at 100 % switches off `ai.model.large.enabled` and `ai.model.op
 | `ai.feature.<feature>` (one per `ai_feature`) | on | Off → that feature on T0 |
 | `ai.provider.anthropic.enabled`, `…openai…`, `…voyage…` | on | Off → that provider's targets are skipped (Voyage off → search is FTS-only) |
 | `ai.model.large.enabled` | on | Off → T2 primaries fall to their first fallback |
-| `ai.model.opus_escalation` | off | Gates the escalation target and the acceptance of scanned PDFs in capture |
+| `ai.model.opus_escalation` | off | Gates the T3 escalation calls above and the acceptance of scanned PDFs in capture |
 | `ai.feature.briefing_polish` | off | Enables the optional T1 polish of midday and evening item copy |
 | `ai.batch.enabled` | on | Weekly review through Message Batches |
-| `ai.backfill.enabled` | on | Seeded; not read by the pipeline at `ec14e92` |
+| `ai.backfill.enabled` | on | Model work on backfilled mail (days 4–N of the initial sync, triage `origin: 'backfill'`): off → the T0 triage stays (`ai_status = 'skipped_flag'`) with no analysis or embedding; on → Pro users only (Free keeps its deterministic result) |
 | `ai.budget.org_daily_usd` | on, 50 USD | The organisation ceiling above |
 | `voice.stt_server`, `voice.tts_premium` | on, off | Server speech-to-text; premium text-to-speech |
 
@@ -250,11 +250,24 @@ once per day and at 100 % switches off `ai.model.large.enabled` and `ai.model.op
 - **No tools:** extraction and assistant calls carry no tool definitions and no tool rounds; every
   side effect is a pending approval that the user taps (R-03).
 - **Data Source Controls** (`user_preferences.ai_data_access`, five booleans; changes are
-  audited): with `mail_body` off no mail body reaches a model (triage uses headers and snippets,
-  deep analysis is skipped, thread summaries and drafts answer `DATA_SOURCE_DISABLED`); with
-  `attachments` off file and photo captures answer `DATA_SOURCE_DISABLED`. `calendar`, `contacts`
-  and `location_coarse` are stored but not checked by any model call at `ec14e92`
-  ([Known gaps](#known-gaps)).
+  audited) go through one guard,
+  [`_shared/policy/data-access.ts`](../supabase/functions/_shared/policy/data-access.ts). Context
+  builders tag every prompt part that carries a class; `callModel` drops tagged parts whose class is
+  off (the result cache key includes the guard state), and the direct model callers (capture,
+  reply drafts, the assistant) filter through the same functions:
+  - `mail_body` off: no mail body reaches a model (triage uses headers and snippets, deep analysis
+    is skipped, thread summaries and drafts answer `DATA_SOURCE_DISABLED`), and summaries or key
+    points derived from bodies stay out of briefings, meeting prep, the assistant and memory;
+  - `attachments` off: file and photo captures answer `DATA_SOURCE_DISABLED` (a queued one fails
+    with that code in JOB-27 and its file is removed), attachment names never reach reply drafts;
+  - `calendar` off: prompts keep an event's title and time only (no attendees, location or
+    description) in briefings, meeting prep, post-meeting notes, briefing audio and the assistant;
+  - `contacts` off: no contact book data (person profiles and facts, VIP marks in triage, person
+    scopes and contact rows in the assistant, meeting-prep contacts);
+  - `location_coarse` (off by default): nothing produces it; any future source must be tagged with
+    it.
+  The embedding job skips chunks of a class that is off, and chunks of that class already stored
+  are filtered out of retrieval (assistant, search answer) until the class is on again.
 - **Provider metadata:** requests carry an HMAC pseudonym of the user
   (`HMAC(AI_HASH_PEPPER, 'provider:'||user_id)`) for abuse monitoring, never the user id or e-mail.
 
@@ -315,6 +328,15 @@ once per day and at 100 % switches off `ai.model.large.enabled` and `ai.model.op
   memory results.
 - There is no hot cross-provider fallback for embeddings. Retention deletes a source's chunks and
   vectors with the source (`trg_*_purge_memory` triggers).
+- **Disaster recovery** (AI_PIPELINE_PLAN §10.8, ADR-45): the `app_settings` key `ai.embedding_dr`
+  (`{reembed, search, provider:'openai', model, dimensions:1024}`, backoffice Settings, audited;
+  seeded off with OpenAI `text-embedding-3-small`). Turning `reembed` on queues
+  `embedding {mode:'reembed'}` (JOB-16), which re-embeds, in keyset batches of 128 that queue the
+  next, every chunk with a primary vector into `memory_chunks.embedding_dr` through that target
+  (a system call: no user budget, an `ai_requests` row per attempt, the chunk owner's Data Source
+  Controls honoured); turning it off stops at the next batch. With `search` on, the vector leg of
+  `memory_vector_candidates` ranks by `embedding_dr` (an exact scan until the runbook creates its
+  index) and the api embeds queries with the same DR target, so both sides share one space.
 
 ## Briefings, drafts and other features
 
@@ -325,7 +347,7 @@ once per day and at 100 % switches off `ai.model.large.enabled` and `ai.model.op
 | Weekly review | Statistics computed in code; a ≤ 80-word narrative citing them; batch with synchronous fallback |
 | Meeting prep (JOB-15, Pro) | Precomputed 45–60 minutes ahead for meetings with external or VIP attendees, otherwise on request; regenerated only when the source set changes |
 | Reply and follow-up drafts | `balanced` generates all tones in one call (level `l1` and `lean`: the requested tone only) |
-| Capture (JOB-27, Pro) | Text and links T1; photos T2 vision with a verbatim transcript first; text PDFs T2 over per-page blocks; scanned PDFs only with `ai.model.opus_escalation` on, on the same reasoning chain |
+| Capture (JOB-27, Pro) | Text and links T1; photos T2 vision with a verbatim transcript first; text PDFs T2 over per-page blocks; scanned PDFs only with `ai.model.opus_escalation` on, on the T3 escalation target first (the reasoning chain when the route has none); photos and PDFs whose quotes fail verification escalate once |
 | Assistant | T0 intent grammar first, T1 `assistant_intent` only when it misses (labels only: a write intent becomes a pending approval); grounded QA as above |
 
 ## Voice
@@ -385,18 +407,9 @@ fixture transcript and silent audio.
 
 Observed at `ec14e92`; not deliberate differences:
 
-- **T3 escalation is not executed.** The router resolves `route.escalation` for rows with an
-  escalation target, but no feature calls it; scanned PDFs and low-coverage assistant answers run
-  on the normal chain. `commitment_extract` "escalation" uses the chain's first fallback
-  (`skipPrimary`).
-- **`ai.backfill.enabled`** is seeded but never read.
-- **Data Source Controls `calendar`, `contacts`, `location_coarse`** are stored and audited, but no
-  model call checks them (only `mail_body` and `attachments` are enforced); API_CONTRACTS §4.5
-  and SECURITY_AND_PRIVACY_PLAN §4.4 expect every key to be enforced.
 - **`ai_eval`** exists in `job_type` without a handler or producer.
-- **`memory_chunks.embedding_dr`** (the disaster-recovery re-embedding column) is never written.
-- **Backend analytics events** listed in API_CONTRACTS are not emitted by the pipeline (no sink;
-  integration notes D2).
+- `commitment_extract` "escalation" uses the chain's first fallback (`skipPrimary`); its routes
+  have no T3 target.
 
 ## Differences from the plan
 

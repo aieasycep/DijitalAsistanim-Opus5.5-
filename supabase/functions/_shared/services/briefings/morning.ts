@@ -31,8 +31,10 @@ import {
   fromInsight,
   type ItemDraft,
   itemRows,
+  promptMeta,
   withoutSeen,
 } from './items.ts';
+import type { AiDataAccess } from '../../policy/data-access.ts';
 
 export const MORNING_SECTIONS: readonly SectionKey[] = [
   'priorities',
@@ -88,8 +90,8 @@ export function morningSections(input: MorningInput, timeZone: string, locale: '
   return sections;
 }
 
-function refText(d: ItemDraft): string {
-  return [d.title, d.meta ?? ''].filter((t) => t !== '').join(' · ');
+function refText(d: ItemDraft, access: AiDataAccess): string {
+  return [d.title, promptMeta(d, access) ?? ''].filter((t) => t !== '').join(' · ');
 }
 
 /** T0 narrative: counts of the sections, filled into the catalog template. */
@@ -134,14 +136,14 @@ export async function composeMorning(
       i += 1;
       const ref = `i${i}`;
       refOf.set(d, ref);
-      refTexts[ref] = refText(d);
+      refTexts[ref] = refText(d, user.dataAccess);
       docs.push({
         ref,
         kind: 'summary',
         text: JSON.stringify({
           section,
           title: d.title,
-          meta: d.meta,
+          meta: promptMeta(d, user.dataAccess),
           badge: d.badge,
           urgency: d.urgency,
         }),

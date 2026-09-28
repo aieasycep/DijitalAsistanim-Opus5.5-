@@ -13,6 +13,7 @@ import { isOn } from '../flags.ts';
 import { type CopyLocale, message } from '../copy.ts';
 import type { AiRuntime } from '../../ai/call.ts';
 import type { AiUser } from '../ai/runtime.ts';
+import type { AiDataAccess } from '../../policy/data-access.ts';
 import type { AudioChapter, BriefingAudioRow } from '../assist/store.ts';
 import { speechAvailable, synthesizeSpeech } from '../voice/speech.ts';
 
@@ -42,12 +43,19 @@ function sectionTitle(locale: CopyLocale, key: string): string {
   }
 }
 
-/** The chapter scripts of a briefing in section order; empty sections are skipped. */
+/**
+ * The chapter scripts of a briefing in section order; empty sections are skipped. With `access`
+ * (premium TTS sends the text to a speech provider) an event row's meta line, which carries its
+ * location, is read only with `ai_data_access.calendar` on.
+ */
 export function briefingChapters(
   briefing: BriefingAudioRow,
   items: readonly BriefingItemRow[],
   locale: CopyLocale,
+  access?: AiDataAccess,
 ): ChapterScript[] {
+  const readMeta = (i: BriefingItemRow): boolean =>
+    access === undefined || access.calendar || i.entity_type !== 'calendar_event';
   const scripts: { title: string; text: string }[] = [];
   const overview = [briefing.hero_line ?? '', briefing.narrative ?? '']
     .map((t) => t.trim())
@@ -63,7 +71,9 @@ export function briefingChapters(
       .filter((i) => i.section === section)
       .sort((a, b) => a.position - b.position)
       .map((i) =>
-        i.meta === null || i.meta.trim() === '' ? `${i.title}.` : `${i.title}, ${i.meta}.`,
+        i.meta === null || i.meta.trim() === '' || !readMeta(i)
+          ? `${i.title}.`
+          : `${i.title}, ${i.meta}.`,
       );
     if (rows.length === 0) continue;
     scripts.push({ title: sectionTitle(locale, section), text: rows.join(' ') });

@@ -59,6 +59,10 @@ export type ExtractOutcome =
       readonly summary: string | null;
       readonly aiRequestId: string | null;
       readonly injectionSuspected: boolean;
+      /** Items the model returned whose quote failed verification (dropped). */
+      readonly dropped: number;
+      /** `t3` when the escalation target produced the result. */
+      readonly tier: 't1' | 't2' | 't3';
     }
   | { readonly kind: 't0'; readonly reason: T0Reason | 'refine_failed' };
 
@@ -304,16 +308,52 @@ function mapItem(
   };
 }
 
+export interface ExtractMeta {
+  readonly captureId: string;
+  readonly capturedAt: string;
+  readonly shareOrigin: string;
+  readonly hint: string | null;
+  readonly now: Date;
+}
+
+/**
+ * Extraction with the T3 escalation of AI_PIPELINE_PLAN §2 / §13.4 (flag `ai.model.opus_escalation`,
+ * resolved by the router only on routes with an escalation target):
+ * - scanned PDFs go to the escalation target first (the document block); without one they use the
+ *   reasoning chain;
+ * - photos and text PDFs (T2) escalate once when verification failed (an item's quote was not in
+ *   the transcript or pages, or the output failed refinement); the result with fewer dropped items
+ *   wins, and a failed escalation keeps the T2 result.
+ * Text and link captures (T1) never escalate.
+ */
 export async function extractCapture(
   pipeline: PipelineContext,
   input: CaptureInput,
-  meta: {
-    readonly captureId: string;
-    readonly capturedAt: string;
-    readonly shareOrigin: string;
-    readonly hint: string | null;
-    readonly now: Date;
-  },
+  meta: ExtractMeta,
+): Promise<ExtractOutcome> {
+  if (input.kind === 'pdf_scanned') {
+    const t3 = await extractOnce(pipeline, input, meta, true);
+    if (t3.kind === 'ok' || t3.reason !== 'no_target') return t3;
+    return await extractOnce(pipeline, input, meta, false);
+  }
+  const first = await extractOnce(pipeline, input, meta, false);
+  if (input.kind === 'text' || input.kind === 'page') return first;
+  const verificationFailed =
+    first.kind === 'ok'
+      ? first.dropped > 0 && !first.injectionSuspected
+      : first.reason === 'refine_failed';
+  if (!verificationFailed) return first;
+  const t3 = await extractOnce(pipeline, input, meta, true);
+  if (t3.kind !== 'ok') return first;
+  if (first.kind !== 'ok') return t3;
+  return t3.dropped < first.dropped ? t3 : first;
+}
+
+async function extractOnce(
+  pipeline: PipelineContext,
+  input: CaptureInput,
+  meta: ExtractMeta,
+  escalate: boolean,
 ): Promise<ExtractOutcome> {
   const { docs, promptKey } = docsFor(input);
   const isLink = input.kind === 'page';
@@ -362,6 +402,7 @@ export async function extractCapture(
     userRef: pipeline.user.userRef,
     ...(pipeline.signal === undefined ? {} : { signal: pipeline.signal }),
     ...(pipeline.canary === undefined ? {} : { canary: pipeline.canary }),
+    ...(escalate ? { escalate: true } : {}),
   });
   if (result.kind !== 'ai') return { kind: 't0', reason: result.reason };
   const aliases = vision
@@ -394,9 +435,13 @@ export async function extractCapture(
     ? Math.min(bandConfidence(data.confidence), 0.75)
     : bandConfidence(data.confidence);
   const items: CaptureItemView[] = [];
+  let dropped = 0;
   for (const item of data.items) {
     const evidence = 'evidence' in item ? item.evidence : null;
-    if (evidence !== null && groundQuote(evidence, scope, undefined, 'items') === null) continue;
+    if (evidence !== null && groundQuote(evidence, scope, undefined, 'items') === null) {
+      dropped += 1;
+      continue;
+    }
     const mapped = mapItem(item, items.length, {
       source:
         evidence === null
@@ -420,5 +465,7 @@ export async function extractCapture(
     summary: data.summary_tr,
     aiRequestId: result.aiRequestId,
     injectionSuspected: suspected,
+    dropped,
+    tier: escalate ? 't3' : input.kind === 'text' || isLink ? 't1' : 't2',
   };
 }

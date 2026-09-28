@@ -371,6 +371,11 @@
           "purpose": "Anlam dizini (embedding)",
           "data": "Türetilmiş kısa metinler"
         },
+        "deepgram": {
+          "name": "Deepgram",
+          "purpose": "Sunucu tarafı ses tanıma yedeği",
+          "data": "Ses kaydı (saklanmaz)"
+        },
         "expo": {
           "name": "Expo (650 Industries)",
           "purpose": "Bildirim iletimi",
@@ -424,6 +429,7 @@
       "conditions": {
         "always": "Her zaman",
         "fallback": "Birincil sağlayıcı yanıt vermediğinde; cihaz ses tanıması yoksa",
+        "sttFallback": "Yalnızca yapılandırılmışsa ve cihazda ses tanıma yoksa",
         "memory": "AI hafıza ve arama",
         "push": "Bildirim izni verdiysen",
         "gmail": "Gmail bağladıysan",

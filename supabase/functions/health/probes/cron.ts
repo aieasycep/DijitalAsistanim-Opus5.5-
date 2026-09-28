@@ -1,8 +1,10 @@
 /**
  * `cron` probe. `cron.job_run_details` is not reachable through PostgREST, so the probe measures the
  * effects pg_cron guarantees: jobs it enqueues every 5 minutes (`health_check`, `push_receipts`) must
- * keep appearing, and claimable jobs must not wait (`scheduler_tick` / worker pokes). Queue lag
- * under 2 min is healthy, 2–5 min degraded, beyond that down (API_CONTRACTS §14).
+ * keep appearing, and claimable jobs must not wait (`scheduler_tick` / worker pokes). Queue lag is
+ * the age of the oldest due job of a type the worker claims (`WORKER_JOB_TYPES`; the `health_check`
+ * jobs themselves are claimed by JOB-26): under 2 min is healthy, 2–5 min degraded, beyond that
+ * down (API_CONTRACTS §14).
  */
 import type { HealthStatus, Probe } from './types.ts';
 

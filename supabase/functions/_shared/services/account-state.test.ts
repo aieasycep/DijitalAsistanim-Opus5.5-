@@ -27,6 +27,8 @@ async function gate(
     settings: {
       minSupportedVersion: () => Promise.resolve({ ios: '1.4.0', android: '1.3.0' }),
       referralRewardDays: () => Promise.resolve(14),
+      referralRewardsEnabled: () => Promise.resolve(true),
+      googleOauthVerified: () => Promise.resolve(false),
     },
   });
   const vars: Record<string, unknown> = { auth: authed ? { userId: USER } : undefined, client };
@@ -96,7 +98,10 @@ Deno.test(
     assertEquals(await repo.minSupportedVersion(), { ios: '1.5.0', android: '1.0.0' });
     assertEquals(await repo.referralRewardDays(), 30);
     assertEquals(pg.calls.length, 1, 'cached within the TTL');
-    assertEquals(pg.calls[0]?.params.key, 'in.(app.min_supported_version,referral.reward_days)');
+    assertEquals(
+      pg.calls[0]?.params.key,
+      'in.(app.min_supported_version,referral.reward_days,referral.rewards_enabled,google.oauth_verified)',
+    );
     rows = [{ key: 'referral.reward_days', value: 7.5 }];
     clock = 61_000;
     assertEquals(

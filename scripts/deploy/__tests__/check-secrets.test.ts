@@ -65,6 +65,10 @@ describe('check-secrets (T-12.03)', () => {
     const result = report(plan, present, {});
     assert.ok(result.missing.boot.includes('TOKEN_ENC_KEY_V1'));
     assert.ok(result.missing.production.includes('ANTHROPIC_API_KEY'));
+    assert.ok(
+      result.missing.production.includes('VOYAGE_TRAINING_OPT_OUT_CONFIRMED'),
+      'the Voyage training opt-out confirmation is a production name',
+    );
     assert.ok(result.missing.optional.includes('SENTRY_DSN'));
     assert.deepEqual(result.extra, ['OLD_UNUSED']);
     assert.equal(result.missingDeployJob.length, DEPLOY_JOB_KEYS.length);

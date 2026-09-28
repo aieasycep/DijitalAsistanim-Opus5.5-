@@ -30,6 +30,8 @@ interface Setup {
   readonly ai: ReturnType<typeof fixtureServices>;
   readonly searches: SearchRpcArgs[];
   readonly repoCalls: string[];
+  /** Backend analytics events of the harness (API_CONTRACTS §17.1). */
+  readonly events: Awaited<ReturnType<typeof createHarness>>['serverEvents'];
 }
 
 async function setup(
@@ -112,6 +114,7 @@ async function setup(
     ai,
     searches,
     repoCalls,
+    events: h.serverEvents,
     request: (method, path, body, key) =>
       Promise.resolve(
         app.request(`/api${path}`, {
@@ -294,3 +297,45 @@ Deno.test('API-BRF-03: the share card holds integers and fixed labels only', asy
   s.mem.briefings.push(morning);
   assertEquals((await s.request('GET', `/weekly/${morning.id}/share-card`)).status, 404);
 });
+
+Deno.test(
+  '§17.1 server analytics: search_performed per search, evening_closed once, share card served',
+  async () => {
+    const s = await setup();
+    await (await s.request('GET', '/search?q=teklif')).body?.cancel();
+    await (await s.request('GET', '/search?q=teklif&cursor=MC45fGVtYWlsfHg')).body?.cancel();
+    const id = uuid();
+    const key = crypto.randomUUID();
+    await (
+      await s.request('POST', `/briefings/${id}/evening-ready`, { confirm: true }, key)
+    ).body?.cancel();
+    await (
+      await s.request('POST', `/briefings/${id}/evening-ready`, { confirm: true }, key)
+    ).body?.cancel();
+    const weekly = briefingRow({
+      kind: 'weekly',
+      weekly_stats: weeklyStats(s.mem.counts, {
+        start: '2026-09-21',
+        end: '2026-09-27',
+      }) as unknown as Record<string, unknown>,
+    });
+    s.mem.briefings.push(weekly);
+    await (await s.request('GET', `/weekly/${weekly.id}/share-card`)).body?.cancel();
+    assertEquals(
+      s.events.rows.map((r) => [r.event_name, r.props]),
+      [
+        ['search_performed', { mode: 'hybrid', result_count: 1 }],
+        ['evening_closed', { carried: 2 }],
+        ['weekly_share_card_served', {}],
+      ],
+    );
+    // Rows carry the caller and the client context, never a session or content.
+    assert(s.events.rows.every((r) => r.user_id === USER_A && r.session_id === null));
+    assert(s.events.rows.every((r) => r.platform === 'ios' && r.app_version === '1.4.0'));
+
+    const quiet = await setup();
+    quiet.events.optOut.add(USER_A);
+    await (await quiet.request('GET', '/search?q=teklif')).body?.cancel();
+    assertEquals(quiet.events.rows.length, 0);
+  },
+);

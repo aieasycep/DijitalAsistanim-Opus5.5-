@@ -98,6 +98,10 @@ export interface BootstrapSources {
   minSupportedVersion(): Promise<MinVersions>;
   referralRewardDays(): Promise<number>;
   referralRewardsPerYear(plan: 'free' | 'pro'): Promise<number>;
+  /** `referral.rewards_enabled` (optional source: absent → rewards on). */
+  referralRewardsEnabled?(): Promise<boolean>;
+  /** KPL-32 Google OAuth verification (optional source: absent → unverified). */
+  googleOauthVerified?(): Promise<boolean>;
   counts(userId: string): Promise<BootstrapData['counts']>;
   pendingDeviceApprovals(
     userId: string,
@@ -348,6 +352,8 @@ export async function buildBootstrap(
     rewardDays,
     accounts,
     counts,
+    rewardsEnabled,
+    googleVerified,
   ] = await Promise.all([
     sources.profile(userId),
     sources.preferences(userId),
@@ -361,6 +367,8 @@ export async function buildBootstrap(
     sources.referralRewardDays(),
     sources.accounts(userId),
     sources.counts(userId),
+    sources.referralRewardsEnabled?.() ?? Promise.resolve(true),
+    sources.googleOauthVerified?.() ?? Promise.resolve(false),
   ]);
   if (profile === null || preferences === null || notificationPreferences === null) {
     throw new Error('bootstrap_profile_incomplete');
@@ -415,6 +423,8 @@ export async function buildBootstrap(
       referral_reward_days: rewardDays,
       referral_max_rewards_per_year: rewardsPerYear,
       undo_window_seconds: UNDO_WINDOW_SECONDS,
+      referral_rewards_enabled: rewardsEnabled,
+      google_oauth_verified: googleVerified,
     },
     counts,
     pending_device_approvals: deviceApprovals.map((a) => ({
@@ -479,6 +489,8 @@ export function supabaseBootstrapSources(
     ) => Promise<FlagMap>;
     readonly minSupportedVersion: () => Promise<MinVersions>;
     readonly referralRewardDays: () => Promise<number>;
+    readonly referralRewardsEnabled?: () => Promise<boolean>;
+    readonly googleOauthVerified?: () => Promise<boolean>;
   },
 ): BootstrapSources {
   const { user, system } = clients;
@@ -505,6 +517,12 @@ export function supabaseBootstrapSources(
     flags: deps.flags,
     minSupportedVersion: deps.minSupportedVersion,
     referralRewardDays: deps.referralRewardDays,
+    ...(deps.referralRewardsEnabled === undefined
+      ? {}
+      : { referralRewardsEnabled: deps.referralRewardsEnabled }),
+    ...(deps.googleOauthVerified === undefined
+      ? {}
+      : { googleOauthVerified: deps.googleOauthVerified }),
     async referralRewardsPerYear(plan) {
       const row = await single<{ value: unknown }>(
         system

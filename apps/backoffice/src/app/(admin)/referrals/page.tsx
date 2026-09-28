@@ -131,6 +131,11 @@ async function Overview({ range }: { range: MetricRange }) {
             { label: t('rule.rewardDays'), value: setting('referral.reward_days') },
             { label: t('rule.riskThreshold'), value: setting('referral.risk_threshold') },
             { label: t('rule.applyWindow'), value: setting('referral.apply_window_days') },
+            {
+              label: t('rule.rewardsEnabled'),
+              value:
+                config?.['referral.rewards_enabled'] === false ? t('rewards.off') : t('rewards.on'),
+            },
           ]}
         />
       </Panel>

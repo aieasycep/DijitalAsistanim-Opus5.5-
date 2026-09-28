@@ -85,7 +85,8 @@
         "deadlines": "Spotting deadlines"
       },
       "cta": "Connect with Google",
-      "note": "Next, Google's own permission screen opens."
+      "note": "Next, Google's own permission screen opens.",
+      "unverifiedNotice": "Until our verification is complete, Google may show a \"Google hasn't verified this app\" warning."
     },
     "outlook": {
       "kicker": "Outlook · Microsoft 365",

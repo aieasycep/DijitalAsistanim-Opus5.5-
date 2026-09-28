@@ -21,6 +21,8 @@ import {
 } from '../../_shared/services/intel/supabase-store.ts';
 import type { IntelDeps } from './intel.ts';
 import { supabaseAndroidLifeStore } from '../../_shared/services/life/android.ts';
+import { supabaseFlagSource } from '../../_shared/services/flags.ts';
+import { supabaseEmbeddingDrStore } from '../../_shared/services/memory/dr.ts';
 
 export function createIntelDeps(
   system: DbClient,
@@ -28,6 +30,7 @@ export function createIntelDeps(
   log: Logger,
   options: { bodies?: MailBodySource | null; fetch?: typeof fetch } = {},
 ): IntelDeps {
+  const flags = supabaseFlagSource(system);
   return {
     ai: createAiServices(system, raw, log),
     mail: supabaseMailStore(system),
@@ -50,5 +53,6 @@ export function createIntelDeps(
       audit: supabaseAuditWriter(system),
     },
     android: supabaseAndroidLifeStore(system),
+    dr: supabaseEmbeddingDrStore(system, () => flags.global()),
   };
 }

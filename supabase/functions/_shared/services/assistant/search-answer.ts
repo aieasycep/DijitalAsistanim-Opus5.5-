@@ -15,6 +15,7 @@ import { copy } from '../copy.ts';
 import type { SearchAnswerView, SearchResultView } from '../memory/search.ts';
 import { answerText, planQa } from './answer.ts';
 import { retrievalDocs } from './tools.ts';
+import { admitRetrieved } from '../../policy/data-access.ts';
 
 const MAX_TEXT = 1200;
 const MAX_SPANS = 20;
@@ -40,10 +41,10 @@ export async function searchAnswer(
   };
   const plan = await planQa(runtime, user, input.canary);
   if (plan.kind !== 'ok') throw interactiveAiError(plan.reason);
-  const { docs } = retrievalDocs(input.results);
-  const used = input.results
-    .filter((r) => r.title !== '' || r.snippet !== '')
-    .slice(0, docs.length);
+  // Data Source Controls: rows of a disabled class never reach the model.
+  const results = admitRetrieved(user.dataAccess, input.results);
+  const { docs } = retrievalDocs(results);
+  const used = results.filter((r) => r.title !== '' || r.snippet !== '').slice(0, docs.length);
   if (docs.length === 0) return notFound;
   let qa;
   try {

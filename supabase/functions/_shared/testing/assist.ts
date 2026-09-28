@@ -24,6 +24,7 @@ import type { AiFeature } from '@da/domain';
 import type { IntelDeps } from '../../worker/handlers/intel.ts';
 import type { AssistJobDeps } from '../../worker/handlers/assist.ts';
 import { configRow } from './ai.ts';
+import { type MemoryServerAnalytics, memoryServerAnalytics } from './analytics.ts';
 import {
   ACCOUNT_ID,
   fixtureServices,
@@ -154,6 +155,8 @@ export interface AssistFixture {
   readonly ai: ReturnType<typeof fixtureServices>;
   readonly intel: IntelDeps;
   readonly jobs: AssistJobDeps;
+  /** Backend analytics events the jobs emitted (API_CONTRACTS §17.1). */
+  readonly events: MemoryServerAnalytics;
 }
 
 export function assistFixture(
@@ -172,16 +175,19 @@ export function assistFixture(
   const store = new MemoryAssist(mem, () => NOW);
   const storage = memoryStorage();
   const intel = intelDepsOf(mem, ai);
+  const events = memoryServerAnalytics({ now: () => NOW });
   return {
     mem,
     store,
     storage,
     ai,
     intel,
+    events,
     jobs: {
       intel,
       store,
       storage,
+      analytics: events.analytics,
       ...(options.fetch === undefined ? {} : { fetch: options.fetch }),
       resolver: () => Promise.resolve(['93.184.215.14']),
     },

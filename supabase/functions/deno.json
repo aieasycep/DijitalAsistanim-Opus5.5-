@@ -26,7 +26,7 @@
     "unpdf": "npm:unpdf@1.8.1"
   },
   "nodeModulesDir": "none",
-  "lock": false,
+  "lock": "./deno.lock",
   "lint": {
     "rules": {
       "tags": ["recommended"],

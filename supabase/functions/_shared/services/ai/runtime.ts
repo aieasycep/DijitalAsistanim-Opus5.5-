@@ -34,14 +34,11 @@ import { mapDbError } from '../../errors.ts';
 import type { Logger } from '../../logging/logger.ts';
 import { type FlagMap, type FlagSource, supabaseFlagSource } from '../flags.ts';
 import { type CopyLocale, copyLocale } from '../copy.ts';
+import { type AiDataAccess, parseAiDataAccess } from '../../policy/data-access.ts';
+import { type EmbeddingDrConfigSource, supabaseEmbeddingDrConfig } from '../memory/dr.ts';
 
 /** `user_preferences.ai_data_access` (enforced before every model call, API_CONTRACTS §4.5). */
-export interface AiDataAccess {
-  readonly mailBody: boolean;
-  readonly attachments: boolean;
-  readonly calendar: boolean;
-  readonly contacts: boolean;
-}
+export type { AiDataAccess };
 
 export interface AiUser {
   readonly userId: string;
@@ -88,7 +85,6 @@ export function buildAiUser(input: {
   profileRow: { display_name: string | null; locale: string | null } | null;
   userRef: string | null;
 }): AiUser {
-  const access = input.prefs?.ai_data_access ?? {};
   const zone = input.prefs?.timezone ?? 'Europe/Istanbul';
   return {
     userId: input.userId,
@@ -99,12 +95,7 @@ export function buildAiUser(input: {
     timeZone: isValidTimeZone(zone) ? zone : 'Europe/Istanbul',
     locale: copyLocale(input.profileRow?.locale),
     displayName: input.profileRow?.display_name ?? null,
-    dataAccess: {
-      mailBody: access.mail_body !== false,
-      attachments: access.attachments !== false,
-      calendar: access.calendar !== false,
-      contacts: access.contacts !== false,
-    },
+    dataAccess: parseAiDataAccess(input.prefs?.ai_data_access),
     learnFromInteractions: input.prefs?.learn_from_interactions !== false,
     followUpAfterDays: input.prefs?.follow_up_after_days ?? 2,
     workingHours: {
@@ -165,6 +156,8 @@ export interface AiServices {
   readonly providers: AiProviderSet;
   /** Per-deploy S7 canary (from `DEPLOY_ID`). */
   readonly canary: string | undefined;
+  /** `ai.embedding_dr` (disaster-recovery embeddings: the DR query model while search uses it). */
+  readonly embeddingDr?: EmbeddingDrConfigSource;
 }
 
 /** The production AI services of one isolate over a service client. */
@@ -195,5 +188,6 @@ export function createAiServices(client: DbClient, raw: RawEnv, log: Logger): Ai
     users: supabaseAiUserSource(client, { flags, profiles, pepper }),
     providers,
     canary: deployCanary(raw.DEPLOY_ID),
+    embeddingDr: supabaseEmbeddingDrConfig(client),
   };
 }

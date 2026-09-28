@@ -23,6 +23,7 @@ import type { MiddlewareHandler } from 'hono';
 import { currentUser } from '../../_shared/auth/user.ts';
 import type { UserAuth } from '../../_shared/http/context.ts';
 import { AppError } from '../../_shared/errors.ts';
+import { type AiDataAccess, assertDataAllowed } from '../../_shared/policy/data-access.ts';
 import type { AppContext, AppEnv } from '../../_shared/http/context.ts';
 import { sendData } from '../../_shared/http/respond.ts';
 import {
@@ -42,6 +43,7 @@ import {
   sourceRef,
 } from '../../_shared/services/assist/common.ts';
 import type { ReplyAttachment, ReplyDraftRow, Tone } from '../../_shared/services/assist/store.ts';
+import { emitUserEvent } from '../server-events.ts';
 import { visibleText } from '../../_shared/services/ai/hygiene.ts';
 import { proposeApproval } from '../../_shared/services/approvals/propose.ts';
 import { toApprovalView } from '../../_shared/services/approvals/view.ts';
@@ -105,16 +107,14 @@ async function loadThreadContext(
 }
 
 /** `mail_read`, `draft_replies` and `ai_data_access.mail_body` gate every draft (API-MAIL-02). */
-function assertDraftSources(account: AccountRow, mailBody: boolean): void {
+function assertDraftSources(account: AccountRow, access: AiDataAccess): void {
   if (account.data_source_toggles.mail_read === false) {
     throw new AppError('DATA_SOURCE_DISABLED', { details: { toggle: 'mail_read' } });
   }
   if (account.data_source_toggles.draft_replies === false) {
     throw new AppError('DATA_SOURCE_DISABLED', { details: { toggle: 'draft_replies' } });
   }
-  if (!mailBody) {
-    throw new AppError('DATA_SOURCE_DISABLED', { details: { toggle: 'ai_data_access.mail_body' } });
-  }
+  assertDataAllowed(access, 'mail_body');
 }
 
 /** Transient bodies of the newest messages plus their real attachment names (never stored). */
@@ -203,7 +203,7 @@ export async function createReplyDraft(
     throw new AppError('FEATURE_DISABLED', { details: { feature: 'reply_draft' } });
   }
   const ctx = await loadThreadContext(kit, auth.userId, input.messageId);
-  assertDraftSources(ctx.account, user.dataAccess.mailBody);
+  assertDraftSources(ctx.account, user.dataAccess);
   const last =
     [...ctx.messages].sort((a, b) => Date.parse(b.received_at) - Date.parse(a.received_at))[0] ??
     ctx.message;
@@ -281,6 +281,7 @@ export async function createReplyDraft(
     content_key: key,
     expires_at: new Date(now.getTime() + DRAFT_TTL_MS).toISOString(),
   });
+  await emitUserEvent(kit, auth.userId, 'reply_draft_generated', { tone: input.tone });
   return { row, webLink, reused: false };
 }
 
@@ -320,7 +321,7 @@ export async function createFollowUpDraft(
   }
   const account = await intel.mail.account(thread.connected_account_id);
   if (account === null) throw new AppError('NOT_FOUND', { details: { resource: 'email_thread' } });
-  assertDraftSources(account, user.dataAccess.mailBody);
+  assertDraftSources(account, user.dataAccess);
   const language =
     input.language ?? detectLanguage(`${last.subject ?? ''} ${last.snippet ?? ''}`, user.locale);
   const key = await contentKey([
@@ -386,6 +387,7 @@ export async function createFollowUpDraft(
     content_key: key,
     expires_at: new Date(now.getTime() + DRAFT_TTL_MS).toISOString(),
   });
+  await emitUserEvent(kit, auth.userId, 'followup_draft_generated', { tone: input.tone });
   return { row, webLink, reused: false };
 }
 
@@ -432,7 +434,7 @@ async function regenerate(
   if (messageId === null)
     throw new AppError('SOURCE_GONE', { details: { resource: 'email_message' } });
   const ctx = await loadThreadContext(kit, auth.userId, messageId);
-  assertDraftSources(ctx.account, user.dataAccess.mailBody);
+  assertDraftSources(ctx.account, user.dataAccess);
   const tone = body.tone ?? draft.tone;
   const instructions = body.instructions ?? null;
   const language = draft.language ?? 'tr';
@@ -503,6 +505,12 @@ async function regenerate(
     warnings: meta.commitments ? [...warnings, 'contains_commitment'] : warnings,
   });
   if (updated === null) throw versionConflict();
+  await emitUserEvent(
+    kit,
+    auth.userId,
+    draft.kind === 'follow_up' ? 'followup_draft_generated' : 'reply_draft_generated',
+    { tone },
+  );
   return updated;
 }
 

@@ -40,6 +40,7 @@ function healthyData(): HealthData {
     aiErrorRate: () => Promise.resolve({ total: 0, errors: 0 }),
     accountHealth: () => Promise.resolve({ total: 0, failing: 0 }),
     embeddingQueryModel: () => Promise.resolve(null),
+    googleOauth: () => Promise.resolve({ setting: false, gmailUsers: 0 }),
     auditChain: () => Promise.resolve({ ok: true, checked: 10, firstBadSeq: null }),
   };
 }

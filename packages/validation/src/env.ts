@@ -136,6 +136,12 @@ export const serverEnvShape = {
   AI_HASH_PEPPER: Secret(32).optional(),
   // Embeddings, STT, TTS
   VOYAGE_API_KEY: z.string().optional(),
+  /**
+   * The owner confirmed the model-training opt-out in the Voyage dashboard (its Terms let Voyage
+   * train on customer content otherwise). Required as `true` in preview and production whenever
+   * `VOYAGE_API_KEY` is set, so the product copy "AI providers do not train on your data" holds.
+   */
+  VOYAGE_TRAINING_OPT_OUT_CONFIRMED: BoolFlag.default(false),
   STT_SERVER_PROVIDER: z.enum(['openai', 'deepgram']).optional(),
   STT_API_KEY: z.string().optional(),
   TTS_PREMIUM_PROVIDER: z.enum(['none', 'azure', 'openai', 'elevenlabs']).default('none'),
@@ -268,6 +274,18 @@ export const serverEnv = z.preprocess(
       const production = appEnv === 'production';
       if (production && env.DEMO_MODE && !env.ALLOW_DEMO_IN_PRODUCTION) {
         ctx.addIssue({ code: 'custom', path: ['DEMO_MODE'], message: 'demo_mode_in_production' });
+      }
+      if (
+        (appEnv === 'preview' || production) &&
+        typeof env.VOYAGE_API_KEY === 'string' &&
+        env.VOYAGE_API_KEY !== '' &&
+        !env.VOYAGE_TRAINING_OPT_OUT_CONFIRMED
+      ) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['VOYAGE_TRAINING_OPT_OUT_CONFIRMED'],
+          message: 'voyage_training_opt_out_unconfirmed',
+        });
       }
       if (production && env.AI_FIXTURE_PROVIDER_ENABLED) {
         ctx.addIssue({

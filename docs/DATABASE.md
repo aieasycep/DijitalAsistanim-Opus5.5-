@@ -142,7 +142,7 @@ does not understand.
 
 ### Migration order
 
-39 migrations, applied in file-name order:
+40 migrations, applied in file-name order:
 
 1. [`20260924000100_extensions_schemas_enums.sql`](../supabase/migrations/20260924000100_extensions_schemas_enums.sql)
 1. [`20260924000200_identity_settings.sql`](../supabase/migrations/20260924000200_identity_settings.sql)
@@ -183,6 +183,7 @@ does not understand.
 1. [`20260924002690_ai_pipeline_part2_validate.sql`](../supabase/migrations/20260924002690_ai_pipeline_part2_validate.sql)
 1. [`20260924002700_referral_loop_edges.sql`](../supabase/migrations/20260924002700_referral_loop_edges.sql)
 1. [`20260924003000_admin_contract_gaps.sql`](../supabase/migrations/20260924003000_admin_contract_gaps.sql)
+1. [`20260924003300_gap_closure.sql`](../supabase/migrations/20260924003300_gap_closure.sql)
 
 ### Tables (`public`)
 
@@ -508,7 +509,7 @@ EXECUTE as granted by the migrations (PostgreSQL grants EXECUTE to PUBLIC on a n
 |---|---|---|---|---|
 | `public` | 124 | 25 | 99 | 0 |
 | `admin_api` | 145 | 141 | 4 | 0 |
-| `private` | 220 | 14 | 80 | 126 |
+| `private` | 224 | 14 | 83 | 127 |
 
 **User RPCs** (`public`, called with the user's JWT; RLS and `auth.uid()` scope them): `apply_insight_feedback`, `check_plan_limit`, `dismiss_announcement`, `effective_entitlement`, `flow_feed`, `flow_meta`, `get_explanation`, `get_usage_summary`, `history_deletion_preview`, `list_approvals`, `mail_intelligence`, `mark_briefing_opened`, `memory_vector_candidates`, `person_intelligence`, `plan_range`, `plan_week_density`, `preview_priority_rule`, `revert_insight_feedback`, `search_user_content`, `set_commitment_status`, `set_insight_status`, `submit_ai_correction`, `today_overview`, `upsert_manual_contact`, `vip_suggestions`.
 

@@ -12,7 +12,7 @@
  *    and "Pro ended" pushes, the `subscription_*` server analytics and the
  *    `system.subscription.synced` audit row.
  */
-import { validateAnalyticsEvent } from '@da/domain';
+import { type AnalyticsProps, validateAnalyticsEvent } from '@da/domain';
 import { AppError } from '../../errors.ts';
 import type { EnqueueInput } from '../../jobs/types.ts';
 import type { Logger } from '../../logging/logger.ts';
@@ -70,10 +70,17 @@ export interface ApplyMirrorResult {
   } | null;
 }
 
+export type SubscriptionAnalyticsEvent =
+  | 'subscription_started'
+  | 'subscription_renewed'
+  | 'subscription_cancelled'
+  | 'subscription_expired'
+  | 'subscription_billing_issue';
+
 export interface AnalyticsRow {
   readonly user_id: string;
-  readonly event_name: string;
-  readonly props: Readonly<Record<string, string | number | boolean>>;
+  readonly event_name: SubscriptionAnalyticsEvent;
+  readonly props: AnalyticsProps<SubscriptionAnalyticsEvent>;
   readonly occurred_at: string;
 }
 
@@ -127,7 +134,7 @@ export type BillingSyncOutcome =
 
 const HOUR_MS = 60 * 60 * 1000;
 
-const EVENT_ANALYTICS: Readonly<Record<string, string>> = {
+const EVENT_ANALYTICS: Readonly<Record<string, SubscriptionAnalyticsEvent>> = {
   INITIAL_PURCHASE: 'subscription_started',
   RENEWAL: 'subscription_renewed',
   CANCELLATION: 'subscription_cancelled',
@@ -325,8 +332,8 @@ async function recordAnalytics(
   try {
     await deps.repo.analytics({
       user_id: userId,
-      event_name: checked.event,
-      props: checked.props,
+      event_name: name,
+      props: checked.props as AnalyticsProps<SubscriptionAnalyticsEvent>,
       occurred_at: deps.now().toISOString(),
     });
   } catch (error) {

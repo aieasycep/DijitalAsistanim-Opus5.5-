@@ -37,6 +37,7 @@ import type {
   NormalizedUsage,
   PromptParts,
   ProviderId,
+  Route,
   RoutingProfile,
   T0Reason,
 } from './types.ts';
@@ -90,6 +91,14 @@ export interface StructuredCallInput<T> {
    * and start at the first fallback of the chain.
    */
   readonly skipPrimary?: boolean;
+  /**
+   * T3 escalation (AI_PIPELINE_PLAN §1.1 "T3Q", §1.2 T3 row): run the route's escalation target
+   * only — resolved by the router only with `ai.model.large.enabled` and `ai.model.opus_escalation`
+   * on. Without one the call ends as T0 `no_target` and the caller keeps its T2 result. The call is
+   * budget-reserved at the escalation target's price, recorded with tier `t3`, and cached under the
+   * T2 key + `:t3`.
+   */
+  readonly escalate?: boolean;
 }
 
 export type StructuredCallResult<T> =
@@ -152,10 +161,16 @@ export async function generateStructured<T>(
     log.info('ai_t0', { reason: decision.reason });
     return { kind: 't0', reason: decision.reason };
   }
-  const route =
-    input.skipPrimary === true && decision.route.chain.length > 1
-      ? { ...decision.route, chain: decision.route.chain.slice(1) }
-      : decision.route;
+  if (input.escalate === true && decision.route.escalation === null) {
+    log.info('ai_t0', { reason: 'no_target', escalation: true });
+    return { kind: 't0', reason: 'no_target' };
+  }
+  const route: Route =
+    input.escalate === true && decision.route.escalation !== null
+      ? { ...decision.route, tier: 't3', chain: [decision.route.escalation], escalation: null }
+      : input.skipPrimary === true && decision.route.chain.length > 1
+        ? { ...decision.route, chain: decision.route.chain.slice(1) }
+        : decision.route;
   const promptKey = input.promptKey ?? FEATURE_PROMPT_KEY[input.feature];
   if (promptKey === undefined) return { kind: 't0', reason: 'not_configured' };
   let version: PromptVersion;
@@ -177,7 +192,11 @@ export async function generateStructured<T>(
   let cacheKey: CacheKey | null = null;
   let hash: Uint8Array | null = null;
   if (input.cacheContent !== undefined && input.userId !== null && runtime.aiHashPepper !== null) {
-    hash = await contentHash(runtime.aiHashPepper, input.userId, input.cacheContent);
+    hash = await contentHash(
+      runtime.aiHashPepper,
+      input.userId,
+      input.escalate === true ? `${input.cacheContent}\n:t3` : input.cacheContent,
+    );
     cacheKey = {
       userId: input.userId,
       feature: input.feature,

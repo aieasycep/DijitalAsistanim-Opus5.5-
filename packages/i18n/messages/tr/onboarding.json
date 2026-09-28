@@ -85,7 +85,8 @@
         "deadlines": "Son tarihleri tespit etmek"
       },
       "cta": "Google ile Bağlan",
-      "note": "Sonraki adımda Google'ın kendi izin ekranı açılır."
+      "note": "Sonraki adımda Google'ın kendi izin ekranı açılır.",
+      "unverifiedNotice": "Google, doğrulama sürecimiz tamamlanana kadar \"Google bu uygulamayı doğrulamadı\" uyarısı gösterebilir."
     },
     "outlook": {
       "kicker": "Outlook · Microsoft 365",

@@ -332,7 +332,8 @@ select throws_ok(
      where profile = 'lean' and feature = 'email_triage' $$,
   '55000', 'EVAL_REQUIRED', 'a new primary target needs a passing eval'
 );
-select is((select count(*)::integer from public.ai_model_prices), 10, 'ai_model_prices seeded');
+select is((select count(*)::integer from public.ai_model_prices), 11,
+          'ai_model_prices seeded (the 10 seed rows plus the DR embedding model of 20260924003300)');
 select is((select count(*)::integer from private.admin_role_permissions), 173, 'admin_role_permissions seeded from the BACKOFFICE_PLAN §4.2 matrix');
 select ok(
   exists (select 1 from private.admin_role_permissions where role = 'support' and permission = 'support.access')
@@ -357,7 +358,8 @@ select set_eq(
         'notifications.cap.follow_up', 'notifications.cap.life_intel', 'notifications.cap.deadline',
         'followup.wait_thresholds_days', 'first_analysis.mail_window_hours', 'first_analysis.calendar_window_hours',
         'first_analysis.slow_threshold_s', 'first_analysis.timeout_s', 'today.max_priorities', 'pro_gate.snooze_days',
-        'web.pricing_display', 'pricing.estimates', 'billing.sandbox_allowed_app_user_ids'],
+        'web.pricing_display', 'pricing.estimates', 'billing.sandbox_allowed_app_user_ids',
+        'referral.rewards_enabled', 'google.oauth_verified', 'ai.embedding_dr'],
   'app_settings seeded with the documented keys (the gateway digest is written by the deploy job, and by 000_helpers in tests)'
 );
 select throws_ok(

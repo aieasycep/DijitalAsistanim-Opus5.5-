@@ -95,7 +95,7 @@ flowchart LR
 | Backoffice browser | Backoffice BFF | Sealed session cookie, CSRF protection, `aal2` MFA | The browser never calls Supabase functions directly |
 | Backoffice BFF | `admin-api` | `x-da-bff` (`ADMIN_BFF_SECRET`) + the admin's JWT | Server to server; `admin-api` refuses browser `Origin` requests |
 | `admin-api` | PostgREST (`admin_api`) | The admin's JWT + `x-da-admin-gateway` (`ADMIN_GATEWAY_SECRET`, compared by hash in SQL) | Every `admin_api` function re-checks gateway, `aal2`, admin identity, session and permission |
-| `admin-api` (`POST /health/run` from the backoffice), holders of the automations secret | `health` | An admin JWT with `health.read` / `health.run`, or the automations secret (`CRON_SECRET`) | Probes write `system_health_checks`; no scheduler calls it at `ec14e92` ([Known gaps](#known-gaps)) |
+| `admin-api` (`POST /health/run` from the backoffice), holders of the automations secret | `health` | An admin JWT with `health.read` / `health.run`, or the automations secret (`CRON_SECRET`) | Probes write `system_health_checks`; the same probe runner ([`health/run.ts`](../supabase/functions/health/run.ts)) also runs every 5 minutes in the worker as JOB-26 `health_check` |
 | pg_cron | Postgres | Database role | `scheduler_tick` every minute and the other `da_*` jobs ([DATABASE.md](DATABASE.md#cron-jobs-pg_cron-utc)) |
 | pg_net | `worker` | Automations secret (`CRON_SECRET`, from Vault `da_cron_secret`) | `POST /worker/run` every 15 s when due jobs exist, plus immediate pokes |
 | Google Pub/Sub, Calendar, Microsoft Graph, RevenueCat | `webhooks-*` | Pub/Sub OIDC JWT; Calendar channel HMAC token; Graph `clientState`; RevenueCat `Authorization` | Payloads are triggers only: the worker re-fetches from the provider |
@@ -290,7 +290,9 @@ sequenceDiagram
 | `billing_sync`, `referral_evaluate` | JOB-24, JOB-25 | RevenueCat webhook, purchase sync, `da_billing_reconcile` (daily), `scheduler_tick` (15-min referral sweep) | `worker/handlers/billing_sync.ts`, `referral_evaluate.ts` |
 | `transactional_email` | JOB-31 | Admin invites, support replies, deletion confirmations | [`_shared/email/transactional.ts`](../supabase/functions/_shared/email/transactional.ts) |
 | `credential_reencrypt` | – | `da_reconciliation` once a day (00:00–06:00 UTC run) | [`_shared/services/credentials.ts`](../supabase/functions/_shared/services/credentials.ts) |
-| `health_check`, `ai_eval` | JOB-26, – | `da_health_check` enqueues `health_check` every 5 min; nothing enqueues `ai_eval` | No worker definition (see [Known gaps](#known-gaps)) |
+| `health_check` | JOB-26 | `da_health_check` every 5 min | [`worker/handlers/health_check.ts`](../supabase/functions/worker/handlers/health_check.ts): runs the probes of `POST /health/run` in process (`checked_by = 'cron'`), writes `system_health_checks` and completes; a bucket older than 10 minutes completes without probing; a `down` probe is logged and reported to Sentry; only a failed write retries |
+| `embedding {mode:'reembed'}` | JOB-16 (DR) | Turning `ai.embedding_dr.reembed` on (trigger); each batch queues the next | [`worker/handlers/embedding_dr.ts`](../supabase/functions/worker/handlers/embedding_dr.ts) ([AI_PIPELINE.md](AI_PIPELINE.md#embeddings-and-retrieval)) |
+| `ai_eval` | – | Nothing | No worker definition (see [Known gaps](#known-gaps)) |
 
 ## Provider registry
 
@@ -331,22 +333,18 @@ back to its deterministic path. Details: [AI_PIPELINE.md](AI_PIPELINE.md).
 | Errors | Edge: a fetch-based Sentry adapter ([`_shared/observability/sentry.ts`](../supabase/functions/_shared/observability/sentry.ts)), no-op without `SENTRY_DSN`. Mobile: `@sentry/react-native` | Error type, scrubbed message, frames and tags; no bodies, headers or user identifiers |
 | AI telemetry | `ai_requests` (one row per attempt), `ai_usage_daily`, `ai_metrics_daily` | Counts, costs, hashes and ids only |
 | Health | `health` probes write `system_health_checks` (database, storage, auth, cron, push, providers, AI, RevenueCat, webhooks, audit chain, …); the backoffice System Health page reads them | Status, latency and a detail code |
-| Product metrics | `analytics_events` (catalogue-validated, opt-out honoured), `metrics_daily` rollups every 15 minutes from `scheduler_tick` | No free text ([PRIVACY.md](PRIVACY.md#analytics)) |
+| Product metrics | `analytics_events` (catalogue-validated, opt-out honoured): app events through API-ANL-01 and the API_CONTRACTS §17.1 backend events through the one server emitter ([`_shared/services/analytics/emit.ts`](../supabase/functions/_shared/services/analytics/emit.ts)); `metrics_daily` rollups every 15 minutes from `scheduler_tick` | No free text ([PRIVACY.md](PRIVACY.md#analytics)) |
 | Audit | `audit_logs`, append-only and hash-chained; the `health` audit-chain probe verifies the tail | Actor, action, target, result; PII masked |
 
 ## Known gaps
 
 Observed in the code at `ec14e92`; they are not deliberate differences:
 
-- **`health_check` jobs are never claimed.** `da_health_check` enqueues one `health_check` job
-  every 5 minutes, but the worker registry has no `health_check` definition (the runner claims only
-  registered types), so the rows stay `queued`. Nothing deletes queued jobs (retention removes only
-  `completed`, `failed` and `dead_letter` rows), `private.poke_worker` keeps finding a due job, and
-  the `cron` health probe measures queue lag from the oldest ready job, so it reports the lag of
-  these rows. Probes run only through `POST /health/run` (the backoffice "run probes" action or
-  the automations secret). API_CONTRACTS JOB-26 specifies an in-process probe run in the worker.
 - **`ai_eval`** exists in `job_type` but has no handler and no producer; evals run as tests
-  ([AI_PIPELINE.md](AI_PIPELINE.md#evaluation)).
+  ([AI_PIPELINE.md](AI_PIPELINE.md#evaluation)). The `cron` health probe measures queue lag over the
+  job types the worker claims only
+  ([`_shared/jobs/worker-types.ts`](../supabase/functions/_shared/jobs/worker-types.ts); a registry
+  test keeps that list equal to the registered definitions), so an unclaimed type cannot inflate it.
 
 ## Differences from the plan
 

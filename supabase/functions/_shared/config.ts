@@ -113,12 +113,16 @@ export const OUTBOUND = {
 export const APP_SETTING_KEYS = {
   minSupportedVersion: 'app.min_supported_version',
   referralRewardDays: 'referral.reward_days',
+  referralRewardsEnabled: 'referral.rewards_enabled',
+  googleOauthVerified: 'google.oauth_verified',
 } as const;
 
 /** Documented defaults when an `app_settings` row is absent (API_CONTRACTS §2.3). */
 export const APP_SETTING_DEFAULTS = {
   minSupportedVersion: { ios: '1.0.0', android: '1.0.0' },
   referralRewardDays: 14,
+  referralRewardsEnabled: true,
+  googleOauthVerified: false,
 } as const;
 
 /** Client-side approval undo delay (R-06). */

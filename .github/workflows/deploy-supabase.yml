@@ -55,6 +55,12 @@ jobs:
           turbo-cache-key: deploy
       - name: Edge Function import maps are current
         run: pnpm functions:imports --check
+      # THR-16: every function entrypoint type-checks against the committed deno.lock (--frozen), so
+      # the deployed graph is the one the lock describes; a drifted dependency stops the deploy.
+      - name: Edge Function dependencies match the lock
+        run: pnpm functions:check
+        env:
+          DA_DENO_FROZEN: '1'
 
       - name: Secret names (report)
         run: |

@@ -18,6 +18,7 @@ import {
 } from '../../_shared/http/validate.ts';
 import { withIdempotency } from '../../_shared/idempotency.ts';
 import type { JobView } from '../../_shared/services/assist/store.ts';
+import { emitServerEvent } from '../server-events.ts';
 import { formatDay, formatTime } from '../../_shared/services/copy.ts';
 import {
   FIRST_ANALYSIS_MAX_CHECKS,
@@ -134,6 +135,7 @@ export const registerOnboardingRoutes: RouteRegistrar = (app, kit) => {
             correlationId: c.get('correlationId'),
           });
           await assist.store.setOnboardingStep(auth.userId, 'analysis');
+          await emitServerEvent(kit, c, 'onboarding_first_analysis_started', {});
           return {
             data: { job: jobRef({ id, status: 'queued' }), already_running: false },
             ref: { type: 'job', id },

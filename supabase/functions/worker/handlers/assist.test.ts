@@ -153,3 +153,23 @@ Deno.test(
     assertEquals([error.code, error.retryable], ['FIRST_ANALYSIS_FAILED', false]);
   },
 );
+
+Deno.test(
+  'JOB-13 (API_CONTRACTS §17.1): only the completed analysis emits onboarding_first_analysis_completed',
+  async () => {
+    const s = setup();
+    const run = () => runFirstAnalysis(s.fx.jobs, s.ctx);
+    await pendingCheck(run);
+    s.complete(`initial_sync:${ACCOUNT_ID}:`);
+    await pendingCheck(run);
+    assertEquals(s.progress().phase, 'ranking');
+    assertEquals(s.fx.events.rows.length, 0);
+    s.complete(`insight_refresh:${USER_A}:`);
+    s.complete(`briefing:${USER_A}:`);
+    await run();
+    assertEquals(
+      s.fx.events.rows.map((r) => [r.event_name, r.props, r.user_id, r.session_id]),
+      [['onboarding_first_analysis_completed', { partial: false }, USER_A, null]],
+    );
+  },
+);

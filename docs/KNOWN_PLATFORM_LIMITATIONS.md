@@ -359,9 +359,9 @@ iOS deployment target **16.4** (iPhone only); Android min SDK **24**, compile an
 - **Limitation.** `gmail.readonly` is restricted: server access needs an annual CASA assessment; unverified apps show a warning and have a 100-user cap; "Testing" status expires refresh tokens after 7 days.
 - **Evidence.** [OFF-S] https://developers.google.com/identity/protocols/oauth2/production-readiness/restricted-scope-verification ; [OFF-S] https://support.google.com/cloud/answer/13464325 ; [OFF-S] https://support.google.com/cloud/answer/13465431 ; [OFF-S] https://developers.google.com/identity/protocols/oauth2#expiration ; [OFF] https://supabase.com/docs/guides/platform/custom-domains ; [SEC] https://deepstrike.io/blog/google-casa-security-assessment-2025
 - **As built.** Least privilege: `gmail.readonly` for reading, `gmail.send` requested progressively for sending; no compose or modify scope. OAuth callbacks use the custom API domain.
-- **User sees.** Google's own "unverified app" screen until verification completes.
-- **Verified.** unit (scope sets); owner (CASA, brand verification).
-- **Plan difference.** No `config.google_oauth_verified` bootstrap flag, no in-app unverified notice and no `google_oauth` health detail counting users against the cap.
+- **Verification status.** `app_settings.google.oauth_verified` (seeded `false`, edited in backoffice Settings, audited) is sent as `config.google_oauth_verified` in `GET /me/bootstrap`; it counts as verified only while `GOOGLE_CASA_LOA_NOT_AFTER` (when set) has not passed. The `google_oauth` health probe reports the distinct Gmail (`mail_read`) users against the 100-user cap while unverified: `google_unverified` (healthy), `google_unverified_cap_near` (degraded at 80), `google_unverified_cap_reached` (down at 95); System Health shows the matching notice.
+- **User sees.** Google's own "unverified app" screen until verification completes; while `google_oauth_verified` is false the Gmail connect explainer says so beforehand (`onboarding.explainer.gmail.unverifiedNotice`).
+- **Verified.** unit (scope sets, the probe thresholds, the LOA expiry); mobile test (explainer notice); owner (CASA, brand verification).
 
 #### KPL-33 · Gmail push, history and quota constraints
 
@@ -707,7 +707,6 @@ This document replaced the planning register. The plan behaviours that were not 
 | Device data freshness | No pre-briefing `device_refresh` push, no briefing stale note or change banner; three background tasks instead of one | 11, 12 |
 | Calendar dedupe | No auto-deselect of duplicate device calendars, no cross-source merge | 15 |
 | Free/busy | Attendee availability always unknown | 46 |
-| Google verification status | No `google_oauth_verified` flag, in-app notice or cap health detail | 32 |
 | Platform capability reporting | `app_installations.platform_capabilities` exists but is not sent | 06, 07 |
 | Limitation copy | No `limits.*` namespace; the shipped copy lives in the feature namespaces named above, and several planned footnotes (delivery, folders, task polling, outside window) are not shown | 05, 34, 36, 38 |
 | Intl and casing | No `ensureIntl()`, no lint bans; date-fns formatting and the `toUpper` helper instead | 27, 28 |

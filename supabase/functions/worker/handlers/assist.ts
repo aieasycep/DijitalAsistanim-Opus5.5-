@@ -7,6 +7,7 @@
 import type { JobContext } from '../../_shared/jobs/types.ts';
 import type { DnsResolver } from '../../_shared/security/ssrf-fetch.ts';
 import type { AssistStore } from '../../_shared/services/assist/store.ts';
+import type { ServerAnalytics } from '../../_shared/services/analytics/emit.ts';
 import type { AiUser } from '../../_shared/services/ai/runtime.ts';
 import type { PipelineContext } from '../../_shared/services/ai/pipeline.ts';
 import type { ObjectStorage } from '../../_shared/services/storage.ts';
@@ -19,6 +20,8 @@ export interface AssistJobDeps {
   /** Transport of the SSRF-safe link fetcher (tests stub it; production uses global fetch). */
   readonly fetch?: typeof fetch;
   readonly resolver?: DnsResolver;
+  /** Backend analytics (API_CONTRACTS §17.1): first analysis completed, capture analysed. */
+  readonly analytics?: ServerAnalytics;
 }
 
 export function assistPipeline(

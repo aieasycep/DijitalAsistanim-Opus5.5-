@@ -9,6 +9,7 @@ import { detectExpectsReply, sha256Hex } from '@da/domain';
 import { Uuid } from '@da/validation';
 import { z } from 'zod';
 import { defineJob } from '../../_shared/jobs/registry.ts';
+import { dataAllowed } from '../../_shared/policy/data-access.ts';
 import type { JobContext } from '../../_shared/jobs/types.ts';
 import {
   approvalRow,
@@ -69,7 +70,7 @@ export async function runEmailAnalysis(
   if (account.data_source_toggles.mail_read === false) return { skipped: 'source_control' };
   const userId = account.user_id;
   const user = await deps.ai.users.load(userId);
-  if (!user.dataAccess.mailBody) return { skipped: 'mail_body_off' };
+  if (!dataAllowed(user.dataAccess, 'mail_body')) return { skipped: 'mail_body_off' };
   const now = ctx.now();
   const [thread] = await deps.mail.threads([message.thread_id]);
   const reasons = new Set(p.reasons);

@@ -202,6 +202,8 @@ export interface MemoryChunkInsert extends ProvenanceColumns {
 export interface MemoryChunkRow {
   readonly id: string;
   readonly user_id: string;
+  readonly chunk_kind: string;
+  readonly source_type: string;
   readonly content: string;
   readonly embedding_model: string | null;
 }

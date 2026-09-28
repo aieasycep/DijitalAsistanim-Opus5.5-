@@ -235,7 +235,7 @@ async function listPass(
           run.rt,
           account,
           inserted,
-          payload.phase === 'resync' ? 'resync' : 'initial',
+          payload.phase === 'first_pass' ? 'initial' : payload.phase,
           run.correlationId,
         );
       pageToken = page.nextPageToken;

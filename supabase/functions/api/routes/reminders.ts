@@ -31,6 +31,7 @@ import {
   toReminderView,
 } from '../../_shared/services/reminders.ts';
 import type { RouteRegistrar } from '../deps.ts';
+import { emitServerEvent } from '../server-events.ts';
 
 export const registerReminderRoutes: RouteRegistrar = (app, kit) => {
   const resolve = routes['POST /reminders/resolve-time'];
@@ -80,7 +81,10 @@ export const registerReminderRoutes: RouteRegistrar = (app, kit) => {
         locale: serverLocale(c.get('locale')),
         correlationId: c.get('correlationId'),
       });
-      if (out.created) return sendData(c, out.view, 201);
+      if (out.created) {
+        await emitServerEvent(kit, c, 'reminder_created', { preset: body.preset });
+        return sendData(c, out.view, 201);
+      }
       c.header('Idempotency-Replayed', 'true');
       return c.json(
         { data: out.view, meta: buildMeta(c, { idempotency_replayed: true }, kit.now()) },

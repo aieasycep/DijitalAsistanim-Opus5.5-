@@ -50,7 +50,7 @@ export interface WebhookSourceStats {
 export interface CronStats {
   /** Latest `job_attempts.finished_at` (worker liveness). */
   readonly lastAttemptFinishedAt: string | null;
-  /** `run_after` of the oldest claimable job (queue lag). */
+  /** `run_after` of the oldest due job of a worker-claimed type (queue lag). */
   readonly oldestReadyJobAt: string | null;
   /** Latest `created_at` of a job enqueued by pg_cron (`health_check` / `push_receipts`, every 5 min). */
   readonly lastCronEnqueueAt: string | null;
@@ -66,6 +66,11 @@ export interface HealthData {
   accountHealth(provider: 'google' | 'microsoft'): Promise<{ total: number; failing: number }>;
   /** The configured `embedding_query` model (`ai_model_config`, profile `balanced`). */
   embeddingQueryModel(): Promise<string | null>;
+  /**
+   * KPL-32: the stored `google.oauth_verified` value and the number of distinct users with a
+   * connected Gmail account (counted against Google's 100-user cap while unverified).
+   */
+  googleOauth(): Promise<{ setting: unknown; gmailUsers: number }>;
   auditChain(window: number): Promise<{ ok: boolean; checked: number; firstBadSeq: number | null }>;
 }
 

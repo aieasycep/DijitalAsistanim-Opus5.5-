@@ -5,6 +5,7 @@
  * auth session returns, then closes. Chips are platform-filtered (C-35): Apple on iOS, "Cihaz
  * takvimi" on Android.
  */
+import { useBootstrap } from '@da/api-client/react';
 import type { Provider } from '@da/domain/enums';
 import { BottomSheet, PermissionExplainer, type IconName } from '@da/ui';
 import { useEffect, useState } from 'react';
@@ -73,6 +74,9 @@ function ExplainerSheet({
   const t = useTranslations('onboarding.explainer');
   const common = useTranslations('common');
   const online = useOnline();
+  // KPL-32: until Google verifies the OAuth app (CASA), its consent screen may warn that the app
+  // is unverified; the Gmail explainer says so beforehand (bootstrap `config.google_oauth_verified`).
+  const googleUnverified = useBootstrap().data?.config.google_oauth_verified === false;
   const [chip, setChip] = useState<CalendarChip>(
     params.kind === 'calendar' ? params.chip : 'google',
   );
@@ -150,7 +154,11 @@ function ExplainerSheet({
       { key: 'deadlines', icon: 'event', text: t(`${base}.reasons.deadlines`) },
     ];
     cta = ms ? t('outlook.cta') : t('gmail.cta');
-    footnote = ms ? t('outlook.note') : t('gmail.note');
+    footnote = ms
+      ? t('outlook.note')
+      : googleUnverified && params.provider === 'google'
+        ? `${t('gmail.note')} ${t('gmail.unverifiedNotice')}`
+        : t('gmail.note');
   } else if (params.kind === 'tasks') {
     kicker = t('tasks.kicker');
     title = t('tasks.title');

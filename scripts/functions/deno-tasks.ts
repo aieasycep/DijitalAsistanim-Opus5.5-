@@ -7,9 +7,14 @@
  * - `test`:  `deno test` with env and read permissions only — no network, so a test can never reach
  *   a real provider;
  * - `coverage`: `test` with `--coverage`, then the line coverage of `_shared/` (tests and test
- *   helpers excluded) from the lcov report; exits 1 below `SHARED_LINE_THRESHOLD` (T-12.04).
+ *   helpers excluded) from the lcov report; exits 1 below `SHARED_LINE_THRESHOLD` (T-12.04);
+ * - `lock`: rewrites `supabase/functions/deno.lock` from scratch (after an import-map change).
  *
- * Usage: node scripts/functions/deno-tasks.ts <check|lint|test|coverage> [extra deno args]
+ * `check` and `test` resolve every npm and jsr dependency through the committed lock (THR-16); in
+ * CI (`CI=true`) or with `DA_DENO_FROZEN=1` they run `--frozen`, so a dependency the lock does not
+ * describe fails the run instead of being resolved afresh.
+ *
+ * Usage: node scripts/functions/deno-tasks.ts <check|lint|test|coverage|lock> [extra deno args]
  */
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs';
@@ -17,7 +22,7 @@ import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { scanFunctions } from './check-guards.ts';
-import { FUNCTION_NAMES, FUNCTIONS_DIR, REPO_ROOT } from './sync-import-maps.ts';
+import { DENO_LOCKFILE, FUNCTION_NAMES, FUNCTIONS_DIR, REPO_ROOT } from './sync-import-maps.ts';
 
 const DENO = join(
   REPO_ROOT,
@@ -26,6 +31,12 @@ const DENO = join(
   process.platform === 'win32' ? 'deno.cmd' : 'deno',
 );
 const WORKSPACE_CONFIG = join(FUNCTIONS_DIR, 'deno.json');
+
+/** Lock flags for `check` / `test`: always the committed lock, frozen in CI. */
+export function lockArgs(env: NodeJS.ProcessEnv = process.env): string[] {
+  const frozen = env.CI === 'true' || env.CI === '1' || env.DA_DENO_FROZEN === '1';
+  return [`--lock=${relative(REPO_ROOT, DENO_LOCKFILE)}`, ...(frozen ? ['--frozen'] : [])];
+}
 
 function deno(args: string[]): void {
   const result = spawnSync(existsSync(DENO) ? DENO : 'deno', args, {
@@ -46,18 +57,26 @@ function tsFiles(dir: string): string[] {
   return out.sort();
 }
 
-function check(extra: string[]): void {
+function check(extra: string[], lock: string[] = lockArgs()): void {
   for (const fn of FUNCTION_NAMES) {
     const dir = join(FUNCTIONS_DIR, fn);
     deno([
       'check',
       '--config',
       join(dir, 'deno.json'),
+      ...lock,
       relative(REPO_ROOT, join(dir, 'index.ts')),
       ...extra,
     ]);
   }
-  deno(['check', '--config', WORKSPACE_CONFIG, ...tsFiles(FUNCTIONS_DIR), ...extra]);
+  deno(['check', '--config', WORKSPACE_CONFIG, ...lock, ...tsFiles(FUNCTIONS_DIR), ...extra]);
+}
+
+/** Rewrites the lock from the current import map (never frozen; review the diff before commit). */
+function lock(extra: string[]): void {
+  rmSync(DENO_LOCKFILE, { force: true });
+  check(extra, [`--lock=${relative(REPO_ROOT, DENO_LOCKFILE)}`]);
+  console.info(`functions:lock: wrote ${relative(REPO_ROOT, DENO_LOCKFILE)}`);
 }
 
 function lint(extra: string[]): void {
@@ -77,6 +96,7 @@ function test(extra: string[]): void {
     '--allow-env',
     '--allow-read',
     '--no-prompt',
+    ...lockArgs(),
     relative(REPO_ROOT, FUNCTIONS_DIR),
     ...extra,
   ]);
@@ -140,8 +160,9 @@ function main(): void {
   else if (task === 'lint') lint(extra);
   else if (task === 'test') test(extra);
   else if (task === 'coverage') coverage(extra);
+  else if (task === 'lock') lock(extra);
   else {
-    console.error('usage: node scripts/functions/deno-tasks.ts <check|lint|test|coverage>');
+    console.error('usage: node scripts/functions/deno-tasks.ts <check|lint|test|coverage|lock>');
     process.exit(2);
   }
 }

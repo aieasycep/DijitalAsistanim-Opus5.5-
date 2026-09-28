@@ -12,6 +12,7 @@ import { embeddingJob } from './embedding.ts';
 import { insightRefreshJob } from './insight_refresh.ts';
 import type { IntelDeps } from './intel.ts';
 import { aiCostReconciliationJob } from './reconciliation_ai_cost.ts';
+import { embeddingDrJob } from './embedding_dr.ts';
 
 export function intelJobDefinitions(deps: IntelDeps): JobDefinition<never>[] {
   return [
@@ -22,5 +23,6 @@ export function intelJobDefinitions(deps: IntelDeps): JobDefinition<never>[] {
     briefingJob(deps),
     aiBatchJob(deps),
     aiCostReconciliationJob(deps),
+    ...(deps.dr === undefined ? [] : [embeddingDrJob({ ...deps, dr: deps.dr })]),
   ] as unknown as JobDefinition<never>[];
 }

@@ -14,7 +14,7 @@ export type SubprocessorLocation =
   | { readonly kind: 'custom'; readonly label: string };
 
 export type SubprocessorCondition =
-  'always' | 'fallback' | 'memory' | 'push' | 'gmail' | 'premiumTts' | 'turnstile';
+  'always' | 'fallback' | 'sttFallback' | 'memory' | 'push' | 'gmail' | 'premiumTts' | 'turnstile';
 
 export type SubprocessorId =
   | 'supabase'
@@ -22,6 +22,7 @@ export type SubprocessorId =
   | 'anthropic'
   | 'openai'
   | 'voyage'
+  | 'deepgram'
   | 'expo'
   | 'pushNetworks'
   | 'revenuecat'
@@ -71,6 +72,9 @@ export function buildSubprocessors(config: SubprocessorConfig): Subprocessor[] {
     { id: 'anthropic', location: key('us'), condition: 'always' },
     { id: 'openai', location: key('us'), condition: 'fallback' },
     { id: 'voyage', location: key('us'), condition: 'memory' },
+    // The configurable server STT fallback (STT_SERVER_PROVIDER=deepgram): listed whenever it can be
+    // enabled, so turning it on never outruns the disclosure (PRIVACY.md).
+    { id: 'deepgram', location: key('us'), condition: 'sttFallback' },
     { id: 'expo', location: key('us'), condition: 'push' },
     { id: 'pushNetworks', location: key('global'), condition: 'push' },
     { id: 'revenuecat', location: key('us'), condition: 'always' },
@@ -97,5 +101,5 @@ export function buildSubprocessors(config: SubprocessorConfig): Subprocessor[] {
   return rows;
 }
 
-/** The AI sub-processors named in the policy's AI section (Anthropic, OpenAI fallback, Voyage). */
-export const AI_SUBPROCESSOR_IDS = ['anthropic', 'openai', 'voyage'] as const;
+/** The AI sub-processors (Anthropic, OpenAI fallback, Voyage embeddings, Deepgram STT fallback). */
+export const AI_SUBPROCESSOR_IDS = ['anthropic', 'openai', 'voyage', 'deepgram'] as const;

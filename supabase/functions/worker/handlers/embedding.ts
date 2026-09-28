@@ -11,6 +11,7 @@ import { defineJob } from '../../_shared/jobs/registry.ts';
 import { JobError, type JobContext } from '../../_shared/jobs/types.ts';
 import { chunkRow } from '../../_shared/services/memory/chunk.ts';
 import { embedTexts } from '../../_shared/services/memory/embed.ts';
+import { chunkAllowed } from '../../_shared/policy/data-access.ts';
 import type { MemoryChunkInsert } from '../../_shared/services/intel/types.ts';
 import type { IntelDeps } from './intel.ts';
 
@@ -43,11 +44,18 @@ export async function runEmbedding(
   const userId = ctx.payload.user_id;
   const user = await deps.ai.users.load(userId);
   if (!user.isPro) return { skipped: 'not_entitled', chunks: 0, degraded: false };
+  // Data Source Controls: a chunk derived from a class that is off is neither stored in the AI
+  // memory nor sent to the embedding provider (chunks stored earlier stay without a vector).
   const sources = await deps.memory.sources(userId, ctx.payload.items);
-  const rows = sources.map(chunkRow).filter((r): r is MemoryChunkInsert => r !== null);
+  const built = sources.map(chunkRow).filter((r): r is MemoryChunkInsert => r !== null);
+  const rows = built.filter((r) => chunkAllowed(user.dataAccess, r));
   const inserted = await deps.memory.upsertChunks(rows);
-  const pending = await deps.memory.pendingChunks(userId, null, 128);
-  if (pending.length === 0) return { chunks: inserted.length, embedded: 0, degraded: false };
+  const pending = (await deps.memory.pendingChunks(userId, null, 128)).filter((c) =>
+    chunkAllowed(user.dataAccess, c),
+  );
+  const withheld = built.length - rows.length;
+  if (pending.length === 0)
+    return { chunks: inserted.length, embedded: 0, degraded: false, withheld };
   const outcome = await embedTexts(deps.ai.runtime, {
     feature: 'embedding_doc',
     userId,
@@ -64,7 +72,13 @@ export async function runEmbedding(
       throw new JobError('EMBEDDING_PROVIDER_UNAVAILABLE', true);
     }
     ctx.log.warn('embedding_degraded', { reason: outcome.reason });
-    return { chunks: inserted.length, embedded: 0, degraded: true, reason: outcome.reason };
+    return {
+      chunks: inserted.length,
+      embedded: 0,
+      degraded: true,
+      reason: outcome.reason,
+      withheld,
+    };
   }
   await deps.memory.writeEmbeddings(
     pending.flatMap((c, i) => {
@@ -72,7 +86,7 @@ export async function runEmbedding(
       return v === undefined ? [] : [{ id: c.id, embedding: v, model: outcome.model }];
     }),
   );
-  return { chunks: inserted.length, embedded: pending.length, degraded: false };
+  return { chunks: inserted.length, embedded: pending.length, degraded: false, withheld };
 }
 
 export function embeddingJob(deps: IntelDeps) {

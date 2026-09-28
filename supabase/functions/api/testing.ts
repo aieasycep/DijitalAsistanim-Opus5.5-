@@ -41,6 +41,7 @@ import { createApiApp } from './app.ts';
 import type { IntegrationRuntime } from '../_shared/services/integrations/runtime.ts';
 import type { ApiDeps } from './deps.ts';
 import type { AnalyticsRow } from './routes/analytics.ts';
+import { type MemoryServerAnalytics, memoryServerAnalytics } from '../_shared/testing/analytics.ts';
 import type { FeedbackInsert, TicketInsert, TicketView } from './routes/support.ts';
 import {
   memoryApprovals,
@@ -83,6 +84,7 @@ export function memoryDevices() {
               user_id: row.user_id,
               installation_id: row.installation_id,
               signed_out_at: row.signedOut,
+              push_enabled: row.push_enabled,
             },
       );
     },
@@ -194,6 +196,8 @@ export interface Harness {
   readonly accounts: Map<string, AccountState>;
   readonly audit: AuditEntry[];
   readonly analytics: { rows: AnalyticsRow[]; optOut: Set<string> };
+  /** Backend analytics events written through the server emitter (API_CONTRACTS §17.1). */
+  readonly serverEvents: MemoryServerAnalytics;
   readonly support: { tickets: TicketInsert[]; feedback: FeedbackInsert[] };
   readonly touched: string[];
   readonly appleSubs: Map<string, string>;
@@ -234,6 +238,7 @@ export async function createHarness(
   const accounts = new Map<string, AccountState>();
   const audit: AuditEntry[] = [];
   const analytics = { rows: [] as AnalyticsRow[], optOut: new Set<string>() };
+  const serverEvents = memoryServerAnalytics({ now: () => NOW });
   const support = { tickets: [] as TicketInsert[], feedback: [] as FeedbackInsert[] };
   const touched: string[] = [];
   const appleSubs = new Map<string, string>();
@@ -334,6 +339,8 @@ export async function createHarness(
     settings: {
       minSupportedVersion: () => Promise.resolve({ ios: '1.2.0', android: '1.2.0' }),
       referralRewardDays: () => Promise.resolve(30),
+      referralRewardsEnabled: () => Promise.resolve(true),
+      googleOauthVerified: () => Promise.resolve(false),
     },
     rateLimits: countingRateLimits(),
     idempotency: memoryIdempotencyRepo(),
@@ -393,6 +400,7 @@ export async function createHarness(
     },
     fetch: stub.fetch,
     ...(options.integrations === undefined ? {} : { integrations: options.integrations }),
+    serverAnalytics: serverEvents.analytics,
     now: () => NOW,
   };
 
@@ -405,6 +413,7 @@ export async function createHarness(
     accounts,
     audit,
     analytics,
+    serverEvents,
     support,
     touched,
     appleSubs,

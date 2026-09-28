@@ -18,6 +18,7 @@ import type { T0Reason } from '../../ai/types.ts';
 import type { UntrustedDoc } from '../../ai/untrusted.ts';
 import { injectionScan, modelText } from '../ai/hygiene.ts';
 import { callModel, type PipelineContext, trustedHeader } from '../ai/pipeline.ts';
+import { dataAllowed, tagged } from '../../policy/data-access.ts';
 import { clip } from '../copy.ts';
 import type { MailMessageRow } from '../intel/types.ts';
 import type { Tone } from '../assist/store.ts';
@@ -103,9 +104,15 @@ export async function generateReplyDrafts(
     ...(input.recipientName === null ? [] : [`Alıcı: ${input.recipientName}`]),
     `Tonlar: ${tones.join(', ')}`,
     `Dil: ${input.language}`,
+    // Attachment names are attachment data: dropped by the guard with `attachments` off.
     ...(input.attachmentNames.length === 0
       ? []
-      : [`Ekler: ${input.attachmentNames.map((n) => clip(n, 80)).join(', ')}`]),
+      : [
+          tagged(
+            `Ekler: ${input.attachmentNames.map((n) => clip(n, 80)).join(', ')}`,
+            'attachments',
+          ),
+        ]),
     ...(input.instructions === null
       ? []
       : [`Kullanıcının isteği: ${clip(input.instructions, 500)}`]),
@@ -132,7 +139,9 @@ export async function generateReplyDrafts(
   const refined = refineReplyDraftsV1(result.data, {
     threadText: `${thread.text}\n${input.instructions ?? ''}`,
     expect: input.expect,
-    attachmentNames: input.attachmentNames,
+    attachmentNames: dataAllowed(pipeline.user.dataAccess, 'attachments')
+      ? input.attachmentNames
+      : [],
   });
   if (!refined.ok) return { kind: 't0', reason: 'refine_failed' };
   return {

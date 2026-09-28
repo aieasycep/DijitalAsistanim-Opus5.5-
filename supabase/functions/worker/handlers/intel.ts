@@ -21,6 +21,7 @@ import type {
 } from '../../_shared/services/intel/store.ts';
 import type { BriefingJobStore } from '../../_shared/services/intel/supabase-store.ts';
 import type { AndroidLifeStore } from '../../_shared/services/life/android.ts';
+import type { EmbeddingDrStore } from '../../_shared/services/memory/dr.ts';
 
 export interface ReconciliationPorts {
   readonly env: RawEnv;
@@ -42,6 +43,8 @@ export interface IntelDeps {
   readonly reconciliation: ReconciliationPorts;
   /** Android notification signals → life events in `insight_refresh` (API-ANI-01, JOB-12). */
   readonly android?: AndroidLifeStore;
+  /** Disaster-recovery re-embed (`embedding {mode:'reembed'}`, AI_PIPELINE_PLAN §10.8). */
+  readonly dr?: EmbeddingDrStore;
 }
 
 export function pipelineFor(

@@ -6,8 +6,9 @@
 import type { DbClient } from '../../db/clients.ts';
 import { DB_FN, rpc } from '../../db/functions.ts';
 import { toByteaHex } from '../../crypto/encoding.ts';
-import { mapDbError } from '../../errors.ts';
 import { enqueueJob } from '../../jobs/client.ts';
+import { createLogger } from '../../logging/logger.ts';
+import { type ServerAnalytics, supabaseServerAnalytics } from '../analytics/emit.ts';
 import { supabaseAuditWriter } from '../audit.ts';
 import type { ApplyMirrorResult, BillingRepo, BillingSyncContext } from './sync.ts';
 
@@ -69,8 +70,10 @@ export function supabaseBillingLedger(system: DbClient): BillingLedger {
   };
 }
 
-export function supabaseBillingRepo(system: DbClient): BillingRepo {
+export function supabaseBillingRepo(system: DbClient, analytics?: ServerAnalytics): BillingRepo {
   const audit = supabaseAuditWriter(system);
+  // JOB-24 `subscription_*` go through the shared server emitter (catalogue check and opt-out).
+  const events = analytics ?? supabaseServerAnalytics(system, createLogger({ fn: 'billing' }));
   return {
     async context(appUserId, eventId) {
       const raw = await rpc<Partial<BillingSyncContext> | null>(system, DB_FN.billingSyncContext, {
@@ -106,13 +109,7 @@ export function supabaseBillingRepo(system: DbClient): BillingRepo {
     },
     enqueue: (input) => enqueueJob(system, input),
     async analytics(row) {
-      const { error } = await system.from('analytics_events').insert({
-        user_id: row.user_id,
-        event_name: row.event_name,
-        props: row.props,
-        occurred_at: row.occurred_at,
-      });
-      if (error !== null) throw mapDbError(error);
+      await events.emit(row.event_name, row.props, { userId: row.user_id });
     },
     audit: (entry) => audit.append(entry),
   };

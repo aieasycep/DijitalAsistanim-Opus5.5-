@@ -107,7 +107,13 @@ export function aiUser(overrides: Partial<AiUser> = {}): AiUser {
     timeZone: 'Europe/Istanbul',
     locale: 'tr',
     displayName: 'Yunus',
-    dataAccess: { mailBody: true, attachments: true, calendar: true, contacts: true },
+    dataAccess: {
+      mailBody: true,
+      attachments: true,
+      calendar: true,
+      contacts: true,
+      locationCoarse: false,
+    },
     learnFromInteractions: true,
     followUpAfterDays: 2,
     workingHours: { start: '09:00', end: '18:00', days: [1, 2, 3, 4, 5] },
@@ -142,6 +148,16 @@ export interface FixtureServices {
   readonly cache: ReturnType<typeof memoryCache>;
   /** Model calls that reached the (fixture) provider, by schema name. */
   readonly calls: string[];
+  /**
+   * Every rendered request that reached the provider: structured prompts (system, context,
+   * untrusted blocks, instruction), streamed QA requests and embedding inputs (Data Source
+   * Controls tests assert on these texts).
+   */
+  readonly prompts: {
+    readonly op: 'generate' | 'stream' | 'embed';
+    readonly name: string;
+    readonly text: string;
+  }[];
   readonly users: Map<string, AiUser>;
 }
 
@@ -156,13 +172,38 @@ export function fixtureServices(
 ): FixtureServices {
   const fixture = createFixtureProvider();
   const calls: string[] = [];
+  const prompts: FixtureServices['prompts'][number][] = [];
   const counted = {
     ...fixture,
     generateStructured: <T>(
       ...args: Parameters<NonNullable<typeof fixture.generateStructured>>
     ) => {
       calls.push(args[0].schemaName);
+      const p = args[0].prompt;
+      prompts.push({
+        op: 'generate',
+        name: args[0].schemaName,
+        text: [p.system, p.userContext ?? '', p.untrusted ?? '', p.instruction ?? ''].join('\n'),
+      });
       return fixture.generateStructured!<T>(args[0] as never, args[1]);
+    },
+    stream: (...args: Parameters<NonNullable<typeof fixture.stream>>) => {
+      const q = args[0];
+      prompts.push({
+        op: 'stream',
+        name: 'assistant_qa',
+        text: [
+          q.system,
+          ...q.history.map((h) => h.text),
+          q.question,
+          ...q.results.map((r) => [r.title, ...r.sentences].join('\n')),
+        ].join('\n'),
+      });
+      return fixture.stream!(args[0], args[1]);
+    },
+    embed: (...args: Parameters<NonNullable<typeof fixture.embed>>) => {
+      prompts.push({ op: 'embed', name: args[0].kind, text: args[0].inputs.join('\n') });
+      return fixture.embed!(args[0], args[1]);
     },
   };
   const telemetry = recordingTelemetry();
@@ -214,6 +255,7 @@ export function fixtureServices(
     budget,
     cache,
     calls,
+    prompts,
     users,
   };
 }
@@ -425,7 +467,14 @@ export class MemoryIntel {
     meetingsByWeekday: { 2: 3, 4: 3 },
     busiest: { weekday: 2, meetings: 3, maxGapMin: 45 },
   };
-  bodies = new Map<string, { text: string; html: string | null }>();
+  bodies = new Map<
+    string,
+    {
+      text: string;
+      html: string | null;
+      attachments?: { filename: string; mimeType: string; sizeBytes: number; inline: boolean }[];
+    }
+  >();
   own = ['yunus@firma.example'];
   contactStatsRefreshed: (readonly string[] | null)[] = [];
 
@@ -776,7 +825,14 @@ export class MemoryIntel {
           );
           const row = { ...r, id: uuid(), embedding: null, embedding_model: null };
           this.chunks.push(row);
-          out.push({ id: row.id, user_id: r.user_id, content: r.content, embedding_model: null });
+          out.push({
+            id: row.id,
+            user_id: r.user_id,
+            chunk_kind: r.chunk_kind,
+            source_type: r.source_type,
+            content: r.content,
+            embedding_model: null,
+          });
         }
         return Promise.resolve(out);
       },
@@ -793,6 +849,8 @@ export class MemoryIntel {
             .map((c) => ({
               id: c.id,
               user_id: c.user_id,
+              chunk_kind: c.chunk_kind,
+              source_type: c.source_type,
               content: c.content,
               embedding_model: null,
             })),
@@ -817,7 +875,15 @@ export class MemoryIntel {
         return Promise.resolve(
           body === undefined
             ? null
-            : { text: body.text, html: body.html, truncated: false, attachments: [] },
+            : {
+                text: body.text,
+                html: body.html,
+                truncated: false,
+                attachments: (body.attachments ?? []).map((a, i) => ({
+                  providerAttachmentId: `att-${i + 1}`,
+                  ...a,
+                })),
+              },
         );
       },
     };

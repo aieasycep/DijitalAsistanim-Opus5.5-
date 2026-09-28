@@ -288,3 +288,33 @@ describe('buildEnv', () => {
     expect(buildEnv.safeParse({ APP_ENV: 'staging' }).success).toBe(false);
   });
 });
+
+describe('VOYAGE_TRAINING_OPT_OUT_CONFIRMED (PRIVACY.md, owner step)', () => {
+  const voyage = { ...baseServer, VOYAGE_API_KEY: 'pa-test-key' };
+
+  it('defaults to false and is not required outside preview and production', () => {
+    expect(parseServerEnv(baseServer).VOYAGE_TRAINING_OPT_OUT_CONFIRMED).toBe(false);
+    expect(serverEnv.safeParse(voyage).success).toBe(true);
+  });
+
+  it('refuses Voyage in preview and production until the opt-out is confirmed', () => {
+    for (const APP_ENV of ['preview', 'production']) {
+      const result = serverEnv.safeParse({ ...voyage, APP_ENV });
+      expect(result.success, APP_ENV).toBe(false);
+      if (!result.success) {
+        expect(result.error.issues.map((i) => i.path.join('.'))).toContain(
+          'VOYAGE_TRAINING_OPT_OUT_CONFIRMED',
+        );
+      }
+      expect(
+        serverEnv.safeParse({ ...voyage, APP_ENV, VOYAGE_TRAINING_OPT_OUT_CONFIRMED: 'true' })
+          .success,
+        APP_ENV,
+      ).toBe(true);
+    }
+  });
+
+  it('is not needed in production without a Voyage key', () => {
+    expect(serverEnv.safeParse({ ...baseServer, APP_ENV: 'production' }).success).toBe(true);
+  });
+});

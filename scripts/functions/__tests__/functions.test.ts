@@ -1,12 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { scanFunctions } from '../check-guards.ts';
-import { isSharedSource, lcovLines } from '../deno-tasks.ts';
+import { isSharedSource, lcovLines, lockArgs } from '../deno-tasks.ts';
 import {
   buildConfigs,
+  DENO_LOCKFILE,
   FUNCTION_NAMES,
   FUNCTIONS_DIR,
   readBaseMap,
@@ -101,4 +102,42 @@ test('coverage: lcov line totals and the _shared source filter (T-12.04)', () =>
   assert.equal(isSharedSource(`${FUNCTIONS_DIR}/_shared/services/x.test.ts`), false);
   assert.equal(isSharedSource(`${FUNCTIONS_DIR}/_shared/testing/fake.ts`), false);
   assert.equal(isSharedSource(`${FUNCTIONS_DIR}/api/app.ts`), false);
+});
+
+test('THR-16: the workspace config uses the committed lock and it covers every remote import', () => {
+  const configs = buildConfigs(readBaseMap());
+  const workspace = configs.get(join(FUNCTIONS_DIR, 'deno.json')) as { lock: unknown };
+  assert.equal(workspace.lock, './deno.lock');
+  for (const fn of FUNCTION_NAMES) {
+    // The deployed configs stay lock-free; deno-tasks checks each entrypoint against the lock.
+    assert.equal(
+      (configs.get(join(FUNCTIONS_DIR, fn, 'deno.json')) as { lock: unknown }).lock,
+      false,
+    );
+  }
+  assert.ok(existsSync(DENO_LOCKFILE), 'supabase/functions/deno.lock is committed');
+  const lock = JSON.parse(readFileSync(DENO_LOCKFILE, 'utf8')) as {
+    version: string;
+    workspace?: { dependencies?: string[] };
+  };
+  assert.equal(lock.version, '4');
+  const locked = new Set(lock.workspace?.dependencies ?? []);
+  const remote = Object.values(readBaseMap().imports)
+    .filter((t) => t.startsWith('npm:') || t.startsWith('jsr:'))
+    .map((t) => t.replace(/^(npm|jsr):\//, '$1:').replace(/\/$/, ''));
+  for (const specifier of remote) {
+    assert.ok(
+      locked.has(specifier),
+      `${specifier} is missing from deno.lock (run pnpm functions:lock)`,
+    );
+  }
+});
+
+test('THR-16: check and test run --frozen in CI and with DA_DENO_FROZEN=1 only', () => {
+  assert.deepEqual(lockArgs({ CI: 'true' }), ['--lock=supabase/functions/deno.lock', '--frozen']);
+  assert.deepEqual(lockArgs({ DA_DENO_FROZEN: '1' }), [
+    '--lock=supabase/functions/deno.lock',
+    '--frozen',
+  ]);
+  assert.deepEqual(lockArgs({}), ['--lock=supabase/functions/deno.lock']);
 });
