@@ -78,5 +78,12 @@
     "remind": "Set reminder · {time}"
   },
   "snoozeNotify": "Notify me when it's time",
-  "permissionDenied": "Notifications are off; the reminder is saved but can't be shown on this device."
+  "permissionDenied": "Notifications are off; the reminder is saved but can't be shown on this device.",
+  "reason": {
+    "before_anchor": "{minutes} minutes before · starts at {anchor_time}",
+    "evening_time": "This evening · {time}",
+    "morning_time": "Tomorrow morning · {time}",
+    "calendar_slot": "Based on your calendar: {time}",
+    "custom": "Your chosen time · {time}"
+  }
 }

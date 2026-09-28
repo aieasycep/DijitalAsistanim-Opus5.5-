@@ -195,7 +195,7 @@ describe('field re-derivation (UT-GRD-06, 08, 15)', () => {
     expect(unverifiedMessage('amount', 'amount').key).toBe('explain.unverified.amount');
     expect(unverifiedMessage('start_time', 'text').key).toBe('explain.unverified.time');
     expect(unverifiedMessage('counterparty', 'text').key).toBe('explain.unverified.person');
-    expect(unverifiedMessage('venue', 'text').key).toBe('explain.unverified.generic');
+    expect(unverifiedMessage('venue', 'text').key).toBe('common.provenance.notConfirmed');
   });
 });
 
@@ -357,7 +357,7 @@ describe('confidence calibration (§6.7, UT-GRD-14)', () => {
     expect(confidenceWording(0.84)).toBe('probably');
     expect(confidenceWording(0.7)).toBe('probably');
     expect(confidenceWording(0.69)).toBe('uncertain');
-    expect(confidenceWordingKey(0.5)).toBe('explain.confidence.uncertain');
+    expect(confidenceWordingKey(0.5)).toBe('explain.confidenceWording.uncertain');
     expect(isActionable(0.69)).toBe(false);
     expect(PRIOR_CALIBRATION_VERSION).toBe('prior-2026-09');
   });

@@ -5,7 +5,7 @@
  * of today's morning briefing and items due today), Takip (open follow-ups) and Yarının ilk
  * etkinliği. Hero: "Bugünden yarına {n} konu kaldı." ("Bugün her şeyi kapattın." for zero). The
  * optional polish runs only behind `ai.feature.briefing_polish`. "Yarına Hazırım" (API-BRF-02)
- * later carries the chosen `carry_over` items into tomorrow's morning briefing.
+ * carries the chosen `carry_over` items into tomorrow's morning briefing.
  */
 import { addDaysToLocalDate, localDate, localDateDiffDays, waitingDays } from '@da/domain';
 import { EveningCloseV1, refineEveningCloseV1 } from '@da/validation';

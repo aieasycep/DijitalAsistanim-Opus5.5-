@@ -18,6 +18,20 @@ const config = [
     // exemption) does not exist here, so the Supabase import ban covers every file.
     serverOnlyDirs: ['src/server/**'],
   }),
+  {
+    // QG-15: every user-facing string comes from `@da/i18n` (`web.*`) or `src/content/**`.
+    files: ['src/**/*.tsx'],
+    rules: {
+      'react/jsx-no-literals': [
+        'error',
+        {
+          noStrings: true,
+          ignoreProps: true,
+          allowedStrings: ['·', '•', '—', '–', '/', ':', '%', '+', '×', '…', '→', '↗', '©'],
+        },
+      ],
+    },
+  },
 ];
 
 export default config;

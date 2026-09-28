@@ -144,6 +144,9 @@ const SOURCE_NAMES: Readonly<Record<SourceNameKey, Readonly<Record<AppLocale, st
   feedback: { tr: 'Geri bildirim', en: 'Feedback' },
 };
 
+/** Every source-name key; each has a `common.source.<key>` catalog entry (I18N-01). */
+export const SOURCE_NAME_KEYS = Object.keys(SOURCE_NAMES) as readonly SourceNameKey[];
+
 /** Which source name applies to a provider + source type. */
 export function sourceNameKey(
   provider: SourceProvider | null,

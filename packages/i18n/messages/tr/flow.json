@@ -59,6 +59,9 @@
         "transactional": "İşlem bildirimi (sipariş, ödeme veya rezervasyon).",
         "security_unverified": "Güvenlik bildirimi doğrulanamadı; bağlantılara dokunma.",
         "awaiting_my_reply": "Senden yanıt bekleniyor.",
+        "pending_ai": "Kesin bir sinyal yok; yapay zekâ değerlendirmesi bekleniyor.",
+        "bulk": "Toplu gönderim olarak işaretli.",
+        "informational": "Bilgilendirme amaçlı bir mesaj.",
         "other": "Kesin sinyallere göre sınıflandırıldı."
       },
       "kind": {

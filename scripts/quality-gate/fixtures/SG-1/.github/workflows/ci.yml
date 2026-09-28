@@ -1,0 +1,4 @@
+jobs:
+  security:
+    steps:
+      - run: pnpm scan:bundles

@@ -145,7 +145,7 @@ describe('Approval Center (M-APPR-01)', () => {
                 destination: {
                   target_kind: 'provider',
                   provider: 'google',
-                  account_label: 'yunus@example.com',
+                  account_label: 'ahmet@example.com',
                   container_label: 'İş',
                 },
               },
@@ -167,7 +167,7 @@ describe('Approval Center (M-APPR-01)', () => {
     });
     expect(await screen.findByTestId('screen.approvalDetail')).toBeOnTheScreen();
     expect((await screen.findAllByText('14:30 → 16:30')).length).toBeGreaterThan(0);
-    expect(screen.getByText('yunus@example.com · İş')).toBeOnTheScreen();
+    expect(screen.getByText('ahmet@example.com · İş')).toBeOnTheScreen();
     expect(await screen.findByText('Oluşturuldu')).toBeOnTheScreen();
     expect(screen.getByText(`Destek kodu: ${M3.approval.slice(0, 8)}`)).toBeOnTheScreen();
   });

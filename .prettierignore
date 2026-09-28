@@ -17,3 +17,6 @@ apps/mobile/targets/*/Assets.xcassets
 .claude/
 # Next.js regenerates this file on every build and typegen
 **/next-env.d.ts
+quality-gate.json
+# Quality-gate fixtures hold deliberately bad snippets (one finding each).
+scripts/quality-gate/fixtures/

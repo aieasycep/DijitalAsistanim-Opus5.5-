@@ -607,9 +607,9 @@ describe('explain() → i18n keys (§7.7)', () => {
       }),
     );
     const e = explain(r, { ruleTitle: '@kuzeylojistik.com.tr adresinden gelenler' });
-    expect(e.heading.key).toBe('explain.tier.explicit_rule');
+    expect(e.heading.key).toBe('explain.tiers.explicit_rule');
     expect(e.reason).toEqual({
-      key: 'explain.reason.rule',
+      key: 'flow.generated.why.rule',
       params: { rule: '@kuzeylojistik.com.tr adresinden gelenler', outcome: 'always_important' },
     });
     expect(e.corrections).toEqual([
@@ -624,7 +624,7 @@ describe('explain() → i18n keys (§7.7)', () => {
   it('VIP, learned, signal and AI reasons', () => {
     const vip = evaluatePriority(mail({ fromContactId: 'c' }), ctx({ vip: { contactIds: ['c'] } }));
     expect(explain(vip, { personName: 'Mehmet Yılmaz' }).reason).toEqual({
-      key: 'explain.reason.vip',
+      key: 'flow.generated.why.vip',
       params: { name: 'Mehmet Yılmaz' },
     });
     const lp = evaluatePriority(
@@ -634,16 +634,16 @@ describe('explain() → i18n keys (§7.7)', () => {
     expect(
       explain(lp, { learnedStatement: 'Toplu bültenler düşük öncelikli', learnedEvidence: '3 kez' })
         .reason.key,
-    ).toBe('explain.reason.learned');
+    ).toBe('flow.generated.why.learned');
     const sig = evaluatePriority(mail({ headers: { listUnsubscribe: true } }), ctx());
-    expect(explain(sig).reason.key).toBe('explain.signal.list_unsubscribe');
+    expect(explain(sig).reason.key).toBe('flow.generated.why.signal.list_unsubscribe');
     const aiRes = evaluatePriority(mail(), ctx(), ai('important', 0.78));
     const e = explain(aiRes);
     expect(e.reason).toEqual({
-      key: 'explain.reason.ai',
+      key: 'flow.generated.why.ai',
       params: { reason: 'ai_classification', confidence: 'medium' },
     });
-    expect(e.details.map((d) => d.key)).toEqual(['explain.confidence.medium']);
+    expect(e.details.map((d) => d.key)).toEqual(['explain.confidenceBand.medium']);
   });
 
   it('notify rules add a detail line', () => {

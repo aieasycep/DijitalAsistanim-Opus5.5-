@@ -15,5 +15,24 @@
     "deviceStale": "Cihaz takvimi en son {time} eşitlendi",
     "quoted": "“{quote}”"
   },
-  "confidence": "%{percent} güven"
+  "confidence": "%{percent} güven",
+  "notify": {
+    "always": "Bildirim kuralın: bunun için her zaman bildirim alırsın.",
+    "muted": "Bildirim kuralın: bunun için bildirim almazsın."
+  },
+  "unverified": {
+    "due_at": "Son tarih kaynakta kesinleşmiyor.",
+    "amount": "Tutar kaynakta belirtilmemiş.",
+    "time": "Saat kaynakta kesinleşmiyor.",
+    "person": "Kişi kaynakta kesinleşmiyor."
+  },
+  "confidenceBand": {
+    "medium": "Muhtemelen; güven orta.",
+    "low": "Emin değilim; kaynağı kontrol etmeni öneririm."
+  },
+  "confidenceWording": {
+    "assertive": "Kaynakta doğrulandı",
+    "probably": "Muhtemelen",
+    "uncertain": "Emin değilim"
+  }
 }

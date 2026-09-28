@@ -48,6 +48,22 @@ export const INFORMATIONAL_SIGNALS: readonly SignalCode[] = [
   'security_unverified',
 ];
 
+/**
+ * Every `reason_code` `evaluatePriority` returns with tier `deterministic_signal`; each has a
+ * `flow.generated.why.signal.<code>` sentence (checked by the quality gate, I18N-01).
+ */
+export const DETERMINISTIC_REASON_CODES = [
+  'security_verified',
+  ...BULK_SIGNALS,
+  'bulk',
+  'deadline_today',
+  'deadline_tomorrow',
+  ...INFORMATIONAL_SIGNALS,
+  'informational',
+  'awaiting_my_reply',
+  'pending_ai',
+] as const;
+
 export interface MailHeaders {
   /** A `List-Unsubscribe` header is present. */
   readonly listUnsubscribe?: boolean;

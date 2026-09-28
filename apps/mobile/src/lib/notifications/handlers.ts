@@ -15,7 +15,7 @@
  * - **Open tracking.** `notification_opened {category, app_state}` and the `opened_at` write
  *   (PostgREST, column grant), queued offline.
  * - **Reminder actions.** `da_reminder` "1 saat ertele" moves the device notification one hour
- *   later; "Tamamlandı" dismisses it. Neither opens the app.
+ *   ahead; "Tamamlandı" dismisses it. Neither opens the app.
  */
 import { qk } from '@da/api-client';
 import { NOTIFICATION_CATEGORY_VALUES, type NotificationCategory } from '@da/domain';

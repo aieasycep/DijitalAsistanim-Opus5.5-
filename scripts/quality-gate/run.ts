@@ -1,145 +1,131 @@
 /**
- * Quality gate (master prompt §100, §133; plan ruling R-17).
- * Scans product sources for work markers, unfinished-feature copy, banned product claims and
- * positive "unlimited" claims. Exits 1 when anything is found.
+ * Quality gate (DELIVERY_CHECKLIST §5, QG-01…QG-27, SG-1…SG-2 source checks; M§100, M§133, R-17).
+ * Runs every module in `checks/`, prints a console report and writes `quality-gate.json`
+ * (`[{id, file, line, match}]`). Exits 1 when anything is found.
  *
- * Usage: node scripts/quality-gate/run.ts [--root <dir>]
+ * `--self-test` runs each check against its fixture tree `fixtures/<ID>/` and requires exactly one
+ * finding, with that ID, per fixture (§5.4); every declared ID must have a fixture. `pnpm quality-gate`
+ * runs the self-test first.
+ *
+ * Usage: node scripts/quality-gate/run.ts [--self-test] [--root <dir>] [--json <file>] [--no-json]
  */
-import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
-import { join, relative, dirname } from 'node:path';
+import { existsSync, readdirSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { code } from './checks/code.ts';
+import { copy } from './checks/copy.ts';
+import { database } from './checks/database.ts';
+import { enforcement } from './checks/enforcement.ts';
+import { i18nKeys } from './checks/i18n-keys.ts';
+import { markers } from './checks/markers.ts';
+import { product } from './checks/product.ts';
+import { repo } from './checks/repo.ts';
+import { retired } from './checks/retired.ts';
+import { secrets } from './checks/secrets.ts';
+import { ui } from './checks/ui.ts';
+import { type Check, Context, type Finding } from './lib.ts';
+
+export type { Finding } from './lib.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const SCOPES = ['apps', 'packages', 'supabase', 'scripts', '.github'];
-const SKIP_DIRS = new Set([
-  'node_modules',
-  '.next',
-  '.turbo',
-  '.expo',
-  'dist',
-  'coverage',
-  'generated',
-  'ios',
-  'android',
-  '.expo-export',
-  'playwright-report',
-  'test-results',
-  '.temp',
-  '.branches',
-]);
-const SKIP_PATHS = ['scripts/quality-gate/'];
-const TEXT_EXT =
-  /\.(ts|tsx|mts|cts|js|jsx|mjs|cjs|json|sql|md|yml|yaml|toml|swift|kt|kts|xml|html|css|txt|sh)$/i;
+export const FIXTURES = join(HERE, 'fixtures');
 
-/** JSX/TS prop names and CSS selectors that contain the word but are not copy. */
-const NON_COPY_PLACEHOLDER =
-  /\bplaceholder(TextColor)?\s*[=:?]|::placeholder|\bplaceholder:[a-z-]/g;
+export const CHECKS: readonly Check[] = [
+  markers,
+  copy,
+  ui,
+  secrets,
+  database,
+  code,
+  enforcement,
+  repo,
+  product,
+  retired,
+  i18nKeys,
+];
 
-export interface Finding {
-  file: string;
-  line: number;
-  rule: string;
-  text: string;
+/** Every finding of every check over the repository at `root`, sorted by id, file, line. */
+export async function scan(root: string, checks: readonly Check[] = CHECKS): Promise<Finding[]> {
+  const ctx = new Context(root);
+  const out: Finding[] = [];
+  for (const check of checks) out.push(...(await check.run(ctx)));
+  return out.sort(
+    (a, b) => a.id.localeCompare(b.id) || a.file.localeCompare(b.file) || a.line - b.line,
+  );
 }
 
-function loadList(file: string): RegExp[] {
-  return readFileSync(join(HERE, file), 'utf8')
-    .split('\n')
-    .map((l) => l.trim())
-    .filter((l) => l !== '' && !l.startsWith('#'))
-    .map((l) => new RegExp(l, 'iu'));
+export interface SelfTestResult {
+  readonly id: string;
+  readonly ok: boolean;
+  readonly findings: readonly Finding[];
 }
 
-const RETIRED_SCOPES = ['apps/', 'packages/', 'supabase/'];
-
-interface AllowEntry {
-  path: string;
-  line: string;
-}
-
-function loadAllow(): AllowEntry[] {
-  return readFileSync(join(HERE, 'quality-gate.allow'), 'utf8')
-    .split('\n')
-    .filter((l) => l.trim() !== '' && !l.trim().startsWith('#'))
-    .map((l) => {
-      const [path = '', line = '', why = ''] = l.split('|').map((s) => s.trim());
-      if (why === '') throw new Error(`quality-gate.allow entry without justification: ${l}`);
-      return { path, line };
-    });
-}
-
-function* walk(dir: string): Generator<string> {
-  for (const name of readdirSync(dir)) {
-    if (SKIP_DIRS.has(name)) continue;
-    const full = join(dir, name);
-    const st = statSync(full);
-    if (st.isDirectory()) yield* walk(full);
-    else if (TEXT_EXT.test(name)) yield full;
-  }
-}
-
-/** "sınırsız"/"unlimited" are allowed only when negated (fair-use copy). */
-const UNLIMITED = /\b(sınırsız|unlimited)\b/iu;
-const NEGATION = /(değil|olmayan|yok|never|not|no\s|isn't|aren't|asla|hiçbir)/iu;
-
-export function scan(root: string): Finding[] {
-  const patterns = loadList('banned-markers.txt');
-  const retired = loadList('retired-names.txt');
-  const allow = loadAllow();
-  const findings: Finding[] = [];
-  for (const scope of SCOPES) {
-    const base = join(root, scope);
-    if (!existsSync(base)) continue;
-    for (const file of walk(base)) {
-      const rel = relative(root, file).replaceAll('\\', '/');
-      if (SKIP_PATHS.some((p) => rel.startsWith(p))) continue;
-      const lines = readFileSync(file, 'utf8').split('\n');
-      lines.forEach((raw, i) => {
-        const allowed = allow.some((a) => rel.includes(a.path) && raw.includes(a.line));
-        if (allowed) return;
-        const line = raw.replace(NON_COPY_PLACEHOLDER, '');
-        const hit = patterns.find((re) => re.test(line));
-        const retiredHit = RETIRED_SCOPES.some((p) => rel.startsWith(p))
-          ? retired.find((re) => re.test(line))
-          : undefined;
-        if (retiredHit) {
-          findings.push({
-            file: rel,
-            line: i + 1,
-            rule: `retired-name:${retiredHit.source}`,
-            text: raw.trim().slice(0, 160),
-          });
-        } else if (hit) {
-          findings.push({
-            file: rel,
-            line: i + 1,
-            rule: hit.source,
-            text: raw.trim().slice(0, 160),
-          });
-        } else if (UNLIMITED.test(line) && !NEGATION.test(line)) {
-          findings.push({
-            file: rel,
-            line: i + 1,
-            rule: 'positive-unlimited-claim',
-            text: raw.trim().slice(0, 160),
-          });
-        }
-      });
+/** One run per fixture: the checks declaring the ID must report exactly one finding with that ID. */
+export async function selfTest(fixtures: string = FIXTURES): Promise<SelfTestResult[]> {
+  const ids = CHECKS.flatMap((c) => c.ids);
+  const dirs = existsSync(fixtures) ? readdirSync(fixtures) : [];
+  const results: SelfTestResult[] = [];
+  for (const id of ids) {
+    if (!dirs.includes(id)) {
+      results.push({ id, ok: false, findings: [] });
+      continue;
     }
+    const owners = CHECKS.filter((c) => c.ids.includes(id));
+    const findings = await scan(join(fixtures, id), owners);
+    results.push({ id, ok: findings.length === 1 && findings[0]?.id === id, findings });
   }
-  return findings;
+  for (const dir of dirs)
+    if (!ids.includes(dir)) results.push({ id: dir, ok: false, findings: [] });
+  return results;
 }
 
-function main(): void {
-  const idx = process.argv.indexOf('--root');
-  const root = idx > -1 ? (process.argv[idx + 1] ?? process.cwd()) : join(HERE, '..', '..');
-  const findings = scan(root);
-  for (const f of findings) console.error(`${f.file}:${f.line}  [${f.rule}]  ${f.text}`);
+function report(findings: readonly Finding[]): void {
+  let current = '';
+  for (const f of findings) {
+    if (f.id !== current) {
+      current = f.id;
+      const title = CHECKS.find((c) => c.ids.includes(f.id))?.title ?? '';
+      console.error(`\n${f.id} · ${title}`);
+    }
+    console.error(`  ${f.file}:${f.line}  ${f.match}`);
+  }
+}
+
+async function main(): Promise<void> {
+  const args = process.argv.slice(2);
+  const opt = (name: string): string | undefined => {
+    const i = args.indexOf(name);
+    return i > -1 ? args[i + 1] : undefined;
+  };
+  const root = opt('--root') ?? join(HERE, '..', '..');
+  if (args.includes('--self-test')) {
+    const results = await selfTest();
+    for (const r of results.filter((x) => !x.ok)) {
+      const got = r.findings.map((f) => `${f.id} ${f.file}:${f.line} ${f.match}`).join('; ');
+      console.error(
+        `self-test ${r.id}: expected exactly one ${r.id} finding, got ${r.findings.length}${got === '' ? '' : ` (${got})`}`,
+      );
+    }
+    const failed = results.filter((x) => !x.ok).length;
+    if (failed > 0) {
+      console.error(`\nquality-gate self-test: ${failed} of ${results.length} fixture(s) failed.`);
+      process.exit(1);
+    }
+    console.info(`quality-gate self-test: ${results.length} fixtures, one finding each`);
+    return;
+  }
+  const findings = await scan(root);
+  if (!args.includes('--no-json'))
+    writeFileSync(
+      opt('--json') ?? join(root, 'quality-gate.json'),
+      `${JSON.stringify(findings, null, 2)}\n`,
+    );
+  report(findings);
   if (findings.length > 0) {
     console.error(`\nquality-gate: ${findings.length} finding(s).`);
     process.exit(1);
   }
-  console.info('quality-gate: clean');
+  console.info(`quality-gate: clean (${CHECKS.flatMap((c) => c.ids).length} checks)`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (process.argv[1] === fileURLToPath(import.meta.url)) await main();

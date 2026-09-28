@@ -23,8 +23,8 @@ const clientShape = z.object({
     blankToUndefined,
     z
       .string()
-      .refine((key) => !key.startsWith('sb_secret_'), {
-        message: 'A Supabase secret key must never reach the web bundle',
+      .refine((key) => key.startsWith('sb_publishable_'), {
+        message: 'Only a Supabase publishable key (sb_publishable_…) may reach the web bundle',
       })
       .optional(),
   ),
