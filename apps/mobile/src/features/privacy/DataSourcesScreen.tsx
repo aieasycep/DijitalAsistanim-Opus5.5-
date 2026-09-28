@@ -3,7 +3,9 @@
  * the user-level data classes of `user_preferences.ai_data_access`, enforced server-side before any
  * model call. Turning a class off first states exactly what stops working; turning it on saves at
  * once (queued offline). The never-list is static text; per-account data-source controls live on
- * the account detail screen and are linked here.
+ * the account detail screen and are linked here. Each mail account states which folders are
+ * analysed (KPL-34: Gmail Inbox and Sent; Outlook Inbox and Sent Items), and a footnote gives the
+ * task polling cadence when a Google Tasks or Microsoft To Do list is connected (KPL-38).
  */
 import { useBootstrap } from '@da/api-client/react';
 import { BottomSheet, Button, ListRow, Text } from '@da/ui';
@@ -13,7 +15,7 @@ import { StyleSheet, View } from 'react-native';
 import { useTranslations } from 'use-intl';
 
 import { track } from '../../lib/events';
-import { useAccounts } from '../integrations/accounts';
+import { hasGranted, useAccounts, type AccountRow } from '../integrations/accounts';
 import { saveUserPreferences, usePendingSettings } from '../settings/save';
 import { Caption, SettingsGroup, SettingsPage } from '../settings/ui';
 import { useAccountTitle } from './PrivacyCenterScreen';
@@ -26,6 +28,14 @@ const TITLE_KEY = {
   calendar: 'calendar',
   contacts: 'contacts',
 } as const;
+
+/** KPL-34: the folders the account's mail sync reads, or undefined for non-mail accounts. */
+function foldersKey(account: AccountRow) {
+  if (!hasGranted(account, 'mail_read')) return undefined;
+  if (account.provider === 'google') return 'privacy.aiData.foldersGmail' as const;
+  if (account.provider === 'microsoft') return 'privacy.aiData.foldersOutlook' as const;
+  return undefined;
+}
 
 export function DataSourcesScreen() {
   const t = useTranslations();
@@ -81,19 +91,30 @@ export function DataSourcesScreen() {
 
       {(accounts.data?.accounts ?? []).length === 0 ? null : (
         <SettingsGroup title={t('privacy.aiData.perAccount')}>
-          {(accounts.data?.accounts ?? []).map((account) => (
-            <ListRow
-              key={account.id}
-              title={accountTitle(account)}
-              trailing={{ kind: 'chevron' }}
-              onPress={() => {
-                router.push(`/settings/accounts/${account.id}`);
-              }}
-              testID={`dataSources.account.${account.id}`}
-            />
-          ))}
+          {(accounts.data?.accounts ?? []).map((account) => {
+            const folders = foldersKey(account);
+            return (
+              <ListRow
+                key={account.id}
+                title={accountTitle(account)}
+                {...(folders === undefined ? {} : { subtitle: t(folders) })}
+                trailing={{ kind: 'chevron' }}
+                onPress={() => {
+                  router.push(`/settings/accounts/${account.id}`);
+                }}
+                testID={`dataSources.account.${account.id}`}
+              />
+            );
+          })}
         </SettingsGroup>
       )}
+      {(accounts.data?.accounts ?? []).some(
+        (account) =>
+          (account.provider === 'google' || account.provider === 'microsoft') &&
+          hasGranted(account, 'tasks_read'),
+      ) ? (
+        <Caption testID="dataSources.tasksPoll">{t('privacy.aiData.tasksPoll')}</Caption>
+      ) : null}
 
       <BottomSheet
         visible={confirm !== null}

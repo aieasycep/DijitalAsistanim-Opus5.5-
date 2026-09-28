@@ -23,7 +23,7 @@ Routes are relative to `apps/mobile/app/`. Components without a path are exports
 | SEGMENTLİ KONTROL · ANAHTAR · ONAY | `SegmentedControl`, `Switch`, `CheckIndicator`, `RadioIndicator`, `OptionRow` | Built, see DEV-07, DEV-08 |
 | NAVİGASYON · BAŞLIK KALIPLARI | `RootHeader`, `DetailHeader`, `HeaderPill`, `TabBar` (M-GL-03, M-GL-04) | Built, see DEV-20, DEV-24, DEV-25 |
 | ALT SAYFA · MODAL | `BottomSheet`, `ConfirmDialog`, `DestructiveSheet` in the app's `SheetHost` (M-GL-06) | Built, see DEV-56 |
-| TOAST · SES · İSKELET | `Toast`, `UndoToast` (M-GL-05); `FullPlayer`, `Scrubber`, `TransportControls`, `MiniPlayer`, `VoiceOrb`, `VoiceWaveform`; `SkeletonBlock`, `TodaySkeleton`, `FeedSkeleton` and screen skeletons | Partial: `MiniPlayer` (M-GL-14) is not mounted in the app, see DEV-52 |
+| TOAST · SES · İSKELET | `Toast`, `UndoToast` (M-GL-05); `FullPlayer`, `Scrubber`, `TransportControls`, `MiniPlayer`, `VoiceOrb`, `VoiceWaveform`; `SkeletonBlock`, `TodaySkeleton`, `FeedSkeleton` and screen skeletons | Built; `MiniPlayer` (M-GL-14) docks above the tab bar and the briefing CTA while a briefing plays ([`briefing/player/MiniPlayerDock.tsx`](../apps/mobile/src/features/briefing/player/MiniPlayerDock.tsx)) |
 
 ### P:02 Onboarding
 
@@ -122,7 +122,7 @@ Routes are relative to `apps/mobile/app/`. Components without a path are exports
 | iOS widgets S / M / L + lock screen | M-WGT-01…06 | [`targets/widget`](../apps/mobile/targets/widget) (`DATodayWidget`, `DALockWidget`) | Built, see DEV-17 (rendering is verified on EAS builds and devices only) |
 | Android widgets 4×2 / 2×2 | M-WGT-07, M-WGT-08 | [`modules/da-widgets`](../apps/mobile/modules/da-widgets) (Glance `DaTodayWidget`, `DaNextWidget`) | Built, see DEV-17 |
 | KAYDIRMA AKSİYONLARI | M-TD-04 | `SwipeableRow` on Today and Flow, `SnoozeSheet` | Built, see DEV-10 |
-| BRİFİNG AÇILIŞI · KARE KARE | M-BR-01 | The briefing opens with the stack transition; the staged frame-by-frame opening is not animated | Partial |
+| BRİFİNG AÇILIŞI · KARE KARE | M-BR-01 | First open of a morning briefing: `HeroIn` (hero from opacity .4 and 8 px, 240 ms) then `StaggerIn` sections from 360 ms at 60 ms; reduce motion keeps the 120 ms opacity only; later opens render at rest | Built; the frames' count-up has no number to count in M-BR-01 |
 | `MOTION` (12 rows) | — | `motion.ts` durations and easings in `@da/design-tokens` (no transition over 600 ms; reduce motion keeps only 120 ms opacity) | Built |
 
 ### P:09 Pazarlama
@@ -178,7 +178,7 @@ Each row is a DESIGN_AUDIT §7 entry and how it stands in the code.
 | DEV-17 | Geist on all mobile text; Android widgets use the system font | Applied in the app and Android widgets; the iOS widget extension also uses the system font (DESIGN_AUDIT §4.10 expected Geist bundled there) |
 | DEV-18 | Dates computed relative to now in the user's time zone | Applied (date-fns with `@date-fns/tz`; every demo-seed timestamp is relative to today in Europe/Istanbul) |
 | DEV-19 | No drawn device chrome; safe areas, edge-to-edge, back behaviour | Applied |
-| DEV-20 | Blurred tab bar on iOS, opaque on Android | Differs: opaque `surface` with a top hairline on both platforms (`expo-blur` is not used) |
+| DEV-20 | Blurred tab bar on iOS, opaque on Android | Applied: `expo-blur` `BlurView` under the translucent iOS bar; opaque on Android and with Reduce Transparency |
 | DEV-21 | Toast offset above the tab bar or sticky footer | Applied (tab bar height + 14) |
 | DEV-22, DEV-23 | 44 pt / 48 dp hit targets; minimum heights instead of fixed heights | Applied; the route a11y suite checks hit targets |
 | DEV-24 | Search icon in the Today header | Differs: global search is reached from the Assistant home header and from mail, memory and person screens; the Today header has the approvals pill and the avatar |
@@ -208,7 +208,7 @@ Each row is a DESIGN_AUDIT §7 entry and how it stands in the code.
 | DEV-49 | 5 s client-side undo before approvals are sent; compensating actions after | Applied in `ApprovalSheet` (R-06) |
 | DEV-50 | Weekly share in 4:5 and 9:16 | Applied |
 | DEV-51 | Evening confirmation sheet, per-item "Yarına taşı", success | Applied |
-| DEV-52 | Draggable scrubber; mini-player docked above the tab bar | Scrubber applied; the mini-player is not mounted |
+| DEV-52 | Draggable scrubber; mini-player docked above the tab bar | Applied: the playback session runs in a root-level host, so the mini-player keeps playing after the full player closes |
 | DEV-53 | Dead affordances removed | Applied: no briefing share icon; the empty follow-up state's dead "Tamam" is replaced by a real action ("Taahhütleri Gör") |
 | DEV-54 | Settings hub rows About, delete account, Android notifications, profile | Applied |
 | DEV-55 | Ink CTA becomes dark primary in dark mode | Applied in the tokens |
@@ -233,11 +233,10 @@ The rows marked "Differs", "Partial" and "Not produced" above are the difference
 
 | Difference | Reason |
 | --- | --- |
-| DEV-20 blur, DEV-57 gradient library | Fewer native dependencies; the kit's `TabBar` accepts a blur background if one is added later. |
+| DEV-57 gradient library | Fewer native dependencies. |
 | DEV-24, DEV-25 header entries | The Today header was kept to the approvals pill and avatar; search moved to the Assistant home, where questions and search sit together. |
 | DEV-36 step counter | The connect and permission screens form one step in the shipped copy. |
 | DEV-41, DEV-46 | The server has no attachment metadata for meeting prep and no free/busy lookup (KNOWN_PLATFORM_LIMITATIONS KPL-46); the UI never invents either. |
-| DEV-52 mini-player, P:08 staged briefing opening | Not wired in the shell; the full-screen player and the plain stack transition are used. |
 | DEV-62 "Önerilen" label | One label for every unconfirmed suggestion, matching the Plan proposal kicker. |
 | DEV-64 wallet action | No wallet-pass detection exists, so the action is never offered rather than offered conditionally. |
 | DEV-68 AI card | Conflict and schedule insights reuse the priority card, ranked with everything else. |

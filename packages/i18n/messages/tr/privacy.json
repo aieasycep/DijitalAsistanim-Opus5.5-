@@ -114,7 +114,10 @@
     "neverMessaging": "Mesajlaşma uygulamalarının içerikleri",
     "neverLocation": "Konumun",
     "footnote": "Bu bilgiler bir mailin içinde geçse bile AI'a gönderilmeden önce ayıklanır ve saklanmaz.",
-    "perAccount": "Hesap bazında"
+    "perAccount": "Hesap bazında",
+    "foldersGmail": "Gelen Kutusu ve Gönderilenler analiz edilir. Filtreyle gelen kutusuna uğramadan arşivlenen mailler dahil edilmez.",
+    "foldersOutlook": "Gelen Kutusu ve Gönderilmiş Öğeler analiz edilir. Kurallarla başka klasöre taşınan mailler dahil edilmez.",
+    "tasksPoll": "Google Görevler ve Microsoft To Do yaklaşık 15 dakikada bir ve uygulamayı açtığında güncellenir."
   },
   "sourceOff": {
     "mail_body": {

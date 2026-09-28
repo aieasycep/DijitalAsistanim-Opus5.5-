@@ -27,3 +27,4 @@ export * from './case.ts';
 export * from './pseudo.ts';
 export * from './faq.ts';
 export * from './keys.ts';
+export * from './intl.ts';

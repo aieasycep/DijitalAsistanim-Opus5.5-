@@ -149,21 +149,23 @@ export function SyncLine({
 }
 
 export interface StaggerInProps {
-  /** Position in the list: the fill-in starts at index × 60 ms. */
+  /** Position in the list: the fill-in starts at `startMs` + index × 60 ms. */
   readonly index: number;
+  /** Delay before the first card, e.g. `motion.delay.cardsStart` after a hero entrance. */
+  readonly startMs?: number;
   readonly children: ReactNode;
   readonly style?: StyleProp<ViewStyle>;
 }
 
 /** Cards fill in one by one (60 ms stagger, 280 ms, translateY 8 → 0; fade only when reduced). */
-export function StaggerIn({ index, children, style }: StaggerInProps): JSX.Element {
+export function StaggerIn({ index, startMs = 0, children, style }: StaggerInProps): JSX.Element {
   const theme = useTheme();
   const motionControl = useMotion();
   const progress = useSharedValue(0);
   useEffect(() => {
-    const delayMs = motionControl.reduceMotion ? 0 : index * theme.motion.delay.stagger;
+    const delayMs = motionControl.reduceMotion ? 0 : startMs + index * theme.motion.delay.stagger;
     progress.set(withDelay(delayMs, motionControl.fade(1, theme.motion.duration.cardEnter)));
-  }, [index, motionControl, progress, theme.motion]);
+  }, [index, startMs, motionControl, progress, theme.motion]);
   const distance = theme.motion.distance.heroY;
   const reduce = motionControl.reduceMotion;
   const animated = useAnimatedStyle(() => ({
@@ -171,6 +173,37 @@ export function StaggerIn({ index, children, style }: StaggerInProps): JSX.Eleme
     transform: reduce ? [] : [{ translateY: (1 - progress.get()) * distance }],
   }));
   return <Animated.View style={[animated, style]}>{children}</Animated.View>;
+}
+
+export interface HeroInProps {
+  readonly children: ReactNode;
+  readonly style?: StyleProp<ViewStyle>;
+  readonly testID?: string;
+}
+
+/**
+ * The P:08 "Brifing açılışı" hero frame: from opacity .4 and 8 px below to rest in 240 ms; under
+ * reduce motion only the opacity changes (120 ms). Pair with `StaggerIn startMs={cardsStart}`.
+ */
+export function HeroIn({ children, style, testID }: HeroInProps): JSX.Element {
+  const theme = useTheme();
+  const motionControl = useMotion();
+  const progress = useSharedValue(0);
+  useEffect(() => {
+    progress.set(motionControl.fade(1, theme.motion.duration.hero));
+  }, [motionControl, progress, theme.motion]);
+  const distance = theme.motion.distance.heroY;
+  const from = theme.motion.opacity.heroFrom;
+  const reduce = motionControl.reduceMotion;
+  const animated = useAnimatedStyle(() => ({
+    opacity: from + (1 - from) * progress.get(),
+    transform: reduce ? [] : [{ translateY: (1 - progress.get()) * distance }],
+  }));
+  return (
+    <Animated.View style={[animated, style]} {...(testID === undefined ? {} : { testID })}>
+      {children}
+    </Animated.View>
+  );
 }
 
 interface PresetProps {

@@ -30,6 +30,7 @@ const REFERRER_CHECKED_KEY = 'referral.install_referrer_checked';
 export function codeFromReferrer(referrer: string | null | undefined): string | null {
   if (referrer === null || referrer === undefined) return null;
   const match = /(?:^|[&?])code=([^&]+)/i.exec(decodeURIComponent(referrer));
+  // eslint-disable-next-line no-restricted-syntax -- referral codes are ASCII identifiers, not UI text
   const code = match?.[1]?.trim().toUpperCase() ?? null;
   return code !== null && REFERRAL_CODE_PATTERN.test(code) ? code : null;
 }
@@ -84,6 +85,7 @@ export async function applyReferralCode(
   try {
     await getApiClient().call(
       'POST /referrals/apply',
+      // eslint-disable-next-line no-restricted-syntax -- referral codes are ASCII identifiers, not UI text
       { body: { code: code.trim().toUpperCase(), installation_id: install, source } },
       { idempotencyKey },
     );

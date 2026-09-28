@@ -82,14 +82,40 @@ const TESTID_PATTERNS = [
   /\btestID:\s*(["'`])((?:(?!\1).)+)\1/g,
 ];
 
-/** Literal and template testIDs of the given source files (`${…}` kept as written). */
+const STRING_LITERAL = /(["'`])((?:(?!\1).)+)\1/g;
+
+/** The text of each `testID={…}` expression, braces balanced (`${…}` in templates included). */
+function testIdExpressions(source: string): string[] {
+  const out: string[] = [];
+  for (const match of source.matchAll(/testID=\{/g)) {
+    const start = match.index + match[0].length;
+    let depth = 1;
+    let end = start;
+    while (end < source.length && depth > 0) {
+      const ch = source[end];
+      if (ch === '{') depth += 1;
+      else if (ch === '}') depth -= 1;
+      end += 1;
+    }
+    if (depth === 0) out.push(source.slice(start, end - 1));
+  }
+  return out;
+}
+
+/**
+ * Literal and template testIDs of the given source files (`${…}` kept as written), including every
+ * string literal of a `testID={…}` expression (`testID={file ? 'player.premium' : 'player.native'}`).
+ */
 export function extractTestIds(source: string): string[] {
   const found = new Set<string>();
+  const add = (value: string | undefined) => {
+    if (value !== undefined && value.trim() !== '') found.add(value);
+  };
   for (const pattern of TESTID_PATTERNS) {
-    for (const match of source.matchAll(pattern)) {
-      const value = match[2];
-      if (value !== undefined && value.trim() !== '') found.add(value);
-    }
+    for (const match of source.matchAll(pattern)) add(match[2]);
+  }
+  for (const expression of testIdExpressions(source)) {
+    for (const match of expression.matchAll(STRING_LITERAL)) add(match[2]);
   }
   return [...found];
 }

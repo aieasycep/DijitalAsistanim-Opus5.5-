@@ -99,6 +99,8 @@ export const BriefingSummary = z.object({
   audio_duration_s: z.number().nullable().catch(null),
   skipped_reason: z.string().nullable().catch(null),
   weekly_stats: z.record(z.string(), z.unknown()).nullable().catch(null),
+  /** KPL-12 device-calendar freshness at generation (`briefing/device-freshness.ts`). */
+  source_freshness: z.record(z.string(), z.unknown()).nullable().catch(null).optional(),
 });
 export type BriefingSummary = z.infer<typeof BriefingSummary>;
 
@@ -108,7 +110,7 @@ export interface TodayData {
 }
 
 const BRIEFING_COLUMNS =
-  'id, kind, local_date, status, origin, headline, generated_at, evening_ready_at, audio_status, audio_duration_s, skipped_reason, weekly_stats';
+  'id, kind, local_date, status, origin, headline, generated_at, evening_ready_at, audio_status, audio_duration_s, skipped_reason, weekly_stats, source_freshness';
 
 export const TODAY_POLL_MS = 5_000;
 

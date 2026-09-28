@@ -13,6 +13,8 @@
  * 5. Store `push_tickets`; `DeviceNotRegistered` disables the token at once; receipts are polled
  *    15 minutes later (JOB-19).
  * Retries never send twice: a row that already has tickets is completed without a new send.
+ * `kind: 'device_refresh'` skips all of this: one data-only background push to one installation
+ * (`device-refresh.ts`, KPL-12).
  */
 import {
   type CandidateKind,
@@ -34,6 +36,7 @@ import type {
   PushTarget,
   UserNotificationState,
 } from './model.ts';
+import { sendDeviceRefresh } from './device-refresh.ts';
 import { deliveryOf, renderNotification } from './render.ts';
 import { adminTestSpec } from './triggers/test-push.ts';
 import { accountReauthTrigger } from './triggers/account-reauth.ts';
@@ -185,6 +188,11 @@ export async function processNotification(
     throw new JobError('POISON_PAYLOAD', false, null, 'missing_user');
   }
   const repo = deps.repo;
+
+  // KPL-12: a data-only background push (no ledger row, no caps, no quiet hours).
+  if (payload.kind === 'device_refresh') {
+    return await sendDeviceRefresh(deps, userId, payload.installation_id ?? '', now);
+  }
 
   let row: NotificationRow | null = null;
   if (payload.notification_id !== undefined) {

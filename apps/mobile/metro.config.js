@@ -10,7 +10,8 @@
  * - Package `exports` are honoured, which the `@da/*` subpath exports need.
  * - Agent worktrees, other apps' build output and native projects never enter the file map.
  * - `getSentryExpoConfig` (T-8.28) is Expo's default config plus Sentry's serializer, which writes
- *   debug ids into the bundle and its source maps; the maps are uploaded by CI only (ADR-39).
+ *   debug ids into the bundle and its source maps; the native build uploads the maps when the
+ *   CI/EAS secret `SENTRY_AUTH_TOKEN` and `SENTRY_ORG` are set (`app.config.ts`, ADR-39).
  */
 const path = require('node:path');
 const { getSentryExpoConfig } = require('@sentry/react-native/metro');

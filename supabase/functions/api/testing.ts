@@ -92,7 +92,8 @@ export function memoryDevices() {
       upserts++;
       const existing = installations.get(row.installation_id);
       const id = existing?.id ?? crypto.randomUUID();
-      installations.set(row.installation_id, { ...row, id, signedOut: null });
+      // Like the PostgREST upsert: columns absent from the row keep their stored value.
+      installations.set(row.installation_id, { ...existing, ...row, id, signedOut: null });
       return Promise.resolve(id);
     },
     findToken(token) {

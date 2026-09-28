@@ -5,7 +5,9 @@
  * level with a preview rendered from the push catalogue, lock-screen privacy (R-12), quiet hours
  * with the VIP bypass (R-13, default 22:30–07:30) and the daily-cap promise (R-14). Every control
  * auto-saves (queued offline); "Test bildirimi gönder" calls `POST /notifications/test` (blocked
- * offline) and reports the server decision truthfully.
+ * offline) and reports the server decision truthfully. iOS with Time Sensitive turned off shows the
+ * KPL-07 card (read through `da-platform`, "Ayarları Aç" opens the app's notification settings);
+ * the KPL-05 delivery footnote closes the page.
  */
 import { isApiError } from '@da/api-client';
 import { notificationTestMutationOptions } from '@da/api-client/react';
@@ -31,9 +33,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { AppState, Linking, Platform, StyleSheet, View } from 'react-native';
 import { useTranslations } from 'use-intl';
 
+import { openNotificationSettings } from '../../../modules/da-platform/src';
 import { installationId } from '../../lib/auth/first-run-purge';
 import { getApiClient } from '../../lib/bootstrap';
 import { track } from '../../lib/events';
+import { usePlatformState } from '../../lib/platform-state';
 import { useOnline } from '../../lib/query/online-manager';
 import { showToast } from '../../providers/ToastHost';
 import {
@@ -312,6 +316,7 @@ export function NotificationsScreen() {
   const [fullConfirm, setFullConfirm] = useState(false);
   const [requesting, setRequesting] = useState(false);
   const test = useMutation(notificationTestMutationOptions(getApiClient()));
+  const platform = usePlatformState();
 
   const refreshPermission = useCallback(() => {
     let alive = true;
@@ -539,6 +544,22 @@ export function NotificationsScreen() {
       {permission !== null && permission.status !== 'granted' ? (
         <Caption>{t('settings.notificationsScreen.noPermissionCaption')}</Caption>
       ) : null}
+      {permission?.status === 'granted' && platform.timeSensitive === 'disabled' ? (
+        <PermissionCard
+          icon="timer_off"
+          title={t('notifications.settings.timeSensitive.offTitle')}
+          body={t('notifications.settings.timeSensitive.offBody')}
+          primaryAction={{
+            label: t('common.actions.openSettings'),
+            onPress: () => {
+              track('permission_row_tapped', { permission: 'notifications', state: 'granted' });
+              void openNotificationSettings();
+            },
+          }}
+          announceOnMount={false}
+          testID="notifications.timeSensitive"
+        />
+      ) : null}
       {pending ? (
         <Caption testID="notifications.queued">{t('states.offline.queued')}</Caption>
       ) : null}
@@ -683,6 +704,9 @@ export function NotificationsScreen() {
         />
       </SettingsGroup>
       <Caption testID="notifications.promise">{promise}</Caption>
+      <Caption testID="notifications.deliveryFootnote">
+        {t('notifications.settings.deliveryFootnote')}
+      </Caption>
 
       {quietOpen ? (
         <QuietHoursSheet

@@ -16,6 +16,9 @@
  *   (PostgREST, column grant), queued offline.
  * - **Reminder actions.** `da_reminder` "1 saat ertele" moves the device notification one hour
  *   ahead; "Tamamlandı" dismisses it. Neither opens the app.
+ * - **Background refresh.** The data-only `device_refresh` push (KPL-12) shows nothing: while the
+ *   app is open it runs the same device-calendar upload as the background task
+ *   (`features/integrations/device-refresh-push.ts`), with no toast and no query refresh.
  */
 import { qk } from '@da/api-client';
 import { NOTIFICATION_CATEGORY_VALUES, type NotificationCategory } from '@da/domain';
@@ -34,6 +37,11 @@ import {
   savePendingLink,
   type ResolveLinkOptions,
 } from '../deeplinks';
+import {
+  DEVICE_REFRESH_PUSH,
+  pushTypeOf,
+  refreshForPush,
+} from '../../features/integrations/device-refresh-push';
 import { track } from '../events';
 import { queueMutation, runOrQueue } from '../offline/mutations';
 import { getQueryClient } from '../query/client';
@@ -200,6 +208,10 @@ export function handleNotificationResponse(
 
 /** Foreground delivery: in-app toast with "Aç" plus the related query refresh. */
 export function presentForegroundNotification(notification: Notifications.Notification): void {
+  if (pushTypeOf(notification.request.content) === DEVICE_REFRESH_PUSH) {
+    void refreshForPush();
+    return;
+  }
   const payload = parsePushPayload(notification.request.content.data);
   const client = getQueryClient();
   for (const queryKey of invalidationFor(payload.type)) void client.invalidateQueries({ queryKey });

@@ -5,7 +5,8 @@
  * capture → analyze; files → signed upload (real byte progress) → analyze; then `capture/{id}`.
  * The system photo picker needs no media permission (no `READ_MEDIA_IMAGES`); the camera asks
  * only on "Kamera". Free users see the contextual Pro gate in place of the sources and the CTA
- * (a shared payload waits); offline, composing works and analysis is disabled.
+ * (a shared payload waits); offline, composing works and analysis is disabled. Pasting into the
+ * text and the link uses the iOS system paste control where available (KPL-23, `PasteControl`).
  */
 import { toUpper } from '@da/i18n';
 import {
@@ -29,7 +30,6 @@ import {
   AssistChip,
   useTheme,
 } from '@da/ui';
-import * as Clipboard from 'expo-clipboard';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -45,6 +45,7 @@ import { showToast } from '../../providers/ToastHost';
 import { ContextualGate, isPro } from '../pro-gate/ProGate';
 import { useLang } from '../common/DateTimeFields';
 import { useDictation } from '../meeting/dictation';
+import { PasteControl } from './PasteControl';
 import {
   clearDraft,
   isDraftEmpty,
@@ -106,14 +107,24 @@ export function ComposerScreen() {
   const dictation = useDictation((text) => {
     setDraft((d) => ({ ...d, text: joinText(d.text, text) }));
   });
-  // "Yapıştır": the clipboard is read only after the tap (iOS shows its paste prompt).
-  const paste = async () => {
-    const text = await Clipboard.getStringAsync().catch(() => '');
+  // "Yapıştır": the clipboard is read only after the tap (the iOS system paste control needs no
+  // prompt; elsewhere the OS may show its own notice).
+  const paste = (text: string) => {
     if (text.trim() === '') {
       showToast({ message: t('text.pasteEmpty'), kind: 'neutral' });
       return;
     }
     setDraft((d) => ({ ...d, text: joinText(d.text, text) }));
+  };
+  const pasteLink = (text: string) => {
+    const url = text.trim();
+    if (url === '') {
+      showToast({ message: t('text.pasteEmpty'), kind: 'neutral' });
+      return;
+    }
+    setPreview(null);
+    setLinkProblem(null);
+    setDraft((d) => ({ ...d, url, linkCaptureId: null }));
   };
   const [mode, setMode] = useState<Mode>(() =>
     params.kind === 'link'
@@ -431,7 +442,15 @@ export function ComposerScreen() {
                   testID="capture.url.clear"
                 />
               </ChipWrap>
-            ) : null}
+            ) : (
+              <ChipWrap>
+                <PasteControl
+                  label={t('text.paste')}
+                  onText={pasteLink}
+                  testID="capture.url.paste"
+                />
+              </ChipWrap>
+            )}
             {previewing ? <Text variant="meta">{common('a11y.loading')}</Text> : null}
             {preview !== null ? (
               <LinkPreviewCard
@@ -472,14 +491,7 @@ export function ComposerScreen() {
                   testID="capture.dictate"
                 />
               ) : null}
-              <AssistChip
-                label={t('text.paste')}
-                icon="content_paste"
-                onPress={() => {
-                  void paste();
-                }}
-                testID="capture.paste"
-              />
+              <PasteControl label={t('text.paste')} onText={paste} testID="capture.paste" />
             </ChipWrap>
             {dictation.state === 'denied' ? (
               <Text variant="bodyXs" tone="tertiaryStrong" accessibilityRole="alert">

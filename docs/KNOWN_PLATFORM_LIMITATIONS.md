@@ -33,16 +33,16 @@ iOS deployment target **16.4** (iPhone only); Android min SDK **24**, compile an
 
 | OS level | Capability that appears or changes | Product handling as built |
 | --- | --- | --- |
-| iOS 15 | Time Sensitive interruption level | Used for meetings, expiring approvals and user reminders (KPL-07) |
-| iOS 16 | Lock Screen accessory widgets; paste prompts | Lock widgets built (KPL-18); clipboard read only on tap (KPL-23) |
+| iOS 15 | Time Sensitive interruption level | Used for meetings, expiring approvals and user reminders; the app reads the per-app setting and explains when it is off (KPL-07) |
+| iOS 16 | Lock Screen accessory widgets; paste prompts | Lock widgets built (KPL-18); the composer pastes through the system paste control (KPL-23) |
 | iOS 16.4 | Minimum supported | Legacy calendar and reminders usage keys kept (KPL-13) |
 | iOS 17 | EventKit full / write-only split | Full access only (KPL-13) |
 | iOS 18 | Widget accented / tinted rendering | Handled by the widget views (KPL-18) |
 | iOS 26 | AlarmKit | Not used (KPL-10) |
 | Android 8 (26) | Notification channels mandatory | Ten channels created at first launch (KPL-08) |
 | Android 11 (30) | Notification-listener detail settings intent | Used for "Bildirim Erişimini Aç" (KPL-02) |
-| Android 12 (31) | Exact-alarm permission; notification trampolines blocked | `SCHEDULE_EXACT_ALARM` declared, no in-app check (KPL-09); taps start the activity directly |
-| Android 13 (33) | `POST_NOTIFICATIONS`; restricted settings for sideloads; photo picker | KPL-08, KPL-02, KPL-22 |
+| Android 12 (31) | Exact-alarm permission; notification trampolines blocked | `SCHEDULE_EXACT_ALARM` declared; the reminder sheet reads the access and opens its settings (KPL-09); taps start the activity directly |
+| Android 13 (33) | `POST_NOTIFICATIONS`; restricted settings for sideloads; photo picker; offline speech-model list and download | KPL-08, KPL-02, KPL-22, KPL-24 |
 | Android 14 (34) | Exact alarms denied by default on new installs; typed foreground services | KPL-09; `expo-audio` declares the media-playback service (KPL-26) |
 | Android 15 (35) | OTP redaction for untrusted listeners; edge-to-edge | Own OTP drop on every version (KPL-03) |
 | Android 16 (36) | Standby-bucket quotas for background work | Background tasks are best effort (KPL-11) |
@@ -56,15 +56,15 @@ iOS deployment target **16.4** (iPhone only); Android min SDK **24**, compile an
 | 3 | Device reminders / tasks | ✓ Apple Reminders | ✗ | Apple Reminders destination on iOS only; Google Tasks / Microsoft To Do on both | 16 |
 | 4 | Write device calendar | ✓ on device | ✓ on device | Device executor completes the approval on that device | 14 |
 | 5 | Periodic background work | BGTaskScheduler, system-decided | WorkManager, ≥15 min, quotas | Best effort; foreground is primary | 11 |
-| 6 | Silent push wake | throttled, none after force-quit | deferred in Doze | Not used | 11, 12 |
+| 6 | Silent push wake | throttled, none after force-quit | deferred in Doze | One data-only `device_refresh` push before a briefing whose device calendar is older than 30 min; the briefing waits for it once, 3 min | 11, 12 |
 | 7 | Home-screen widgets | small, medium, large | 2×2, 4×2 | Read-only, deep links | 17, 19 |
 | 8 | Lock-screen widgets | ✓ inline, circular, rectangular | ✗ on phones | iOS only | 18, 19 |
 | 9 | Share into the app | Share extension + redirect | `ACTION_SEND` / `SEND_MULTIPLE` | One capture flow | 20, 21 |
-| 10 | Exact-time local reminder | ✓ calendar trigger | Needs "Alarms & reminders" on 14+ | Date trigger; exactness is the OS's decision | 09 |
+| 10 | Exact-time local reminder | ✓ calendar trigger | Needs "Alarms & reminders" on 14+ | Date trigger, exact when granted; the reminder sheet explains a missing grant and opens its settings | 09 |
 | 11 | System alarm | AlarmKit (26+) | Clock app handoff | Not offered | 10 |
 | 12 | Lock-screen content privacy | Show Previews setting | channel visibility + OS setting | Server renders the detail mode; channels `PRIVATE` | 06 |
-| 13 | On-device Turkish STT | device-dependent | device-dependent | Server fallback behind a flag | 24 |
-| 14 | Turkish TTS voice | built-in / downloadable | engine-dependent | On-device synthesis to file; premium optional | 25 |
+| 13 | On-device Turkish STT | device-dependent | device-dependent | Offline-model download (Android 13+), else the server fallback behind a flag with a first-use notice | 24 |
+| 14 | Turkish TTS voice | built-in / downloadable | engine-dependent | On-device synthesis to file; voice-data install handoff (Android) or the Settings path (iOS) when no Turkish voice is installed; premium optional | 25 |
 | 15 | Sign in with Apple | native | web OAuth | Both offered | 49 |
 | 16 | Install referral attribution | ✗ | ✓ Play Install Referrer | Android reads the referrer; iOS types the code | 31 |
 | 17 | Keychain after uninstall | persists | removed | First-run purge | 30 |
@@ -102,37 +102,34 @@ iOS deployment target **16.4** (iPhone only); Android min SDK **24**, compile an
 
 - **Limitation.** The system can disconnect a granted listener (updates, memory pressure, OEM "sleeping apps"); `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` is Play-restricted.
 - **Evidence.** [OFF] https://developer.android.com/reference/android/service/notification/NotificationListenerService ; [KNOW] https://developer.android.com/training/monitoring-device-state/doze-standby#exemption-cases ; [SEC] https://dontkillmyapp.com
-- **As built.** The service tracks connect/disconnect internally, but the app shows only the grant (enabled listener packages), not the connection state; there is no rebind call and no battery-optimisation handoff. `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` is not declared.
-- **User sees.** Nothing specific; a disconnected listener simply produces no new signals ("Son sinyaller" stays unchanged).
-- **Verified.** device.
-- **Plan difference.** `getListenerState()` / `requestRebind()`, the disconnected status card and the battery-settings handoff were not built.
+- **As built.** The service records connect, disconnect and the last observed notification (`NiStore`, the event time written at most once a minute); `getListenerState()` returns the grant, the bound state, the timestamps and a verdict from the pure-Kotlin rules in [`ListenerHealth.kt`](../apps/mobile/modules/notification-intelligence/android/src/main/java/expo/modules/notificationintelligence/ListenerHealth.kt) (`disconnected`: granted but not bound; `stale`: bound but nothing observed for 24 h). On focus and on every return to the foreground, a granted and switched-on listener that is not bound gets one `NotificationListenerService.requestRebind()`; if it is still unbound after 10 s, or the rebind could not be requested, M-ANI-01 shows the health card ([`android-ni/health.ts`](../apps/mobile/src/features/android-ni/health.ts)). The card offers "Yeniden bağla" (another rebind, with progress) and, unless the app is already exempt, "Pil ayarlarını aç", which opens `ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS` through `da-platform` (never the direct exemption prompt: `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` is not declared and the config plugin refuses it). The module's `onListenerChanged` event clears the card as soon as the system binds the listener again. The bound state is also reported as `platform_capabilities.ni_connected`.
+- **User sees.** `android_ni.health.*`: "Bildirim erişimi açık ama bağlantı koptu" (or "… bir gündür bildirim ulaşmıyor") / "Pil tasarrufu Dijital Asistan'ı durdurmuş olabilir. …" with "Yeniden bağla" and "Pil ayarlarını aç".
+- **Verified.** CI (JVM `ListenerHealthTest` and `PlatformRulesTest`, `ni:test`); unit (Jest `platform-gaps.test.tsx`); device (an OEM battery manager stops the listener → card → rebind).
 
 #### KPL-05 · Push delivery is best-effort and Expo Push has hard limits
 
 - **Limitation.** A ticket `ok` means only that Expo accepted the message; receipts come ~15 min later and expire after 24 h; 100 messages per request, 600/s per project, 4 KB payload; a missing Android channel hides the notification; APNs and FCM coalesce or drop after long offline periods.
 - **Evidence.** [OFF] https://docs.expo.dev/push-notifications/sending-notifications/ ; [KNOW] https://developer.apple.com/library/archive/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/APNSOverview.html ; [KNOW] https://firebase.google.com/docs/cloud-messaging/concept-options#lifetime
 - **As built.** Notifications are hints; Today, Flow and the Approval Center always re-read the database. The `notification` job sends in batches of ≤100 with a `ttl` and a collapse id, stores `push_tickets`, disables the token on `DeviceNotRegistered`, and `push_receipts` polls receipts 15 min later ([`services/notifications/`](../supabase/functions/_shared/services/notifications)). The payload is exactly `{type, entity_id, deeplink}` plus the server-rendered text. Channels are created by the app before any prompt.
-- **User sees.** Nothing specific.
-- **Verified.** unit (Deno notification pipeline and receipts tests).
-- **Plan difference.** No delivery footnote under Settings › Bildirimler; no per-app-version channel gating.
+- **User sees.** The footnote under Settings › Bildirimler (`notifications.settings.deliveryFootnote`): "Bildirimler Apple ve Google'ın bildirim servisleri üzerinden iletilir. Telefonun kapalıyken ya da internete bağlı değilken bazıları gecikebilir veya yalnızca en sonuncusu ulaşabilir. Her şeyin güncel hâli Bugün ekranında."
+- **Verified.** unit (Deno notification pipeline and receipts tests; Jest `platform-gaps.test.tsx`).
+- **Plan difference.** No per-app-version channel gating.
 
 #### KPL-06 · Lock-screen privacy: the server cannot see lock state; no per-notification public version through Expo
 
 - **Limitation.** The server cannot know whether the phone is locked; iOS applies "Show Previews"; Android applies channel `lockscreenVisibility` and the OS setting; Expo exposes neither `setPublicVersion()` nor per-message visibility; delivered content is fixed.
 - **Evidence.** [OFF] https://docs.expo.dev/versions/latest/sdk/notifications/ ; [OFF] https://developer.android.com/about/versions/15/behavior-changes-all ; [KNOW] https://developer.apple.com/documentation/usernotifications/unnotificationsettings/showpreviewssetting
-- **As built.** The server renders each push per `notification_preferences` detail mode (`full`, `title_only` default, `generic`), capped at `title_only` on iOS while `lock_screen_private` is on. Every Android channel is `lockscreenVisibility = PRIVATE`; iOS categories carry the hidden-preview text "Dijital Asistan güncellemesi". Settings › Bildirimler reads iOS `allowsPreviews` and shows it with a link to the system settings.
+- **As built.** The server renders each push per `notification_preferences` detail mode (`full`, `title_only` default, `generic`), capped at `title_only` on iOS while `lock_screen_private` is on. Every Android channel is `lockscreenVisibility = PRIVATE`; iOS categories carry the hidden-preview text "Dijital Asistan güncellemesi". Settings › Bildirimler reads iOS `allowsPreviews` and shows it with a link to the system settings; registration reports it as `platform_capabilities.ios_show_previews` (support visibility only; rendering does not depend on it).
 - **User sees.** `notifications.settings.lockScreen.*`: the lock-screen privacy switch, the iOS preview state ("Her zaman / Kilit açıkken / Hiçbir zaman") and "iPhone'da kilit ekranı önizlemelerini sistem ayarları da etkiler."
 - **Verified.** unit (domain render tables; Jest settings screen); device (locked iPhone shows the hidden-preview text).
-- **Plan difference.** The iOS preview value is shown locally, not reported to the server (`platform_capabilities` is not sent).
 
 #### KPL-07 · iOS Time Sensitive is user-controllable; Focus and Scheduled Summary can hold notifications; no Critical Alerts
 
 - **Limitation.** Time-sensitive delivery through Focus depends on a per-app user setting; `active` and `passive` notifications can be held; Critical Alerts need a restricted entitlement.
 - **Evidence.** [OFF] https://developer.apple.com/documentation/usernotifications/unnotificationinterruptionlevel/timesensitive ; [KNOW] https://developer.apple.com/documentation/usernotifications/unnotificationsettings/timesensitivesetting
-- **As built.** The time-sensitive entitlement is in `ios.entitlements`; the server picks the interruption level per push (`interruptionLevelFor` in `@da/domain`); local reminders are `timeSensitive`; `critical` is never used.
-- **User sees.** Nothing specific.
-- **Verified.** unit (domain interruption levels); device.
-- **Plan difference.** The app does not read `timeSensitiveSetting` and shows no "Zamana Duyarlı Bildirimler kapalı" row (the `da-platform` module was not built).
+- **As built.** The `da-platform` config plugin adds the `com.apple.developer.usernotifications.time-sensitive` entitlement (asserted by the prebuild smoke); the server picks the interruption level per push (`interruptionLevelFor` in `@da/domain`); local reminders are `timeSensitive`; `critical` is never used. The app reads `UNNotificationSettings.timeSensitiveSetting` through `da-platform` on mount and on every return to the foreground ([`lib/platform-state.ts`](../apps/mobile/src/lib/platform-state.ts)): when it is off, Settings › Bildirimler shows a card and the reminder sheet a note, both opening the app's notification settings (`UIApplication.openNotificationSettingsURLString`). The value is reported as `platform_capabilities.ios_time_sensitive`.
+- **User sees.** "Zamana Duyarlı Bildirimler kapalı" / "Toplantı ve hatırlatıcı bildirimlerin Odak modunda ya da Planlanmış Özet'te bekleyebilir." with "Ayarları Aç" (`notifications.settings.timeSensitive.*`, `reminder.timeSensitive.*`).
+- **Verified.** unit (domain interruption levels; Jest `platform-gaps.test.tsx`); EAS (Swift compile); device (turn the setting off → card; Focus mode delivery).
 
 #### KPL-08 · Android notification channels and the runtime permission
 
@@ -147,19 +144,18 @@ iOS deployment target **16.4** (iPhone only); Android min SDK **24**, compile an
 
 - **Limitation.** Exact scheduling needs `SCHEDULE_EXACT_ALARM`, which is not pre-granted on Android 14+ and can be revoked; `USE_EXACT_ALARM` is restricted by Play; inexact alarms drift in Doze.
 - **Evidence.** [OFF] https://docs.expo.dev/versions/latest/sdk/notifications/ ; [KNOW] https://developer.android.com/about/versions/14/changes/schedule-exact-alarms ; [KNOW] https://support.google.com/googleplay/android-developer/answer/12253906
-- **As built.** The manifest declares `SCHEDULE_EXACT_ALARM` and blocks `USE_EXACT_ALARM`. User reminders are scheduled with an `expo-notifications` date trigger ([`lib/notifications/local-reminders.ts`](../apps/mobile/src/lib/notifications/local-reminders.ts)); whether delivery is exact depends on the OS grant.
-- **User sees.** Nothing; a reminder may arrive a few minutes late when the user has not granted "Alarms & reminders".
-- **Verified.** device (Doze test).
-- **Plan difference.** No exact-alarm check, warning or settings handoff (the `da-platform` module and the `states.permission.exactAlarm` copy are not wired).
+- **As built.** The `da-platform` config plugin declares `SCHEDULE_EXACT_ALARM` and refuses `USE_EXACT_ALARM` (also blocked in the manifest). User reminders are scheduled with an `expo-notifications` date trigger ([`lib/notifications/local-reminders.ts`](../apps/mobile/src/lib/notifications/local-reminders.ts)), which uses `setExactAndAllowWhileIdle` when `canScheduleExactAlarms()` is true and an inexact alarm otherwise; the foreground reconciliation reschedules pending reminders, so they become exact once the access is granted. The reminder sheet reads the access through `da-platform` (`AlarmManager.canScheduleExactAlarms`, API 31+; `not_required` below and on iOS) and, when it is denied, shows the note with "İzni Aç", which opens `ACTION_REQUEST_SCHEDULE_EXACT_ALARM` for the app (the app settings as the fallback). The state is reported as `platform_capabilities.exact_alarm`.
+- **User sees.** `reminder.exactAlarm.*`: "Tam saatinde hatırlatabilmem için “Alarmlar ve hatırlatıcılar” iznini aç. Bu izin kapalıyken hatırlatıcı birkaç dakika gecikebilir." with "İzni Aç".
+- **Verified.** CI (JVM `PlatformRulesTest`); unit (Jest `platform-gaps.test.tsx`; prebuild smoke asserts the permission once and no battery-exemption permission); device (Doze test).
 
 #### KPL-10 · Setting a system alarm ("Alarm Kur")
 
 - **Limitation.** Before iOS 26 apps cannot create system alarms; iOS 26 AlarmKit needs authorisation; Android can only hand off to the Clock app.
 - **Evidence.** [KNOW] https://developer.apple.com/documentation/alarmkit ; [KNOW] https://developer.android.com/reference/android/provider/AlarmClock#ACTION_SET_ALARM
-- **As built.** No "Alarm Kur" action exists on either platform; the user can set a smart reminder instead (M-REM-01).
+- **As built.** No "Alarm Kur" action exists on either platform; the user can set a smart reminder instead (M-REM-01), whose exactness the reminder sheet now explains (KPL-09).
 - **User sees.** Nothing (the action is absent, not disabled).
 - **Verified.** —
-- **Plan difference.** The AlarmKit / `ACTION_SET_ALARM` path was not built.
+- **Plan difference.** The AlarmKit / `ACTION_SET_ALARM` path was not built. The plan places "Alarm Kur" on the Today evening card and the flight detail, not on the reminder sheet; AlarmKit needs iOS 26, its own authorisation prompt and usage string, and no screen that would host it exists yet, so `da-platform` reads only the states the reminder sheet uses.
 
 ### B. Background execution and device data freshness
 
@@ -167,19 +163,22 @@ iOS deployment target **16.4** (iPhone only); Android min SDK **24**, compile an
 
 - **Limitation.** `expo-background-task` uses BGTaskScheduler on iOS (system-decided, favours idle, unavailable in the Simulator) and WorkManager on Android (≥15 min, battery and network conditions, standby-bucket quotas, OEM killers). Silent pushes are throttled on iOS and deferred in Doze.
 - **Evidence.** [OFF] https://docs.expo.dev/versions/latest/sdk/background-task/ ; [OFF] https://developer.android.com/about/versions/16/behavior-changes-all ; [KNOW] https://developer.apple.com/documentation/backgroundtasks/bgprocessingtaskrequest
-- **As built.** Server work (sync, briefings, AI, notifications) never depends on the app. The app registers `da-background-refresh` (≥30 min; widget snapshot), `da-device-calendar-upload` (≥15 min, while a device calendar is connected) and `da-ani-upload` (≥15 min, while Android NI is on). Foreground is the primary refresh path; the offline queue replays on reconnect and foreground only.
+- **As built.** Server work (sync, briefings, AI, notifications) never depends on the app. The app registers `da-background-refresh` (≥30 min; widget snapshot), `da-device-calendar-upload` (≥15 min, while a device calendar is connected) and `da-ani-upload` (≥15 min, while Android NI is on), plus the `expo-notifications` background task `da-background-notification` while a device calendar is connected, which handles the data-only `device_refresh` push (KPL-12) ([`integrations/device-refresh-push.ts`](../apps/mobile/src/features/integrations/device-refresh-push.ts)). Foreground is the primary refresh path; the offline queue replays on reconnect and foreground only. Whether the background task is available is reported as `platform_capabilities.background_task`.
 - **User sees.** Freshness through widget timestamps and "son eşitleme" lines.
-- **Verified.** unit (task registration and step runner); device.
-- **Plan difference.** Three tasks instead of one; no `da-background-notification` task for silent refresh pushes.
+- **Verified.** unit (task registration and step runner; Jest `briefing-gaps.test.tsx`); device.
+- **Plan difference.** Three periodic tasks instead of one, each registered and removed with its own feature.
 
 #### KPL-12 · Device calendars reach the server only when the app runs
 
 - **Limitation.** EventKit and CalendarContract data exist only on the device; change notifications fire only while the app runs; background refresh is best effort, so an 08:00 server briefing can miss device events added since the last upload.
 - **Evidence.** [OFF] integrations audit §C.4 ; [KNOW] https://developer.apple.com/documentation/foundation/nsnotification/name-swift.struct/ekeventstorechanged
-- **As built.** Selected device calendars are uploaded as a minimal snapshot (−1 … +14 days, hashed identifiers) after the first grant, on foreground, on reconnect and from the background task (`POST /integrations/device-calendar/snapshot`, [`integrations/device-calendar.ts`](../apps/mobile/src/features/integrations/device-calendar.ts)). The server stages it and `device_calendar_ingest` applies it. Briefings record `source_freshness` at generation.
-- **User sees.** "son eşitleme {saat}" on device-sourced events and in the account detail (`provenance.lastSynced`, account `lastSync`).
-- **Verified.** unit (Jest device calendar; Deno ingest); device.
-- **Plan difference.** No pre-briefing `device_refresh` push, no stale note in the briefing and no "Takvimin bu brifingden sonra değişti." banner.
+- **As built.** Selected device calendars are uploaded as a minimal snapshot (−1 … +14 days, hashed identifiers) after the first grant, on foreground, on reconnect and from the background task (`POST /integrations/device-calendar/snapshot`, [`integrations/device-calendar.ts`](../apps/mobile/src/features/integrations/device-calendar.ts)). The server stages it and `device_calendar_ingest` applies it.
+  - **Pre-briefing refresh.** When a scheduled morning or evening `briefing` job starts and a connected device calendar has not synced for 30 minutes, it enqueues a `notification` job with `payload.kind = 'device_refresh'` (key `device_refresh:{installation}:{kind}:{local_date}`) for the installation that uploads that calendar and re-enqueues itself once, 3 minutes later (`after_device_refresh`); it never defers twice ([`briefings/device-refresh.ts`](../supabase/functions/_shared/services/briefings/device-refresh.ts), [`worker/handlers/briefing.ts`](../supabase/functions/worker/handlers/briefing.ts)). The push is data-only (`_contentAvailable`, `priority: normal`, `ttl` 15 min, no title or body, the standard `{type, entity_id, deeplink}` data), writes no `notifications` ledger row and is exempt from quiet hours and caps; `DeviceNotRegistered` disables the token ([`notifications/device-refresh.ts`](../supabase/functions/_shared/services/notifications/device-refresh.ts)). On the device the `da-background-notification` task (or, in the foreground, the notification handler, without a toast) uploads the snapshot and refreshes the widgets, one run at a time.
+  - **Freshness record.** Each generated briefing stores `source_freshness.device_calendar`: every device source's last sync with `stale` (older than `DEVICE_CALENDAR_STALE_MINUTES` = 180), the briefing's schedule window and the SHA-256 fingerprint of the device events in it (`deviceScheduleCanonical` in `@da/domain`, one vector asserted by the domain, Edge and Jest suites).
+  - **In the app.** The briefing (morning and evening) and Today recompute the fingerprint from the current rows ([`briefing/device-freshness.ts`](../apps/mobile/src/features/briefing/device-freshness.ts)): a different schedule shows the change banner with "Güncel programı gör" (→ Plan); otherwise a source that was stale and has not synced since shows the stale note. The briefing itself is never regenerated for a change.
+- **User sees.** "son eşitleme {saat}" on device-sourced events and in the account detail (`provenance.lastSynced`, account `lastSync`); `briefing.deviceFreshness.*`: "{kaynak} · son eşitleme {saat}. Sonraki değişiklikler uygulamayı açtığında eklenir." and "Takvimin bu brifingden sonra değişti." with "Güncel programı gör".
+- **Verified.** unit (Jest device calendar and `briefing-gaps.test.tsx`; Deno ingest, `briefing-device-refresh.test.ts`, `briefings/device-refresh.test.ts`, `notifications/device-refresh.test.ts`; Vitest domain vector); device (kill the app at 06:00, add an event at 07:00, observe the 08:00 briefing note, open the app → banner).
+- **Plan difference.** The nudge comes from the `briefing` job when generation starts (one 3-minute deferral), not from `scheduler_tick()` 40 minutes before the configured time: the scheduler lives in SQL migrations and no migration range was assigned, and the deferral keeps the wait bounded. `source_freshness` is keyed `device_calendar` with the window and fingerprint (not per `connected_account_id`), because the change banner needs the fingerprint. The notes sit at the top of the briefing and under the Today hero rather than in the "Programın" header; the copy lives in `briefing.deviceFreshness.*`.
 
 #### KPL-13 · EventKit read requires full access
 
@@ -271,10 +270,10 @@ iOS deployment target **16.4** (iPhone only); Android min SDK **24**, compile an
 
 - **Limitation.** iOS 16+ asks before a programmatic pasteboard read unless a system paste control is used; Android 12+ shows a toast on clipboard reads.
 - **Evidence.** [KNOW] https://developer.apple.com/documentation/uikit/uipastecontrol ; [KNOW] https://docs.expo.dev/versions/latest/sdk/clipboard/
-- **As built.** The clipboard is read only when the user taps "Yapıştır" in the capture composer (the OS prompt or toast may appear then); codes and links are otherwise typed. Copy actions only write to the clipboard.
-- **User sees.** The system paste prompt on iOS after tapping "Yapıştır".
-- **Verified.** unit (Jest capture).
-- **Plan difference.** `ClipboardPasteButton` is not used.
+- **As built.** In the capture composer (text and link) iOS 16+ shows the system paste control (`expo-clipboard` `ClipboardPasteButton`, `UIPasteControl`: plain text, system label), which pastes without the "Allow Paste" prompt; where it is unavailable (Android, older iOS) the "Yapıştır" chip reads the clipboard only after the tap (Android 12+ shows its own toast) ([`capture/PasteControl.tsx`](../apps/mobile/src/features/capture/PasteControl.tsx)). The clipboard is never read on its own; copy actions only write to it.
+- **User sees.** The system "Yapıştır" control on iOS; the chip elsewhere; "Panoda yapıştırılacak metin yok." for an empty clipboard.
+- **Verified.** unit (Jest `voice-gaps.test.tsx`: the system control, the chip, the link field); device (no paste prompt on iOS 16+).
+- **Plan difference.** The referral-code field keeps the typed entry (the code sheet has no paste control).
 
 ### E. Voice and audio
 
@@ -283,18 +282,19 @@ iOS deployment target **16.4** (iPhone only); Android min SDK **24**, compile an
 - **Limitation.** On-device recognition exists only on some devices and locales; otherwise audio goes to Apple or Google services with request limits; Android on-device needs API 31+.
 - **Evidence.** [OFF-README] https://github.com/jamsch/expo-speech-recognition ; [KNOW] https://developer.apple.com/documentation/speech/sfspeechrecognizer
 - **As built.** `expo-speech-recognition` with `tr-TR` and on-device recognition when the device supports it; otherwise, with the `voice.stt_server` flag on and a server credential, the utterance is recorded (AAC, ≤60 s) and sent to `POST /assistant/transcribe`, where it is deleted after transcription; without either, the screen offers text input ([`features/voice/speech.ts`](../apps/mobile/src/features/voice/speech.ts)). A spoken "onayla" never approves anything.
-- **User sees.** `voice` copy for unavailable input ("Metinle sor").
-- **Verified.** unit (Jest voice); device.
-- **Plan difference.** No offline-model download trigger on Android and no first-use server-path notice.
+  The recognizer is probed on entry and on every return to the app ([`features/voice/availability.ts`](../apps/mobile/src/features/voice/availability.ts)): iOS `supportsOnDeviceRecognition`; Android 13+ also compares the installed offline models with the supported ones. A Turkish model that can be downloaded offers "Türkçe modeli indir" (`androidTriggerOfflineModelDownload`: the system dialog, an immediate download or a scheduled one); a device with no recognition service at all offers "Konuşma hizmetini yükle" (the Play Store page of Google's speech services, the web page as the fallback). Until the device can recognise Turkish itself, the server path shows its privacy notice, until the first successful server transcription. The probe result is reported as `platform_capabilities.stt_on_device_tr`. The app always sets `requiresOnDeviceRecognition`, so audio never reaches Apple's or Google's network recognizer.
+- **User sees.** `voice` copy: "Metinle sor" for unavailable input; `voice.serverNotice` "Bu cihazda Türkçe konuşma tanıma cihaz üzerinde çalışmıyor. Sesin, metne çevrilmek için güvenli bağlantıyla sunucumuza gönderilir ve hemen silinir."; `voice.model.*`, `voice.install.*`.
+- **Verified.** unit (Jest voice and `voice-gaps.test.tsx`); device (Android 13+ without the Turkish model; a device without Google speech services).
+- **Plan difference.** The Privacy Center line about Apple or Google speech services (`platform_service_notice`) is not shown, because the platform network recognizer is never used.
 
 #### KPL-25 · Native Turkish TTS voices vary by device; premium TTS is optional
 
 - **Limitation.** Available `tr-TR` voices differ by device and engine; Android limits utterance length; `expo-speech` alone cannot seek or show lock-screen controls.
 - **Evidence.** [KNOW] https://docs.expo.dev/versions/latest/sdk/speech/ ; [KNOW] https://developer.android.com/reference/android/speech/tts/TextToSpeech.Engine#ACTION_INSTALL_TTS_DATA
 - **As built.** The audio briefing is Pro and behind `feature.voice`. `POST /briefings/:id/audio` returns a premium file when `voice.tts_premium` and a TTS credential apply; otherwise the chapter script, which `da-tts` synthesizes on the device into files (best offline `tr-TR` voice first; chapters split below the engine's input limit) for real seek, speed and lock-screen controls; if synthesis fails, `expo-speech` reads sentence by sentence ([`ListenScreen.tsx`](../apps/mobile/src/features/briefing/ListenScreen.tsx)).
-- **User sees.** "Cihaz sesiyle okunuyor" in device-voice modes.
-- **Verified.** unit (Jest `tts.test.tsx`); EAS (native compile); device (real synthesized audio, Android with a non-Google engine).
-- **Plan difference.** No "install a Turkish voice" handoff.
+  Without an installed Turkish voice (`expo-speech` voice list) the device-voice player says so: Android offers "Ses paketini indir" (the engine's `ACTION_INSTALL_TTS_DATA`), iOS names the Settings path. The result is reported as `platform_capabilities.tts_tr_voice`. Playback runs in a session host mounted in the root layout ([`briefing/player/`](../apps/mobile/src/features/briefing/player)), so leaving the full player keeps it playing in the mini player above the tab bar (DEV-52).
+- **User sees.** "Cihaz sesiyle okunuyor" in device-voice modes; `briefing.audio.voice.*`: "Bu cihazda Türkçe ses yüklü değil." with the install action (Android) or the Settings path (iOS).
+- **Verified.** unit (Jest `tts.test.tsx`, `voice-gaps.test.tsx`, `briefing-gaps.test.tsx`); EAS (native compile); device (real synthesized audio, Android with a non-Google engine).
 
 #### KPL-26 · Background audio, lock-screen controls, CarPlay and Android foreground services
 
@@ -310,10 +310,10 @@ iOS deployment target **16.4** (iPhone only); Android min SDK **24**, compile an
 
 - **Limitation.** Hermes has historically lacked `RelativeTimeFormat`, `ListFormat`, `DisplayNames`, `Segmenter` and (older releases) `PluralRules`; time-zone formatting coverage was unverified for Hermes V1.
 - **Evidence.** [KNOW] https://github.com/facebook/hermes/blob/main/doc/IntlAPIs.md ; ADR-14
-- **As built.** Dates, times and time zones are formatted with date-fns and `@date-fns/tz` ([`packages/i18n/src/formats.ts`](../packages/i18n/src/formats.ts)); relative time uses date-fns, never `Intl.RelativeTimeFormat`; plurals come from use-intl's ICU messages, which rely on the engine's `Intl.PluralRules`.
-- **User sees.** Correct formatting, or wrong plural forms if the engine lacks the data.
-- **Verified.** unit (i18n formats under Node); EAS / CI (Maestro asserts rendered strings on real builds).
-- **Plan difference.** No `ensureIntl()` probe or polyfill and no lint ban on the missing `Intl` APIs.
+- **As built.** Dates, times and time zones are formatted with date-fns and `@date-fns/tz` ([`packages/i18n/src/formats.ts`](../packages/i18n/src/formats.ts)); relative time uses date-fns, never `Intl.RelativeTimeFormat`; plurals come from use-intl's ICU messages. `ensureIntl()` ([`packages/i18n/src/intl.ts`](../packages/i18n/src/intl.ts)) runs from the app entry before the router loads ([`lib/intl-setup.ts`](../apps/mobile/src/lib/intl-setup.ts)): it probes `Intl.PluralRules` with Turkish and English cardinal and English ordinal cases and, when it is missing or wrong, installs a Turkish/English implementation of the CLDR rules; it probes the `timeZoneName: 'longOffset'` output that `@date-fns/tz` reads offsets from (Europe/Istanbul +03:00, Europe/Berlin +01:00 in January and +02:00 in July) and, when only that is missing but zone wall-clock formatting is right, wraps `Intl.DateTimeFormat` to derive the offset from `formatToParts`. An engine without zone data is reported, not patched; Sentry events then carry `intl_fallback`. The mobile lint config bans `Intl.RelativeTimeFormat`, `Intl.ListFormat`, `Intl.DisplayNames` and `Intl.Segmenter` in the app and the kit.
+- **User sees.** Correct formatting.
+- **Verified.** unit (Vitest `intl.test.ts`: the shim matches full ICU for every tr/en case, the offset shim feeds `@date-fns/tz`; Jest `intl-setup.test.ts`: the entry order and the Sentry tag); EAS / CI (Maestro asserts rendered strings on real builds).
+- **Plan difference.** No `@formatjs/intl-pluralrules` / `@formatjs/intl-datetimeformat` dependencies: the app formats only Turkish and English, so the plural shim is a few CLDR rules, and the offset wrapper covers the one zone feature `@date-fns/tz` needs; bundling the formatjs zone database for a fallback was not justified. No `joinList` helper (no screen joins lists).
 
 #### KPL-28 · Turkish case mapping (İ/ı)
 
@@ -321,8 +321,9 @@ iOS deployment target **16.4** (iPhone only); Android min SDK **24**, compile an
 - **Evidence.** [KNOW] https://www.unicode.org/Public/UCD/latest/ucd/SpecialCasing.txt ; [KNOW] https://reactnative.dev/docs/text-style-props#texttransform
 - **As built.** Caps text (kickers, badges) goes through `toUpper(text, locale)` in `@da/i18n`, which maps i/ı to İ/I explicitly, applied by the `Text` component's caps variants; `textTransform: 'uppercase'` is not used in the app kit.
 - **User sees.** Correct Turkish capitals.
-- **Verified.** unit (i18n locale helpers; `@da/ui` text tests).
-- **Plan difference.** Catalogs are not stored pre-uppercased and no lint rule bans runtime uppercasing; the helper replaces both.
+  The mobile lint config (`packages/config/eslint/react-native.mjs`) bans `textTransform: 'uppercase'`, `toUpperCase()` and argument-less `toLocaleUpperCase()` in app and kit code (ASCII identifiers such as referral codes disable the rule with a reason), and `'TL'` literals, since amounts go through `formatCurrency`.
+- **Verified.** unit (i18n locale helpers; `@da/ui` text tests); lint (`pnpm exec eslint .`).
+- **Plan difference.** Catalogs are not stored pre-uppercased; the helper replaces that.
 
 #### KPL-29 · Right-to-left layouts are not supported
 
@@ -376,9 +377,8 @@ iOS deployment target **16.4** (iPhone only); Android min SDK **24**, compile an
 - **Limitation.** Gmail watch filters by label; Graph message delta works per folder; mail that skips the inbox is not seen.
 - **Evidence.** [OFF] https://gmail.googleapis.com/$discovery/rest?version=v1 (`watch.labelIds`, `labelFilterBehavior`) ; [OFF] https://learn.microsoft.com/en-us/graph/delta-query-messages ("per folder")
 - **As built.** Gmail watch and sync use `INBOX` and `SENT` (category tabs keep `INBOX` and are included); Graph uses `inbox` and `sentitems` ([`providers/google/gmail.ts`](../supabase/functions/_shared/providers/google/gmail.ts), [`providers/microsoft/mail.ts`](../supabase/functions/_shared/providers/microsoft/mail.ts)).
-- **User sees.** Nothing specific.
-- **Verified.** unit (Deno adapters).
-- **Plan difference.** The data-sources footnote about filtered-away mail is not shown.
+- **User sees.** Under each mail account on "AI neye erişiyor?" (`/settings/privacy/data-sources`, `privacy.aiData.folders*`): Gmail "Gelen Kutusu ve Gönderilenler analiz edilir. Filtreyle gelen kutusuna uğramadan arşivlenen mailler dahil edilmez."; Outlook "Gelen Kutusu ve Gönderilmiş Öğeler analiz edilir. Kurallarla başka klasöre taşınan mailler dahil edilmez."
+- **Verified.** unit (Deno adapters; Jest `platform-gaps.test.tsx`).
 
 #### KPL-35 · Google token invalidation rules and granular consent
 
@@ -393,9 +393,9 @@ iOS deployment target **16.4** (iPhone only); Android min SDK **24**, compile an
 - **Limitation.** Channels expire (7 days), carry no payload and do not renew; `syncToken` cannot be combined with time bounds; 410 means a full resync.
 - **Evidence.** [OFF-S] https://developers.google.com/workspace/calendar/api/guides/push ; [OFF-S] https://developers.google.com/workspace/calendar/api/guides/sync ; [OFF] https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest ; [SEC] https://developers.google.com/workspace/calendar/api/guides/quota
 - **As built.** `events.watch` per calendar with an HMAC channel token, renewed by `watch_renewal`; notifications trigger incremental `calendar_sync`; 410 triggers a full sync that prunes removed events ([`services/integrations/sync-calendar.ts`](../supabase/functions/_shared/services/integrations/sync-calendar.ts)).
-- **User sees.** Nothing specific.
-- **Verified.** unit (Deno calendar adapters).
-- **Plan difference.** No "outside the sync window" note in Plan.
+  The windows per provider live in `@da/domain` (`CALENDAR_SYNC_WINDOW_DAYS`: Google −30/+365 days, Microsoft −2/+60, device −1/+14, demo −7/+30); a Deno test keeps the Edge `calendarWindow` equal to them, and the device snapshot uses the same bounds.
+- **User sees.** On Plan, a day (or, in the week view, a week) that reaches wholly past the window of a connected calendar shows "Bu tarih eşitleme aralığının dışında; etkinlikler yaklaştıkça görünür." (`plan.outsideWindow`, [`plan/OutsideWindowNote.tsx`](../apps/mobile/src/features/plan/OutsideWindowNote.tsx)); past days are not flagged, their events stay stored.
+- **Verified.** unit (Deno calendar adapters and `sync-window.test.ts`; Vitest domain window; Jest `platform-gaps.test.tsx`).
 
 #### KPL-37 · Calendar write side effects (Google `sendUpdates`, Graph meeting mail)
 
@@ -410,8 +410,8 @@ iOS deployment target **16.4** (iPhone only); Android min SDK **24**, compile an
 - **Limitation.** `Task.due` stores only a date; no push or sync token.
 - **Evidence.** [OFF] https://tasks.googleapis.com/$discovery/rest?version=v1
 - **As built.** `tasks_sync` polls every 15 minutes and on foreground; due dates are date-only; created tasks carry the approval marker for idempotency.
-- **User sees.** "Yalnızca tarih saklanır; saat bildirimini Google göstermez" on the Google Tasks destination.
-- **Verified.** unit (Deno Google Tasks adapter).
+- **User sees.** "Yalnızca tarih saklanır; saat bildirimini Google göstermez" on the Google Tasks destination; on "AI neye erişiyor?", while a Google Tasks or Microsoft To Do list is connected, "Google Görevler ve Microsoft To Do yaklaşık 15 dakikada bir ve uygulamayı açtığında güncellenir." (`privacy.aiData.tasksPoll`).
+- **Verified.** unit (Deno Google Tasks adapter; Jest `platform-gaps.test.tsx`).
 
 ### I. Microsoft
 
@@ -618,12 +618,12 @@ iOS deployment target **16.4** (iPhone only); Android min SDK **24**, compile an
 | WidgetKit push | A second push credential path; budgeted anyway | Foreground and background reloads (KPL-17) |
 | Interactive widgets (App Intents) | Writes never happen from a widget | Deep links into real screens |
 | Live Activities, Critical Alerts | No requirement; restricted entitlement | Time Sensitive notifications (KPL-07) |
-| Silent refresh pushes | Throttled and deferred by both platforms | Foreground refresh and background tasks (KPL-11) |
+| Silent refresh pushes (beyond the pre-briefing `device_refresh`) | Throttled and deferred by both platforms | Foreground refresh and background tasks (KPL-11); one data-only push before a briefing (KPL-12) |
 | `gmail.compose` / `gmail.modify` / `Mail.ReadWrite` | Least privilege | Drafts in our database; `gmail.send` / `Mail.Send` (KPL-44) |
 | Graph `proposedNewTime` | Forces an RSVP change | "Propose a new time" email draft (KPL-45) |
 | `QUERY_ALL_PACKAGES`, `USE_EXACT_ALARM`, `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` | Play-restricted | `<queries>` launcher intent; `SCHEDULE_EXACT_ALARM` |
 | OAuth in embedded WebViews | Google blocks embedded user agents | System auth sessions |
-| AlarmKit / Clock handoff | Not built (KPL-10) | Smart reminders |
+| AlarmKit / Clock handoff | No hosting screen in the plan's reminder sheet (KPL-10) | Smart reminders with the exact-alarm note (KPL-09) |
 | Automatic photo or screenshot scanning | Permissions policy and privacy | Picker and share (KPL-22) |
 | Location and routing | No travel time invented | Event times only (KPL-47) |
 
@@ -657,10 +657,10 @@ Facts tagged [KNOW] during planning, with their status as built.
 
 | # | Fact | KPL | Status |
 | --- | --- | --- | --- |
-| 1 | Hermes V1 `Intl` coverage (PluralRules, time zones) | 27 | Open: check plural forms on EAS builds (Maestro string assertions) |
-| 2 | `expo-notifications` Android scheduling uses exact alarms when permitted | 09 | Open: device Doze test |
+| 1 | Hermes V1 `Intl` coverage (PluralRules, time zones) | 27 | Probed at start (`ensureIntl`), with fallbacks; open: read the `intl_fallback` Sentry tag from EAS builds |
+| 2 | `expo-notifications` Android scheduling uses exact alarms when permitted | 09 | Confirmed in the library source (`setExactAndAllowWhileIdle` when `canScheduleExactAlarms()`); open: device Doze test |
 | 3 | AlarmKit API and usage key | 10 | Not needed (feature not built) |
-| 4 | Background notification delivery through Expo | 11, 12 | Not needed (silent pushes not used) |
+| 4 | Background notification delivery through Expo | 11, 12 | Implemented (`_contentAvailable` data-only push, `da-background-notification` task); open: delivery after force-quit (iOS) and in Doze (Android) on devices |
 | 5 | Graph attachment size without `Mail.ReadWrite` | 44 | Implemented as a 3 MB limit; confirm against the current Graph documentation |
 | 6 | Graph organiser updates send meeting mail automatically | 37 | Open: owner sandbox |
 | 7 | Google free/busy scope | 46 | Not needed (free/busy not built) |
@@ -693,6 +693,7 @@ Facts tagged [KNOW] during planning, with their status as built.
 | Play Data safety, notification-listener and foreground-service declarations, deletion URL | 02, 26, 54 |
 | Custom SMTP with a raised rate | 57 |
 | Server STT and premium TTS credentials (optional) | 24, 25 |
+| `SENTRY_AUTH_TOKEN` and `SENTRY_ORG` as EAS secrets for source-map upload (optional) | — |
 | `EXPO_TOKEN`; physical test devices for the "device" checks | 59, 61 |
 | Counsel review of the cross-border processing wording | 58 |
 
@@ -702,15 +703,14 @@ This document replaced the planning register. The plan behaviours that were not 
 
 | Area | Not built or different | KPL |
 | --- | --- | --- |
-| `da-platform` native module | No exact-alarm check, AlarmKit / Clock handoff, or Time Sensitive state | 07, 09, 10 |
-| Listener health | No connection-state card, rebind or battery handoff | 04 |
-| Device data freshness | No pre-briefing `device_refresh` push, no briefing stale note or change banner; three background tasks instead of one | 11, 12 |
+| `da-platform` native module | Built for exact alarms, Time Sensitive and the battery handoff; no AlarmKit / Clock handoff | 07, 09, 10 |
+| Device data freshness | The `device_refresh` push is sent by the `briefing` job (one 3-minute deferral), not `scheduler_tick()` at −40 min; three periodic tasks instead of one | 11, 12 |
 | Calendar dedupe | No auto-deselect of duplicate device calendars, no cross-source merge | 15 |
 | Free/busy | Attendee availability always unknown | 46 |
-| Platform capability reporting | `app_installations.platform_capabilities` exists but is not sent | 06, 07 |
-| Limitation copy | No `limits.*` namespace; the shipped copy lives in the feature namespaces named above, and several planned footnotes (delivery, folders, task polling, outside window) are not shown | 05, 34, 36, 38 |
-| Intl and casing | No `ensureIntl()`, no lint bans; date-fns formatting and the `toUpper` helper instead | 27, 28 |
+| Platform capability reporting | Sent and stored; no backoffice view lists installation details, so it is visible through the database only | 04, 06, 07, 09, 11, 24, 25 |
+| Limitation copy | No `limits.*` namespace; the copy lives in the feature namespaces named above (`notifications`, `reminder`, `privacy`, `plan`, `briefing`, `voice`, `android_ni`) | 05, 34, 36, 38 |
+| Intl and casing | `ensureIntl()` with built-in fallbacks instead of the formatjs polyfills; catalogs not pre-uppercased | 27, 28 |
 | Share and SIWA fallbacks | No custom share extension; no SIWA secret rotation workflow | 20, 49 |
-| Voice extras | No offline model download trigger, no server-path notice, no voice install handoff, no `ClipboardPasteButton` | 23, 24, 25 |
+| Voice extras | No Privacy Center line about platform speech services (never used); referral-code entry without a paste control | 23, 24 |
 
 The reasons are the same throughout: each missing piece is a platform refinement that the shipped behaviour does not depend on for correctness, and the product falls back to the platform default instead of simulating it (policy §1).

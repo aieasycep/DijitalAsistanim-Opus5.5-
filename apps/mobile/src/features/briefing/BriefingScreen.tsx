@@ -7,6 +7,11 @@
  * no-delta state (D-14). Evening: the M§11 sections (D-10), open rows complete in place, and
  * "Yarına Hazırım" → confirmation (M-BR-04C). Opening marks it opened (RPC-07). Generating polls
  * every 5 s; a failed briefing offers "Tekrar Dene" (API-BRF-04); a missing one explains retention.
+ * Morning and evening show the KPL-12 device-calendar notes (stale data at generation, schedule
+ * changed since) when the briefing used a device calendar (`DeviceFreshnessNotes`).
+ * The first open of a morning briefing (`opened_at` still empty) runs the P:08 "Brifing açılışı":
+ * the hero rises from .4 opacity and 8 px in 240 ms, then the sections fill in from 360 ms at a
+ * 60 ms stagger; under "Hareketi azalt" only the opacity changes. Later opens render at rest.
  */
 import { qk } from '@da/api-client';
 import { audioMinutes, formatDatePattern, toUpper } from '@da/i18n';
@@ -20,6 +25,7 @@ import {
   FeedbackActions,
   GradientHeader,
   GroupedList,
+  HeroIn,
   IconButton,
   InkCallout,
   ListRow,
@@ -29,6 +35,7 @@ import {
   SectionHeader,
   SkeletonBlock,
   SkeletonGroup,
+  StaggerIn,
   StickyCTABar,
   Text,
   useTheme,
@@ -57,6 +64,8 @@ import {
 import { INSIGHT_WHY_SHEET } from '../today/sheets/WhySheet';
 import { routeForEntity, routeForSource } from '../today/sources';
 import { markOpened, useBriefing, type BriefingDetail, type BriefingItem } from './data';
+import { DeviceFreshnessNotes } from './DeviceFreshnessNotes';
+import { MiniPlayerDock } from './player/MiniPlayerDock';
 import { EVENING_READY_SHEET } from './EveningReadySheet';
 
 export const MORNING_SECTIONS = [
@@ -251,6 +260,28 @@ function MorningView({ detail }: { readonly detail: BriefingDetail }) {
     ...(timeZone === undefined ? {} : { timeZone }),
   });
   const readToEnd = useRef(false);
+  // P:08 staged opening: only while the briefing was unopened when this screen mounted.
+  const [staged] = useState(() => briefing.opened_at === null);
+  const header = (
+    <GradientHeader
+      gradient="dawn"
+      kicker={toUpper(t('kicker', { kind: t('kinds.morning'), date }), lang)}
+      title={name === '' ? today('morningNoName') : today('morning', { name })}
+      {...(briefing.headline === null ? {} : { subtitle: briefing.headline })}
+      top={
+        <IconButton
+          icon="arrow_back"
+          variant="onGradient"
+          accessibilityLabel={common('actions.back')}
+          onPress={() => {
+            if (router.canGoBack()) router.back();
+            else router.replace('/today');
+          }}
+        />
+      }
+      testID="briefing.header"
+    />
+  );
   return (
     <View style={styles.fill}>
       <ScrollView
@@ -267,27 +298,11 @@ function MorningView({ detail }: { readonly detail: BriefingDetail }) {
         }}
         scrollEventThrottle={250}
       >
-        <GradientHeader
-          gradient="dawn"
-          kicker={toUpper(t('kicker', { kind: t('kinds.morning'), date }), lang)}
-          title={name === '' ? today('morningNoName') : today('morning', { name })}
-          {...(briefing.headline === null ? {} : { subtitle: briefing.headline })}
-          top={
-            <IconButton
-              icon="arrow_back"
-              variant="onGradient"
-              accessibilityLabel={common('actions.back')}
-              onPress={() => {
-                if (router.canGoBack()) router.back();
-                else router.replace('/today');
-              }}
-            />
-          }
-          testID="briefing.header"
-        />
+        {staged ? <HeroIn testID="briefing.opening">{header}</HeroIn> : header}
         <OverlappingSheet>
           <View style={[styles.sheet, { paddingHorizontal: theme.layout.screenX }]}>
             <ReaskBanner />
+            <DeviceFreshnessNotes briefing={briefing} />
             {briefing.narrative === null ? null : (
               <EditorialParagraph spans={[{ key: 'n', text: briefing.narrative }]} />
             )}
@@ -300,14 +315,30 @@ function MorningView({ detail }: { readonly detail: BriefingDetail }) {
                 testID="briefing.calm"
               />
             ) : (
-              sections.map(({ section, items: rows }) => (
-                <View key={section} style={styles.section}>
-                  <SectionHeader
-                    title={t(`sections.${section as (typeof MORNING_SECTIONS)[number]}`)}
-                  />
-                  <ItemRows items={rows} section={section} />
-                </View>
-              ))
+              sections.map(({ section, items: rows }, index) => {
+                const block = (
+                  <>
+                    <SectionHeader
+                      title={t(`sections.${section as (typeof MORNING_SECTIONS)[number]}`)}
+                    />
+                    <ItemRows items={rows} section={section} />
+                  </>
+                );
+                return staged ? (
+                  <StaggerIn
+                    key={section}
+                    index={index}
+                    startMs={theme.motion.delay.cardsStart}
+                    style={styles.section}
+                  >
+                    {block}
+                  </StaggerIn>
+                ) : (
+                  <View key={section} style={styles.section}>
+                    {block}
+                  </View>
+                );
+              })
             )}
             {mailCount === null || briefing.generated_at === null ? null : (
               <ProvenanceFooter
@@ -333,6 +364,7 @@ function MorningView({ detail }: { readonly detail: BriefingDetail }) {
           paddingHorizontal: theme.layout.screenX,
         }}
       >
+        <MiniPlayerDock testID="briefing.miniPlayer" />
         <Button
           label={minutes === null ? t('audio.listenShort') : t('audio.listenLong', { minutes })}
           variant="ink"
@@ -498,6 +530,7 @@ function EveningView({ detail }: { readonly detail: BriefingDetail }) {
         />
         <OverlappingSheet>
           <View style={[styles.sheet, { paddingHorizontal: theme.layout.screenX }]}>
+            <DeviceFreshnessNotes briefing={briefing} />
             {sections.map(({ section, items: rows }) => (
               <View key={section} style={styles.section}>
                 <SectionHeader
@@ -534,6 +567,7 @@ function EveningView({ detail }: { readonly detail: BriefingDetail }) {
           paddingHorizontal: theme.layout.screenX,
         }}
       >
+        <MiniPlayerDock testID="briefing.miniPlayer" />
         {confirmedAt === null ? (
           <Button
             label={t('evening.ready')}

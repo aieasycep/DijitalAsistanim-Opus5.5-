@@ -60,6 +60,19 @@ export interface NiSubscription {
   remove(): void;
 }
 
+/** KPL-04 listener health (Kotlin `ListenerHealth`). */
+export type NiListenerHealth = 'not_granted' | 'off' | 'healthy' | 'disconnected' | 'stale';
+
+export interface NiListenerState {
+  readonly granted: boolean;
+  /** Whether the system has the listener service bound right now. */
+  readonly connected: boolean;
+  readonly lastConnectedAt: string | null;
+  /** Last time any notification was posted to the listener (throttled to a minute). */
+  readonly lastEventAt: string | null;
+  readonly health: NiListenerHealth;
+}
+
 /** The native surface (Kotlin `NotificationIntelligenceModule`). */
 export interface NotificationIntelligenceNative {
   isAvailable(): boolean;
@@ -77,8 +90,15 @@ export interface NotificationIntelligenceNative {
   clearBuffer(): void;
   disable(): void;
   reset(): void;
+  /** KPL-04; optional so doubles of older builds keep working. */
+  getListenerState?(): NiListenerState;
+  /** `NotificationListenerService.requestRebind`; false without the grant or on failure. */
+  requestRebind?(): boolean;
   addListener(event: 'onGrantChanged', listener: (e: { granted: boolean }) => void): NiSubscription;
-  addListener(event: 'onSignalsChanged', listener: () => void): NiSubscription;
+  addListener(
+    event: 'onSignalsChanged' | 'onListenerChanged',
+    listener: () => void,
+  ): NiSubscription;
 }
 
 /** The Android module, or null (iOS, Expo Go, unit tests). */

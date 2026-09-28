@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
-# JVM unit tests of the Android Notification Intelligence rules (T-8.26): the package denylist, the
-# OTP / security detector and the signal extractor. They are pure Kotlin, so no Android SDK is
-# needed; the Gradle build in modules/notification-intelligence/jvm-test compiles only them.
+# JVM unit tests of the pure-Kotlin rules of the local Android modules: the Notification
+# Intelligence package denylist, OTP / security detector, signal extractor and listener health
+# (T-8.26, KPL-04), and the da-platform exact-alarm / battery rules (KPL-09). They are pure Kotlin,
+# so no Android SDK is needed; the Gradle build in modules/notification-intelligence/jvm-test
+# compiles only them.
 #
 # Usage: pnpm --filter @da/mobile ni:test     (GRADLE=/path/to/gradle overrides the binary)
 set -euo pipefail
@@ -9,11 +11,13 @@ set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 MODULE="$HERE/modules/notification-intelligence"
 SRC="$MODULE/android/src/main/java/expo/modules/notificationintelligence"
+PLATFORM_SRC="$HERE/modules/da-platform/android/src/main/java/expo/modules/daplatform"
 
 # The rule files must stay free of Android APIs, or the JVM build (and these tests) cannot run.
-for file in PackageRules.kt OtpDetector.kt SignalExtractor.kt; do
-  if grep -nE '^import (android|androidx|expo)\.' "$SRC/$file"; then
-    echo "ni-test: $file must not import android.*, androidx.* or expo.*" >&2
+for file in "$SRC/PackageRules.kt" "$SRC/OtpDetector.kt" "$SRC/SignalExtractor.kt" \
+  "$SRC/ListenerHealth.kt" "$PLATFORM_SRC/PlatformRules.kt"; do
+  if grep -nE '^import (android|androidx|expo)\.' "$file"; then
+    echo "ni-test: $(basename "$file") must not import android.*, androidx.* or expo.*" >&2
     exit 1
   fi
 done

@@ -12,6 +12,10 @@
  *
  * A deferred send (quiet hours, snooze, not yet due) re-enqueues the same payload with the ledger
  * row's `notification_id`.
+ *
+ * `kind: 'device_refresh'` (KPL-12) is the data-only background push that asks one installation
+ * (`installation_id` = `app_installations.id`) to upload its device calendar before a briefing; it
+ * displays nothing and has no ledger row (`device-refresh.ts`).
  */
 import {
   NOTIFICATION_CATEGORY_VALUES,
@@ -86,7 +90,7 @@ export const NotificationJobPayload = z
      * Admin test push (`admin_api.notification_send_test`, R-13), or the account reconnect form the
      * DB trigger `trg_connected_accounts_status_notify` enqueues (`account_reauth`).
      */
-    kind: z.enum(['test', 'account_reauth']).optional(),
+    kind: z.enum(['test', 'account_reauth', 'device_refresh']).optional(),
     connected_account_id: Uuid.optional(),
     status: z.enum(['needs_reauth', 'admin_consent_required']).optional(),
     detail_mode: z.literal('generic').optional(),
@@ -100,9 +104,13 @@ export const NotificationJobPayload = z
       p.trigger !== undefined,
       p.kind === 'test',
       p.kind === 'account_reauth',
+      p.kind === 'device_refresh',
     ].filter(Boolean).length;
     if (forms !== 1) {
       ctx.addIssue({ code: 'custom', path: [], message: 'exactly_one_payload_form' });
+    }
+    if (p.kind === 'device_refresh' && (p.installation_id ?? null) === null) {
+      ctx.addIssue({ code: 'custom', path: ['installation_id'], message: 'installation_required' });
     }
     if (
       p.build !== undefined &&

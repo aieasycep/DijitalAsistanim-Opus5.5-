@@ -14,6 +14,8 @@ import {
 export type {
   NiCandidateApp,
   NiCategory,
+  NiListenerHealth,
+  NiListenerState,
   NiLockedGroup,
   NiMode,
   NiRecentSignal,

@@ -36,6 +36,8 @@ export const BriefingRow = z.object({
   weekly_stats: z.record(z.string(), z.unknown()).nullable().catch(null),
   skipped_reason: z.string().nullable().catch(null),
   version: z.number().nullable().catch(null),
+  /** KPL-12 device-calendar freshness at generation (`device-freshness.ts`). */
+  source_freshness: z.record(z.string(), z.unknown()).nullable().catch(null).optional(),
 });
 export type BriefingRow = z.infer<typeof BriefingRow>;
 
@@ -62,7 +64,7 @@ export interface BriefingDetail {
 }
 
 const BRIEFING_COLUMNS =
-  'id, kind, local_date, status, origin, headline, narrative, provenance, generated_at, audio_status, audio_duration_s, opened_at, evening_ready_at, counts, weekly_stats, skipped_reason, version';
+  'id, kind, local_date, status, origin, headline, narrative, provenance, generated_at, audio_status, audio_duration_s, opened_at, evening_ready_at, counts, weekly_stats, skipped_reason, version, source_freshness';
 const ITEM_COLUMNS =
   'id, section, position, badge, title, meta, entity_type, entity_id, insight_id, confidence, done_at, source_type, source_id';
 

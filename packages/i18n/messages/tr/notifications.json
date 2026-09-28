@@ -129,7 +129,12 @@
       "sender": "Örnek Kişi",
       "subject": "Teklif revizyonu",
       "action": "Bugün cevap bekleniyor"
-    }
+    },
+    "timeSensitive": {
+      "offTitle": "Zamana Duyarlı Bildirimler kapalı",
+      "offBody": "Toplantı ve hatırlatıcı bildirimlerin Odak modunda ya da Planlanmış Özet'te bekleyebilir."
+    },
+    "deliveryFootnote": "Bildirimler Apple ve Google'ın bildirim servisleri üzerinden iletilir. Telefonun kapalıyken ya da internete bağlı değilken bazıları gecikebilir veya yalnızca en sonuncusu ulaşabilir. Her şeyin güncel hâli Bugün ekranında."
   },
   "prePrompt": {
     "title": "Bildirimlere izin verelim mi?",

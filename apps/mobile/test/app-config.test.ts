@@ -248,7 +248,6 @@ describe('native configuration (INTEGRATION_PLAN §12.1)', () => {
       'expo-image-picker',
       'expo-audio',
       'expo-speech-recognition',
-      'expo-local-authentication',
       'expo-share-intent',
       '@bacons/apple-targets',
       '@sentry/react-native/expo',

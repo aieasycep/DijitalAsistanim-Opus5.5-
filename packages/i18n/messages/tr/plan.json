@@ -183,5 +183,9 @@
     "unknownAttendee": "Katılımcı",
     "untitled": "Başlıksız etkinlik",
     "you": "{name} (sen)"
+  },
+  "outsideWindow": {
+    "title": "Bu tarih eşitleme aralığının dışında; etkinlikler yaklaştıkça görünür.",
+    "region": "Eşitleme aralığı notu"
   }
 }

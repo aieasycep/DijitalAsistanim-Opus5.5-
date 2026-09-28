@@ -1103,6 +1103,11 @@ export const fixtures: Record<string, () => ReactElement> = {
       <ui.Text>Kart</ui.Text>
     </ui.StaggerIn>
   ),
+  HeroIn: () => (
+    <ui.HeroIn>
+      <ui.Text>Günaydın</ui.Text>
+    </ui.HeroIn>
+  ),
   CardSkeleton: () => <ui.CardSkeleton />,
   TodaySkeleton: () => <ui.TodaySkeleton kicker="Brifing hazırlanıyor…" cards={1} />,
   FeedSkeleton: () => <ui.FeedSkeleton rows={1} />,

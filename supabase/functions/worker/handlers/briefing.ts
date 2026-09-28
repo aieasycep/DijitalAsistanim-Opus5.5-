@@ -7,6 +7,12 @@
  *
  * Payloads: the documented `{user_id, kind, local_date, origin}` and the scheduler's
  * `{briefing_id}` (scheduler_tick pre-creates the `scheduled` row).
+ *
+ * Device calendars (KPL-11, KPL-12): before a scheduled morning or evening briefing whose device
+ * source has not synced for 30 minutes, the job sends the data-only `device_refresh` push to the
+ * uploading installation and re-enqueues itself once, 3 minutes later (`after_device_refresh`).
+ * Morning and evening briefings record `source_freshness.device_calendar` (per-source staleness and
+ * the fingerprint of the device events in their schedule window; `briefings/device-refresh.ts`).
  */
 import {
   addDaysToLocalDate,
@@ -28,13 +34,23 @@ import { composeEvening } from '../../_shared/services/briefings/evening.ts';
 import { composeMidday } from '../../_shared/services/briefings/midday.ts';
 import { type ComposedBriefing, composeMorning } from '../../_shared/services/briefings/morning.ts';
 import { composeWeekly, weekPeriod, weeklyStats } from '../../_shared/services/briefings/weekly.ts';
+import {
+  DEVICE_REFRESH_KINDS,
+  DEVICE_REFRESH_WAIT_MS,
+  type DeviceSchedule,
+  deviceCalendarFreshness,
+  deviceRefreshJob,
+  refreshTargets,
+  type ScheduleWindow,
+} from '../../_shared/services/briefings/device-refresh.ts';
 import { isOn } from '../../_shared/services/flags.ts';
 import type { BriefingRow } from '../../_shared/services/intel/types.ts';
 import { enqueueNotification, type IntelDeps, pipelineFor } from './intel.ts';
 import { enqueueBriefingAudio } from './briefing_audio.ts';
 
 export const BriefingPayload = z.union([
-  z.object({ briefing_id: Uuid }),
+  // `after_device_refresh`: the one delayed run after a device_refresh push (never defers again).
+  z.object({ briefing_id: Uuid, after_device_refresh: z.boolean().optional() }),
   z.object({
     user_id: Uuid,
     kind: z.enum(BRIEFING_KIND_VALUES),
@@ -219,6 +235,14 @@ export async function applyComposed(
   }
 }
 
+/** The schedule window a briefing's device freshness covers (morning: its day; evening: tomorrow). */
+export function scheduleWindow(briefing: BriefingRow, timeZone: string): ScheduleWindow | null {
+  if (!DEVICE_REFRESH_KINDS.has(briefing.kind)) return null;
+  const day =
+    briefing.kind === 'evening' ? addDaysToLocalDate(briefing.local_date, 1) : briefing.local_date;
+  return { from: startOfLocalDay(day, timeZone), to: endOfLocalDay(day, timeZone) };
+}
+
 export async function runBriefing(
   deps: IntelDeps,
   ctx: JobContext<BriefingPayload>,
@@ -240,6 +264,35 @@ export async function runBriefing(
     });
     return { briefing_id: briefing.id, status: 'skipped', reason: refused };
   }
+  const window = scheduleWindow(briefing, briefing.time_zone || user.timeZone);
+  let device: DeviceSchedule | null = null;
+  if (window !== null && deps.stats.deviceSchedule !== undefined) {
+    device = await deps.stats.deviceSchedule(user.userId, window.from, window.to);
+    const waited = 'briefing_id' in ctx.payload && ctx.payload.after_device_refresh === true;
+    const nudge = briefing.origin === 'scheduled' && !waited ? refreshTargets(device, now) : [];
+    if (nudge.length > 0) {
+      for (const installation of nudge) {
+        await ctx.enqueue(
+          deviceRefreshJob(user.userId, installation, briefing.kind, briefing.local_date),
+        );
+      }
+      await ctx.enqueue({
+        type: 'briefing',
+        idempotencyKey: `briefing:${briefing.id}:after_device_refresh`,
+        payload: { briefing_id: briefing.id, after_device_refresh: true },
+        userId: user.userId,
+        runAfter: new Date(now.getTime() + DEVICE_REFRESH_WAIT_MS),
+        priority: 20,
+        maxAttempts: 5,
+      });
+      return {
+        briefing_id: briefing.id,
+        status: briefing.status,
+        deferred: 'device_refresh',
+        refresh_pushes: nudge.length,
+      };
+    }
+  }
   await deps.briefings.update(briefing.id, {
     status: 'generating',
     failed_at: null,
@@ -249,7 +302,24 @@ export async function runBriefing(
     const composed = await compose(deps, ctx, briefing, user);
     if (composed === 'batched')
       return { briefing_id: briefing.id, status: 'generating', narrative: 'batch' };
-    await applyComposed(deps, ctx, briefing, composed, started);
+    const freshness =
+      window === null || device === null
+        ? null
+        : await deviceCalendarFreshness(device, window, now);
+    const recorded: ComposedBriefing =
+      freshness === null
+        ? composed
+        : {
+            ...composed,
+            patch: {
+              ...composed.patch,
+              source_freshness: {
+                ...composed.patch.source_freshness,
+                device_calendar: freshness as unknown as Record<string, unknown>,
+              },
+            },
+          };
+    await applyComposed(deps, ctx, briefing, recorded, started);
     // JOB-14 step 6: pre-render premium audio (JOB-30) for Pro + `feature.voice` + premium TTS.
     let audio = false;
     if ((composed.patch.status ?? 'ready') === 'ready') {

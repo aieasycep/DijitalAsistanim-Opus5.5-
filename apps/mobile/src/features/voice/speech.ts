@@ -4,7 +4,9 @@
  * on-device recognizer and the server fallback is enabled (`voice.stt_server`), the utterance is
  * recorded with `expo-audio` (AAC) and sent to `POST /assistant/transcribe` (API-AST-03, multipart;
  * the audio is deleted server-side after transcription). Without either engine, voice input is
- * reported unavailable and the screen offers "Metinle sor".
+ * reported unavailable and the screen offers "Metinle sor". `engineFor` refines the choice with the
+ * KPL-24 availability probe (`availability.ts`): an Android offline model that is not downloaded
+ * yet counts as "not on the device".
  */
 import { apiBaseUrl } from '@da/api-client';
 import { TranscribeResponse } from '@da/validation/api/assistant';
@@ -19,6 +21,7 @@ import { installationId } from '../../lib/auth/first-run-purge';
 import { clientHeader } from '../../lib/device';
 import { getClientEnv } from '../../lib/env';
 import { now } from '../../lib/clock';
+import type { OnDeviceRecognition } from './availability';
 
 export const MAX_UTTERANCE_MS = 60_000;
 
@@ -44,6 +47,13 @@ export function speechEngine(serverAllowed: boolean): SpeechEngine {
   } catch {
     // The native module is missing (e.g. a web preview): fall through.
   }
+  return serverAllowed ? 'server' : 'none';
+}
+
+/** The engine for a probed on-device state (`unknown` keeps the synchronous answer). */
+export function engineFor(onDevice: OnDeviceRecognition, serverAllowed: boolean): SpeechEngine {
+  if (onDevice === 'unknown') return speechEngine(serverAllowed);
+  if (onDevice === 'available') return 'on_device';
   return serverAllowed ? 'server' : 'none';
 }
 

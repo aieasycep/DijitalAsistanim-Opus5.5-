@@ -23,20 +23,24 @@ function repo(files: Record<string, string>): string {
 
 /**
  * Growth-rate check rather than a wall-clock budget (fixed budgets fail on a loaded CI runner):
- * best of three at n / 4 and at n; a linear scan grows about 4×, the exponential original far
- * more. A run under 100 ms passes outright.
+ * best of five at n / 4 and at n, the two sizes taking turns so a load spike slows both rather
+ * than only one; a linear scan grows about 4×, the exponential original far more. A run under
+ * 100 ms passes outright.
  */
 function assertLinear(run: (n: number) => void, n = 50_000): void {
-  const best = (size: number): number =>
-    Math.min(
-      ...[0, 1, 2].map(() => {
-        const start = performance.now();
-        run(size);
-        return performance.now() - start;
-      }),
-    );
-  const small = best(n / 4);
-  const large = best(n);
+  // Thread CPU time: on a busy runner wall-clock time inflates long runs more than short ones.
+  const timed = (size: number): number => {
+    const start = process.threadCpuUsage();
+    run(size);
+    const used = process.threadCpuUsage(start);
+    return (used.user + used.system) / 1000;
+  };
+  let small = Infinity;
+  let large = Infinity;
+  for (let i = 0; i < 5; i++) {
+    small = Math.min(small, timed(n / 4));
+    large = Math.min(large, timed(n));
+  }
   assert.ok(
     large < 100 || large < 8 * Math.max(small, 1),
     `${large.toFixed(1)} ms at n vs ${small.toFixed(1)} ms at n / 4`,

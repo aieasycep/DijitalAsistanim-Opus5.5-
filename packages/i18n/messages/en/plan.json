@@ -183,5 +183,9 @@
     "unknownAttendee": "Attendee",
     "untitled": "Untitled event",
     "you": "{name} (you)"
+  },
+  "outsideWindow": {
+    "title": "This date is outside the sync window; events appear as it gets closer.",
+    "region": "Sync window note"
   }
 }

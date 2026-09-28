@@ -118,5 +118,15 @@
     "retry": "Tekrar Dene",
     "troubleTitle": "Sorun mu yaşıyorsun?",
     "troubleBody": "Uygulama bilgisi → ⋮ → Kısıtlı ayarlara izin ver"
+  },
+  "health": {
+    "disconnectedTitle": "Bildirim erişimi açık ama bağlantı koptu",
+    "staleTitle": "Bildirim erişimi açık ama bir gündür bildirim ulaşmıyor",
+    "disconnectedBody": "Pil tasarrufu Dijital Asistan'ı durdurmuş olabilir. Yeniden bağlanmayı denedim; sorun sürerse uygulamayı pil optimizasyonundan çıkar.",
+    "staleBody": "Pil tasarrufu Dijital Asistan'ı durdurmuş olabilir. Yeniden bağlanmayı dene; sorun sürerse uygulamayı pil optimizasyonundan çıkar.",
+    "bodyExempt": "Yeniden bağlanmayı dene. Sorun sürerse bildirim erişimini kapatıp yeniden aç.",
+    "rebind": "Yeniden bağla",
+    "checking": "Bağlantı deneniyor…",
+    "batteryCta": "Pil ayarlarını aç"
   }
 }

@@ -18,7 +18,6 @@ export interface IosPermissionStrings {
   readonly NSSpeechRecognitionUsageDescription: string;
   readonly NSCameraUsageDescription: string;
   readonly NSPhotoLibraryUsageDescription: string;
-  readonly NSFaceIDUsageDescription: string;
 }
 
 const CALENDAR_TR =
@@ -43,7 +42,6 @@ export const IOS_PERMISSION_STRINGS: Readonly<Record<NativeLocale, IosPermission
       "Fatura, bilet veya belgeyi fotoğraflayıp Dijital Asistan'a ekleyebilmen için.",
     NSPhotoLibraryUsageDescription:
       'Seçtiğin ekran görüntüsü ve fotoğrafları analiz için ekleyebilmen için. Yalnızca seçtiklerine erişilir.',
-    NSFaceIDUsageDescription: 'Hesap silme gibi hassas işlemleri onaylaman için.',
   },
   en: {
     NSCalendarsFullAccessUsageDescription: CALENDAR_EN,
@@ -57,13 +55,14 @@ export const IOS_PERMISSION_STRINGS: Readonly<Record<NativeLocale, IosPermission
       'To photograph a bill, ticket or document and add it to Dijital Asistan.',
     NSPhotoLibraryUsageDescription:
       'To add screenshots and photos you choose for analysis. Only the items you pick are accessed.',
-    NSFaceIDUsageDescription: 'To confirm sensitive actions such as deleting your account.',
   },
 };
 
 /**
  * `Info.plist` usage keys the app must never carry (§12.8 "Not requested at all"): location (travel
- * time comes only from the source), contacts (SREQ-37), ATT tracking, and photo-library writes.
+ * time comes only from the source), contacts (SREQ-37), ATT tracking, photo-library writes, and
+ * Face ID (no screen uses biometrics; deletion re-authenticates with a fresh sign-in, so an unused
+ * usage string would only be an App Review question).
  * `scripts/mobile/prebuild-smoke.sh` asserts the prebuilt `Info.plist` has none of them.
  */
 export const IOS_NEVER_REQUESTED_KEYS = [
@@ -73,6 +72,7 @@ export const IOS_NEVER_REQUESTED_KEYS = [
   'NSContactsUsageDescription',
   'NSUserTrackingUsageDescription',
   'NSPhotoLibraryAddUsageDescription',
+  'NSFaceIDUsageDescription',
 ] as const;
 
 /** The Android runtime permissions preceded by an in-app rationale sheet (§12.8). */

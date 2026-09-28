@@ -6,10 +6,11 @@
  * 3. with permission, `getExpoPushTokenAsync({projectId})` (the EAS project id from the app
  *    config; without it — an external credential — only the token is skipped);
  * 4. `POST /devices/register` with the installation id, platform, OS and app versions, locale, time
- *    zone and `push:{permission, expo_push_token}`. The body schema is strict and has no channel
- *    list: channels are device-side only.
+ *    zone, `push:{permission, expo_push_token}` and the `platform_capabilities` the OS reports. The
+ *    body schema is strict and has no channel list: channels are device-side only.
  * Registration re-runs after sign-in, on cold start and foreground when anything in the body
- * changed (token rotation, permission, locale, time zone, app version), and on token rotation
+ * changed (token rotation, permission, locale, time zone, app version, a platform capability such as
+ * exact alarms, Time Sensitive or the listener binding), and on token rotation
  * (`addPushTokenListener`). Logout unregisters (`logout.ts`) and forgets the stored registration.
  */
 import Constants from 'expo-constants';
@@ -86,6 +87,7 @@ function signatureOf(body: RegisterBody): string {
     body.timezone,
     body.app_version,
     body.build_number,
+    body.platform_capabilities,
   ]);
 }
 

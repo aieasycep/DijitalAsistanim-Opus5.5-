@@ -492,16 +492,22 @@ describe('M-MEET-03 · 2 Dakikalık Özet', () => {
   });
 
   it('asks for a Turkish voice when the device has none', async () => {
-    jest
-      .mocked(Speech.getAvailableVoicesAsync)
-      .mockResolvedValueOnce([
-        { identifier: 'en', name: 'Samantha', quality: 'Default', language: 'en-US' },
-      ] as never);
-    meetingSetup({ [`POST /meetings/${EVENT}/prep`]: () => prepOk() });
-    await openSummary();
-    await fireEvent.press(screen.getByTestId('summary.listen'));
-    expect(await screen.findByText(/Bu cihazda Türkçe ses bulunamadı\./)).toBeOnTheScreen();
-    expect(Speech.speak).not.toHaveBeenCalled();
+    // An English-only device for the whole test: the device registration's platform_capabilities
+    // probe (lib/platform-capabilities.ts) lists the voices too, before the summary does.
+    const voices = jest.mocked(Speech.getAvailableVoicesAsync);
+    const original = voices.getMockImplementation();
+    voices.mockResolvedValue([
+      { identifier: 'en', name: 'Samantha', quality: 'Default', language: 'en-US' },
+    ] as never);
+    try {
+      meetingSetup({ [`POST /meetings/${EVENT}/prep`]: () => prepOk() });
+      await openSummary();
+      await fireEvent.press(screen.getByTestId('summary.listen'));
+      expect(await screen.findByText(/Bu cihazda Türkçe ses bulunamadı\./)).toBeOnTheScreen();
+      expect(Speech.speak).not.toHaveBeenCalled();
+    } finally {
+      if (original) voices.mockImplementation(original);
+    }
   });
 
   it('groups the sources and opens them from a chip or a paragraph', async () => {

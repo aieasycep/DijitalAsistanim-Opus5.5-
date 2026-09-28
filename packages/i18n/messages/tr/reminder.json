@@ -85,5 +85,14 @@
     "morning_time": "Yarın sabah · {time}",
     "calendar_slot": "Takvimine göre: {time}",
     "custom": "Seçtiğin zaman · {time}"
+  },
+  "exactAlarm": {
+    "warning": "Tam saatinde hatırlatabilmem için “Alarmlar ve hatırlatıcılar” iznini aç. Bu izin kapalıyken hatırlatıcı birkaç dakika gecikebilir.",
+    "cta": "İzni Aç",
+    "region": "Hatırlatıcı zamanlaması"
+  },
+  "timeSensitive": {
+    "title": "Zamana Duyarlı Bildirimler kapalı",
+    "body": "Hatırlatıcı bildirimlerin Odak modunda ya da Planlanmış Özet'te bekleyebilir."
   }
 }

@@ -52,6 +52,16 @@ test('testIDs are extracted from literals, templates and fallbacks; templates ma
   assert.ok(matchesTestId('email.screen', ids));
   assert.equal(matchesTestId('email.screens', ids), false);
   assert.equal(matchesTestId('approvals.cards.1', ids), false);
+  const branches = extractTestIds(
+    "testID={\n  kind === 'file'\n    ? 'player.premium'\n    : kind === 'tracks'\n      ? `player.${kind}`\n      : 'player.native'\n}",
+  );
+  assert.deepEqual(branches.sort(), [
+    'file',
+    'player.${kind}',
+    'player.native',
+    'player.premium',
+    'tracks',
+  ]);
 });
 
 test('copy must be Turkish catalog text (ICU arguments match anything) or demo data', () => {

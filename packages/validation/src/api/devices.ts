@@ -15,6 +15,45 @@ import { Success } from './envelope.ts';
 /** Android package name as reported by the NI module (API-DEV-01, API-ANI-01). */
 export const AndroidPackageName = z.string().regex(/^[a-zA-Z0-9_.]{3,120}$/);
 
+/**
+ * `app_installations.platform_capabilities` (DATABASE_AND_RLS_PLAN §4.1: an object of booleans;
+ * KNOWN_PLATFORM_LIMITATIONS KPL-04/06/07/09/11/17/19/24/25): what this installation can do right
+ * now, for support visibility. It never changes server behaviour. A key the device could not read
+ * is omitted, never guessed.
+ */
+export const PlatformCapabilities = z.strictObject({
+  /** Android: exact alarms may be scheduled (`canScheduleExactAlarms()`; true below API 31). */
+  exact_alarm: z.boolean().optional(),
+  /** iOS: Time Sensitive notifications are allowed (`timeSensitiveSetting == .enabled`). */
+  ios_time_sensitive: z.boolean().optional(),
+  /** iOS: notification previews are shown always (`showPreviewsSetting == .always`). */
+  ios_show_previews: z.boolean().optional(),
+  /** Android: the notification-listener API exists on this device. */
+  ni_available: z.boolean().optional(),
+  /** Android: notification access is granted in the system settings. */
+  ni_granted: z.boolean().optional(),
+  /** Android: the system has the listener bound right now (KPL-04). */
+  ni_connected: z.boolean().optional(),
+  /** The OS allows background tasks (`expo-background-task` status `Available`). */
+  background_task: z.boolean().optional(),
+  /** Placed widget families: iOS home screen. */
+  widget_small: z.boolean().optional(),
+  widget_medium: z.boolean().optional(),
+  widget_large: z.boolean().optional(),
+  /** Placed widget families: iOS Lock Screen. */
+  widget_lock_inline: z.boolean().optional(),
+  widget_lock_circular: z.boolean().optional(),
+  widget_lock_rectangular: z.boolean().optional(),
+  /** Placed widget families: Android 2×2 "Sıradaki" and 4×2 "Bugün". */
+  widget_next: z.boolean().optional(),
+  widget_today: z.boolean().optional(),
+  /** On-device Turkish speech recognition is available (KPL-24). */
+  stt_on_device_tr: z.boolean().optional(),
+  /** A Turkish text-to-speech voice is installed (KPL-25). */
+  tts_tr_voice: z.boolean().optional(),
+});
+export type PlatformCapabilities = z.infer<typeof PlatformCapabilities>;
+
 // API-DEV-01 · POST /devices/register
 export const PushPermission = z.enum(['granted', 'denied', 'provisional', 'undetermined']);
 export const DeviceRegisterBody = z
@@ -43,6 +82,8 @@ export const DeviceRegisterBody = z
         allowed_packages: z.array(AndroidPackageName).max(200),
       })
       .optional(),
+    /** Replaces `app_installations.platform_capabilities` when present (absent: unchanged). */
+    platform_capabilities: PlatformCapabilities.optional(),
   })
   .superRefine((body, ctx) => {
     const tokenAllowed =
