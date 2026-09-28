@@ -418,6 +418,25 @@ describe('generated native sources', () => {
     expect(Object.keys(WIDGET_NATIVE_FILES)).toHaveLength(6);
   });
 
+  it('writes XML comments aapt accepts (no "--" inside a comment)', () => {
+    // aapt rejects `--` in XML comments; the generated header once named a `--filter` command.
+    const xmlFiles = (dir: string): string[] =>
+      readdirSync(dir).flatMap((entry) => {
+        const path = join(dir, entry);
+        if (statSync(path).isDirectory()) return entry === 'build' ? [] : xmlFiles(path);
+        return entry.endsWith('.xml') ? [path] : [];
+      });
+    const offending = ['da-widgets', 'da-tts', 'notification-intelligence', 'da-share']
+      .map((name) => join(APP_ROOT, 'modules', name))
+      .flatMap((dir) => xmlFiles(dir))
+      .filter((path) =>
+        [...readFileSync(path, 'utf8').matchAll(/<!--([\s\S]*?)-->/g)].some(
+          ([, body = '']) => body.includes('--') || body.endsWith('-'),
+        ),
+      );
+    expect(offending).toEqual([]);
+  });
+
   it('flattens ICU plurals and tabulates the Turkish locative', () => {
     expect(flattenMessage('{count, plural, one {# item} other {# items}} ready')).toEqual({
       one: '{count} item ready',
