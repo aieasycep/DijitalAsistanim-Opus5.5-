@@ -229,6 +229,7 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
       valid,
       reward_days: 14,
       apply_window_days: 7,
+      rewards_enabled: true,
       store_urls: {
         ios: 'https://apps.apple.com/tr/app/id1234567890',
         android: `https://play.google.com/store/apps/details?id=com.dijitalasistan.app&referrer=code%3D${code}`,

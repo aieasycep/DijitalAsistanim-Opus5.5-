@@ -1099,7 +1099,7 @@ Copy this checklist into the PR description of every feature PR. A feature is do
 
 **Other rules.**
 - For each screen, also force loading, empty, error, offline, retry, reconnect and partial states, using the `u_empty` and `u_error` scenarios and airplane mode.
-- QG-16 fails when a route file under `apps/mobile/app/**` has no row here, or when a row's target does not resolve.
+- QG-16 fails when a route file under `apps/mobile/app/**` has no row here, or when a row's target does not resolve. As built this is QG-16b ([`scripts/quality-gate/checks/inventory.ts`](../scripts/quality-gate/checks/inventory.ts), T-12.07): a route matches when a Target cell names its path or a Screen cell holds one of its screen IDs from SCREEN_AND_FLOW_MAP; the two routes the map does not name (`auth/callback`, `demo/setup`, both M-GL-07 link targets) are mapped in [`scripts/quality-gate/route-screens.map`](../scripts/quality-gate/route-screens.map) with a justification.
 - A control that cannot perform a real action is not rendered as clickable (M§99). Such rows read "not clickable".
 
 ### 4.2 Part 1: global shell, auth, onboarding, Today, briefings
@@ -1754,6 +1754,7 @@ Copy this checklist into the PR description of every feature PR. A feature is do
 | QG-14 | Hard-coded prices | `\b\d{1,3}(\.\d{3})*(,\d{2})?\s?(TL\|₺)\b\|₺\s?\d` | `apps/mobile/{app,src}/**`, `apps/web/app/**` | 0 |
 | QG-15 | Hard-coded user-facing strings | ESLint `da/no-hardcoded-strings` (JSX text, `accessibilityLabel`, `title` and input-hint props must be i18n keys) | `apps/**`, `packages/ui/**` | 0 |
 | QG-16 | Dead navigation / unreachable screen | `scripts/quality-gate/routes.mjs`: every `apps/mobile/app/**` route is referenced by `router.push`/`Link href`/deep-link map/notification router or is a tab root; typed routes make invalid hrefs a compile error; every route has a row in §4 and every §4 target resolves to a route, an API_CONTRACTS route/RPC or a declared local action | `apps/mobile/**`, this document | 0 |
+| QG-16b | Route ↔ No-Dead-Action inventory (T-12.07) | `scripts/quality-gate/checks/inventory.ts`: every `apps/mobile/app/**` route file (no `_layout`, no `+` files) has a §4.2–§4.5 row by Target path or screen ID (SCREEN_AND_FLOW_MAP, else `route-screens.map`); every route-like Target resolves to a route file, a `packages/validation/src/api/routes.ts` route or an M-GL-07 link prefix; every map line names an existing file, screen IDs with rows and a justification | `apps/mobile/app/**`, this document, SCREEN_AND_FLOW_MAP | 0 |
 | QG-17 | Migration portability | `JSON_TABLE\|MERGE\s+.*RETURNING\|transaction_timeout\|halfvec\|sparsevec\|hnsw\.iterative_scan`; `create extension` for `pg_net`/`pg_cron`/`vector` without `if not exists` | `supabase/migrations/**` | 0 |
 | QG-18 | Unhandled async error | `@typescript-eslint/no-floating-promises` and `no-misused-promises` at error level; Hono handlers wrapped (`da/hono-handler-wrapped`) | all TS | 0 |
 | QG-19 | Privileged client import | `scripts/security/system-client-gate.mjs` (`systemClient` only in allow-listed paths) | `supabase/functions/**` | 0 |

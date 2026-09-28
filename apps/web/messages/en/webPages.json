@@ -613,6 +613,7 @@
     },
     "android": "On Android, if you install from the Google Play link on this page, the code is filled in for you.",
     "reward": "When the conditions are met, you both get {days, plural, one {# day} other {# days}} of Pro. <terms>Referral terms</terms>",
+    "rewardPaused": "Referral rewards are paused right now. You can still add the code in the app. <terms>Referral terms</terms>",
     "unverified": "Your invite code: {code}. It's checked when you add it in the app.",
     "openInApp": "Open in the app",
     "invalidTitle": "This invite link isn't valid.",

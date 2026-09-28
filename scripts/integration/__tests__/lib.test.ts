@@ -105,3 +105,61 @@ test('Auth diagnostics mask tokens and keys; JWKS keys are listed as alg/kid', (
   assert.deepEqual(describeJwks({}), []);
   assert.deepEqual(describeJwks(null), []);
 });
+
+/** The former JWT mask, kept as the oracle for the differential test below. */
+const ORIGINAL_JWT = /eyJ[A-Za-z0-9_-]*\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*/g;
+
+test('redactSecrets masks exactly what the former JWT regex masked (seeded random inputs)', () => {
+  let seed = 7;
+  const next = () => {
+    seed = (seed * 1_103_515_245 + 12_345) % 2_147_483_648;
+    return seed / 2_147_483_648;
+  };
+  const tokens = ['eyJ', 'ey', 'J', '.', '..', 'a', 'Zz9', '_', '-', ' ', '"', 'sb', '<', 'x.y'];
+  for (let i = 0; i < 3000; i++) {
+    let input = '';
+    const len = 1 + Math.floor(next() * 24);
+    for (let k = 0; k < len; k++) input += tokens[Math.floor(next() * tokens.length)] ?? '';
+    assert.equal(redactSecrets(input), input.replace(ORIGINAL_JWT, '<jwt>'), JSON.stringify(input));
+  }
+});
+
+/**
+ * Growth-rate check (packages/domain/test/security/codeql-remediation.test.ts): best of three at
+ * n / 4 and at n; a linear scan grows about 4×, the former regex quadratically on `eyJ` runs
+ * without dots. A run under 100 ms passes outright.
+ */
+function assertLinear(run: (n: number) => void, n = 50_000): void {
+  const best = (size: number): number =>
+    Math.min(
+      ...[0, 1, 2].map(() => {
+        const start = performance.now();
+        run(size);
+        return performance.now() - start;
+      }),
+    );
+  const small = best(n / 4);
+  const large = best(n);
+  assert.ok(
+    large < 100 || large < 8 * Math.max(small, 1),
+    `${large.toFixed(1)} ms at n vs ${small.toFixed(1)} ms at n / 4`,
+  );
+}
+
+test('CodeQL js/polynomial-redos: redactSecrets is linear on crafted error bodies', () => {
+  assertLinear((n) => {
+    const text = 'eyJ'.repeat(n);
+    assert.equal(redactSecrets(text), text);
+  });
+  assertLinear((n) => {
+    const text = `${'eyJ'.repeat(n)}.`;
+    assert.equal(redactSecrets(text), text);
+  });
+  assertLinear((n) => {
+    const text = 'eyJa..'.repeat(n);
+    assert.equal(redactSecrets(text), text);
+  });
+  assertLinear((n) => {
+    assert.equal(redactSecrets('sb_secret_'.repeat(n)).endsWith('<redacted>'), true);
+  });
+});

@@ -2,7 +2,8 @@
  * PUB-04 `GET /referrals/:code` (API_CONTRACTS §13; IMPLEMENTATION_PLAN T-7.03 / T-9.05; plan §16).
  *
  * Resolves a referral link for the web `/r/[code]` page: whether the code is active, the reward and
- * apply-window days, the store links (the Play link carries the Install Referrer `code=…`) and the
+ * apply-window days, whether rewards are on (`rewards_enabled`, the STORE_CHECKLIST 3.1.1 kill switch:
+ * off → the landing promises no Pro reward, the code still applies), the store links (the Play link carries the Install Referrer `code=…`) and the
  * app deep link. The referrer is never exposed. Unknown and malformed codes answer the same
  * `200 {valid:false}` shape (no probing signal); a malformed code never reaches the database.
  * IP-hash 60/min; cacheable for 5 minutes. A valid open is counted as `referral_link_opened`.
@@ -52,6 +53,7 @@ export function registerReferralRoutes(app: Hono<AppEnv>, services: PublicApiSer
       valid,
       reward_days: resolved.reward_days,
       apply_window_days: resolved.apply_window_days,
+      rewards_enabled: resolved.rewards_enabled !== false,
       store_urls: referralStoreUrls(services, valid ? code : null),
       deep_link: `dijitalasistan://settings/referral?code=${valid ? code : ''}`,
       message_key: 'referral.landing',

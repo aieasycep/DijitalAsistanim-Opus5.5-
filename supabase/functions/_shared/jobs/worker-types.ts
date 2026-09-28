@@ -6,8 +6,8 @@
  */
 import { JOB_TYPE_VALUES, type JobType } from '@da/domain';
 
-/** Types in the enum that no worker definition claims (evals run as tests, AI_PIPELINE.md). */
-export const UNCLAIMED_JOB_TYPES: readonly JobType[] = ['ai_eval'];
+/** Types in the enum that no worker definition claims (none since `ai_eval` got its handler). */
+export const UNCLAIMED_JOB_TYPES: readonly JobType[] = [];
 
 export const WORKER_JOB_TYPES: readonly JobType[] = JOB_TYPE_VALUES.filter(
   (type) => !UNCLAIMED_JOB_TYPES.includes(type),

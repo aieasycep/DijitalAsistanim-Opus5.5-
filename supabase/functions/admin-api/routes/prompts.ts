@@ -1,8 +1,10 @@
 /**
  * ADM-09 prompt management (API_CONTRACTS §12.3; BACKOFFICE_PLAN §6.11; AI_PIPELINE_PLAN §5;
  * T-10.10): the 18 prompt keys with their active version, per-version telemetry, the full template
- * of one version, a unified diff, drafts (create / edit while `draft`), a dry run against synthetic
- * fixtures only, and the atomic activate / rollback / archive functions (one `active` per key).
+ * of one version with its last eval gate run, a unified diff, drafts (create / edit while `draft`), a
+ * dry run against synthetic fixtures only, an `ai_eval` gate run request (worker job over the golden
+ * sets, AI_PIPELINE_PLAN §5.4), and the atomic activate / rollback / archive functions (one `active`
+ * per key).
  */
 import { admin as A, AI_SCHEMAS, type AiSchemaName } from '@da/validation';
 import type { AiFeature } from '@da/domain';
@@ -13,6 +15,8 @@ import { arr, count, type Json, num, obj, ratio, str } from '../lib/map.ts';
 import { defineRoutes, type RouteCtx } from '../lib/route.ts';
 import { unifiedDiff } from '../services/diff.ts';
 import { currentPrice, fixtureSet, runStructuredCase } from '../services/ai-probe.ts';
+import { hasEvalSuite } from '../../_shared/ai/evals/keys.ts';
+import { jobRef, poke } from '../lib/ops.ts';
 import { aiTarget, findConfig, listConfig, providerOrCredential } from './ai.ts';
 
 function key(ctx: RouteCtx): string {
@@ -51,6 +55,28 @@ async function versionGet(ctx: RouteCtx, v: number): Promise<Json> {
   return obj(await ctx.db.call('prompt_version_get', { p_key: key(ctx), p_version: v }));
 }
 
+const EVAL_MODES = new Set(['live', 'fixture', 'fixture_baseline']);
+
+/** The last gate run of a version (`eval_report`; AI_PIPELINE_PLAN §5.4), metrics-free summary. */
+export function evalSummary(v: Json) {
+  if (v.eval_report === null || v.eval_report === undefined) return null;
+  const report = obj(v.eval_report);
+  const mode = str(report.mode);
+  const finished = str(report.finished_at);
+  return {
+    passed: v.eval_passed === true,
+    mode: mode !== null && EVAL_MODES.has(mode) ? mode : null,
+    dataset_version: str(v.eval_dataset_version),
+    finished_at: finished !== null && !Number.isNaN(Date.parse(finished)) ? finished : null,
+    targets: arr(report.targets)
+      .map((t) => ({ provider: str(t.provider), model: str(t.model), passed: t.passed === true }))
+      .filter(
+        (t): t is { provider: string; model: string; passed: boolean } =>
+          t.provider !== null && t.model !== null,
+      ),
+  };
+}
+
 async function versionDetail(ctx: RouteCtx) {
   const v = await versionGet(ctx, version(ctx));
   const summary = (await versions(ctx)).find((row) => count(row.version) === version(ctx)) ?? v;
@@ -63,6 +89,8 @@ async function versionDetail(ctx: RouteCtx) {
       output_schema: v.output_schema_ref,
       schema_hash: str(v.schema_hash),
       notes: str(v.notes),
+      eval: evalSummary(v),
+      eval_available: hasEvalSuite(key(ctx)),
     },
   };
 }
@@ -156,6 +184,30 @@ async function dryRun(ctx: RouteCtx) {
   return { data };
 }
 
+/**
+ * Queues an `ai_eval` gate run of one version (`admin_api.ai_eval_request`: `prompts.write`, reason,
+ * audited as `prompt.tested` with `run: 'eval'`) and wakes the worker. A key without a golden set
+ * has nothing to run (409).
+ */
+async function evalRun(ctx: RouteCtx) {
+  const body = ctx.body as z.infer<typeof A.PromptEvalBody>;
+  if (!hasEvalSuite(key(ctx))) {
+    throw new AppError('STATE_CONFLICT', { details: { reason: 'no_eval_set' } });
+  }
+  const out = obj(
+    await ctx.db.call('ai_eval_request', {
+      p_key: key(ctx),
+      p_version: version(ctx),
+      p_reason: body.reason,
+    }),
+  );
+  await poke(ctx.rt, ctx.log, 'admin_ai_eval');
+  return {
+    data: { key: key(ctx), version: version(ctx), job: jobRef(String(out.job_id)) },
+    status: 202 as const,
+  };
+}
+
 export const promptsRoutes = defineRoutes({
   'GET /ai/prompts': {
     rate: 'R',
@@ -213,6 +265,7 @@ export const promptsRoutes = defineRoutes({
     },
   },
   'POST /ai/prompts/:key/versions/:v/test': { rate: 'X', handle: dryRun },
+  'POST /ai/prompts/:key/versions/:v/eval': { rate: 'X', handle: evalRun },
   'POST /ai/prompts/:key/versions/:v/activate': {
     rate: 'X',
     async handle(ctx) {

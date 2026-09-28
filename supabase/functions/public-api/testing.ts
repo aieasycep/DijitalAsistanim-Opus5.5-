@@ -45,6 +45,8 @@ export interface MemoryPublic extends PublicRepo {
   readonly codes: Set<string>;
   readonly counters: Map<string, number>;
   pricing: unknown;
+  /** `referral.rewards_enabled` as the database reports it (undefined: an older database). */
+  rewardsEnabled?: boolean;
 }
 
 export function memoryPublicRepo(now: () => Date): MemoryPublic {
@@ -162,7 +164,12 @@ export function memoryPublicRepo(now: () => Date): MemoryPublic {
       });
     },
     referralResolve(code) {
-      return Promise.resolve({ valid: codes.has(code), reward_days: 14, apply_window_days: 7 });
+      return Promise.resolve({
+        valid: codes.has(code),
+        reward_days: 14,
+        apply_window_days: 7,
+        ...(repo.rewardsEnabled === undefined ? {} : { rewards_enabled: repo.rewardsEnabled }),
+      });
     },
     webAnalyticsIncrement(day, event, dims) {
       const key = `${day}|${event}|${JSON.stringify(Object.entries(dims).sort())}`;

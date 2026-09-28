@@ -114,6 +114,7 @@ export const REQUIRED_HEADERS: Readonly<Record<'web' | 'backoffice', readonly st
     'X-Content-Type-Options',
     'X-Frame-Options',
     'Cross-Origin-Opener-Policy',
+    'Cross-Origin-Embedder-Policy',
     'Cross-Origin-Resource-Policy',
     'Permissions-Policy',
     'Referrer-Policy',

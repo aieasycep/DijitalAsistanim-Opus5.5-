@@ -186,6 +186,8 @@ verify_jwt = false
 
 [functions.worker]
 verify_jwt = false
+# The `ai_eval` golden sets, read at run time (functions/_shared/ai/evals/datasets.ts).
+static_files = ["./functions/_shared/ai/evals/*.jsonl"]
 
 [functions.admin-api]
 verify_jwt = false

@@ -57,5 +57,28 @@
     "windowClosed": "Davet kodu yalnızca kayıttan sonraki 7 gün içinde eklenebilir.",
     "alreadyApplied": "Zaten bir davet kodu kullandın.",
     "failed": "Kod uygulanamadı. Tekrar dene."
+  },
+  "rewardsOff": {
+    "headline": "Dijital Asistan'ı arkadaşlarınla paylaş.",
+    "body": "Davet ödülleri şu anda verilmiyor. Arkadaşın bağlantınla katılıp kodunu yine de ekleyebilir.",
+    "shareMessage": "Dijital Asistan bugün bilmen gerekenleri sen sormadan söylüyor. Bu bağlantıyla katılabilirsin: {url}",
+    "refereeReward": "Davet ödülleri şu anda verilmiyor; davet kodun hesabında kayıtlı.",
+    "codeSheetSuccess": "Davet kodu eklendi.",
+    "footer": "Toplam kazanılan: {days} gün Pro · Davet ödülleri şu anda verilmiyor.",
+    "faqAnswer": "Davet bağlantını paylaşabilirsin; arkadaşın kaydolduktan sonraki {window} gün içinde kodunu ekleyebilir. Davet ödülleri şu anda verilmiyor.",
+    "statusMeta": {
+      "pending": "Katıldı",
+      "flagged": "İnceleniyor",
+      "qualified": "Koşullar tamamlandı",
+      "rewarded": "Ödül verildi",
+      "rejected": "Koşullar sağlanmadı"
+    },
+    "badges": {
+      "pending": "Bekliyor",
+      "flagged": "Bekliyor",
+      "qualified": "Tamamlandı",
+      "rewarded": "+{days} gün",
+      "rejected": "Geçersiz"
+    }
   }
 }

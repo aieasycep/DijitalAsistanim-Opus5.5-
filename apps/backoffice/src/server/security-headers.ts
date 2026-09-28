@@ -12,6 +12,13 @@ export const STATIC_SECURITY_HEADERS: Readonly<Record<string, string>> = {
   'Permissions-Policy':
     'camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()',
   'Cross-Origin-Opener-Policy': 'same-origin',
+  /*
+   * Site isolation (ZAP 90004). Every subresource is same-origin: next/font self-hosts Geist at
+   * build time, images are `self`/`data:`/`blob:` and the browser loads nothing from Supabase or a
+   * CDN, so `require-corp` blocks nothing. The optional Sentry transport is a CORS `fetch`, which
+   * COEP does not restrict (CSP `connect-src` names its ingest origin).
+   */
+  'Cross-Origin-Embedder-Policy': 'require-corp',
   'Cross-Origin-Resource-Policy': 'same-origin',
   'X-Robots-Tag': 'noindex, nofollow',
 };
@@ -35,6 +42,8 @@ export interface CspOptions {
   readonly dev?: boolean;
   /** Plain-HTTP e2e and local runs cannot upgrade requests to https. */
   readonly upgradeInsecureRequests?: boolean;
+  /** Extra `connect-src` origins: the Sentry ingest origin when a browser DSN is configured. */
+  readonly connectSources?: readonly string[];
 }
 
 /**
@@ -49,7 +58,7 @@ export function buildCsp(nonce: string, options: CspOptions = {}): string {
     `style-src-attr 'unsafe-inline'`,
     `img-src 'self' data: blob:`,
     `font-src 'self'`,
-    `connect-src 'self'`,
+    ['connect-src', `'self'`, ...(options.connectSources ?? [])].join(' '),
     `frame-ancestors 'none'`,
     `form-action 'self'`,
     `base-uri 'none'`,

@@ -48,6 +48,14 @@ jobs:
       SUPABASE_AUTH_EXTERNAL_AZURE_CLIENT_ID: ${{ secrets.SUPABASE_AUTH_EXTERNAL_AZURE_CLIENT_ID }}
       SUPABASE_AUTH_EXTERNAL_AZURE_SECRET: ${{ secrets.SUPABASE_AUTH_EXTERNAL_AZURE_SECRET }}
       HAS_PROJECT: ${{ secrets.SUPABASE_ACCESS_TOKEN != '' && secrets.SUPABASE_PROJECT_REF != '' }}
+      # The Apple web client secret expires (≤ 6 months): with the SIWA key set, the deploy mints a
+      # fresh one (rotate-siwa-secret.yml does the same on its schedule) instead of pushing a stored
+      # SUPABASE_AUTH_EXTERNAL_APPLE_SECRET that may be older than the last rotation.
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      APPLE_SIWA_KEY_ID: ${{ secrets.APPLE_SIWA_KEY_ID }}
+      APPLE_SIWA_PRIVATE_KEY: ${{ secrets.APPLE_SIWA_PRIVATE_KEY }}
+      APPLE_SIWA_SERVICES_ID: ${{ secrets.APPLE_SIWA_SERVICES_ID }}
+      HAS_SIWA_KEY: ${{ secrets.APPLE_TEAM_ID != '' && secrets.APPLE_SIWA_KEY_ID != '' && secrets.APPLE_SIWA_PRIVATE_KEY != '' && secrets.APPLE_SIWA_SERVICES_ID != '' }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - uses: ./.github/actions/setup
@@ -84,9 +92,19 @@ jobs:
         if: ${{ !inputs.dry_run }}
         run: pnpm exec supabase db push --yes
 
+      - name: Apple web client secret (minted from the SIWA key; exported masked)
+        if: ${{ !inputs.dry_run && env.HAS_SIWA_KEY == 'true' }}
+        run: node scripts/deploy/siwa-client-secret.ts --days 180 --github-env "$GITHUB_ENV"
+
       - name: Push hosted config (auth, SMTP, MFA, hooks, function settings)
         if: ${{ !inputs.dry_run }}
         run: pnpm exec supabase config push --project-ref "$SUPABASE_PROJECT_REF" --yes
+
+      - name: Edge secret APPLE_SIWA_WEB_SECRET_NOT_AFTER (expiry of the pushed Apple secret)
+        if: ${{ !inputs.dry_run && env.HAS_SIWA_KEY == 'true' }}
+        run: |
+          pnpm exec supabase secrets set --project-ref "$SUPABASE_PROJECT_REF" \
+            "APPLE_SIWA_WEB_SECRET_NOT_AFTER=$APPLE_SIWA_WEB_SECRET_NOT_AFTER"
 
       - name: Deploy Edge Functions
         if: ${{ !inputs.dry_run }}

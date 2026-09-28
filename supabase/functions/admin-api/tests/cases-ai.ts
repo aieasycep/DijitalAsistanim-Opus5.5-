@@ -4,7 +4,17 @@
  */
 import { assert, assertEquals, assertMatch } from '@std/assert';
 import { adminFixtures } from '../../../../packages/validation/test/fixtures/admin-fixtures.ts';
-import { argsOf, type Cases, data, REASON, rows, sqlPage, TS, uuid } from './case-helpers.ts';
+import {
+  argsOf,
+  type Cases,
+  data,
+  pokes,
+  REASON,
+  rows,
+  sqlPage,
+  TS,
+  uuid,
+} from './case-helpers.ts';
 
 interface Target {
   provider: string;
@@ -470,7 +480,21 @@ export const AI_CASES: Cases = {
   },
   'GET /ai/prompts/:key/versions/:v': {
     sql: {
-      prompt_version_get: promptVersionGet,
+      prompt_version_get: (args) =>
+        sqlPromptVersion(Number(args.p_version), {
+          eval_passed: true,
+          eval_dataset_version: 'sha256:0123456789abcdef',
+          eval_report: {
+            mode: 'live',
+            suite: 'reply_draft',
+            finished_at: '2026-09-28T01:52:00.000Z',
+            targets: [
+              { provider: 'anthropic', model: 'primary', passed: true },
+              { provider: 'openai', passed: false },
+            ],
+            results: [{ gates: [] }],
+          },
+        }),
       prompt_versions_list: () => ({
         prompt_key: 'reply_draft',
         rows: [
@@ -487,6 +511,15 @@ export const AI_CASES: Cases = {
       assertEquals([d.key, d.output_schema, d.version], ['reply_draft', 'ReplyDraftsV1', 2]);
       assertEquals(d.telemetry, { requests: 100, error_rate: 0.01, feedback_positive_rate: null });
       assertEquals(d.template_system, 'Sen bir asistansın.\nKısa yanıt ver (v2).');
+      // The last eval gate run, without its per-gate metrics; a malformed target is dropped.
+      assertEquals(d.eval, {
+        passed: true,
+        mode: 'live',
+        dataset_version: 'sha256:0123456789abcdef',
+        finished_at: '2026-09-28T01:52:00.000Z',
+        targets: [{ provider: 'anthropic', model: 'primary', passed: true }],
+      });
+      assertEquals(d.eval_available, true, 'reply_draft has a golden eval set');
     },
   },
   'POST /ai/prompts/:key/versions': {
@@ -537,6 +570,29 @@ export const AI_CASES: Cases = {
       assert(Number(d.schema_pass_rate) >= 0 && Number(d.schema_pass_rate) <= 1);
       const audit = argsOf(h, 'audit_write') ?? {};
       assertEquals([audit.p_action, audit.p_target_id], ['prompt.tested', uuid(203)]);
+    },
+  },
+  'POST /ai/prompts/:key/versions/:v/eval': {
+    sql: {
+      ai_eval_request: () => ({
+        prompt_key: 'reply_draft',
+        version: 3,
+        prompt_version_id: uuid(203),
+        job_id: uuid(204),
+      }),
+    },
+    expect(h, body) {
+      assertEquals(argsOf(h, 'ai_eval_request'), {
+        p_key: 'reply_draft',
+        p_version: 3,
+        p_reason: REASON,
+      });
+      assertEquals(data(body), {
+        key: 'reply_draft',
+        version: 3,
+        job: { job_id: uuid(204), status: 'queued', poll_after_ms: 1500 },
+      });
+      assertEquals(pokes(h), ['admin_ai_eval']);
     },
   },
   'POST /ai/prompts/:key/versions/:v/activate': {

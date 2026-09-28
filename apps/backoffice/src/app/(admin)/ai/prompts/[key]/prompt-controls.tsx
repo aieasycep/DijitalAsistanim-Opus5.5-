@@ -14,7 +14,8 @@ import { promptVariables } from '@/lib/prompt-lint';
  * Prompt version actions (BACKOFFICE_PLAN §6.11): "Yeni taslak" copies this version into a new
  * draft, drafts can be edited, tested on the synthetic golden set, activated (L2; admin-api checks
  * the passing eval report, variables and size) or archived; an archived version can be rolled back
- * to (L2). The variable helper lists the `{{…}}` placeholders the templates use.
+ * to (L2). "Değerlendirme çalıştır" queues the `ai_eval` gate run (AI_PIPELINE_PLAN §5.4) for keys
+ * with a golden eval set. The variable helper lists the `{{…}}` placeholders the templates use.
  */
 
 export function PromptVersionActions({
@@ -26,6 +27,7 @@ export function PromptVersionActions({
   templateUser,
   outputSchema,
   notes,
+  evalAvailable = false,
 }: {
   promptKey: string;
   version: number;
@@ -35,6 +37,8 @@ export function PromptVersionActions({
   templateUser: string;
   outputSchema: string;
   notes: string | null;
+  /** The key has a golden eval set (`eval_available`), so a gate run can be queued. */
+  evalAvailable?: boolean;
 }) {
   const t = useTranslations('backoffice.prompts.actions');
   const can = useCan();
@@ -137,6 +141,18 @@ export function PromptVersionActions({
               grounding: Math.round(data.grounding_pass_rate * 100),
             })
           }
+        />
+      ) : null}
+      {can('prompts.write') && evalAvailable && status !== 'archived' ? (
+        <ActionButton
+          route="POST /ai/prompts/:key/versions/:v/eval"
+          params={params}
+          label={t('runEval')}
+          title={t('evalTitle', { v: version })}
+          effects={t('evalEffects')}
+          confirmLabel={t('runEval')}
+          successMessage={t('evalQueued')}
+          testId="prompt-eval"
         />
       ) : null}
       {can('prompts.activate') && status === 'draft' ? (

@@ -208,6 +208,7 @@ async function VersionPanel({
           templateUser={detail.template_user}
           outputSchema={detail.output_schema}
           notes={detail.notes}
+          evalAvailable={detail.eval_available === true}
         />
       }
     >
@@ -226,6 +227,66 @@ async function VersionPanel({
         ]}
       />
       {detail.notes === null ? null : <p className="text-bo-body text-ink-2">{detail.notes}</p>}
+      {detail.eval_available === true || (detail.eval ?? null) !== null ? (
+        <section className="flex flex-col gap-2" data-testid="prompt-eval-report">
+          <h3 className="text-bo-kicker text-ink-3 uppercase">{t('eval.title')}</h3>
+          {detail.eval === undefined || detail.eval === null ? (
+            <p className="text-bo-body text-ink-2">{t('eval.never')}</p>
+          ) : (
+            <>
+              <KeyValueList
+                columns={3}
+                items={[
+                  {
+                    label: t('eval.result'),
+                    value: (
+                      <span
+                        className={cn(
+                          'font-semibold',
+                          detail.eval.passed ? 'text-tone-success-text' : 'text-tone-critical-text',
+                        )}
+                      >
+                        {detail.eval.passed ? t('eval.passed') : t('eval.failed')}
+                      </span>
+                    ),
+                  },
+                  {
+                    label: t('eval.mode'),
+                    value: detail.eval.mode === null ? '—' : t(`eval.modes.${detail.eval.mode}`),
+                  },
+                  { label: t('eval.finished'), value: f.dateTime(detail.eval.finished_at) },
+                  {
+                    label: t('eval.dataset'),
+                    value: detail.eval.dataset_version ?? '—',
+                    mono: true,
+                  },
+                ]}
+              />
+              {detail.eval.targets.length === 0 ? null : (
+                <ul className="flex flex-col gap-1 text-bo-body" aria-label={t('eval.targets')}>
+                  {detail.eval.targets.map((target) => (
+                    <li
+                      key={`${target.provider}/${target.model}`}
+                      className="flex items-center gap-2"
+                    >
+                      <span className="font-mono text-bo-mono text-ink">
+                        {target.provider} · {target.model}
+                      </span>
+                      <span
+                        className={
+                          target.passed ? 'text-tone-success-text' : 'text-tone-critical-text'
+                        }
+                      >
+                        {target.passed ? t('eval.passed') : t('eval.failed')}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
+          )}
+        </section>
+      ) : null}
       <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
         <section className="flex flex-col gap-1">
           <h3 className="text-bo-kicker text-ink-3 uppercase">{t('systemTemplate')}</h3>

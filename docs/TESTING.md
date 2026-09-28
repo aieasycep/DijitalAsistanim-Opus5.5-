@@ -36,12 +36,13 @@ Rules that hold across tiers:
 | `pnpm lint` · `pnpm exec eslint .` | Workspace lint · root scripts lint | — |
 | `pnpm typecheck` · `pnpm exec tsc -p tsconfig.json` | Workspace typecheck · root scripts typecheck | — |
 | `pnpm format:check` | Prettier check (`docs/` is excluded) | — |
-| `pnpm quality-gate` | Banned markers, retired canonical names and banned product claims (R-17) in `apps`, `packages`, `supabase`, `scripts`, `.github` | — |
+| `pnpm quality-gate` | Banned markers, retired canonical names and banned product claims (R-17) in `apps`, `packages`, `supabase`, `scripts`, `.github`; QG-16b compares the `apps/mobile/app` route files with the mobile No-Dead-Action inventory (DELIVERY_CHECKLIST §4.2–§4.5, T-12.07; screen IDs from SCREEN_AND_FLOW_MAP, exceptions in `scripts/quality-gate/route-screens.map`) and resolves every route-like Target; `--self-test` expects one finding per fixture | — |
 | `pnpm db:test:c` | Tier C: fresh database, shim, migrations, seed-block check, pgTAP, plpgsql lint | local PostgreSQL 16 (`bash scripts/dev/bootstrap-container.sh`); `DA_TEST_DB` picks the database |
 | `pnpm db:test` | Tier A: `supabase start`, `db reset`, pgTAP, `db lint` | Docker |
 | `pnpm db:lint` · `pnpm db:types:check` · `pnpm db:reset-twice` · `pnpm db:enum-parity` | squawk · generated types match the migrations · tier C twice from zero · enum parity with `@da/domain` | tier C database |
 | `pnpm functions:imports --check` · `functions:check` · `functions:lint` · `functions:test` · `functions:coverage` | Generated import maps · `deno check` · `deno lint` + guards · Deno suite · Deno suite with the `_shared` coverage gate | — |
 | `pnpm ai:eval` | Prompt-seed drift check + the fixture eval suite (`_shared/ai/evals`) | — |
+| `pnpm ai:eval:live` | The `ai_eval` gate suites against a project's configured routes with the real providers, recorded on the prompt versions ([AI_PIPELINE.md](AI_PIPELINE.md#evaluation)); `AI_EVAL_SUITES`, `AI_EVAL_DRY_RUN` | `SUPABASE_URL`, `SUPABASE_SECRET_KEY` and the routes' provider keys, else exit 2 "External credential required" |
 | `pnpm test:integration:c` · `pnpm test:integration` | Integration suites on tier C+ · on tier A | tier C database · running local Supabase stack |
 | `pnpm --filter @da/web e2e:web` · `pnpm e2e:backoffice` | Playwright web · backoffice (each builds its app first) | Chromium (`PLAYWRIGHT_CHROMIUM_EXECUTABLE`, or the preinstalled build for the backoffice) |
 | `pnpm mobile:check` | `expo install --check`, iOS and Android bundle export, prebuild smoke | — |
@@ -72,11 +73,13 @@ Rules that hold across tiers:
 | EAS [`e2e-android.yml`](../apps/mobile/.eas/workflows/e2e-android.yml) | manual | The Android equivalent on EAS |
 | EAS [`build-preview.yml`](../apps/mobile/.eas/workflows/build-preview.yml) | push to `main` | Internal preview builds for both platforms |
 | [`deploy-supabase.yml`](../.github/workflows/deploy-supabase.yml) | manual, `production` environment | Deploy dry run or deploy ([DEPLOYMENT.md](DEPLOYMENT.md)) |
+| [`ai-eval.yml`](../.github/workflows/ai-eval.yml) | nightly 01:37 UTC, manual (`suites`, `dry_run`) | `staging` environment: `pnpm ai:eval` (fixture baseline), then `pnpm ai:eval:live` against the staging routes; fails with "External credential required" and the names while `SUPABASE_URL` / `SUPABASE_SECRET_KEY` / provider keys are missing, and on a failed gate |
+| [`rotate-siwa-secret.yml`](../.github/workflows/rotate-siwa-secret.yml) | 1 Jan, 1 Jun, 1 Nov 06:41 UTC; manual (dry run by default) | `production` environment: mints the Apple web client secret and sets it on the hosted Auth config ([DEPLOYMENT.md](DEPLOYMENT.md#sign-in-with-apple-client-secret)) |
 
 | Only the owner can verify | How |
 | --- | --- |
 | Live provider behaviour (Google, Microsoft, Apple, RevenueCat sandbox, Expo push, email delivery) | The owner sandbox checklist in the final implementation report, with real accounts |
-| AI quality against real models, STT word error rate | Live-provider eval runs with `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` / `VOYAGE_API_KEY` (the repository suites use the fixture provider) |
+| AI quality against real models, STT word error rate | The nightly `ai-eval` run once the `staging` credentials exist (six prompt-keyed gate suites); the retrieval, grounding, claims and speech sets against real models remain a manual run |
 | Native rendering and OS grants: widgets per family and theme, share extension under memory pressure, notification listener grant, exact alarms, on-device voices, background scheduling, lock-screen controls | Physical iPhone and Android devices ([KNOWN_PLATFORM_LIMITATIONS.md](KNOWN_PLATFORM_LIMITATIONS.md) marks each item "device") |
 
 ## Coverage
@@ -135,7 +138,7 @@ The Maestro harness ([`scripts/e2e/harness-server.ts`](../scripts/e2e/harness-se
 | --- | --- | --- |
 | §1 tier D: PGlite in-process SQL tests | Not used; pure SQL behaviour is covered by tier C pgTAP | Tier C runs every SQL test in the container, so a second SQL engine added no coverage. |
 | §1 T8: Robolectric renders and Swift XCTest for widgets; CI jobs `mobile-native-android` and `mobile-native-ios` | JVM tests of the notification-intelligence rules in the `mobile` job; widget, TTS and share native code is compiled and exercised only in EAS builds and on devices | The GitHub workflows run on Linux only; native rendering checks remain EAS and device work. |
-| §13 jobs `install`, `db-shim`, `migrations`, `secret-scan` (gitleaks), `quality-gate`, `security-nightly` (CodeQL, ZAP), nightly `ai-eval`, `nightly.yml` | The job set in "Where each check runs" plus `security-nightly` (audit, CodeQL, ZAP); migrations are linted in `db`, gitleaks and the bundle scans run in `security`, the quality gate runs in `lint`; no nightly AI eval job | Live-model evals need provider credentials outside the repository (owner step, AI_PIPELINE.md). |
+| §13 jobs `install`, `db-shim`, `migrations`, `secret-scan` (gitleaks), `quality-gate`, `security-nightly` (CodeQL, ZAP), nightly `ai-eval`, `nightly.yml` | The job set in "Where each check runs" plus `security-nightly` (audit, CodeQL, ZAP) and the nightly `ai-eval.yml`; migrations are linted in `db`, gitleaks and the bundle scans run in `security`, the quality gate runs in `lint`; no `nightly.yml` | The nightly pipelines are split per concern; `ai-eval` needs the `staging` environment's credentials and fails loudly without them (GAP-4). |
 | §10 backoffice projects `bo-full` and `bo-visual`; §8 visual screenshot comparisons | `bo-contract` only; no screenshot comparison suites | The full-stack backoffice run needs GoTrue, admin-api and the worker together; admin-api is covered by its Deno pipeline, route and flow tests. |
 | §16 `_shared` 90/85/90 and per function 85/75/85 | `_shared` lines ≥ 80 (IMPLEMENTATION_PLAN T-12.04); no per-function gate | T-12.04 sets the Edge gate at 80 % lines. |
 | §16 mobile 75/65/75 | Regression floor below the target | See [Coverage](#coverage). |

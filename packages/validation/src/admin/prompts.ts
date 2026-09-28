@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { PROMPT_STATUS_VALUES } from '@da/domain';
 import { AiOutputSchemaName, PromptKey } from '../ai/index.ts';
-import { hasDefinedValue, IsoDateTime } from '../api/common.ts';
+import { hasDefinedValue, IsoDateTime, JobRef } from '../api/common.ts';
 import { Reason, ReasonBody, SensitiveBody, Success } from './common.ts';
 
 /* ADM-09 · Prompt management (§12.3). Dry runs use synthetic fixtures only, never user data. */
@@ -29,6 +29,17 @@ export const PromptVersionSummary = z.object({
 export const PromptVersionsResponse = Success(
   z.object({ key: PromptKey, versions: z.array(PromptVersionSummary) }),
 );
+/**
+ * The last eval gate run of a version (`prompt_versions.eval_report`, AI_PIPELINE_PLAN §5.4):
+ * whether it passed, when, on which dataset version, and per target. Metrics and gates only.
+ */
+export const PromptEvalSummary = z.object({
+  passed: z.boolean(),
+  mode: z.enum(['live', 'fixture', 'fixture_baseline']).nullable(),
+  dataset_version: z.string().max(80).nullable(),
+  finished_at: IsoDateTime.nullable(),
+  targets: z.array(z.object({ provider: z.string(), model: z.string(), passed: z.boolean() })),
+});
 export const PromptVersionDetailResponse = Success(
   PromptVersionSummary.extend({
     key: PromptKey,
@@ -40,6 +51,10 @@ export const PromptVersionDetailResponse = Success(
       .regex(/^[a-f0-9]{64}$/)
       .nullable(),
     notes: z.string().nullable(),
+    /** Absent from older servers; null when the version was never evaluated. */
+    eval: PromptEvalSummary.nullable().optional(),
+    /** Whether the key has a golden eval set, i.e. whether "Değerlendirme çalıştır" can run. */
+    eval_available: z.boolean().optional(),
   }),
 );
 export const PromptDiffQuery = z
@@ -67,6 +82,11 @@ export const PromptTestResponse = Success(
     schema_pass_rate: z.number().min(0).max(1),
     grounding_pass_rate: z.number().min(0).max(1),
   }),
+);
+/** `POST /ai/prompts/:key/versions/:v/eval`: queue an `ai_eval` gate run (a cost-bearing action). */
+export const PromptEvalBody = ReasonBody;
+export const PromptEvalResponse = Success(
+  z.object({ key: PromptKey, version: z.int().min(1), job: JobRef }),
 );
 export const PromptActivateBody = SensitiveBody;
 export const PromptRollbackBody = z.strictObject({

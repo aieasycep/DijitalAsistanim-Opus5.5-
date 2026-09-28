@@ -143,12 +143,19 @@ export function HelpScreen() {
     window: 7,
   };
   const question = (item: FaqItem) => t(`faq.items.${item.key as FaqKey}.q`);
+  // With referral rewards off (the reward kill switch) the referral answer promises no Pro days.
+  const rewardsOff = data?.config.referral_rewards_enabled === false;
   const answerText = (item: FaqItem) =>
-    t.markup(`faq.items.${item.key as FaqKey}.a`, {
-      ...values,
-      privacy: (chunks) => chunks,
-      adminConsent: (chunks) => chunks,
-    });
+    t.markup(
+      rewardsOff && item.key === 'referral'
+        ? 'referral.rewardsOff.faqAnswer'
+        : `faq.items.${item.key as FaqKey}.a`,
+      {
+        ...values,
+        privacy: (chunks) => chunks,
+        adminConsent: (chunks) => chunks,
+      },
+    );
 
   const folded = foldForSearch(query, locale);
   const matches = items.filter((item) => {

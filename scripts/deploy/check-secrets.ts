@@ -89,6 +89,20 @@ export const DEPLOY_JOB_KEYS = [
   'SUPABASE_AUTH_EXTERNAL_AZURE_SECRET',
 ] as const;
 
+/**
+ * Deploy-job names the job can derive instead of reading them: with the SIWA key set, the deploy
+ * mints the Apple web client secret itself (`siwa-client-secret.ts --github-env`), so a stored
+ * `SUPABASE_AUTH_EXTERNAL_APPLE_SECRET` is not needed (and could be older than the last rotation).
+ */
+export const DERIVED_DEPLOY_KEYS: Readonly<Record<string, readonly string[]>> = {
+  SUPABASE_AUTH_EXTERNAL_APPLE_SECRET: [
+    'APPLE_TEAM_ID',
+    'APPLE_SIWA_KEY_ID',
+    'APPLE_SIWA_PRIVATE_KEY',
+    'APPLE_SIWA_SERVICES_ID',
+  ],
+};
+
 const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf8');
 
 function block(source: string, start: string, end: RegExp, file: string): string {
@@ -235,7 +249,10 @@ export function report(
   for (const req of plan.requirements) if (!present.has(req.name)) missing[req.tier].push(req.name);
   const known = new Set(plan.requirements.map((r) => r.name));
   const extra = [...present].filter((n) => !known.has(n) && !platformInjected(n)).sort();
-  const missingDeployJob = DEPLOY_JOB_KEYS.filter((k) => (jobEnv[k] ?? '').trim() === '');
+  const set = (k: string) => (jobEnv[k] ?? '').trim() !== '';
+  const missingDeployJob = DEPLOY_JOB_KEYS.filter(
+    (k) => !set(k) && !(DERIVED_DEPLOY_KEYS[k]?.every(set) ?? false),
+  );
   const byGroup = (tier: Requirement['tier']) =>
     plan.requirements
       .filter((r) => r.tier === tier && !present.has(r.name))

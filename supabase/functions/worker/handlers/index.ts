@@ -32,6 +32,7 @@ import { captureAnalysisJob } from './capture_analysis.ts';
 import { firstAnalysisJob } from './first_analysis.ts';
 import { meetingPrepJob } from './meeting_prep.ts';
 import { healthCheckJob, type HealthCheckJobDeps } from './health_check.ts';
+import { aiEvalJob, type AiEvalJobDeps } from './ai_eval.ts';
 
 export interface HandlerDeps {
   readonly credentials: CredentialsRepo;
@@ -54,6 +55,8 @@ export interface HandlerDeps {
   readonly assist?: AssistJobDeps;
   /** JOB-26 `health_check` (the System Health probes, every 5 minutes from `da_health_check`). */
   readonly health?: HealthCheckJobDeps;
+  /** `ai_eval` gate runs of a prompt version on its configured targets (AI_PIPELINE_PLAN §5.4). */
+  readonly aiEval?: AiEvalJobDeps;
 }
 
 export function jobDefinitions(deps: HandlerDeps): JobDefinition<never>[] {
@@ -90,6 +93,9 @@ export function jobDefinitions(deps: HandlerDeps): JobDefinition<never>[] {
     ...(deps.health === undefined
       ? []
       : [healthCheckJob(deps.health) as unknown as JobDefinition<never>]),
+    ...(deps.aiEval === undefined
+      ? []
+      : [aiEvalJob(deps.aiEval) as unknown as JobDefinition<never>]),
   ];
 }
 

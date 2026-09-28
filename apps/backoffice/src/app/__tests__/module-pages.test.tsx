@@ -486,3 +486,41 @@ describe.each(MODULES)('$name page', (module) => {
     },
   );
 });
+
+describe('prompt eval gate (AI_PIPELINE_PLAN §5.4)', () => {
+  const PROMPTS = B.prompts as { eval: Record<string, string>; actions: Record<string, string> };
+  const promptPage = (key: string, version: string): Module => ({
+    name: `prompt ${key}`,
+    load: () => import('@/app/(admin)/ai/prompts/[key]/page'),
+    primary: 'GET /ai/prompts/:key',
+    title: null,
+    params: { key },
+    search: { version },
+  });
+
+  it('shows the last run per target and offers a new run to prompts.write', async () => {
+    const root = await render(promptPage('post_meeting', '2'), 'super_admin');
+    const report = root.querySelector('[data-testid="prompt-eval-report"]');
+    expect(textOf(report)).toContain(PROMPTS.eval.title);
+    expect(textOf(report)).toContain(PROMPTS.eval.passed);
+    expect(textOf(report)).toContain('sha256:5f0c2a91d4e7b836');
+    expect(textOf(report)).toContain('anthropic · mock-primary');
+    expect(root.querySelector('[data-testid="prompt-eval"]')).not.toBeNull();
+    expect(harness.calls.map((c) => c.key)).toContain('GET /ai/prompts/:key/versions/:v');
+  });
+
+  it('says a version was never evaluated and hides the run without prompts.write', async () => {
+    useRole('readonly');
+    const root = await render(promptPage('post_meeting', '1'), 'readonly');
+    const report = root.querySelector('[data-testid="prompt-eval-report"]');
+    expect(textOf(report)).toContain(PROMPTS.eval.never);
+    expect(root.querySelector('[data-testid="prompt-eval"]')).toBeNull();
+  });
+
+  it('has no eval section or run for a key without a golden set', async () => {
+    const root = await render(promptPage('briefing_morning', '3'), 'super_admin');
+    expect(root.querySelector('[data-testid="prompt-version"]')).not.toBeNull();
+    expect(root.querySelector('[data-testid="prompt-eval-report"]')).toBeNull();
+    expect(root.querySelector('[data-testid="prompt-eval"]')).toBeNull();
+  });
+});

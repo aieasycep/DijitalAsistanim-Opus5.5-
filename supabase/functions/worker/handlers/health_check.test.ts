@@ -168,10 +168,12 @@ Deno.test('the cron probe measures lag only over types the production worker cla
       privacy: {} as never,
       assist: {} as never,
       health: {} as never,
+      aiEval: {} as never,
     }).map((d) => d.type),
   );
   assertEquals([...types].sort(), [...WORKER_JOB_TYPES].sort());
   assert(types.has('health_check'));
+  assert(types.has('ai_eval'), 'ai_eval has a worker definition');
 });
 
 Deno.test('healthCheckJob uses the JOB-26 timeout from the registry', () => {

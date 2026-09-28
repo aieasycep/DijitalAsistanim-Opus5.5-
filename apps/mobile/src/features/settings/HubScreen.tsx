@@ -471,13 +471,18 @@ export function HubScreen() {
         <ListRow
           icon="person_add"
           title={t('settings.hub.rows.referral')}
-          trailing={{
-            kind: 'value',
-            text: t('settings.hub.rows.referralMeta', {
-              days: data?.config.referral_reward_days ?? 14,
-            }),
-            chevron: true,
-          }}
+          // "+14 gün" only while referral rewards are on (the reward kill switch).
+          trailing={
+            data?.config.referral_rewards_enabled === false
+              ? { kind: 'chevron' }
+              : {
+                  kind: 'value',
+                  text: t('settings.hub.rows.referralMeta', {
+                    days: data?.config.referral_reward_days ?? 14,
+                  }),
+                  chevron: true,
+                }
+          }
           onPress={() => {
             open('referral', '/settings/referral');
           }}

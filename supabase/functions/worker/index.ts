@@ -37,6 +37,8 @@ import { supabaseAssistStore } from '../_shared/services/assist/supabase-store.t
 import { supabaseStorage } from '../_shared/services/storage.ts';
 import { supabaseHealthData, supabaseHealthWriter } from '../health/data.ts';
 import { supabaseServerAnalytics } from '../_shared/services/analytics/emit.ts';
+import { fileDatasets } from '../_shared/ai/evals/datasets.ts';
+import { supabaseEvalStore } from '../_shared/ai/evals/store.ts';
 
 const raw = processEnv();
 assertDemoAllowed(raw);
@@ -146,6 +148,8 @@ const app = createWorkerApp({
       writer: supabaseHealthWriter(system),
       sentry,
     },
+    // `ai_eval` gate runs (AI_PIPELINE_PLAN §5.4): the golden sets ship as static files.
+    aiEval: { ai: intel.ai, store: supabaseEvalStore(system), datasets: fileDatasets() },
   }),
   log: workerLog,
   sentry,

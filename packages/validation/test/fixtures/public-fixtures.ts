@@ -106,6 +106,7 @@ export const publicFixtures = {
         valid: true,
         reward_days: 14,
         apply_window_days: 7,
+        rewards_enabled: true,
         store_urls: {
           ios: 'https://apps.apple.com/app/id1234567890',
           android:
@@ -124,6 +125,7 @@ export const publicFixtures = {
           valid: true,
           reward_days: 14,
           apply_window_days: 7,
+          rewards_enabled: true,
           store_urls: { ios: 'https://a.test', android: 'https://b.test' },
           deep_link: 'dijitalasistan://settings/referral?code=AB3K7M9Q',
           message_key: 'referral.landing',

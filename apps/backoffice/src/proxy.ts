@@ -7,6 +7,7 @@ import { routeDecision, type SessionClaims } from '@/server/proxy-routing';
 import { PRE_AUTH_THROTTLED_PATHS, preAuthLimiter } from '@/server/rate-limit';
 import { clientIp } from '@/server/request-meta';
 import { DYNAMIC_RESPONSE_HEADERS, buildCsp, createNonce } from '@/server/security-headers';
+import { browserSentryConfig, sentryIngestOrigin } from '@/server/sentry-config';
 import { createSealedSupabase } from '@/server/supabase-core';
 
 /*
@@ -33,9 +34,11 @@ function applyCookies(response: NextResponse, writes: readonly CookieWrite[]): N
 export async function proxy(request: NextRequest): Promise<NextResponse> {
   const env = serverEnv();
   const nonce = createNonce();
+  const ingest = sentryIngestOrigin(browserSentryConfig());
   const csp = buildCsp(nonce, {
     dev: process.env.NODE_ENV === 'development',
     upgradeInsecureRequests: env.ADMIN_ORIGIN.startsWith('https://'),
+    ...(ingest === null ? {} : { connectSources: [ingest] }),
   });
   const { pathname, search } = request.nextUrl;
   const method = request.method.toUpperCase();

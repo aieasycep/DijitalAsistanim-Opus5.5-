@@ -15,6 +15,16 @@ import { AppEnv, CLIENT_SECRET_SHAPES } from '@da/validation/env';
 
 const HttpUrl = z.url({ protocol: /^https?$/ });
 
+/** A Sentry DSN, `https://<public key>@<ingest host>/<project id>` (the key is public by design). */
+export const SentryDsn = z.url({ protocol: /^https$/ }).refine((value) => {
+  try {
+    const url = new URL(value);
+    return url.username !== '' && url.password === '' && /^\/\d+$/.test(url.pathname);
+  } catch {
+    return false;
+  }
+}, 'sentry_dsn');
+
 const SERVER_SHAPE = {
   APP_ENV: AppEnv.default('development'),
   /** `https://api.<domain>`; admin-api lives at `${API_PUBLIC_BASE_URL}/functions/v1/admin-api`. */
@@ -23,11 +33,15 @@ const SERVER_SHAPE = {
   ADMIN_BFF_SECRET: z.string().min(32),
   /** `https://admin.<domain>`: the only Origin accepted for mutations. */
   ADMIN_ORIGIN: HttpUrl,
+  /** Server-side Sentry DSN (optional; falls back to `NEXT_PUBLIC_SENTRY_DSN`). */
+  SENTRY_DSN: SentryDsn.optional(),
 };
 
 const CLIENT_SHAPE = {
   NEXT_PUBLIC_SUPABASE_URL: HttpUrl,
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().regex(/^sb_publishable_[A-Za-z0-9_-]+$/),
+  /** The backoffice Sentry project (optional); handed to the browser at request time, never inlined. */
+  NEXT_PUBLIC_SENTRY_DSN: SentryDsn.optional(),
 };
 
 const KEYS = [...Object.keys(SERVER_SHAPE), ...Object.keys(CLIENT_SHAPE)] as const;
@@ -56,6 +70,9 @@ export interface BackofficeEnv {
   readonly ADMIN_ORIGIN: string;
   readonly NEXT_PUBLIC_SUPABASE_URL: string;
   readonly NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: string;
+  /** Sentry DSNs (null when unset: no SDK starts, BACKOFFICE_PLAN §2.2). */
+  readonly SENTRY_DSN: string | null;
+  readonly NEXT_PUBLIC_SENTRY_DSN: string | null;
   /** `${API_PUBLIC_BASE_URL}/functions/v1/admin-api`, without a trailing slash. */
   readonly adminApiBaseUrl: string;
 }
@@ -121,6 +138,8 @@ export function parseBackofficeEnv(
     ADMIN_ORIGIN: new URL(env.ADMIN_ORIGIN).origin,
     NEXT_PUBLIC_SUPABASE_URL: env.NEXT_PUBLIC_SUPABASE_URL.replace(/\/+$/, ''),
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+    SENTRY_DSN: env.SENTRY_DSN ?? null,
+    NEXT_PUBLIC_SENTRY_DSN: env.NEXT_PUBLIC_SENTRY_DSN ?? null,
     adminApiBaseUrl: `${env.API_PUBLIC_BASE_URL.replace(/\/+$/, '')}/functions/v1/admin-api`,
   };
 }

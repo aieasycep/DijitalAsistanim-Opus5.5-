@@ -4469,6 +4469,7 @@ Each module block states its capability, routes, input and output schemas, DB ef
 | `POST /ai/prompts/:key/versions` | `prompts.write` | `{template_system, template_user, output_schema: enum of registered schemas, notes}` | New `draft` (`version` = max + 1) | `prompt.draft_created` |
 | `PATCH /ai/prompts/:key/versions/:v` | `prompts.write` | same fields | Allowed only while `draft` | `prompt.draft_updated` |
 | `POST /ai/prompts/:key/versions/:v/test` | `prompts.write` | `{fixture_set: enum}` | A dry run against **synthetic fixtures only** (never user data) → schema pass rate and grounding pass rate | – |
+| `POST /ai/prompts/:key/versions/:v/eval` | `prompts.write` | `{reason}` | **202** `{key, version, job}`: queues the `ai_eval` gate run (AI_PIPELINE_PLAN §5.4) for the version on every configured target, one queued run per version and ISO week; `409 STATE_CONFLICT` for an archived version or a key without a golden set (`details.reason = 'no_eval_set'`). The version detail carries the last report as `eval` and `eval_available` | `prompt.tested` (`details.run = 'eval'`) |
 | `POST /ai/prompts/:key/versions/:v/activate` | `prompts.activate` | `{reason, confirm}` | The partial unique index allows one `active` per key; the previous version is `archived`; cache bust | `prompt.activated` |
 | `POST /ai/prompts/:key/rollback` | `prompts.activate` | `{to_version, reason, confirm}` | Reactivates an archived version | `prompt.rolled_back` |
 | `POST /ai/prompts/:key/versions/:v/archive` | `prompts.activate` | `{reason}` | `archived` (not allowed for the active version) | `prompt.archived` |
@@ -4696,7 +4697,7 @@ PublicSupportBody = z.strictObject({ name: z.string().max(120).optional(), email
 - **Capability:** resolve a referral link for web `/r/[code]` (plan §11/§16).
 - **Role:** anonymous.
 - **Input:** a path `code` matching the §8.14 regex.
-- **Output:** `Success({ valid: boolean, reward_days: int, apply_window_days: int, store_urls: { ios: url, android: url }, deep_link: 'dijitalasistan://settings/referral?code=…', message_key: 'referral.landing' })`. The referrer's name is never exposed; the page copy is "Bir arkadaşın seni davet etti".
+- **Output:** `Success({ valid: boolean, reward_days: int, apply_window_days: int, rewards_enabled: boolean, store_urls: { ios: url, android: url }, deep_link: 'dijitalasistan://settings/referral?code=…', message_key: 'referral.landing' })`. The referrer's name is never exposed; the page copy is "Bir arkadaşın seni davet etti". `rewards_enabled` mirrors `referral.rewards_enabled` (the STORE_CHECKLIST 3.1.1 kill switch; missing reads as `true`): while it is `false` the page does not promise the Pro reward, and the code still applies.
 - **Validation:** rate limit 60/min per IP hash.
 - **DB effects:** read `referral_codes` (active); an analytics counter `referral_link_opened` (no IP stored).
 - **External provider effects:** none.

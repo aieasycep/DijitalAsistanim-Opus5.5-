@@ -7,8 +7,10 @@ import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import type { ReactNode } from 'react';
 
 import { CspNonce } from '@/components/csp-nonce';
+import { SentryBrowser } from '@/components/sentry-browser';
 import { ToastProvider } from '@/components/ui/toast';
 import { THEME_COOKIE, parseTheme } from '@/server/preference-cookies';
+import { browserSentryConfig } from '@/server/sentry-config';
 
 import './globals.css';
 
@@ -42,6 +44,8 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     <html lang={locale} data-theme={theme} className={`${geist.variable} ${geistMono.variable}`}>
       <body className="bg-bg text-ink antialiased">
         <CspNonce nonce={requestHeaders.get('x-nonce')} />
+        {/* Browser Sentry only with NEXT_PUBLIC_SENTRY_DSN, read per request (never inlined). */}
+        <SentryBrowser config={browserSentryConfig()} />
         <NextIntlClientProvider>
           <NuqsAdapter>
             <ToastProvider label={t('shell.toasts')}>{children}</ToastProvider>

@@ -1,0 +1,7 @@
+# Route files → No-Dead-Action screen IDs (QG-16b, DELIVERY_CHECKLIST §4.1), for the mobile routes
+# whose screen ID SCREEN_AND_FLOW_MAP does not name in a Route column or Route line and whose path
+# no §4 Target cell mentions. Every other route is matched from the two documents directly.
+# Format: <route file> | <screen IDs> | <justification>. Each screen ID must have §4 rows; each
+# file must exist; a justification is required. Prefer fixing the documents over adding a line.
+apps/mobile/app/auth/callback.tsx | M-GL-07 | M-GL-07 rule 4: the `dijitalasistan://auth/callback?code=` return of the Microsoft / Apple web sign-in when the auth session was lost (SCREEN_AND_FLOW_MAP M-GL-07 allow-list, §2370 registry row); no control of its own, the M-GL-07 rows cover it
+apps/mobile/app/demo/setup.tsx | M-GL-07 | R-21 demo-build-only link target `dijitalasistan://demo/setup` in the M-GL-07 allow-list (rejected to +not-found outside demo builds; metro leaves the file out of production bundles); no control of its own

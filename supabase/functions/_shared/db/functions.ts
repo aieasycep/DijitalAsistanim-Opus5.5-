@@ -208,7 +208,7 @@ export const DB_FN = {
   publicReferralResolve: fn(
     'public',
     'public_referral_resolve',
-    '(p_code text) returns jsonb {valid, reward_days, apply_window_days}',
+    '(p_code text) returns jsonb {valid, reward_days, apply_window_days, rewards_enabled}',
   ),
   webAnalyticsIncrement: fn(
     'public',
@@ -477,6 +477,12 @@ export const DB_FN = {
     'public',
     'first_analysis_counts',
     '(p_user uuid, p_since timestamptz, p_now timestamptz) returns jsonb {mails_found, classified, potential_important, upcoming_events, possible_followups}',
+  ),
+  // AI eval gate runs (GAP-4; migration 20260924003510)
+  aiEvalRecord: fn(
+    'public',
+    'ai_eval_record',
+    '(p_version uuid, p_features ai_feature[], p_report jsonb, p_passed boolean, p_dataset_version text) returns jsonb {prompt_version_id, prompt_key, version, passed, model_rows}',
   ),
 } as const satisfies Record<string, DbFunction>;
 

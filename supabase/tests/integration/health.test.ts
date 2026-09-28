@@ -2,8 +2,8 @@
  * IT-JOB-26 (API_CONTRACTS JOB-26 `health_check`, §14 HLT-02): the job `da_health_check` enqueues
  * every 5 minutes is claimed by the real worker entrypoint, runs the System Health probes
  * in-process, writes `system_health_checks` rows with `checked_by = 'cron'` and completes; the
- * `cron` probe's queue lag ignores job types no worker claims, and a backlog bucket is drained
- * without probing.
+ * `cron` probe's queue lag covers the job types the worker claims (all of them since `ai_eval` got
+ * its handler), and a backlog bucket is drained without probing.
  */
 import { assert, assertEquals } from '@std/assert';
 import { call, count, env, it, json, one, q } from './_harness/mod.ts';
@@ -32,11 +32,6 @@ it(
   async () => {
     await q(`delete from public.system_health_checks`);
     const id = await enqueueHealth(`health:it:${crypto.randomUUID()}`);
-    // A due job of a type no worker claims must not count as queue lag.
-    await q(
-      `select public.enqueue_job('ai_eval'::public.job_type, $1, '{}'::jsonb, null, null, now() - interval '30 minutes')`,
-      [`ai_eval:it:${crypto.randomUUID()}`],
-    );
 
     const summary = await runWorker();
     assertEquals(summary.claimed, 1);
@@ -63,10 +58,10 @@ it(
     assertEquals(byComponent.get('database')?.status, 'healthy');
     const cron = byComponent.get('cron');
     assert(cron !== undefined);
-    // Only the unclaimed `ai_eval` job was due: the lag stays zero and the probe is not down.
+    // Nothing else was due: the lag stays zero and the probe is not down.
     assertEquals(cron.detail.queue_lag_s, 0, JSON.stringify(cron.detail));
     assert(cron.status !== 'down', JSON.stringify(cron));
-    // The unclaimed type stays queued; nothing else is left for the worker.
+    // Nothing is left for the worker.
     assertEquals(
       await count(
         `select 1 from public.jobs where type = 'health_check' and status <> 'completed'`,

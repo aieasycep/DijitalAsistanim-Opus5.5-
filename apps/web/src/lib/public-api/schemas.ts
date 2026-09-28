@@ -79,6 +79,8 @@ export const ReferralResolveSchema = z.object({
   valid: z.boolean(),
   reward_days: z.number().int().min(0),
   apply_window_days: z.number().int().min(0).optional(),
+  /** The reward kill switch (STORE_CHECKLIST 3.1.1); absent from an older API → on. */
+  rewards_enabled: z.boolean().optional(),
 });
 export type ReferralResolve = z.infer<typeof ReferralResolveSchema>;
 

@@ -21,7 +21,8 @@ How each part of Dijital Asistan reaches production, what the owner sets up once
 2. In GitHub → Settings → Environments, create **`production`** with required reviewers. That approval is the manual gate of the deploy workflow. Add these environment secrets (names only; the workflow reports any that are missing):
    - `SUPABASE_ACCESS_TOKEN`, `SUPABASE_PROJECT_REF`, `SUPABASE_DB_PASSWORD`, `SUPABASE_DB_URL`, `CRON_SECRET`;
    - `SUPABASE_AUTH_SMTP_HOST`, `SUPABASE_AUTH_SMTP_PORT`, `SUPABASE_AUTH_SMTP_USER`, `SUPABASE_AUTH_SMTP_PASS`, `SUPABASE_AUTH_SMTP_SENDER`;
-   - `SUPABASE_AUTH_EXTERNAL_{APPLE,GOOGLE,AZURE}_{CLIENT_ID,SECRET}`.
+   - `SUPABASE_AUTH_EXTERNAL_{APPLE,GOOGLE,AZURE}_{CLIENT_ID,SECRET}`;
+   - `APPLE_TEAM_ID`, `APPLE_SIWA_KEY_ID`, `APPLE_SIWA_PRIVATE_KEY` (the `.p8` PEM), `APPLE_SIWA_SERVICES_ID`: with these four set, `SUPABASE_AUTH_EXTERNAL_APPLE_SECRET` is minted by the workflows and need not be stored ([Sign in with Apple client secret](#sign-in-with-apple-client-secret)).
 3. Set the Edge Function secrets from a local file that is never committed: `supabase secrets set --project-ref <ref> --env-file ./prod.secrets.env`. The names the code reads come in three tiers (derived by [`scripts/deploy/check-secrets.ts`](../scripts/deploy/check-secrets.ts) from `serverEnvShape` and `CREDENTIALS`):
    - **boot** (functions refuse to start without them): `HASH_PEPPER` and the active `TOKEN_ENC_KEY_V{n}`;
    - **production** (the feature reports `external_credential_required` until set): Anthropic, Voyage (with `VOYAGE_TRAINING_OPT_OUT_CONFIRMED=true`, see below), `AI_HASH_PEPPER`, Google OAuth + Pub/Sub + Calendar webhook, Microsoft OAuth (certificate) + Graph notification URLs, Sign in with Apple (revocation), RevenueCat (+ webhook auth), `EXPO_ACCESS_TOKEN`, `CRON_SECRET`, `WEBHOOK_HMAC_SECRET`, `ADMIN_BFF_SECRET` + `ADMIN_GATEWAY_SECRET`, email delivery, and `APP_ENV`, `PUBLIC_WEB_URL`, `API_PUBLIC_BASE_URL`, `OAUTH_RESULT_REDIRECT_URI`, `MAIL_MESSAGE_ID_DOMAIN`, `ADMIN_ORIGIN`, `RECOVERY_CODE_PEPPER`;
@@ -46,12 +47,22 @@ Run **Actions → Deploy Supabase → Run workflow**. `dry_run` is on by default
 | `supabase link` | ✓ | ✓ |
 | `supabase db push --dry-run` (pending migrations) | ✓ | — |
 | `supabase db push` | — | ✓ |
+| Apple web client secret minted from the SIWA key (`scripts/deploy/siwa-client-secret.ts --days 180`, exported masked as `SUPABASE_AUTH_EXTERNAL_APPLE_SECRET`), when the four `APPLE_*` secrets are set | — | ✓ |
 | `supabase config push` (auth, SMTP on via `SUPABASE_AUTH_EMAIL_SMTP_ENABLED=true`, MFA TOTP, custom access token hook, rate limits, function `verify_jwt`) | — | ✓ |
-| `supabase functions deploy <fn> --use-api` for `api`, `oauth`, `webhooks-google`, `webhooks-microsoft`, `webhooks-revenuecat`, `worker`, `admin-api`, `public-api`, `health` | — | ✓ |
+| Edge secret `APPLE_SIWA_WEB_SECRET_NOT_AFTER` (expiry of the secret just pushed), same condition | — | ✓ |
+| `supabase functions deploy <fn> --use-api` for `api`, `oauth`, `webhooks-google`, `webhooks-microsoft`, `webhooks-revenuecat`, `worker`, `admin-api`, `public-api`, `health`; the worker bundle carries the golden eval sets (`[functions.worker] static_files` in `supabase/config.toml`) for the `ai_eval` job | — | ✓ |
 | Vault entries `da_project_url` and `da_cron_secret` (read by `private.poke_worker` for the pg_cron → pg_net → `worker/run` call; upserted with `vault.update_secret` / `vault.create_secret`) | — | ✓ |
 | `GET /functions/v1/health/live` with the automations secret must answer 200 | — | ✓ |
 
 Migrations are forward-only. To roll back code, redeploy the functions from the previous commit (dispatch the workflow on that ref); a schema change is undone by a new migration, never by editing an applied one.
+
+### Sign in with Apple client secret
+
+Apple accepts the web-flow client secret (an ES256 JWT signed with the SIWA key) for at most six months (KPL-49). [`scripts/deploy/siwa-client-secret.ts`](../scripts/deploy/siwa-client-secret.ts) mints it from `APPLE_TEAM_ID` (`iss`), `APPLE_SIWA_KEY_ID` (`kid`), `APPLE_SIWA_PRIVATE_KEY` (P-256 PKCS#8 PEM, `\n` escapes accepted) and `APPLE_SIWA_SERVICES_ID` (`sub`), with `aud = https://appleid.apple.com` and `exp` at most 180 days ahead, verifies its own signature and never prints the key or the token (only the key id, audience, subject and expiry). Exit 2 names missing or malformed inputs.
+
+- **Scheduled rotation:** [`.github/workflows/rotate-siwa-secret.yml`](../.github/workflows/rotate-siwa-secret.yml) runs on 1 January, 1 June and 1 November at 06:41 UTC (never more than five months apart) in the `production` environment, so the environment's required reviewers approve it. It mints a new secret and, through the Management API (`SUPABASE_ACCESS_TOKEN`, `SUPABASE_PROJECT_REF`), sets `external_apple_secret` on the hosted Auth config and the Edge secret `APPLE_SIWA_WEB_SECRET_NOT_AFTER` (the expiry card on System Health). A manual run is a dry run (mint + verify only) unless `dry_run` is unticked; a missing secret fails the run with its name.
+- **Owner run from a shell** (same effect): `APPLE_TEAM_ID=… APPLE_SIWA_KEY_ID=… APPLE_SIWA_PRIVATE_KEY="$(cat AuthKey_XXXX.p8)" APPLE_SIWA_SERVICES_ID=… SUPABASE_ACCESS_TOKEN=… SUPABASE_PROJECT_REF=… node scripts/deploy/siwa-client-secret.ts --apply` (without `--apply` it is a dry run).
+- The deploy workflow mints a fresh secret before `config push` whenever the four `APPLE_*` secrets exist, so a deploy never pushes back an older stored `SUPABASE_AUTH_EXTERNAL_APPLE_SECRET`; `check-secrets.ts` accepts the four keys in place of that name.
 
 ### Provider endpoints to register (manual external steps)
 
@@ -80,7 +91,7 @@ Two Vercel projects on the same repository (manual external step), each with **R
 | Project | Domain | Environment variables |
 | --- | --- | --- |
 | `da-web` | `<domain>` | client: `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_ANALYTICS_ENABLED`, `NEXT_PUBLIC_TURNSTILE_SITE_KEY`; server: `APP_ENV`, `SITE_INDEXABLE`, `API_PUBLIC_BASE_URL`, `APPLE_TEAM_ID`, `IOS_BUNDLE_IDENTIFIER`, `IOS_APP_STORE_ID`, `APP_STORE_PROVIDER_TOKEN`, `ANDROID_PACKAGE`, `ANDROID_SHA256_CERT_FINGERPRINTS` (these feed `/.well-known/apple-app-site-association` and `/.well-known/assetlinks.json`), `MICROSOFT_CLIENT_ID` (`/.well-known/microsoft-identity-association.json`), and the legal identity fields (`COMPANY_*`, `PRIVACY_CONTACT_EMAIL`, `DATA_REGION_LABEL`, `EU_REPRESENTATIVE`, …) |
-| `da-backoffice` | `admin.<domain>` | `APP_ENV`, `API_PUBLIC_BASE_URL`, `ADMIN_BFF_SECRET` (same value as the Edge secret), `ADMIN_ORIGIN`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` |
+| `da-backoffice` | `admin.<domain>` | `APP_ENV`, `API_PUBLIC_BASE_URL`, `ADMIN_BFF_SECRET` (same value as the Edge secret), `ADMIN_ORIGIN`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`; optional `SENTRY_DSN` (server) and `NEXT_PUBLIC_SENTRY_DSN` (browser, handed over by the root layout at runtime) for the backoffice Sentry project — unset, no SDK starts. `VERCEL_GIT_COMMIT_SHA` names the release. Source maps are not uploaded (no `SENTRY_AUTH_TOKEN` build step; a manual owner step if wanted) |
 
 Neither project holds the Supabase secret key. Only the `NEXT_PUBLIC_*` names are allowed in client bundles: `pnpm scan:bundles` in the CI `security` job fails the build if a server-only name or a secret-shaped value appears in `.next/static`. `SITE_INDEXABLE` stays `false` outside production, so preview deployments send `noindex`.
 
@@ -106,4 +117,5 @@ Before dispatching the deploy:
 After it:
 
 - `health/live` is 200 (checked by the workflow) and the backoffice **System Health** page shows every component with a real probe (`HEALTH_PROBE_VALUES`: `api`, `database`, `supabase_auth`, `storage`, `google_oauth`, `microsoft_oauth`, `gmail`, `microsoft_graph`, `push`, `ai_anthropic`, `ai_openai`, `ai_voyage`, `revenuecat`, `cron`, `webhooks`, `email_delivery`, `audit_chain`). A component whose credential is missing shows `external_credential_required`, never green.
+- The nightly **ai-eval** workflow ([`.github/workflows/ai-eval.yml`](../.github/workflows/ai-eval.yml), 01:37 UTC and manual) is green against `staging`: create the GitHub environment **`staging`** with `SUPABASE_URL`, `SUPABASE_SECRET_KEY` (the staging project's) and the provider keys its routes use (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `VOYAGE_API_KEY`). Until they exist every run fails with "External credential required: …" and the missing names; a failed gate fails the run and is recorded on the evaluated prompt version ([AI_PIPELINE.md](AI_PIPELINE.md#evaluation)). A dispatch can narrow `suites` or set `dry_run` (no write).
 - The owner sandbox checklist in `FINAL_IMPLEMENTATION_REPORT.md` (connect Google and Microsoft sandbox accounts, send through an approval, create a calendar event, receive a push, purchase and restore in the RevenueCat sandbox, request an export and a deletion).

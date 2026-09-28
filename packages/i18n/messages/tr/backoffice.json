@@ -1926,7 +1926,27 @@
       "archive": "Arşivle",
       "archiveTitle": "Taslak v{v} arşivlensin mi?",
       "archiveEffects": "Taslak arşive taşınır; daha sonra geri dönülebilir.",
-      "archived": "Taslak arşivlendi."
+      "archived": "Taslak arşivlendi.",
+      "runEval": "Değerlendirme çalıştır",
+      "evalTitle": "v{v} için değerlendirme çalıştırılsın mı?",
+      "evalEffects": "Altın değerlendirme seti yapılandırılmış her model hedefinde çalışır ve sağlayıcı maliyeti oluşturur. Sonuç bu sürüme kaydedilir; aktif sürümde rota durumu da güncellenir.",
+      "evalQueued": "Değerlendirme kuyruğa alındı. Sonuç tamamlandığında bu sayfada görünür."
+    },
+    "eval": {
+      "title": "Değerlendirme",
+      "never": "Bu sürüm henüz değerlendirilmedi.",
+      "result": "Sonuç",
+      "passed": "Geçti",
+      "failed": "Geçmedi",
+      "mode": "Kip",
+      "modes": {
+        "live": "Canlı sağlayıcılar",
+        "fixture": "Sabit yanıtlar",
+        "fixture_baseline": "Sabit yanıt referansı"
+      },
+      "dataset": "Veri seti sürümü",
+      "finished": "Tamamlanma",
+      "targets": "Model hedefleri"
     }
   },
   "aiFeedback": {

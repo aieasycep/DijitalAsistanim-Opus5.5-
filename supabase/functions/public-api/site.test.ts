@@ -32,6 +32,27 @@ Deno.test('PUB-04 resolves an active code with store links and the app deep link
   assertEquals(ios, 'https://apps.apple.com/app/id6450000000?ct=referral&mt=8');
 });
 
+Deno.test(
+  'PUB-04 reports the reward kill switch; the code still resolves while it is off',
+  async () => {
+    const h = await publicHarness();
+    h.repo.codes.add(CODE);
+    const read = async () => {
+      const res = await send(h, 'GET', `/referrals/${CODE}`);
+      const body = await res.json();
+      assert(publicRoutes['GET /referrals/:code'].response.safeParse(body).success);
+      return body.data as { valid: boolean; rewards_enabled: boolean; reward_days: number };
+    };
+    // An older database without the column reads as on (the documented default).
+    assertEquals((await read()).rewards_enabled, true);
+    h.repo.rewardsEnabled = false;
+    const off = await read();
+    assertEquals([off.valid, off.rewards_enabled, off.reward_days], [true, false, 14]);
+    h.repo.rewardsEnabled = true;
+    assertEquals((await read()).rewards_enabled, true);
+  },
+);
+
 Deno.test('PUB-04 unknown and malformed codes give the same 200 valid:false shape', async () => {
   const h = await publicHarness();
   const shapes: string[] = [];
