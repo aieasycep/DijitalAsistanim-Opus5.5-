@@ -217,6 +217,7 @@ Evidence compiled read-only at `d59d471` (branch `claude/magical-pascal-edvjgn`)
     - It builds the e2e APK, boots the emulator and installs the APK.
     - Its first full run (run 21) failed every flow at sign-in. The shared demo users hit Auth's one-code-per-60-seconds limit, and two shards re-seeded the same user under each other.
     - Fixed in `4b74183`: the harness resets the send timer and mailbox, the run uses one device, and failure reasons are printed to the log.
+    - The next run (run 54) never reached the flows: Gradle ran out of JVM Metaspace in the native build and hung. The build's memory, ABI list and a step timeout are fixed in the commit after `5772ee8`.
     - A green Maestro run is not claimed in this report.
   - iOS flows run on EAS Workflows (`apps/mobile/.eas/workflows/e2e-ios.yml`) once `EXPO_TOKEN` and the staging project exist (owner).
 
@@ -352,9 +353,9 @@ Where each tier ran, with counts at `1f85dfb` (details in [TESTING.md](TESTING.m
 | Unit, TS workspaces (vitest / jest / node:test) | container; CI `unit` | domain 1539 (lines 99.06%), validation 1299 (97.78%), i18n 279 (100%), design-tokens 385 (100%), api-client 140 (94.65%), ui 723 (97.47%), web 165 (97.67%), backoffice 554 (86.72%), mobile 1509 (83.87%), config 20; scripts 139 |
 | Edge (Deno) | container; CI `functions` | 1499 pass; `_shared` lines 80.85% (gate 80%) |
 | Database (pgTAP) | container tier C (PG16 + shim); CI tier A `db` | 35 files / 1206 assertions; plpgsql_check 0 errors; squawk 0 |
-| Integration | container tier C+; CI tier A `integration` | 99 pass / 4 CI-only (container); tier A green on `b66acb3` |
-| Web E2E (Playwright) | CI `web` | green on `b66acb3` |
-| Backoffice E2E (Playwright, contract project) | CI `backoffice` | green on `b66acb3` |
+| Integration | container tier C+; CI tier A `integration` | 99 pass / 4 CI-only (container); tier A green on `5772ee8` |
+| Web E2E (Playwright) | CI `web` | green on `5772ee8` |
+| Backoffice E2E (Playwright, contract project) | CI `backoffice` | green on `5772ee8` |
 | Mobile E2E (Maestro, Android) | CI Mobile E2E | not yet green (see [Mobile](#mobile)) |
 | Mobile E2E (Maestro, iOS) | EAS | not run (owner: `EXPO_TOKEN`, staging project) |
 | Security (audit, CodeQL, ZAP) | CI security-nightly | green on `4b74183` |
@@ -372,6 +373,7 @@ Where each tier ran, with counts at `1f85dfb` (details in [TESTING.md](TESTING.m
 - The ReDoS timing tests used wall-clock budgets and tripped under parallel load. They now check growth rate on CPU time.
 - The `090_jobs_scheduler` pgTAP suite collided with the live `da_health_check` cron. The suite now takes the scheduler advisory lock and then locks the table.
 - The emulator failed in CI after the framework restarted post-boot. A readiness wait and install retries fixed it.
+- Mobile E2E run 54 never reached the flows. Gradle ran out of JVM Metaspace during the native (CMake) build and then hung until the job timeout. The build now raises the Gradle and Kotlin daemon memory, builds only the emulator's x86_64 ABI and has a 60-minute step timeout.
 - The CI security job failed once fetching Google Fonts. The push run of the same commit passed.
 - The backoffice eval-run spec (`e2e/ai.spec.ts`) failed on `17b7937`. This was a test bug, not a flake: the toast text also matched the `aria-live` announcer, and during streaming a hidden copy of the version panel can sit next to the swapped-in one. The assertions now take the first match, as the sibling specs do. It passed 12/12 when repeated locally.
 

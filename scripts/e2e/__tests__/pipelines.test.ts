@@ -68,6 +68,12 @@ test('mobile-e2e.yml: PR, manual and nightly only; emulator API 35 x86_64 google
   const runs = job.steps.map((s) => str(s.run)).join('\n');
   assert.match(runs, /expo prebuild --platform android/);
   assert.match(runs, /assembleRelease/);
+  // Gradle ran out of Metaspace and hung (run 54): memory is raised, one ABI is built, and a hang
+  // ends the step instead of the job.
+  assert.match(runs, /MaxMetaspaceSize=\d+m/);
+  assert.match(runs, /-PreactNativeArchitectures=x86_64/);
+  const build = job.steps.find((s) => str(s.run).includes('assembleRelease'));
+  assert.equal(build?.['timeout-minutes'], 60);
   assert.match(runs, /start-stack\.sh/);
   const upload = job.steps.find((s) => str(s.uses).startsWith('actions/upload-artifact@'));
   assert.equal(upload?.if, 'always()');

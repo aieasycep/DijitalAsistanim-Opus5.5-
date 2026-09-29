@@ -67,6 +67,8 @@ jobs:
         run: bash scripts/e2e/start-stack.sh
 
       - name: Build the e2e APK (expo prebuild + Gradle assembleRelease)
+        # Run 54 hung here for four hours after Gradle ran out of JVM Metaspace; a hang now fails fast.
+        timeout-minutes: 60
         env:
           APP_ENV: e2e
           EXPO_PUBLIC_APP_ENV: e2e
@@ -80,7 +82,14 @@ jobs:
         run: |
           export EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY="$E2E_SUPABASE_PUBLISHABLE_KEY"
           pnpm --filter @da/mobile exec expo prebuild --platform android --clean --no-install
-          (cd apps/mobile/android && ./gradlew :app:assembleRelease --no-daemon)
+          # The prebuild template's JVM settings (512m Metaspace) no longer fit the native module set;
+          # the user-level gradle.properties overrides the project's. Only the emulator's ABI is built.
+          mkdir -p "${GRADLE_USER_HOME:-$HOME/.gradle}"
+          {
+            echo 'org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1536m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8'
+            echo 'kotlin.daemon.jvmargs=-Xmx2g'
+          } >>"${GRADLE_USER_HOME:-$HOME/.gradle}/gradle.properties"
+          (cd apps/mobile/android && ./gradlew :app:assembleRelease --no-daemon -PreactNativeArchitectures=x86_64)
           echo "E2E_APK=$PWD/apps/mobile/android/app/build/outputs/apk/release/app-release.apk" >> "$GITHUB_ENV"
 
       - name: Emulator API 35 x86_64 google_apis (tr-TR) + Maestro over tag android
