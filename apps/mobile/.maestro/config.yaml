@@ -1,0 +1,13 @@
+# Maestro workspace config (TEST_PLAN §9.1; ADR-47). Run from the repo root:
+#   maestro test apps/mobile/.maestro --include-tags <android|ios> --format junit \
+#     --output build/maestro/junit.xml --test-output-dir build/maestro --shard-split <devices>
+# The workspace is this directory: only the `flows:` globs below are flows; subflows/ are not.
+# Every flow seeds its own user through the harness (onFlowStart), so shards never share state.
+# Tags: m102 · acceptance · screens · security · android · ios · free · pro.
+flows:
+  - 'flows/m102/*'
+  - 'flows/acceptance/*'
+  - 'flows/screens/*'
+  - 'flows/security/*'
+executionOrder:
+  continueOnFailure: true

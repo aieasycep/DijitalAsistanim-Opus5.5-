@@ -1,0 +1,5 @@
+{
+  "extends": "@da/config/tsconfig/scripts.json",
+  "include": ["scripts/**/*.ts"],
+  "exclude": ["scripts/quality-gate/fixtures/**"]
+}

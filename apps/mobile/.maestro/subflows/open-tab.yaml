@@ -1,0 +1,5 @@
+appId: com.dijitalasistan.app.e2e
+name: 'Subflow · open a tab by its deep link (TAB = today | flow | plan | assistant)'
+---
+- openLink: 'dijitalasistan-e2e://${TAB}'
+- waitForAnimationToEnd

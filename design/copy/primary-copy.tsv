@@ -1,0 +1,2030 @@
+canvas	source	text
+01 Tasarim Sistemi.dc.html	template	← Prototip ve IA
+01 Tasarim Sistemi.dc.html	template	01 Sistem
+01 Tasarim Sistemi.dc.html	template	02 Onboarding
+01 Tasarim Sistemi.dc.html	template	03 Bugün
+01 Tasarim Sistemi.dc.html	template	04 Akış
+01 Tasarim Sistemi.dc.html	template	05 Plan
+01 Tasarim Sistemi.dc.html	template	06 Asistan
+01 Tasarim Sistemi.dc.html	template	07 Hesap
+01 Tasarim Sistemi.dc.html	template	08 Durumlar
+01 Tasarim Sistemi.dc.html	template	09 Pazarlama
+01 Tasarim Sistemi.dc.html	template	01 · Tasarım Sistemi
+01 Tasarim Sistemi.dc.html	template	Token adları geliştirme için birebir kullanılabilir. Renk yalnızca anlam taşır; yüzeyler sıcak nötr, marka indigosu AI işaretleri ve birincil aksiyonda. Kartlar gölgeli, çerçevesiz; kesik çerçeve yalnızca “önerilen / henüz gerçek değil” anlamına gelir.
+01 Tasarim Sistemi.dc.html	template	RENK · TOKENLAR
+01 Tasarim Sistemi.dc.html	template	Kural 1
+01 Tasarim Sistemi.dc.html	template	· Kartlarda renkli rozet yalnızca ACİL (coral), SON TARİH (amber), GÜVENLİK (coral), ONAYLANDI (yeşil).
+01 Tasarim Sistemi.dc.html	template	Kural 2
+01 Tasarim Sistemi.dc.html	template	· Indigo: AI işaretleri (auto_awesome), birincil buton, seçili sekme, bağlantı. Dekor için asla.
+01 Tasarim Sistemi.dc.html	template	Kural 3
+01 Tasarim Sistemi.dc.html	template	· Metin/zemin kontrastı ≥ 4.5:1; soft zeminlerdeki metinler koyu varyantı kullanır (critical-text vb.).
+01 Tasarim Sistemi.dc.html	template	TİPOGRAFİ · GEIST + LORA
+01 Tasarim Sistemi.dc.html	template	iOS'ta gövde metinleri için sistem fontuna (SF Pro) düşülebilir; Geist yalnızca başlıklarda korunur. Lora sadece brifing anlatısı, haftalık özet ve taahhüt alıntılarında. Sayılar için
+01 Tasarim Sistemi.dc.html	template	tabular-nums
+01 Tasarim Sistemi.dc.html	template	(saat, tutar).
+01 Tasarim Sistemi.dc.html	template	BOŞLUK · 4'LÜK IZGARA
+01 Tasarim Sistemi.dc.html	template	Ekran kenarı 20 · kart içi 16 · kartlar arası 12 · bölümler arası 18–22 · liste satırı min 50.
+01 Tasarim Sistemi.dc.html	template	KÖŞE YARIÇAPI · GÖLGE
+01 Tasarim Sistemi.dc.html	template	shadow-1
+01 Tasarim Sistemi.dc.html	template	shadow-2 · kart
+01 Tasarim Sistemi.dc.html	template	shadow-3 · sayfa
+01 Tasarim Sistemi.dc.html	template	İKONLAR · MATERIAL SYMBOLS ROUNDED · 20/24 · wght 400 · FILL 0 (aktif: FILL 1)
+01 Tasarim Sistemi.dc.html	template	BUTONLAR · 5 VARYANT × DURUMLAR
+01 Tasarim Sistemi.dc.html	template	Brifingimi Gör
+01 Tasarim Sistemi.dc.html	template	Düzenle
+01 Tasarim Sistemi.dc.html	template	Tamam
+01 Tasarim Sistemi.dc.html	template	Not Al
+01 Tasarim Sistemi.dc.html	template	Geçmişi Sil
+01 Tasarim Sistemi.dc.html	template	ghost / text
+01 Tasarim Sistemi.dc.html	template	Yanıtla
+01 Tasarim Sistemi.dc.html	template	Yanıtla · pressed
+01 Tasarim Sistemi.dc.html	template	Hatırlat · secondary
+01 Tasarim Sistemi.dc.html	template	Disabled
+01 Tasarim Sistemi.dc.html	template	Yükseklikler: 52 (sayfa altı CTA), 48 (kart içi), 40–42 (satır içi), 36 (ghost). Pressed: scale .97 + ton koyulaşır, 120 ms. Loading: metin “…” ile devam eder, spinner soldan; buton kilitlenir.
+01 Tasarim Sistemi.dc.html	template	ÇİPLER · ROZETLER
+01 Tasarim Sistemi.dc.html	template	Tümü · seçili
+01 Tasarim Sistemi.dc.html	template	Önemli
+01 Tasarim Sistemi.dc.html	template	Yarın · meta çipi
+01 Tasarim Sistemi.dc.html	template	VIP
+01 Tasarim Sistemi.dc.html	template	ACİL
+01 Tasarim Sistemi.dc.html	template	SON TARİH
+01 Tasarim Sistemi.dc.html	template	TAKİP
+01 Tasarim Sistemi.dc.html	template	TOPLANTI
+01 Tasarim Sistemi.dc.html	template	KİŞİSEL
+01 Tasarim Sistemi.dc.html	template	TAKVİM
+01 Tasarim Sistemi.dc.html	template	ONAYLANDI
+01 Tasarim Sistemi.dc.html	template	BEKLİYOR
+01 Tasarim Sistemi.dc.html	template	PRO
+01 Tasarim Sistemi.dc.html	template	Rozet: 11/700, +0.05em, pill, 3×8 dolgu. Filtre çipi: 34 yüksek, seçili = ink zemin. Meta çipi: 30 yüksek, ikon 15.
+01 Tasarim Sistemi.dc.html	template	SEGMENTLİ KONTROL · ANAHTAR · ONAY
+01 Tasarim Sistemi.dc.html	template	Gün
+01 Tasarim Sistemi.dc.html	template	Hafta
+01 Tasarim Sistemi.dc.html	template	açık
+01 Tasarim Sistemi.dc.html	template	kapalı
+01 Tasarim Sistemi.dc.html	template	seçim · boş · tamamlandı
+01 Tasarim Sistemi.dc.html	template	KARTLAR · 6 KALIP
+01 Tasarim Sistemi.dc.html	template	card/priority
+01 Tasarim Sistemi.dc.html	template	Ahmet senden bugün 17:00'ye kadar revize teklif bekliyor.
+01 Tasarim Sistemi.dc.html	template	Gmail · Ahmet Yılmaz · 08:42
+01 Tasarim Sistemi.dc.html	template	Hatırlat
+01 Tasarim Sistemi.dc.html	template	card/mail
+01 Tasarim Sistemi.dc.html	template	SK
+01 Tasarim Sistemi.dc.html	template	Selin Kaya
+01 Tasarim Sistemi.dc.html	template	Dün 15:40
+01 Tasarim Sistemi.dc.html	template	Sözleşme taslağının 4. maddesi için yorumunu bekliyor; yarın öğlen hukuka gidecek.
+01 Tasarim Sistemi.dc.html	template	Yanıt Hazırla
+01 Tasarim Sistemi.dc.html	template	card/calendar
+01 Tasarim Sistemi.dc.html	template	Mehmet ile müşteri toplantısı
+01 Tasarim Sistemi.dc.html	template	60 dk · Ofis · Son görüşme 4 gün önce
+01 Tasarim Sistemi.dc.html	template	Hazırlan
+01 Tasarim Sistemi.dc.html	template	card/ai-insight
+01 Tasarim Sistemi.dc.html	template	TAKVİM ZEKÂSI
+01 Tasarim Sistemi.dc.html	template	Yarın 14:00–16:30 arasında 2,5 saat boşluğun var.
+01 Tasarim Sistemi.dc.html	template	Teklif hazırlama görevini buraya yerleştirebilirim.
+01 Tasarim Sistemi.dc.html	template	Planla
+01 Tasarim Sistemi.dc.html	template	Başka zaman
+01 Tasarim Sistemi.dc.html	template	card/life
+01 Tasarim Sistemi.dc.html	template	UÇUŞ
+01 Tasarim Sistemi.dc.html	template	Yarın
+01 Tasarim Sistemi.dc.html	template	TK2412 · İstanbul → Antalya
+01 Tasarim Sistemi.dc.html	template	Yarın 09:15 · Check-in açık
+01 Tasarim Sistemi.dc.html	template	Check-in
+01 Tasarim Sistemi.dc.html	template	Cüzdana Ekle
+01 Tasarim Sistemi.dc.html	template	card/person
+01 Tasarim Sistemi.dc.html	template	MY
+01 Tasarim Sistemi.dc.html	template	Mehmet Yılmaz
+01 Tasarim Sistemi.dc.html	template	3 gün
+01 Tasarim Sistemi.dc.html	template	Teklif v2 · PDF
+01 Tasarim Sistemi.dc.html	template	Henüz yanıt gelmedi.
+01 Tasarim Sistemi.dc.html	template	3 gündür bekliyor
+01 Tasarim Sistemi.dc.html	template	Takip Et
+01 Tasarim Sistemi.dc.html	template	state/pressed
+01 Tasarim Sistemi.dc.html	template	Kart basılı · scale .98, 120 ms
+01 Tasarim Sistemi.dc.html	template	state/loading
+01 Tasarim Sistemi.dc.html	template	state/error
+01 Tasarim Sistemi.dc.html	template	Bu kart yüklenemedi.
+01 Tasarim Sistemi.dc.html	template	Tekrar dene
+01 Tasarim Sistemi.dc.html	template	state/selected
+01 Tasarim Sistemi.dc.html	template	Seçili kart
+01 Tasarim Sistemi.dc.html	template	state/suggested
+01 Tasarim Sistemi.dc.html	template	Önerilen · henüz gerçek değil
+01 Tasarim Sistemi.dc.html	template	state/done
+01 Tasarim Sistemi.dc.html	template	Tamamlandı
+01 Tasarim Sistemi.dc.html	template	GİRİŞLER · ARAMA · SOHBET
+01 Tasarim Sistemi.dc.html	template	E-posta adresi
+01 Tasarim Sistemi.dc.html	template	yunus@
+01 Tasarim Sistemi.dc.html	template	yunus@gmail
+01 Tasarim Sistemi.dc.html	template	Geçerli bir e-posta adresi gir.
+01 Tasarim Sistemi.dc.html	template	Devre dışı
+01 Tasarim Sistemi.dc.html	template	Hafızada ara…
+01 Tasarim Sistemi.dc.html	template	Dijital hayatına sor…
+01 Tasarim Sistemi.dc.html	template	Mehmet ile en son ne
+01 Tasarim Sistemi.dc.html	template	Odak: 2px indigo halka, gölge yok. Hata: coral halka + altta ikonlu mesaj. Sohbet girişi yazı başladığında mikrofon → gönder (ink) olur.
+01 Tasarim Sistemi.dc.html	template	NAVİGASYON · BAŞLIK KALIPLARI
+01 Tasarim Sistemi.dc.html	template	Bugün
+01 Tasarim Sistemi.dc.html	template	Akış
+01 Tasarim Sistemi.dc.html	template	Plan
+01 Tasarim Sistemi.dc.html	template	Asistan
+01 Tasarim Sistemi.dc.html	template	5 EYLÜL CUMARTESİ
+01 Tasarim Sistemi.dc.html	template	Günaydın, Yunus
+01 Tasarim Sistemi.dc.html	template	2 onay
+01 Tasarim Sistemi.dc.html	template	ALT SAYFA BAŞLIĞI
+01 Tasarim Sistemi.dc.html	template	18 dk
+01 Tasarim Sistemi.dc.html	template	Sekme: aktif = dolu ikon + indigo, pasif = çizgi ikon + tertiary. Kök ekranlar büyük başlık (28) + tarih kicker; alt sayfalar geri dairesi + ortalanmış kicker + sağda bağlam çipi.
+01 Tasarim Sistemi.dc.html	template	TOAST · SES · İSKELET
+01 Tasarim Sistemi.dc.html	template	Hatırlatıcı kuruldu · Yarın 09:10
+01 Tasarim Sistemi.dc.html	template	Öğrendim · Ahmet Yılmaz artık VIP.
+01 Tasarim Sistemi.dc.html	template	Geri al
+01 Tasarim Sistemi.dc.html	template	Çevrimdışı · Son analiz 09:40
+01 Tasarim Sistemi.dc.html	template	Sabah Brifingi · Öncelikler
+01 Tasarim Sistemi.dc.html	template	Toast: ink pill, alttan 16px kayar, 2,6 sn; ikonu anlam taşır (indigo nötr, coral hata). Mini oynatıcı sekme çubuğunun üstüne yapışır. İskelet: parıltı 1,6 sn, gerçek kart ölçülerinde.
+01 Tasarim Sistemi.dc.html	template	ALT SAYFA · MODAL
+01 Tasarim Sistemi.dc.html	template	Ne zaman hatırlatayım?
+01 Tasarim Sistemi.dc.html	template	Seçenekler: 6 sabit
+01 Tasarim Sistemi.dc.html	template	1 saat önce
+01 Tasarim Sistemi.dc.html	template	Uygun zamanda
+01 Tasarim Sistemi.dc.html	template	Gmail bağlantısı kaldırılsın mı?
+01 Tasarim Sistemi.dc.html	template	Analizler durur; geçmiş özetler 30 gün saklanır.
+01 Tasarim Sistemi.dc.html	template	Kaldır
+01 Tasarim Sistemi.dc.html	template	Vazgeç
+01 Tasarim Sistemi.dc.html	template	Alt sayfa: seçim listeleri, düzeltme menüsü, hatırlatıcı. Modal yalnızca geri alınamaz işlemler için (bağlantı kaldırma, silme). Arka plan %35 ink.
+01 Tasarim Sistemi.dc.html	template	DARK MODE TOKENLARI
+01 Tasarim Sistemi.dc.html	template	Dark yüzeyler sıcak siyah; gölge yerine %6 beyaz hairline. Indigo aydınlatılır (#8586F2), birincil buton üzerinde koyu metin. Coral/amber aydınlatılmış metin varyantlarıyla (#F08B78, #F0B85A).
+01 Tasarim Sistemi.dc.html	data	Birincil buton, AI işareti, seçili sekme
+01 Tasarim Sistemi.dc.html	data	Basılı durum
+01 Tasarim Sistemi.dc.html	data	Tonal buton, AI kart parıltısı
+01 Tasarim Sistemi.dc.html	data	Ghost buton, bağlantı
+01 Tasarim Sistemi.dc.html	data	Koyu yüzeyde AI işareti
+01 Tasarim Sistemi.dc.html	data	İkon, çakışma çizgisi
+01 Tasarim Sistemi.dc.html	data	ACİL rozet zemini
+01 Tasarim Sistemi.dc.html	data	Rozet metni, yıkıcı buton
+01 Tasarim Sistemi.dc.html	data	İkon (yoğunluk, bekleme)
+01 Tasarim Sistemi.dc.html	data	SON TARİH, BEKLİYOR
+01 Tasarim Sistemi.dc.html	data	Rozet metni
+01 Tasarim Sistemi.dc.html	data	Tamamlandı ikonu
+01 Tasarim Sistemi.dc.html	data	ONAYLANDI, güvence kutusu
+01 Tasarim Sistemi.dc.html	data	Ulaşım ikonu
+01 Tasarim Sistemi.dc.html	data	TAKVİM rozeti
+01 Tasarim Sistemi.dc.html	data	Uygulama zemini (sıcak)
+01 Tasarim Sistemi.dc.html	data	İkon karosu, nötr rozet
+01 Tasarim Sistemi.dc.html	data	Birincil metin, koyu kart
+01 Tasarim Sistemi.dc.html	data	İkincil metin
+01 Tasarim Sistemi.dc.html	data	Kicker, meta
+01 Tasarim Sistemi.dc.html	data	Pasif ikon
+01 Tasarim Sistemi.dc.html	data	Haftalık özet, okuma görünümü
+01 Tasarim Sistemi.dc.html	data	Sabah brifingi, marka anı
+01 Tasarim Sistemi.dc.html	data	Ses, sesli brifing, analiz
+01 Tasarim Sistemi.dc.html	data	Akşam kapanışı
+01 Tasarim Sistemi.dc.html	data	Bugün bilmen gereken 5 şey var.
+01 Tasarim Sistemi.dc.html	data	Toplantıya Hazırlan
+01 Tasarim Sistemi.dc.html	data	Ahmet senden revize teklif bekliyor.
+01 Tasarim Sistemi.dc.html	data	Toplantı öncesinde dün gelen fiyat teklifine bakman faydalı olabilir.
+01 Tasarim Sistemi.dc.html	data	Son görüşmeniz 4 gün önceydi.
+01 Tasarim Sistemi.dc.html	data	caption / kicker
+01 Tasarim Sistemi.dc.html	data	Öncelİklerİn · 5 Eylül
+01 Tasarim Sistemi.dc.html	data	12 / 16 · 600 · +8% · caps
+01 Tasarim Sistemi.dc.html	data	micro / badge
+01 Tasarim Sistemi.dc.html	data	ACİL · 08:42
+01 Tasarim Sistemi.dc.html	data	Öğlene kadar toplantın bulunmuyor.
+01 Tasarim Sistemi.dc.html	data	Haftan nasıl geçti?
+01 Tasarim Sistemi.dc.html	data	Lora, Georgia, serif
+01 Tasarim Sistemi.dc.html	data	Lora 34–38 · haftalık özet
+01 Tasarim Sistemi.dc.html	data	AI işareti
+01 Tasarim Sistemi.dc.html	data	Son tarih
+01 Tasarim Sistemi.dc.html	data	çip ikon karosu
+01 Tasarim Sistemi.dc.html	data	satır içi buton
+01 Tasarim Sistemi.dc.html	data	küçük kart
+01 Tasarim Sistemi.dc.html	data	hero / sayfa
+01 Tasarim Sistemi.dc.html	data	daspin .8s linear infinite
+01 Tasarim Sistemi.dc.html	data	dashimmer 1.6s linear infinite
+02 Onboarding.dc.html	template	← Prototip ve IA
+02 Onboarding.dc.html	template	01 Sistem
+02 Onboarding.dc.html	template	02 Onboarding
+02 Onboarding.dc.html	template	03 Bugün
+02 Onboarding.dc.html	template	04 Akış
+02 Onboarding.dc.html	template	05 Plan
+02 Onboarding.dc.html	template	06 Asistan
+02 Onboarding.dc.html	template	07 Hesap
+02 Onboarding.dc.html	template	08 Durumlar
+02 Onboarding.dc.html	template	09 Pazarlama
+02 Onboarding.dc.html	template	02 · Onboarding, Bağlantılar, İlk Analiz
+02 Onboarding.dc.html	template	Akış: 4 tanıtım → hesap → bağlantılar (her OAuth öncesi izin açıklayıcı) → kişiselleştirme → brifing saatleri → ilk analiz (dramatik an) → bildirim izni → (Android) telefon bildirimleri → Bugün. Tanıtım görselleri çizim değil, ürünün kendi UI parçalarıdır.
+02 Onboarding.dc.html	template	Tanıtım 1 · Marka
+02 Onboarding.dc.html	template	DİJİTAL ASİSTAN
+02 Onboarding.dc.html	template	Bugün bilmen gerekenleri, sen sormadan söyler.
+02 Onboarding.dc.html	template	Mailini, takvimini ve yapman gerekenleri tek yerde anlar.
+02 Onboarding.dc.html	template	Başlayalım
+02 Onboarding.dc.html	template	Zaten hesabın var mı?
+02 Onboarding.dc.html	template	Giriş yap
+02 Onboarding.dc.html	template	Şafak gradyanı = brifingin rengi; onboarding boyunca tek marka anı. Sonraki ekranlar açık zemine döner.
+02 Onboarding.dc.html	template	Tanıtım 2 · Gürültüyü azalt
+02 Onboarding.dc.html	template	Atla
+02 Onboarding.dc.html	template	ACİL
+02 Onboarding.dc.html	template	Ahmet revize teklif bekliyor
+02 Onboarding.dc.html	template	SON TARİH
+02 Onboarding.dc.html	template	Başvuru bugün 17:00
+02 Onboarding.dc.html	template	TAKİP
+02 Onboarding.dc.html	template	Teklife 3 gündür cevap yok
+02 Onboarding.dc.html	template	127 mail → 3 önemli konu
+02 Onboarding.dc.html	template	Gürültüyü azalt.
+02 Onboarding.dc.html	template	Gelen her şeyi okur, yalnızca önemli olanı gösterir.
+02 Onboarding.dc.html	template	Devam
+02 Onboarding.dc.html	template	Gerçek kart bileşenleriyle anlatım: soluk iskelet yığın → sayı → üç gerçek öncelik kartı. Animasyon: yığın aşağı akıp 3 karta “çöker”.
+02 Onboarding.dc.html	template	Tanıtım 3 · Brifing
+02 Onboarding.dc.html	template	SABAH BRİFİNGİ · 08:00
+02 Onboarding.dc.html	template	Günaydın Yunus
+02 Onboarding.dc.html	template	Bugün oldukça sakin bir günün var.
+02 Onboarding.dc.html	template	Öğlene kadar toplantın bulunmuyor. Saat 14:30'da Mehmet ile müşteri toplantın var…
+02 Onboarding.dc.html	template	Brifingi Dinle · 2 dk
+02 Onboarding.dc.html	template	Her sabah 08:00
+02 Onboarding.dc.html	template	Gününü sen sormadan hazırlarız.
+02 Onboarding.dc.html	template	Okumak istemezsen 2 dakikada dinle.
+02 Onboarding.dc.html	template	Brifing kartı hafif eğik durur; ürünün gerçek bileşeni, çizim değil.
+02 Onboarding.dc.html	template	Tanıtım 4 · Kontrol sende
+02 Onboarding.dc.html	template	MAİL GÖNDER
+02 Onboarding.dc.html	template	BEKLİYOR
+02 Onboarding.dc.html	template	Mehmet Yılmaz'a takip mesajı gönder
+02 Onboarding.dc.html	template	Neden
+02 Onboarding.dc.html	template	Teklife 3 gündür yanıt gelmedi.
+02 Onboarding.dc.html	template	Değişim
+02 Onboarding.dc.html	template	1 mail · Kısa, profesyonel ton
+02 Onboarding.dc.html	template	Onayla
+02 Onboarding.dc.html	template	Düzenle
+02 Onboarding.dc.html	template	Reddet
+02 Onboarding.dc.html	template	Onay Merkezi
+02 Onboarding.dc.html	template	Kontrol her zaman sende.
+02 Onboarding.dc.html	template	Sen onaylamadan mail göndermez, takvimine dokunmaz.
+02 Onboarding.dc.html	template	Hesap Oluştur
+02 Onboarding.dc.html	template	Son tanıtım güven mesajıyla biter; CTA marka rengine döner ve hesap oluşturmaya geçer.
+02 Onboarding.dc.html	template	Hesabını oluştur
+02 Onboarding.dc.html	template	Giriş yöntemin, bağlayacağın hesaplardan bağımsızdır.
+02 Onboarding.dc.html	template	Google ile devam et
+02 Onboarding.dc.html	template	Apple ile devam et
+02 Onboarding.dc.html	template	Microsoft ile devam et
+02 Onboarding.dc.html	template	E-posta ile devam et
+02 Onboarding.dc.html	template	Devam ederek
+02 Onboarding.dc.html	template	Kullanım Koşulları
+02 Onboarding.dc.html	template	Gizlilik Politikası
+02 Onboarding.dc.html	template	'nı kabul edersin. Verilerin reklam amacıyla kullanılmaz.
+02 Onboarding.dc.html	template	Platform sırası cihaza göre: iOS'ta Apple ilk, Android'de Google ilk. Sağlayıcı logoları için gerçek marka varlıkları kullanılacak (burada yer tutucu).
+02 Onboarding.dc.html	template	Dijital hayatını bağla
+02 Onboarding.dc.html	template	ADIM 1 / 4
+02 Onboarding.dc.html	template	Dijital hayatını bağla.
+02 Onboarding.dc.html	template	En az bir mail ve bir takvim yeterli. İstediğin zaman kaldırabilirsin.
+02 Onboarding.dc.html	template	Sen onaylamadan mail göndermeyiz.
+02 Onboarding.dc.html	template	Devam · 2 hesap bağlı
+02 Onboarding.dc.html	template	Durumlar: Bağla (indigo tonal) / Bağlandı (yeşil, ✓). Devam butonu bağlı hesap sayısını söyler. Kart ikonları gerçek sağlayıcı logolarıyla değiştirilecek.
+02 Onboarding.dc.html	template	İzin Açıklayıcı · Gmail (OAuth öncesi)
+02 Onboarding.dc.html	template	GMAIL
+02 Onboarding.dc.html	template	Mail erişimine neden ihtiyacımız var?
+02 Onboarding.dc.html	template	Önemli mailleri bulmak
+02 Onboarding.dc.html	template	Cevap bekleyenleri anlamak
+02 Onboarding.dc.html	template	Son tarihleri tespit etmek
+02 Onboarding.dc.html	template	Bağlantını istediğin zaman kaldırabilirsin.
+02 Onboarding.dc.html	template	Verilerin reklam amacıyla kullanılmaz, satılmaz.
+02 Onboarding.dc.html	template	Google ile Bağlan
+02 Onboarding.dc.html	template	Şimdi değil
+02 Onboarding.dc.html	template	Sonraki adımda Google'ın kendi izin ekranı açılır.
+02 Onboarding.dc.html	template	Yerel OAuth'tan hemen önce açılan sayfa: 3 neden + 3 güvence. Aynı kalıp Outlook ve takvimler için; yalnızca ikon ve nedenler değişir.
+02 Onboarding.dc.html	template	2.7b
+02 Onboarding.dc.html	template	İzin Açıklayıcı · Outlook / Microsoft 365
+02 Onboarding.dc.html	template	OUTLOOK · MICROSOFT 365
+02 Onboarding.dc.html	template	Outlook erişimine neden ihtiyacımız var?
+02 Onboarding.dc.html	template	İş maillerinde önemli konuları bulmak
+02 Onboarding.dc.html	template	Cevap bekleyen konuşmaları anlamak
+02 Onboarding.dc.html	template	Teklif, sözleşme ve son tarihleri tespit etmek
+02 Onboarding.dc.html	template	Kurumsal hesapta yalnızca sana verilen izinler kullanılır; şirket politikaların geçerli kalır.
+02 Onboarding.dc.html	template	Microsoft ile Bağlan
+02 Onboarding.dc.html	template	Sonraki adımda Microsoft'un kendi izin ekranı açılır.
+02 Onboarding.dc.html	template	Gmail kalıbının aynısı; ikon karosu bilgi mavisi, nedenler iş bağlamına göre. Kurumsal hesaplar için ek güvence satırı (yönetici politikaları).
+02 Onboarding.dc.html	template	2.7c
+02 Onboarding.dc.html	template	İzin Açıklayıcı · Takvim
+02 Onboarding.dc.html	template	TAKVİM
+02 Onboarding.dc.html	template	Takvim erişimine neden ihtiyacımız var?
+02 Onboarding.dc.html	template	Google Takvim
+02 Onboarding.dc.html	template	Apple Takvim
+02 Onboarding.dc.html	template	Microsoft Takvim
+02 Onboarding.dc.html	template	Günün programını anlamak
+02 Onboarding.dc.html	template	Toplantı çakışmalarını tespit etmek
+02 Onboarding.dc.html	template	Yaklaşan etkinlikleri brifinge eklemek
+02 Onboarding.dc.html	template	Uygun zaman önermek
+02 Onboarding.dc.html	template	Takviminde değişiklik yapmadan önce senden onay isteriz.
+02 Onboarding.dc.html	template	Etkinlik içerikleri reklam amacıyla kullanılmaz.
+02 Onboarding.dc.html	template	Google Takvim'i Bağla
+02 Onboarding.dc.html	template	Apple Takvim cihazdan okunur; ayrı giriş gerekmez.
+02 Onboarding.dc.html	template	Üç sağlayıcı için tek açıklayıcı; seçili sağlayıcı çipi CTA metnini değiştirir. Dört neden ürünün dört takvim yeteneğine birebir karşılık gelir.
+02 Onboarding.dc.html	template	Kişiselleştirme · Çoklu seçim
+02 Onboarding.dc.html	template	ADIM 2 / 4
+02 Onboarding.dc.html	template	Senin için neler önemli?
+02 Onboarding.dc.html	template	Birden fazla seçebilirsin. Zamanla kendim de öğrenirim.
+02 Onboarding.dc.html	template	Devam · 4 seçili
+02 Onboarding.dc.html	template	Seçili kart: koyu zemin + dolu onay işareti. “Hepsi” diğerlerini otomatik işaretler. Seçimler yaşam kartlarının Bugün'de görünürlüğünü belirler.
+02 Onboarding.dc.html	template	Brifing Ayarları
+02 Onboarding.dc.html	template	ADIM 3 / 4
+02 Onboarding.dc.html	template	Günün ritmi
+02 Onboarding.dc.html	template	Brifingleri ne zaman hazırlayayım? Sonradan değiştirebilirsin.
+02 Onboarding.dc.html	template	Sabah brifingi
+02 Onboarding.dc.html	template	Günün tamamı · sesli sürüm
+02 Onboarding.dc.html	template	Öğle nabzı
+02 Onboarding.dc.html	template	Yalnızca değişenler
+02 Onboarding.dc.html	template	Akşam kapanışı
+02 Onboarding.dc.html	template	Yarına kalanlar
+02 Onboarding.dc.html	template	Hafta sonu
+02 Onboarding.dc.html	template	Sadece sabah, 10:00 · Kişisel öncelikli
+02 Onboarding.dc.html	template	Takvimine göre: genelde 08:15'te telefonu açıyorsun. 08:00 iyi bir seçim.
+02 Onboarding.dc.html	template	Saat çipine dokunuş yerel saat seçiciyi açar. Öğle ve akşam Pro özelliği; ücretsizde kilit ikonu ile görünür, gizlenmez.
+02 Onboarding.dc.html	template	İlk Analiz · İşleniyor (dramatik an)
+02 Onboarding.dc.html	template	Dijital hayatın analiz ediliyor…
+02 Onboarding.dc.html	template	Son 72 saat · Gmail ve Google Takvim
+02 Onboarding.dc.html	template	127 mail bulundu
+02 Onboarding.dc.html	template	8 potansiyel önemli konu
+02 Onboarding.dc.html	template	4 etkinlik
+02 Onboarding.dc.html	template	2 takip tespit ediliyor…
+02 Onboarding.dc.html	template	Öncelikler sıralanıyor
+02 Onboarding.dc.html	template	Genelde 20–40 saniye sürer. Mail içerikleri cihazında özetlenir, hiçbir şey gönderilmez.
+02 Onboarding.dc.html	template	Sayılar canlı artar (127 → sayaç), her satır tamamlandığında yeşil ✓ + hafif haptic. Halka nabız atar; ilerleme çubuğu yok, belirsiz bekleme hissi yerine bulgu listesi.
+02 Onboarding.dc.html	template	İlk Analiz · Hazır
+02 Onboarding.dc.html	template	HAZIR.
+02 Onboarding.dc.html	template	Son 72 saatte bilmen gereken
+02 Onboarding.dc.html	template	şey bulduk.
+02 Onboarding.dc.html	template	Ahmet revize teklif bekliyor · 17:00
+02 Onboarding.dc.html	template	TOPLANTI
+02 Onboarding.dc.html	template	Mehmet ile 14:30 · hazırlık hazır
+02 Onboarding.dc.html	template	+ 2 konu daha
+02 Onboarding.dc.html	template	Brifingimi Gör
+02 Onboarding.dc.html	template	İlk değer anı: gerçek bulgular hemen görünür, brifing bir dokunuş uzakta. Bildirim izni bundan SONRA istenir; değer görülmeden izin istenmez.
+02 Onboarding.dc.html	template	Bildirim İzni Açıklayıcı
+02 Onboarding.dc.html	template	Dijital Asistan
+02 Onboarding.dc.html	template	Toplantına 20 dakika kaldı. Mehmet için 3 konu hazır.
+02 Onboarding.dc.html	template	Bugün cevaplaman gereken önemli bir mail var.
+02 Onboarding.dc.html	template	Kargon bugün geliyor. 14:00–18:00 arası.
+02 Onboarding.dc.html	template	Sadece önemli olduğunda haber verelim.
+02 Onboarding.dc.html	template	Günde ortalama 3 bildirim. Pazarlama bildirimi yok, “bak bana” bildirimi yok.
+02 Onboarding.dc.html	template	Bildirimleri Aç
+02 Onboarding.dc.html	template	Daha sonra
+02 Onboarding.dc.html	template	Üç gerçek bildirim örneği; sistem izni ancak “Bildirimleri Aç”tan sonra istenir. “Daha sonra” ilk brifing ekranında tekrar, sonra bir daha sormaz.
+02 Onboarding.dc.html	template	Android · Telefon Bildirimleri (isteğe bağlı)
+02 Onboarding.dc.html	template	SADECE ANDROID
+02 Onboarding.dc.html	template	Telefon bildirimlerini de anlayayım mı?
+02 Onboarding.dc.html	template	Kargo, banka ve uygulama bildirimlerinden kişisel sinyaller çıkarırım. Mesaj içerikleri asla saklanmaz.
+02 Onboarding.dc.html	template	UYGULAMALAR
+02 Onboarding.dc.html	template	Bildirim erişimi cihazda işlenir. Sohbet uygulamaları varsayılan olarak kapalıdır ve önerilmez.
+02 Onboarding.dc.html	template	Bildirim Erişimini Aç
+02 Onboarding.dc.html	template	Android Ayarlar → Bildirim erişimi ekranı açılır.
+02 Onboarding.dc.html	template	Android çerçevesi: daha küçük köşe yarıçapı, hareket çubuğu, durum çubuğu düzeni farklı. iOS akışı bu adımı hiç görmez; ürün deneyimi bundan bağımsızdır.
+02 Onboarding.dc.html	data	yunus@…com · 3 gün analiz edildi
+02 Onboarding.dc.html	data	İş maili · Microsoft 365
+02 Onboarding.dc.html	data	2 takvim · Kişisel, İş
+02 Onboarding.dc.html	data	Outlook takvimi
+02 Onboarding.dc.html	data	iCloud · cihazdan okunur
+02 Onboarding.dc.html	data	Son Tarihler
+02 Onboarding.dc.html	data	Kargo uygulamaları
+02 Onboarding.dc.html	data	Trendyol, Hepsiburada, Yurtiçi
+02 Onboarding.dc.html	data	Ödeme ve son tarih bildirimleri
+02 Onboarding.dc.html	data	THY, Pegasus · kapı ve rötar
+02 Onboarding.dc.html	data	Yemek, otel, etkinlik
+02 Onboarding.dc.html	data	WhatsApp, Telegram · önerilmez
+02 Onboarding.dc.html	data	daspin 1.4s linear infinite
+02 Onboarding.dc.html	data	daspin 2.2s linear infinite reverse
+02 Onboarding.dc.html	data	'Material Symbols Rounded'
+02 Onboarding.dc.html	data	'FILL' 1
+02 Onboarding.dc.html	data	daspin .9s linear infinite
+03 Bugun ve Brifingler.dc.html	template	← Prototip ve IA
+03 Bugun ve Brifingler.dc.html	template	01 Sistem
+03 Bugun ve Brifingler.dc.html	template	02 Onboarding
+03 Bugun ve Brifingler.dc.html	template	03 Bugün
+03 Bugun ve Brifingler.dc.html	template	04 Akış
+03 Bugun ve Brifingler.dc.html	template	05 Plan
+03 Bugun ve Brifingler.dc.html	template	06 Asistan
+03 Bugun ve Brifingler.dc.html	template	07 Hesap
+03 Bugun ve Brifingler.dc.html	template	08 Durumlar
+03 Bugun ve Brifingler.dc.html	template	09 Pazarlama
+03 Bugun ve Brifingler.dc.html	template	03 · Bugün ve Brifingler
+03 Bugun ve Brifingler.dc.html	template	Günün ritmi dört dokunuştur: sabah brifingi (08:00), öğle nabzı (13:00), akşam kapanışı (19:00), haftalık özet (Pazar 18:00). Hepsi aynı hero cümle kalıbını kullanır: “Bugün bilmen gereken N şey var.” Sayı yalnızca hero'da renklidir; kartlarda renk yalnızca aciliyet için.
+03 Bugun ve Brifingler.dc.html	template	Bugün · Light · Sabah
+03 Bugun ve Brifingler.dc.html	template	5 EYLÜL CUMARTESİ
+03 Bugun ve Brifingler.dc.html	template	Günaydın, Yunus
+03 Bugun ve Brifingler.dc.html	template	2 onay
+03 Bugun ve Brifingler.dc.html	template	BRİFİNG HAZIR · 07:58
+03 Bugun ve Brifingler.dc.html	template	Bugün bilmen gereken
+03 Bugun ve Brifingler.dc.html	template	şey var.
+03 Bugun ve Brifingler.dc.html	template	3 önemli mail · 4 etkinlik · 2 takip
+03 Bugun ve Brifingler.dc.html	template	Brifingimi Gör
+03 Bugun ve Brifingler.dc.html	template	Dinle · 2 dk
+03 Bugun ve Brifingler.dc.html	template	ÖNCELİKLERİN
+03 Bugun ve Brifingler.dc.html	template	5 konu
+03 Bugun ve Brifingler.dc.html	template	ACİL
+03 Bugun ve Brifingler.dc.html	template	Ahmet senden bugün 17:00'ye kadar revize teklif bekliyor.
+03 Bugun ve Brifingler.dc.html	template	Gmail · Ahmet Yılmaz · 08:42
+03 Bugun ve Brifingler.dc.html	template	Yanıtla
+03 Bugun ve Brifingler.dc.html	template	Hatırlat
+03 Bugun ve Brifingler.dc.html	template	TOPLANTI
+03 Bugun ve Brifingler.dc.html	template	14:30 Mehmet ile toplantı
+03 Bugun ve Brifingler.dc.html	template	Son görüşmeniz 4 gün önceydi.
+03 Bugun ve Brifingler.dc.html	template	Google Takvim · Müşteri toplantısı · 60 dk
+03 Bugun ve Brifingler.dc.html	template	Hazırlan
+03 Bugun ve Brifingler.dc.html	template	SON TARİH
+03 Bugun ve Brifingler.dc.html	template	Başvuru bugün 17:00'de kapanıyor.
+03 Bugun ve Brifingler.dc.html	template	Gmail · Girişim Programı · Dün 16:10
+03 Bugun ve Brifingler.dc.html	template	Takvime Ekle
+03 Bugun ve Brifingler.dc.html	template	TAKİP
+03 Bugun ve Brifingler.dc.html	template	3 gün
+03 Bugun ve Brifingler.dc.html	template	Gönderdiğin teklif mailine 3 gündür cevap gelmedi.
+03 Bugun ve Brifingler.dc.html	template	Gmail · Mehmet Yılmaz · 2 Eyl
+03 Bugun ve Brifingler.dc.html	template	Takip Mesajı Hazırla
+03 Bugun ve Brifingler.dc.html	template	Yarın Hatırlat
+03 Bugun ve Brifingler.dc.html	template	KİŞİSEL
+03 Bugun ve Brifingler.dc.html	template	Bugün
+03 Bugun ve Brifingler.dc.html	template	Trendyol siparişin bugün geliyor.
+03 Bugun ve Brifingler.dc.html	template	Kargo · Yurtiçi · 14:00–18:00
+03 Bugun ve Brifingler.dc.html	template	Takip Et
+03 Bugun ve Brifingler.dc.html	template	Akış
+03 Bugun ve Brifingler.dc.html	template	Plan
+03 Bugun ve Brifingler.dc.html	template	Asistan
+03 Bugun ve Brifingler.dc.html	template	Hero tek cümle + insani bağlam satırı; KPI kutusu yok. Kartlar: rozet (yalnızca anlam), başlık, kaynak satırı, en fazla 2 aksiyon. Sağ üstteki onay rozeti bekleyen yazma işlemi varsa görünür.
+03 Bugun ve Brifingler.dc.html	template	Bugün · Dark
+03 Bugun ve Brifingler.dc.html	template	İyi akşamlar, Yunus
+03 Bugun ve Brifingler.dc.html	template	AKŞAM KAPANIŞI HAZIR
+03 Bugun ve Brifingler.dc.html	template	Bugünden yarına
+03 Bugun ve Brifingler.dc.html	template	konu kaldı.
+03 Bugun ve Brifingler.dc.html	template	4 tamamlandı · 2 takip · Yarın 09:00 Haftalık ekip
+03 Bugun ve Brifingler.dc.html	template	Kapanışı Gör
+03 Bugun ve Brifingler.dc.html	template	Dinle · 1 dk
+03 Bugun ve Brifingler.dc.html	template	YARINA KALANLAR
+03 Bugun ve Brifingler.dc.html	template	3 konu
+03 Bugun ve Brifingler.dc.html	template	Yarın 12:00
+03 Bugun ve Brifingler.dc.html	template	Selin sözleşme taslağı için yorumunu bekliyor.
+03 Bugun ve Brifingler.dc.html	template	Gmail · Selin Kaya · 15:40
+03 Bugun ve Brifingler.dc.html	template	Sabah Hatırlat
+03 Bugun ve Brifingler.dc.html	template	TAAHHÜT
+03 Bugun ve Brifingler.dc.html	template	Yarın
+03 Bugun ve Brifingler.dc.html	template	Mehmet'e teklif gönder
+03 Bugun ve Brifingler.dc.html	template	Toplantı sonrası “yarın göndereceğim” dedin.
+03 Bugun ve Brifingler.dc.html	template	Toplantı notu · 15:31
+03 Bugun ve Brifingler.dc.html	template	Planla
+03 Bugun ve Brifingler.dc.html	template	Ertele
+03 Bugun ve Brifingler.dc.html	template	Yarın 09:15
+03 Bugun ve Brifingler.dc.html	template	TK2412 · İstanbul → Antalya
+03 Bugun ve Brifingler.dc.html	template	06:45'te evden çıkman gerekebilir. Check-in açık.
+03 Bugun ve Brifingler.dc.html	template	THY · Rezervasyon maili · 28 Ağu
+03 Bugun ve Brifingler.dc.html	template	Check-in
+03 Bugun ve Brifingler.dc.html	template	Alarm Kur
+03 Bugun ve Brifingler.dc.html	template	Dark: sıcak siyah #141311, yüzey #1F1E1B, hairline %6 beyaz. Marka indigosu aydınlatılır (#8586F2); acil coral #F08B78. Akşam saatlerinde hero otomatik olarak kapanış moduna geçer.
+03 Bugun ve Brifingler.dc.html	template	Sabah Brifingi · Tam ekran
+03 Bugun ve Brifingler.dc.html	template	SABAH BRİFİNGİ · 5 EYLÜL
+03 Bugun ve Brifingler.dc.html	template	Günaydın Yunus
+03 Bugun ve Brifingler.dc.html	template	Bugün oldukça sakin bir günün var.
+03 Bugun ve Brifingler.dc.html	template	Öğlene kadar toplantın bulunmuyor. Saat 14:30'da Mehmet ile müşteri toplantın var. Toplantı öncesinde dün gelen fiyat teklifine bakman faydalı olabilir. Gelen 46 mail arasında 3 konu dikkat gerektiriyor.
+03 Bugun ve Brifingler.dc.html	template	46 mail, 1 takvim, 3 gün geçmiş analiz edildi · 07:58
+03 Bugun ve Brifingler.dc.html	template	Brifingi Dinle · 2 dk
+03 Bugun ve Brifingler.dc.html	template	Şafak gradyanı + Lora anlatı: günün tek “editoryal” anı. Altı bölüm sabit sırada; boş bölüm gizlenir. Her satır kaynağına gider.
+03 Bugun ve Brifingler.dc.html	template	3.3D
+03 Bugun ve Brifingler.dc.html	template	Sabah Brifingi · Dark
+03 Bugun ve Brifingler.dc.html	template	Şafak gradyanı her iki modda aynı; içerik yüzeyi #141311, kartlar #1F1E1B + %6 beyaz hairline. Ink CTA yerine dark primary (#8586F2, üzerinde #0F0F2A).
+03 Bugun ve Brifingler.dc.html	template	Sesli Brifing
+03 Bugun ve Brifingler.dc.html	template	SESLİ BRİFİNG
+03 Bugun ve Brifingler.dc.html	template	1.0x
+03 Bugun ve Brifingler.dc.html	template	Sabah Brifingi
+03 Bugun ve Brifingler.dc.html	template	5 Eylül · 2 dk 14 sn · Bugünün öncelikleri
+03 Bugun ve Brifingler.dc.html	template	Genel bakış
+03 Bugun ve Brifingler.dc.html	template	Bugünün öncelikleri
+03 Bugun ve Brifingler.dc.html	template	Programın
+03 Bugun ve Brifingler.dc.html	template	Cevap bekleyenler
+03 Bugun ve Brifingler.dc.html	template	Son tarihler
+03 Bugun ve Brifingler.dc.html	template	Kişisel gelişmeler
+03 Bugun ve Brifingler.dc.html	template	Bölümler kısa; dinlerken sekmelere dokunarak atlanır. 15 sn ileri/geri, hız 1.0 → 1.25 → 1.5. Kilit ekranı ve CarPlay için aynı bölüm yapısı kullanılır.
+03 Bugun ve Brifingler.dc.html	template	Öğle Nabzı · 13:00
+03 Bugun ve Brifingler.dc.html	template	ÖĞLE NABZI
+03 Bugun ve Brifingler.dc.html	template	SABAHTAN BERİ
+03 Bugun ve Brifingler.dc.html	template	Sabahından beri
+03 Bugun ve Brifingler.dc.html	template	önemli gelişme oldu.
+03 Bugun ve Brifingler.dc.html	template	TAKVİM
+03 Bugun ve Brifingler.dc.html	template	Mehmet toplantıyı 16:00'ya almak istiyor.
+03 Bugun ve Brifingler.dc.html	template	16:00 Ürün gözden geçirme ile çakışır. 16:30 senin için boş.
+03 Bugun ve Brifingler.dc.html	template	Gmail · Mehmet Yılmaz · 12:12
+03 Bugun ve Brifingler.dc.html	template	16:30 Öner
+03 Bugun ve Brifingler.dc.html	template	Seçenekleri Gör
+03 Bugun ve Brifingler.dc.html	template	Gönderdiğin teklife henüz cevap gelmedi.
+03 Bugun ve Brifingler.dc.html	template	Toplantıda Sor
+03 Bugun ve Brifingler.dc.html	template	GÜNÜN GERİ KALANI
+03 Bugun ve Brifingler.dc.html	template	Mehmet ile müşteri toplantısı
+03 Bugun ve Brifingler.dc.html	template	Hazır
+03 Bugun ve Brifingler.dc.html	template	Başvuru son saati
+03 Bugun ve Brifingler.dc.html	template	4 sa kaldı
+03 Bugun ve Brifingler.dc.html	template	Akşam yemeği · Karaköy
+03 Bugun ve Brifingler.dc.html	template	4 kişi
+03 Bugun ve Brifingler.dc.html	template	Tamam
+03 Bugun ve Brifingler.dc.html	template	Sadece delta: sabahtan beri değişenler. Gelişme yoksa bildirim gönderilmez; ekran “Her şey planlandığı gibi.” tek satırıyla açılır.
+03 Bugun ve Brifingler.dc.html	template	Akşam Kapanışı · 19:00
+03 Bugun ve Brifingler.dc.html	template	AKŞAM KAPANIŞI · 5 EYLÜL
+03 Bugun ve Brifingler.dc.html	template	Bugünden yarına 3 konu kaldı.
+03 Bugun ve Brifingler.dc.html	template	4 konuyu kapattın. Yarın 09:00'da başlıyorsun.
+03 Bugun ve Brifingler.dc.html	template	TAMAMLANANLAR · 4
+03 Bugun ve Brifingler.dc.html	template	Ahmet'e revize teklif gönderildi
+03 Bugun ve Brifingler.dc.html	template	Girişim programı başvurusu
+03 Bugun ve Brifingler.dc.html	template	Kargo teslim alındı
+03 Bugun ve Brifingler.dc.html	template	YARINA KALANLAR · 3
+03 Bugun ve Brifingler.dc.html	template	Selin'e sözleşme yorumu
+03 Bugun ve Brifingler.dc.html	template	Taahhüt
+03 Bugun ve Brifingler.dc.html	template	Elektrik faturası · 1.842 TL
+03 Bugun ve Brifingler.dc.html	template	10 Eyl
+03 Bugun ve Brifingler.dc.html	template	TAKİP EDİLECEKLER · 2
+03 Bugun ve Brifingler.dc.html	template	Mehmet · Teklif v2 geri bildirimi
+03 Bugun ve Brifingler.dc.html	template	4. gün
+03 Bugun ve Brifingler.dc.html	template	Hukuk · Sözleşme yorumu
+03 Bugun ve Brifingler.dc.html	template	15. gün
+03 Bugun ve Brifingler.dc.html	template	YARININ İLK ETKİNLİĞİ
+03 Bugun ve Brifingler.dc.html	template	Haftalık ekip
+03 Bugun ve Brifingler.dc.html	template	60 dk · Ofis · 07:50'de çıkman yeterli
+03 Bugun ve Brifingler.dc.html	template	Yarına Hazırım
+03 Bugun ve Brifingler.dc.html	template	Alacakaranlık gradyanı sabahın tersi. “Yarına Hazırım” akşam bildirimlerini sessize alır ve sabah brifingini planlar.
+03 Bugun ve Brifingler.dc.html	template	Haftalık Özet · Editoryal
+03 Bugun ve Brifingler.dc.html	template	1–7 EYLÜL
+03 Bugun ve Brifingler.dc.html	template	Haftalık özet
+03 Bugun ve Brifingler.dc.html	template	Haftan nasıl geçti?
+03 Bugun ve Brifingler.dc.html	template	Bu hafta
+03 Bugun ve Brifingler.dc.html	template	mail geldi. Bunların yalnızca
+03 Bugun ve Brifingler.dc.html	template	'si dikkatini gerektirdi; gerisini senin için okudum. Çarşamba en yoğun günündü: 6 toplantı, arada 20 dakika bile boşluk yoktu.
+03 Bugun ve Brifingler.dc.html	template	mail analiz edildi
+03 Bugun ve Brifingler.dc.html	template	önemli konu öne çıkarıldı
+03 Bugun ve Brifingler.dc.html	template	toplantı, 14'üne hazırlık notu
+03 Bugun ve Brifingler.dc.html	template	takip, 6'sı cevaplandı
+03 Bugun ve Brifingler.dc.html	template	son tarih, hiçbiri kaçmadı
+03 Bugun ve Brifingler.dc.html	template	KAZANDIĞIN ZAMAN
+03 Bugun ve Brifingler.dc.html	template	2 saat 48 dakika
+03 Bugun ve Brifingler.dc.html	template	Okunmayan 652 mail, 14 hazırlık notu ve 6 takip taslağı üzerinden tahmin.
+03 Bugun ve Brifingler.dc.html	template	Gelecek hafta: Salı 3 son tarih var, Perşembe öğleden sonra tamamen boş. Teklif hazırlamak için orayı öneriyorum.
+03 Bugun ve Brifingler.dc.html	template	Dijital Haftamı Paylaş
+03 Bugun ve Brifingler.dc.html	template	Analytics değil, editoryal: Lora sayılar, satır aralı liste, tek koyu vurgu kartı. Sayfa Pazar 18:00'de hazır olur.
+03 Bugun ve Brifingler.dc.html	template	“Dijital Haftam” paylaşım kartı · 1080×1350
+03 Bugun ve Brifingler.dc.html	template	Dijital Asistan
+03 Bugun ve Brifingler.dc.html	template	DİJİTAL HAFTAM · 1–7 EYLÜL
+03 Bugun ve Brifingler.dc.html	template	684 maili okumadım.
+03 Bugun ve Brifingler.dc.html	template	Önemli 32'sini gördüm.
+03 Bugun ve Brifingler.dc.html	template	toplantı
+03 Bugun ve Brifingler.dc.html	template	2 sa 48 dk
+03 Bugun ve Brifingler.dc.html	template	kazandım
+03 Bugun ve Brifingler.dc.html	template	Bugün bilmen gerekenleri, sen sormadan söyler.
+03 Bugun ve Brifingler.dc.html	template	Kişisel detay yok: isim, kişi, konu başlığı içermez. Sadece toplamlar ve kazanılan zaman. 1080×1350 (4:5) ve 1080×1920 (story) varyantı aynı kalıptan üretilir.
+03 Bugun ve Brifingler.dc.html	data	BUGÜNÜN ÖNCELİKLERİ
+03 Bugun ve Brifingler.dc.html	data	Ahmet'e revize teklif
+03 Bugun ve Brifingler.dc.html	data	Acil · 17:00
+03 Bugun ve Brifingler.dc.html	data	14:30 · Hazırlık öneriliyor
+03 Bugun ve Brifingler.dc.html	data	Başvuru 17:00'de kapanıyor
+03 Bugun ve Brifingler.dc.html	data	Son tarih
+03 Bugun ve Brifingler.dc.html	data	14:30 · 60 dk · Ofis
+03 Bugun ve Brifingler.dc.html	data	Ürün gözden geçirme
+03 Bugun ve Brifingler.dc.html	data	16:00 · 30 dk · Online
+03 Bugun ve Brifingler.dc.html	data	Akşam yemeği rezervasyonu
+03 Bugun ve Brifingler.dc.html	data	20:30 · Karaköy
+03 Bugun ve Brifingler.dc.html	data	SENDEN CEVAP BEKLEYENLER
+03 Bugun ve Brifingler.dc.html	data	Ahmet Yılmaz · Revize teklif
+03 Bugun ve Brifingler.dc.html	data	Bugün 17:00
+03 Bugun ve Brifingler.dc.html	data	Selin Kaya · Sözleşme taslağı
+03 Bugun ve Brifingler.dc.html	data	3 saattir bekliyor
+03 Bugun ve Brifingler.dc.html	data	SENİN CEVAP BEKLEDİKLERİN
+03 Bugun ve Brifingler.dc.html	data	Mehmet Yılmaz · Teklif
+03 Bugun ve Brifingler.dc.html	data	3 gündür yanıt yok
+03 Bugun ve Brifingler.dc.html	data	SON TARİHLER
+03 Bugun ve Brifingler.dc.html	data	10 Eylül
+03 Bugun ve Brifingler.dc.html	data	KİŞİSEL GELİŞMELER
+03 Bugun ve Brifingler.dc.html	data	Trendyol siparişin bugün geliyor
+03 Bugun ve Brifingler.dc.html	data	TK2412 İstanbul → Antalya
+03 Bugun ve Brifingler.dc.html	data	Netflix yenilenecek
+03 Bugun ve Brifingler.dc.html	data	9 Eylül
+04 Akis ve Mail.dc.html	template	← Prototip ve IA
+04 Akis ve Mail.dc.html	template	01 Sistem
+04 Akis ve Mail.dc.html	template	02 Onboarding
+04 Akis ve Mail.dc.html	template	03 Bugün
+04 Akis ve Mail.dc.html	template	04 Akış
+04 Akis ve Mail.dc.html	template	05 Plan
+04 Akis ve Mail.dc.html	template	06 Asistan
+04 Akis ve Mail.dc.html	template	07 Hesap
+04 Akis ve Mail.dc.html	template	08 Durumlar
+04 Akis ve Mail.dc.html	template	09 Pazarlama
+04 Akis ve Mail.dc.html	template	04 · Akış ve Mail Zekâsı
+04 Akis ve Mail.dc.html	template	Akış bir gelen kutusu değil, dikkat akışıdır: tüm kaynaklardan gelen sinyaller tek kart kalıbında (kaynak · rozet · başlık · AI özeti · aksiyon). Ham mail metni hiçbir listede görünmez; yalnızca mail detayında “Orijinal Mail” altında açılır. Her AI çıkarımının altında kaynak satırı vardır.
+04 Akis ve Mail.dc.html	template	Akış · Tümü
+04 Akis ve Mail.dc.html	template	Akış
+04 Akis ve Mail.dc.html	template	Ekle
+04 Akis ve Mail.dc.html	template	Tümü
+04 Akis ve Mail.dc.html	template	Önemli
+04 Akis ve Mail.dc.html	template	Mail
+04 Akis ve Mail.dc.html	template	Takvim
+04 Akis ve Mail.dc.html	template	Takip
+04 Akis ve Mail.dc.html	template	Kişisel
+04 Akis ve Mail.dc.html	template	10 konu · 5 önemli · Son analiz 09:40
+04 Akis ve Mail.dc.html	template	Bugün
+04 Akis ve Mail.dc.html	template	Plan
+04 Akis ve Mail.dc.html	template	Asistan
+04 Akis ve Mail.dc.html	template	Sıralama: aciliyet → zaman. Renkli rozet yalnızca ACİL, SON TARİH ve GÜVENLİK için; diğer rozetler nötr. Sağa kaydırma: Tamamlandı, sola kaydırma: Ertele / Önemli değil.
+04 Akis ve Mail.dc.html	template	Akış · Kişisel filtresi · Dark
+04 Akis ve Mail.dc.html	template	6 konu · 1 önemli
+04 Akis ve Mail.dc.html	template	Kişisel filtre = yaşam zekâsı: kargo, uçuş, ödeme, abonelik, rezervasyon, güvenlik. Aynı kart kalıbı; yalnızca ikon değişir.
+04 Akis ve Mail.dc.html	template	Mail Zekâsı · Gelen kutusu yerine anlama
+04 Akis ve Mail.dc.html	template	MAİL ZEKÂSI · BUGÜN
+04 Akis ve Mail.dc.html	template	mail geldi
+04 Akis ve Mail.dc.html	template	tanesi dikkat gerektiriyor.
+04 Akis ve Mail.dc.html	template	77'sini senin için okudum; 44'ü düşük öncelikli, 31'i bilgilendirme.
+04 Akis ve Mail.dc.html	template	ÖNEMLİ · 3
+04 Akis ve Mail.dc.html	template	AY
+04 Akis ve Mail.dc.html	template	Ahmet Yılmaz
+04 Akis ve Mail.dc.html	template	ACİL
+04 Akis ve Mail.dc.html	template	Revize fiyat teklifini bugün 17:00'ye kadar PDF olarak istiyor.
+04 Akis ve Mail.dc.html	template	Yanıt Hazırla
+04 Akis ve Mail.dc.html	template	SK
+04 Akis ve Mail.dc.html	template	Selin Kaya
+04 Akis ve Mail.dc.html	template	Dün 15:40
+04 Akis ve Mail.dc.html	template	Sözleşme taslağının 4. maddesi için yorumunu bekliyor; yarın öğlen hukuka gidecek.
+04 Akis ve Mail.dc.html	template	GP
+04 Akis ve Mail.dc.html	template	Girişim Programı
+04 Akis ve Mail.dc.html	template	SON TARİH
+04 Akis ve Mail.dc.html	template	Dün
+04 Akis ve Mail.dc.html	template	Başvuru bugün 17:00'de kapanıyor; form yaklaşık 10 dakika.
+04 Akis ve Mail.dc.html	template	Takvime Ekle
+04 Akis ve Mail.dc.html	template	Büyük sayı yalnızca burada: 83 → 6 hikâyesi. Bant grafiği üç dilim (dikkat / bilgi / düşük). Kategoriler sabit; boş kategori sayısı 0 olur, gizlenmez.
+04 Akis ve Mail.dc.html	template	Mail Detayı · AI özeti önce
+04 Akis ve Mail.dc.html	template	MY
+04 Akis ve Mail.dc.html	template	Mehmet Yılmaz
+04 Akis ve Mail.dc.html	template	Bugün 08:42 · Gmail · Sana
+04 Akis ve Mail.dc.html	template	Re: Eylül teklifi – revize fiyat
+04 Akis ve Mail.dc.html	template	AI ÖZETİ
+04 Akis ve Mail.dc.html	template	Mehmet revize fiyat teklifinin bugün 17:00'ye kadar gönderilmesini istiyor.
+04 Akis ve Mail.dc.html	template	ÖNEMLİ NOKTALAR
+04 Akis ve Mail.dc.html	template	Revize fiyat
+04 Akis ve Mail.dc.html	template	Deadline 17:00
+04 Akis ve Mail.dc.html	template	PDF gönderilecek
+04 Akis ve Mail.dc.html	template	ÖNERİLEN AKSİYONLAR
+04 Akis ve Mail.dc.html	template	Görev Oluştur
+04 Akis ve Mail.dc.html	template	Hatırlat
+04 Akis ve Mail.dc.html	template	Orijinal Mail
+04 Akis ve Mail.dc.html	template	Merhaba Yunus, Geçen hafta konuştuğumuz teklifi revize edebilir misin? Yönetim bugün saat 17:00'ye kadar güncellenmiş fiyatı PDF olarak görmek istiyor. Teslim tarihini de netleştirsek iyi olur. Teşekkürler, Mehmet
+04 Akis ve Mail.dc.html	template	Kaynak: Gmail · mehmet.yilmaz@… · Gelen Kutusu · Konu dizisi 4 mail
+04 Akis ve Mail.dc.html	template	Sıra: kim · konu · AI özeti · aksiyonlar · orijinal. Orijinal mail varsayılan kapalı ama her zaman bir dokunuş uzakta; kaynak satırı en altta sabittir.
+04 Akis ve Mail.dc.html	template	AI Yanıt Taslağı · Onay gerektirir
+04 Akis ve Mail.dc.html	template	YANIT TASLAĞI
+04 Akis ve Mail.dc.html	template	Kime
+04 Akis ve Mail.dc.html	template	Re: Eylül teklifi
+04 Akis ve Mail.dc.html	template	Kısa
+04 Akis ve Mail.dc.html	template	Profesyonel
+04 Akis ve Mail.dc.html	template	Samimi
+04 Akis ve Mail.dc.html	template	Detaylı
+04 Akis ve Mail.dc.html	template	AI TASLAĞI · PROFESYONEL
+04 Akis ve Mail.dc.html	template	Düzenlenebilir
+04 Akis ve Mail.dc.html	template	Merhaba Mehmet, Talebiniz için teşekkürler. Revize fiyat teklifini, güncellenmiş teslim tarihiyle birlikte bugün 17:00'den önce PDF formatında iletiyor olacağım. Sorularınız olursa memnuniyetle yardımcı olurum. İyi çalışmalar, Yunus
+04 Akis ve Mail.dc.html	template	Teklif_v3.pdf ekle
+04 Akis ve Mail.dc.html	template	Kısalt
+04 Akis ve Mail.dc.html	template	Sen onaylamadan hiçbir mail gönderilmez.
+04 Akis ve Mail.dc.html	template	Göndermeyi Onayla
+04 Akis ve Mail.dc.html	template	Düzenle
+04 Akis ve Mail.dc.html	template	Ton seçimi taslağı anında değiştirir (prototipte çalışır). Buton adı “Gönder” değil “Göndermeyi Onayla”: yazma işlemi dili her yerde onay dilidir.
+04 Akis ve Mail.dc.html	template	Akıllı Takip · Senin cevap beklediklerin
+04 Akis ve Mail.dc.html	template	Takip Etmen Gerekenler
+04 Akis ve Mail.dc.html	template	3 gönderdiğin mail yanıtsız. En eskisi 6 gün.
+04 Akis ve Mail.dc.html	template	Takip Mesajı Hazırla
+04 Akis ve Mail.dc.html	template	Yarın Hatırlat
+04 Akis ve Mail.dc.html	template	Kapat
+04 Akis ve Mail.dc.html	template	Bir kişiyi “Takip etme” dersen, o kişiden bekleyen mailleri bir daha göstermem.
+04 Akis ve Mail.dc.html	template	Bekleme süresi rozeti 3 günden sonra amber, 7 günden sonra coral. “Takip Mesajı Hazırla” → 4.5 ile aynı taslak ekranı, takip tonunda.
+04 Akis ve Mail.dc.html	template	Senden Beklenenler · Acil / Bugün / Yakında
+04 Akis ve Mail.dc.html	template	Senden Beklenenler
+04 Akis ve Mail.dc.html	template	4 kişi cevabını bekliyor.
+04 Akis ve Mail.dc.html	template	Yanıtla
+04 Akis ve Mail.dc.html	template	Kart: kişi · konu · ne bekleniyor · son tarih · bekleme süresi. Bölüm başlıkları renkli nokta taşır, kartlar nötr kalır.
+04 Akis ve Mail.dc.html	template	Taahhütler · Verdiğin sözler
+04 Akis ve Mail.dc.html	template	Taahhütlerin
+04 Akis ve Mail.dc.html	template	Mail ve notlarında verdiğin sözleri yakaladım. 3 açık, 1 gecikmiş.
+04 Akis ve Mail.dc.html	template	Taahhüt
+04 Akis ve Mail.dc.html	template	Kaynak
+04 Akis ve Mail.dc.html	template	Tamamlandı
+04 Akis ve Mail.dc.html	template	Ertele
+04 Akis ve Mail.dc.html	template	Kaynağı Gör
+04 Akis ve Mail.dc.html	template	Söz alıntısı Lora italik: kullanıcının kendi sesi. Durum rozeti: AÇIK (nötr), BUGÜN (amber), GECİKMİŞ (coral), TAMAMLANDI (yeşil).
+04 Akis ve Mail.dc.html	template	Yaşam Zekâsı · 6 kart kalıbı
+04 Akis ve Mail.dc.html	template	Mail ve bildirimlerinden türetilen yaşam sinyalleri.
+04 Akis ve Mail.dc.html	template	Tek kalıp, altı kategori: ikon karosu kategoriye göre hafif tonlanır (nötr, güvenlik hariç). Uçuşta rota tipografik ok ile; ödemede tutar başlıkta, son gün alt satırda.
+04 Akis ve Mail.dc.html	template	Evrensel Yakalama · Ekran görüntüsü
+04 Akis ve Mail.dc.html	template	EKLE
+04 Akis ve Mail.dc.html	template	Fotoğraf
+04 Akis ve Mail.dc.html	template	Ekran görüntüsü
+04 Akis ve Mail.dc.html	template	PDF
+04 Akis ve Mail.dc.html	template	Link
+04 Akis ve Mail.dc.html	template	ekran görüntüsü · konser afişi
+04 Akis ve Mail.dc.html	template	TARİH · YER
+04 Akis ve Mail.dc.html	template	ETKİNLİK TESPİT EDİLDİ
+04 Akis ve Mail.dc.html	template	Konser · Zorlu PSM
+04 Akis ve Mail.dc.html	template	12 Eylül
+04 Akis ve Mail.dc.html	template	Zorlu PSM
+04 Akis ve Mail.dc.html	template	O akşam takvimin boş. 19:10'da çıkman gerekebilir.
+04 Akis ve Mail.dc.html	template	Paylaşım menüsünden de gelir (iOS Share Sheet / Android Intent). Tespit kutusu görüntü üzerinde işaretlenir; çıkarılan alanlar çip olarak düzenlenebilir.
+04 Akis ve Mail.dc.html	template	Yakalama · Fatura fotoğrafı + Akıllı hatırlatıcı
+04 Akis ve Mail.dc.html	template	EKLE · FOTOĞRAF
+04 Akis ve Mail.dc.html	template	fotoğraf · elektrik faturası
+04 Akis ve Mail.dc.html	template	FATURA TESPİT EDİLDİ
+04 Akis ve Mail.dc.html	template	Elektrik · CK Enerji
+04 Akis ve Mail.dc.html	template	1.842 TL
+04 Akis ve Mail.dc.html	template	Son ödeme
+04 Akis ve Mail.dc.html	template	15 Eylül
+04 Akis ve Mail.dc.html	template	· Abone no ···· 4821
+04 Akis ve Mail.dc.html	template	Ne zaman hatırlatayım?
+04 Akis ve Mail.dc.html	template	Elektrik faturası · Son ödeme 15 Eylül
+04 Akis ve Mail.dc.html	template	30 dakika önce
+04 Akis ve Mail.dc.html	template	1 saat önce
+04 Akis ve Mail.dc.html	template	Bu akşam
+04 Akis ve Mail.dc.html	template	Yarın sabah
+04 Akis ve Mail.dc.html	template	Özel zaman
+04 Akis ve Mail.dc.html	template	Uygun zamanda
+04 Akis ve Mail.dc.html	template	Takvimine göre: 13 Eylül Cumartesi 10:00
+04 Akis ve Mail.dc.html	template	Akıllı hatırlatıcı sayfası ürünün tek hatırlatıcı bileşenidir; her yerden aynı 6 seçenek. “Uygun zamanda” takvim boşluğuna ve mesai saatine göre seçilir, gerekçesi altında yazar.
+04 Akis ve Mail.dc.html	template	4.12a
+04 Akis ve Mail.dc.html	template	Yakalama · PDF · Seçim
+04 Akis ve Mail.dc.html	template	Bir not yaz veya yapıştır…
+04 Akis ve Mail.dc.html	template	PDF seç
+04 Akis ve Mail.dc.html	template	Son dosyalar · Mail eklerinden ve Dosyalar'dan
+04 Akis ve Mail.dc.html	template	Hizmet_Sozlesmesi_v3.pdf
+04 Akis ve Mail.dc.html	template	14 sayfa · 1,2 MB · Mehmet Yılmaz · Dün
+04 Akis ve Mail.dc.html	template	Teklif_v2.pdf
+04 Akis ve Mail.dc.html	template	3 sayfa · Sen · 2 Eyl
+04 Akis ve Mail.dc.html	template	Fatura_Eylul.pdf
+04 Akis ve Mail.dc.html	template	1 sayfa · CK Enerji · 1 Eyl
+04 Akis ve Mail.dc.html	template	Dosyalar'dan seç…
+04 Akis ve Mail.dc.html	template	Analiz Et
+04 Akis ve Mail.dc.html	template	Ekle girişi: üstte metin alanı, altta 4 kaynak karosu. PDF karosu seçilince son dosyalar alt sayfası; mail ekleri otomatik listelenir. Analiz yalnızca “Analiz Et” ile başlar.
+04 Akis ve Mail.dc.html	template	4.12b
+04 Akis ve Mail.dc.html	template	Yakalama · PDF · Analiz ediliyor
+04 Akis ve Mail.dc.html	template	EKLE · PDF
+04 Akis ve Mail.dc.html	template	pdf önizleme · Hizmet_Sozlesmesi_v3 · s.3
+04 Akis ve Mail.dc.html	template	TARİH
+04 Akis ve Mail.dc.html	template	14 sayfa okundu
+04 Akis ve Mail.dc.html	template	3 tarih bulundu
+04 Akis ve Mail.dc.html	template	s.3, s.9, s.14
+04 Akis ve Mail.dc.html	template	Yükümlülükler ve görevler çıkarılıyor…
+04 Akis ve Mail.dc.html	template	Takvim uygunluğu kontrol ediliyor
+04 Akis ve Mail.dc.html	template	Belge cihazında özetlenir; içerik saklanmaz, yalnızca çıkarılan öğeler.
+04 Akis ve Mail.dc.html	template	İptal
+04 Akis ve Mail.dc.html	template	İlk Analiz ekranıyla aynı kalıp: ilerleme çubuğu yok, bulgu listesi. Önizlemede tespit edilen alan işaretlenir. İptal her an mümkün.
+04 Akis ve Mail.dc.html	template	4.12c
+04 Akis ve Mail.dc.html	template	Yakalama · PDF · Tespit + öneriler
+04 Akis ve Mail.dc.html	template	14 sayfa · Mehmet Yılmaz · Dün
+04 Akis ve Mail.dc.html	template	Aç
+04 Akis ve Mail.dc.html	template	SÖZLEŞME TESPİT EDİLDİ · 3 ÖĞE
+04 Akis ve Mail.dc.html	template	Hizmet Sözleşmesi · Yılmaz Endüstri
+04 Akis ve Mail.dc.html	template	Taraflar, 12 aylık hizmet, 3 tarih ve 1 yükümlülük bulundu.
+04 Akis ve Mail.dc.html	template	İmza için son gün · 19 Eylül
+04 Akis ve Mail.dc.html	template	Kaynak: s.14, madde 9.2
+04 Akis ve Mail.dc.html	template	GÖREV
+04 Akis ve Mail.dc.html	template	Hukuktan 4. madde yorumu iste · 12 Eylül'e kadar
+04 Akis ve Mail.dc.html	template	Kaynak: s.3, cezai şart maddesi
+04 Akis ve Mail.dc.html	template	ETKİNLİK
+04 Akis ve Mail.dc.html	template	Sözleşme görüşmesi · 17 Eylül 11:00
+04 Akis ve Mail.dc.html	template	Kaynak: s.9 · O saat takvimin boş
+04 Akis ve Mail.dc.html	template	Takvime Ekle · 1
+04 Akis ve Mail.dc.html	template	Görev Oluştur · 1
+04 Akis ve Mail.dc.html	template	Hatırlat · 1
+04 Akis ve Mail.dc.html	template	Mehmet'e bağla
+04 Akis ve Mail.dc.html	template	3 Öğeyi Onaya Gönder
+04 Akis ve Mail.dc.html	template	Her öğe tipine göre karo rengi (son tarih amber, etkinlik mavi, görev nötr), altında sayfa kaynağı. Öğeler tek tek seçilebilir; CTA sayıyı söyler.
+04 Akis ve Mail.dc.html	template	4.12d
+04 Akis ve Mail.dc.html	template	Yakalama · PDF · Onay
+04 Akis ve Mail.dc.html	template	Onay · 3 işlem
+04 Akis ve Mail.dc.html	template	Sen onaylamadan hiçbiri yapılmaz. İstemediğini kaldır.
+04 Akis ve Mail.dc.html	template	TAKVİME EKLE
+04 Akis ve Mail.dc.html	template	Sözleşme görüşmesi · 17 Eyl 11:00
+04 Akis ve Mail.dc.html	template	Google Takvim · 60 dk · 30 dk önce hatırlatma
+04 Akis ve Mail.dc.html	template	GÖREV OLUŞTUR
+04 Akis ve Mail.dc.html	template	Hukuktan 4. madde yorumu iste
+04 Akis ve Mail.dc.html	template	Plan · 12 Eyl · Önerilen blok: 10 Eyl 14:00
+04 Akis ve Mail.dc.html	template	HATIRLATICI
+04 Akis ve Mail.dc.html	template	İmza son günü · 19 Eyl
+04 Akis ve Mail.dc.html	template	Uygun zamanda: 18 Eyl 09:10
+04 Akis ve Mail.dc.html	template	Onayla · 3
+04 Akis ve Mail.dc.html	template	Vazgeç
+04 Akis ve Mail.dc.html	template	Onaylananlar Onay Merkezi geçmişine yazılır.
+04 Akis ve Mail.dc.html	template	Kullanıcının kendi başlattığı yakalamada tek onay sayfası; her satır Onay Merkezi kart sözleşmesini taşır (ne · nereye · ne değişecek). AI'ın kendi önerileri ise Onay Merkezi'nde tek tek kalır.
+04 Akis ve Mail.dc.html	template	4.13a
+04 Akis ve Mail.dc.html	template	Yakalama · Link · Giriş
+04 Akis ve Mail.dc.html	template	EKLE · LİNK
+04 Akis ve Mail.dc.html	template	biletix.com/etkinlik/konser-zorlu-psm-12-eylul
+04 Akis ve Mail.dc.html	template	Panodan yapıştırıldı
+04 Akis ve Mail.dc.html	template	Temizle
+04 Akis ve Mail.dc.html	template	biletix.com
+04 Akis ve Mail.dc.html	template	Konser · Zorlu PSM · 12 Eylül
+04 Akis ve Mail.dc.html	template	Bağlantı önizlemesi
+04 Akis ve Mail.dc.html	template	SON EKLENEN LİNKLER
+04 Akis ve Mail.dc.html	template	karakoylokantasi.com/rezervasyon
+04 Akis ve Mail.dc.html	template	2 Eyl
+04 Akis ve Mail.dc.html	template	medium.com/…/ai-briefing-patterns
+04 Akis ve Mail.dc.html	template	28 Ağu
+04 Akis ve Mail.dc.html	template	Panodaki link otomatik önerilir ama kullanıcı onayı olmadan okunmaz (“Panodan yapıştırıldı” çipi). Önizleme kartı yalnızca başlık + alan adı.
+04 Akis ve Mail.dc.html	template	4.13b
+04 Akis ve Mail.dc.html	template	Yakalama · Link · Analiz ediliyor
+04 Akis ve Mail.dc.html	template	og:image · konser afişi
+04 Akis ve Mail.dc.html	template	Konser · Zorlu PSM · 12 Eylül 20:00
+04 Akis ve Mail.dc.html	template	Sayfa okundu
+04 Akis ve Mail.dc.html	template	Tür: etkinlik
+04 Akis ve Mail.dc.html	template	ürün · içerik · rezervasyon değil
+04 Akis ve Mail.dc.html	template	Tarih, saat, yer ve fiyat bulundu
+04 Akis ve Mail.dc.html	template	Takvim uygunluğu ve yol süresi kontrol ediliyor…
+04 Akis ve Mail.dc.html	template	Sayfa yalnızca bir kez okunur; çerez veya oturum paylaşılmaz.
+04 Akis ve Mail.dc.html	template	Tür sınıflandırması bulgu satırı olarak görünür (etkinlik / ürün / içerik / rezervasyon); yanlışsa sonraki ekranda değiştirilebilir.
+04 Akis ve Mail.dc.html	template	4.13c
+04 Akis ve Mail.dc.html	template	Yakalama · Link · Tespit + öneriler
+04 Akis ve Mail.dc.html	template	Etkinlik
+04 Akis ve Mail.dc.html	template	Ürün
+04 Akis ve Mail.dc.html	template	İçerik
+04 Akis ve Mail.dc.html	template	Rezervasyon
+04 Akis ve Mail.dc.html	template	2 bilet · 1.450 TL
+04 Akis ve Mail.dc.html	template	O akşam takvimin boş. 19:10'da çıkman gerekebilir. Bilet satışı 8 Eylül 10:00'da açılıyor.
+04 Akis ve Mail.dc.html	template	Kaynak: biletix.com · okunma 09:41
+04 Akis ve Mail.dc.html	template	Takvime ekle · 12 Eyl 20:00
+04 Akis ve Mail.dc.html	template	19:10 çıkış hatırlatması dahil
+04 Akis ve Mail.dc.html	template	Bilet satışı için hatırlat · 8 Eyl 09:55
+04 Akis ve Mail.dc.html	template	Satış açılmadan 5 dk önce
+04 Akis ve Mail.dc.html	template	Hafızaya kaydet
+04 Akis ve Mail.dc.html	template	“Zorlu konser” diye sorabilirsin
+04 Akis ve Mail.dc.html	template	2 Öğeyi Onaya Gönder
+04 Akis ve Mail.dc.html	template	Tür çipleri (etkinlik · ürün · içerik · rezervasyon) kullanıcıya sınıflandırmayı düzeltme imkânı verir; ürün seçilirse öneriler fiyat takibi ve alışveriş hatırlatıcısına döner.
+04 Akis ve Mail.dc.html	template	4.13d
+04 Akis ve Mail.dc.html	template	Yakalama · Link · Onay
+04 Akis ve Mail.dc.html	template	Onay · 2 işlem
+04 Akis ve Mail.dc.html	template	Takviminde değişiklik yapmadan önce onayın gerekir.
+04 Akis ve Mail.dc.html	template	Konser · Zorlu PSM · 12 Eyl 20:00
+04 Akis ve Mail.dc.html	template	Neden
+04 Akis ve Mail.dc.html	template	Paylaştığın bağlantıda etkinlik bulundu.
+04 Akis ve Mail.dc.html	template	Değişim
+04 Akis ve Mail.dc.html	template	Google Takvim'e 1 etkinlik · 19:10 çıkış hatırlatması
+04 Akis ve Mail.dc.html	template	Bilet satışı · 8 Eyl 09:55
+04 Akis ve Mail.dc.html	template	1 hatırlatıcı · Takvimine yazılmaz
+04 Akis ve Mail.dc.html	template	Onayla · 2
+04 Akis ve Mail.dc.html	template	Onay satırları Onay Merkezi kartlarıyla aynı üç alanı taşır (ne · neden · ne değişecek). Onay sonrası başarı toast'ı ve Bugün'e dönüş.
+04 Akis ve Mail.dc.html	template	4.14a
+04 Akis ve Mail.dc.html	template	Yakalama · Metin · Giriş
+04 Akis ve Mail.dc.html	template	EKLE · METİN
+04 Akis ve Mail.dc.html	template	Perşembe 15:00 Ayşe ile kahve, öncesinde raporu bitir. Çarşamba akşamı bana hatırlat.
+04 Akis ve Mail.dc.html	template	Sesle yaz
+04 Akis ve Mail.dc.html	template	Yapıştır
+04 Akis ve Mail.dc.html	template	96 karakter
+04 Akis ve Mail.dc.html	template	Serbest yaz; tarih, kişi ve görevleri ben ayırırım.
+04 Akis ve Mail.dc.html	template	Metin girişi Ekle sayfasının en üstündeki alan; odaklanınca büyür (17px, Lora değil, gövde fontu). Mikrofon sesle dikte için, ses modu değil.
+04 Akis ve Mail.dc.html	template	4.14b
+04 Akis ve Mail.dc.html	template	Yakalama · Metin · Analiz ediliyor
+04 Akis ve Mail.dc.html	template	Perşembe 15:00
+04 Akis ve Mail.dc.html	template	Ayşe
+04 Akis ve Mail.dc.html	template	ile kahve, öncesinde
+04 Akis ve Mail.dc.html	template	raporu bitir
+04 Akis ve Mail.dc.html	template	Çarşamba akşamı
+04 Akis ve Mail.dc.html	template	bana hatırlat.
+04 Akis ve Mail.dc.html	template	kişi
+04 Akis ve Mail.dc.html	template	görev
+04 Akis ve Mail.dc.html	template	hatırlatıcı
+04 Akis ve Mail.dc.html	template	2 zaman ifadesi çözüldü
+04 Akis ve Mail.dc.html	template	Per 11 Eyl · Çar 10 Eyl
+04 Akis ve Mail.dc.html	template	Kişi eşleştirildi
+04 Akis ve Mail.dc.html	template	Ayşe Kara · Kişiler
+04 Akis ve Mail.dc.html	template	Görev ve hatırlatıcı ayrılıyor…
+04 Akis ve Mail.dc.html	template	Metin yerinde işaretlenir: anlam renkleri sistemdeki soft tonlar (zaman mavi, kişi indigo, görev nötr, hatırlatıcı amber). Belirsiz tarih (“Perşembe”) çözümü bulgu satırında açıkça yazar.
+04 Akis ve Mail.dc.html	template	4.14c
+04 Akis ve Mail.dc.html	template	Yakalama · Metin · Tespit + öneriler
+04 Akis ve Mail.dc.html	template	“Perşembe 15:00 Ayşe ile kahve, öncesinde raporu bitir. Çarşamba akşamı bana hatırlat.”
+04 Akis ve Mail.dc.html	template	3 ÖĞE TESPİT EDİLDİ
+04 Akis ve Mail.dc.html	template	Bir takvim olayı, bir görev ve bir hatırlatıcı. Rapor görevini kahveden 1 saat önceye koydum.
+04 Akis ve Mail.dc.html	template	TAKVİM OLAYI
+04 Akis ve Mail.dc.html	template	Ayşe ile kahve · Per 11 Eyl 15:00
+04 Akis ve Mail.dc.html	template	60 dk · Ayşe Kara davet edilsin mi?
+04 Akis ve Mail.dc.html	template	Evet
+04 Akis ve Mail.dc.html	template	Raporu bitir · Per 11 Eyl 14:00'a kadar
+04 Akis ve Mail.dc.html	template	Plan'da önerilen blok: Per 10:00–12:00
+04 Akis ve Mail.dc.html	template	Rapor için hatırlat · Çar 10 Eyl 19:00
+04 Akis ve Mail.dc.html	template	“Akşam” = 19:00 (brifing saatin)
+04 Akis ve Mail.dc.html	template	AI'ın yorumları görünür: “akşam = 19:00 (brifing saatin)”, “kahveden 1 saat önce”. Her yorum satır içinde düzeltilebilir; kaynak alıntı üstte italik.
+04 Akis ve Mail.dc.html	template	4.14d
+04 Akis ve Mail.dc.html	template	Yakalama · Metin · Onay + başarı
+04 Akis ve Mail.dc.html	template	3 öğe eklendi
+04 Akis ve Mail.dc.html	template	Kahve takviminde, rapor Plan'da, hatırlatıcı Çarşamba 19:00'da. Ayşe'ye davet gönderildi.
+04 Akis ve Mail.dc.html	template	Per 15:00
+04 Akis ve Mail.dc.html	template	Per 14:00
+04 Akis ve Mail.dc.html	template	Çar 19:00
+04 Akis ve Mail.dc.html	template	Bugün'e Dön
+04 Akis ve Mail.dc.html	template	Onaylandı · 3 işlem
+04 Akis ve Mail.dc.html	template	Geri al
+04 Akis ve Mail.dc.html	template	Onay sayfası PDF/Link ile aynıdır (4.12d kalıbı); burada onay sonrası başarı ekranı: yeşil halka, tek cümle özet, nereye yazıldığını gösteren çipler, 5 sn “Geri al” toast'ı.
+04 Akis ve Mail.dc.html	data	Gmail · Ahmet Yılmaz
+04 Akis ve Mail.dc.html	data	Revize teklif bugün 17:00'ye kadar bekleniyor
+04 Akis ve Mail.dc.html	data	Ahmet, fiyat ve teslim tarihini güncellenmiş PDF olarak istiyor.
+04 Akis ve Mail.dc.html	data	Google Takvim
+04 Akis ve Mail.dc.html	data	Mehmet ile müşteri toplantısı
+04 Akis ve Mail.dc.html	data	Son görüşmeniz 4 gün önceydi. Açık 2 konu var.
+04 Akis ve Mail.dc.html	data	Gmail · Mehmet Yılmaz
+04 Akis ve Mail.dc.html	data	3 gün
+04 Akis ve Mail.dc.html	data	Teklif mailine cevap gelmedi
+04 Akis ve Mail.dc.html	data	2 Eylül'de gönderildi. Henüz yanıt yok.
+04 Akis ve Mail.dc.html	data	Gmail · Girişim Programı
+04 Akis ve Mail.dc.html	data	Başvuru bugün 17:00'de kapanıyor
+04 Akis ve Mail.dc.html	data	Son gün. Form yaklaşık 10 dakika sürüyor.
+04 Akis ve Mail.dc.html	data	Google hesabında yeni giriş
+04 Akis ve Mail.dc.html	data	Chrome · Windows · İstanbul. Sen değilsen şifreni değiştir.
+04 Akis ve Mail.dc.html	data	Kontrol Et
+04 Akis ve Mail.dc.html	data	Taahhüt · Toplantı notu
+04 Akis ve Mail.dc.html	data	Mehmet'e teklif gönder
+04 Akis ve Mail.dc.html	data	“Yarın göndereceğim” dedin. Plan'da 14:00 bloğu önerildi.
+04 Akis ve Mail.dc.html	data	Kargo · Trendyol
+04 Akis ve Mail.dc.html	data	Siparişin bugün geliyor
+04 Akis ve Mail.dc.html	data	Teslimat aralığı 14:00–18:00.
+04 Akis ve Mail.dc.html	data	Takip Et
+04 Akis ve Mail.dc.html	data	Yarın 09:15
+04 Akis ve Mail.dc.html	data	TK2412 · İstanbul → Antalya
+04 Akis ve Mail.dc.html	data	Online check-in açıldı. 06:45'te evden çıkman gerekebilir.
+04 Akis ve Mail.dc.html	data	CK Enerji
+04 Akis ve Mail.dc.html	data	10 Eyl
+04 Akis ve Mail.dc.html	data	Elektrik faturası · 1.842 TL
+04 Akis ve Mail.dc.html	data	Son ödeme günü 10 Eylül.
+04 Akis ve Mail.dc.html	data	9 Eyl
+04 Akis ve Mail.dc.html	data	Netflix 9 Eylül'de yenilenecek
+04 Akis ve Mail.dc.html	data	Aylık 229,99 TL. Son 30 günde 2 kez izlendi.
+04 Akis ve Mail.dc.html	data	Senden cevap bekleyen
+04 Akis ve Mail.dc.html	data	Senin cevap beklediğin
+04 Akis ve Mail.dc.html	data	Son tarih içeren
+04 Akis ve Mail.dc.html	data	Düşük öncelik
+04 Akis ve Mail.dc.html	data	Teklif v2 · PDF
+04 Akis ve Mail.dc.html	data	Henüz yanıt gelmedi. Bugün 14:30 toplantıda konuşabilirsin.
+04 Akis ve Mail.dc.html	data	2 Eylül 10:05'te gönderildi · Gmail
+04 Akis ve Mail.dc.html	data	Hukuk · Kerem Aksoy
+04 Akis ve Mail.dc.html	data	Sözleşme taslağı yorumu
+04 Akis ve Mail.dc.html	data	6 gün
+04 Akis ve Mail.dc.html	data	30 Ağustos'ta gönderildi · Gmail
+04 Akis ve Mail.dc.html	data	Deniz Erol
+04 Akis ve Mail.dc.html	data	Etkinlik konuşmacı daveti
+04 Akis ve Mail.dc.html	data	2 gün
+04 Akis ve Mail.dc.html	data	Okundu, yanıt yok. Genelde 3–4 günde döner.
+04 Akis ve Mail.dc.html	data	3 Eylül'de gönderildi · Outlook
+04 Akis ve Mail.dc.html	data	2 saat
+04 Akis ve Mail.dc.html	data	Re: Eylül teklifi – revize
+04 Akis ve Mail.dc.html	data	Revize fiyat teklifi, PDF olarak.
+04 Akis ve Mail.dc.html	data	Bugün 17:00
+04 Akis ve Mail.dc.html	data	18 saat
+04 Akis ve Mail.dc.html	data	Sözleşme taslağı · 4. madde
+04 Akis ve Mail.dc.html	data	Cezai şart maddesi için yorumun.
+04 Akis ve Mail.dc.html	data	Bugün 18:00
+04 Akis ve Mail.dc.html	data	Burak Tan
+04 Akis ve Mail.dc.html	data	5 saat
+04 Akis ve Mail.dc.html	data	Ekip yemeği
+04 Akis ve Mail.dc.html	data	Cuma akşamı uygun musun?
+04 Akis ve Mail.dc.html	data	Elif Arslan
+04 Akis ve Mail.dc.html	data	1 gün
+04 Akis ve Mail.dc.html	data	Konferans bileti
+04 Akis ve Mail.dc.html	data	Katılım teyidi ve fatura bilgisi.
+04 Akis ve Mail.dc.html	data	9 Eylül
+04 Akis ve Mail.dc.html	data	Cuma · 3 Eyl
+04 Akis ve Mail.dc.html	data	Cuma teklif göndereceğim.
+04 Akis ve Mail.dc.html	data	Teklif v3 gönder
+04 Akis ve Mail.dc.html	data	Gmail · 1 Eyl 18:40
+04 Akis ve Mail.dc.html	data	Dosyayı yarın yollarım.
+04 Akis ve Mail.dc.html	data	Marka kılavuzu PDF
+04 Akis ve Mail.dc.html	data	Gmail · Dün 16:02
+04 Akis ve Mail.dc.html	data	Pazartesi · 8 Eyl
+04 Akis ve Mail.dc.html	data	Pazartesi seni arayacağım.
+04 Akis ve Mail.dc.html	data	Telefon görüşmesi
+04 Akis ve Mail.dc.html	data	Mesaj · 4 Eyl
+04 Akis ve Mail.dc.html	data	Teklifi bu hafta iletiyorum.
+04 Akis ve Mail.dc.html	data	Teklif v2 gönderildi
+04 Akis ve Mail.dc.html	data	Gmail · 28 Ağu
+04 Akis ve Mail.dc.html	data	Trendyol siparişin bugün geliyor.
+04 Akis ve Mail.dc.html	data	Yurtiçi Kargo · 14:00–18:00 · 2 parça
+04 Akis ve Mail.dc.html	data	Kapıya Not Bırak
+04 Akis ve Mail.dc.html	data	Yarın 09:15 · Kapı B12 · Check-in açık
+04 Akis ve Mail.dc.html	data	Cüzdana Ekle
+04 Akis ve Mail.dc.html	data	Karaköy Lokantası · 20:30
+04 Akis ve Mail.dc.html	data	4 kişi · Teyit için son saat 18:00
+04 Akis ve Mail.dc.html	data	Teyit Et
+04 Akis ve Mail.dc.html	data	Yol Tarifi
+04 Akis ve Mail.dc.html	data	CK Enerji · Son gün 10 Eylül · Geçen ay 1.610 TL
+04 Akis ve Mail.dc.html	data	Netflix 9 Eylül'de yenilenecek.
+04 Akis ve Mail.dc.html	data	229,99 TL / ay · Son 30 günde 2 kez izlendi
+04 Akis ve Mail.dc.html	data	Bir Daha Gösterme
+04 Akis ve Mail.dc.html	data	Google hesabında yeni giriş.
+04 Akis ve Mail.dc.html	data	Chrome · Windows · İstanbul
+04 Akis ve Mail.dc.html	data	Şifreyi Değiştir
+04 Akis ve Mail.dc.html	data	daspin .8s linear infinite
+04 Akis ve Mail.dc.html	data	Rezervasyon · Karaköy Lokantası
+04 Akis ve Mail.dc.html	data	Cmt 20:30
+04 Akis ve Mail.dc.html	data	Akşam yemeği rezervasyonu
+04 Akis ve Mail.dc.html	data	4 kişi. Teyit için 18:00 son saat.
+05 Plan ve Toplantilar.dc.html	template	← Prototip ve IA
+05 Plan ve Toplantilar.dc.html	template	01 Sistem
+05 Plan ve Toplantilar.dc.html	template	02 Onboarding
+05 Plan ve Toplantilar.dc.html	template	03 Bugün
+05 Plan ve Toplantilar.dc.html	template	04 Akış
+05 Plan ve Toplantilar.dc.html	template	05 Plan
+05 Plan ve Toplantilar.dc.html	template	06 Asistan
+05 Plan ve Toplantilar.dc.html	template	07 Hesap
+05 Plan ve Toplantilar.dc.html	template	08 Durumlar
+05 Plan ve Toplantilar.dc.html	template	09 Pazarlama
+05 Plan ve Toplantilar.dc.html	template	05 · Plan ve Toplantılar
+05 Plan ve Toplantilar.dc.html	template	Plan takvimi göstermez, anlar. Zaman çizelgesi tek sütun; etkinlik, AI görev bloğu (kesik çerçeve) ve yaşam etkinliği (sıcak yüzey) üç ayrı yüzeyle ayrılır; sol renk şeridi kullanılmaz. Toplantı hazırlığı ürünün imza ekranıdır: koyu “3 şey” kartı her zaman ilk görünen öğedir.
+05 Plan ve Toplantilar.dc.html	template	Plan · Gün
+05 Plan ve Toplantilar.dc.html	template	Plan
+05 Plan ve Toplantilar.dc.html	template	Gün
+05 Plan ve Toplantilar.dc.html	template	Hafta
+05 Plan ve Toplantilar.dc.html	template	TAKVİM ZEKÂSI
+05 Plan ve Toplantilar.dc.html	template	Yarın 14:00–16:30 arasında 2,5 saat boşluğun var.
+05 Plan ve Toplantilar.dc.html	template	Teklif hazırlama görevini buraya yerleştirebilirim.
+05 Plan ve Toplantilar.dc.html	template	Planla
+05 Plan ve Toplantilar.dc.html	template	Başka zaman
+05 Plan ve Toplantilar.dc.html	template	Bugün
+05 Plan ve Toplantilar.dc.html	template	Akış
+05 Plan ve Toplantilar.dc.html	template	Asistan
+05 Plan ve Toplantilar.dc.html	template	Üç yüzey: etkinlik (beyaz), AI görev bloğu (kesik indigo çerçeve, “Önerilen”), yaşam (sıcak krem). Boşluklar açıkça “2 saat boşluk” olarak etiketlenir; boşluk da bilgidir.
+05 Plan ve Toplantilar.dc.html	template	5.1D
+05 Plan ve Toplantilar.dc.html	template	Plan · Gün · Dark
+05 Plan ve Toplantilar.dc.html	template	Aynı üç yüzey dark tokenlarla: etkinlik #1F1E1B, AI bloğu %12 indigo + kesik #8586F2, yaşam %10 amber. Bugün günü ters çevrilir (#F2F0EB üzerine #141311), segment seçimi de aynı kuralı izler.
+05 Plan ve Toplantilar.dc.html	template	Plan · Hafta + Takvim Zekâsı
+05 Plan ve Toplantilar.dc.html	template	7–13 EYLÜL · YOĞUNLUK
+05 Plan ve Toplantilar.dc.html	template	18 etkinlik
+05 Plan ve Toplantilar.dc.html	template	Toplantı
+05 Plan ve Toplantilar.dc.html	template	Odak
+05 Plan ve Toplantilar.dc.html	template	Yoğun
+05 Plan ve Toplantilar.dc.html	template	Yarın oldukça yoğun.
+05 Plan ve Toplantilar.dc.html	template	09:00 ve 10:00 toplantıların arka arkaya. Arada mola yok; 10:00'ı 10:15'e kaydırabilirim.
+05 Plan ve Toplantilar.dc.html	template	10:15'e Kaydır
+05 Plan ve Toplantilar.dc.html	template	Böyle Kalsın
+05 Plan ve Toplantilar.dc.html	template	13:30 doktor randevusu için 12:50'de çıkman gerekebilir.
+05 Plan ve Toplantilar.dc.html	template	Kadıköy → Nişantaşı · 38 dk trafik tahmini · Randevu maili, 28 Ağu
+05 Plan ve Toplantilar.dc.html	template	12:40'a Hatırlat
+05 Plan ve Toplantilar.dc.html	template	16:00 toplantısı öncesi 45 dakika boşluğun var.
+05 Plan ve Toplantilar.dc.html	template	Yatırımcı görüşmesi için hazırlık notunu okumaya yeter.
+05 Plan ve Toplantilar.dc.html	template	Hazırlığı Buraya Koy
+05 Plan ve Toplantilar.dc.html	template	Çarşamba 14:00 müşteri toplantısı ile 14:30 doktor çakışıyor.
+05 Plan ve Toplantilar.dc.html	template	Seçenekleri Gör
+05 Plan ve Toplantilar.dc.html	template	Hafta görünümü grid değil yoğunluk hikâyesi. Zekâ kartları: ikon rengi anlam taşır (amber yoğunluk, mavi ulaşım, indigo fırsat, coral çakışma); her kartın en fazla 2 aksiyonu var.
+05 Plan ve Toplantilar.dc.html	template	Takvim Çakışması · Çözüm sayfası açık
+05 Plan ve Toplantilar.dc.html	template	ÇARŞAMBA · 10 EYLÜL
+05 Plan ve Toplantilar.dc.html	template	TAKVİM ÇAKIŞMASI
+05 Plan ve Toplantilar.dc.html	template	Bu iki etkinlik çakışıyor.
+05 Plan ve Toplantilar.dc.html	template	Müşteri toplantısı
+05 Plan ve Toplantilar.dc.html	template	60 dk · Mehmet Yılmaz · Ofis
+05 Plan ve Toplantilar.dc.html	template	Doktor randevusu
+05 Plan ve Toplantilar.dc.html	template	30 dk · Nişantaşı · Randevu maili
+05 Plan ve Toplantilar.dc.html	template	Toplantı 15:00'te biter; doktora 38 dakika yol var. Doktor randevusunu kaydırmak en az kişiyi etkiler.
+05 Plan ve Toplantilar.dc.html	template	Nasıl çözelim?
+05 Plan ve Toplantilar.dc.html	template	Seçtiğin çözüm onayına sunulur, otomatik uygulanmaz.
+05 Plan ve Toplantilar.dc.html	template	Doktoru 15:45'e al
+05 Plan ve Toplantilar.dc.html	template	Önerilen · Klinikte 15:45 boş görünüyor
+05 Plan ve Toplantilar.dc.html	template	Toplantıyı 13:00'a öner
+05 Plan ve Toplantilar.dc.html	template	Mehmet'e öneri maili taslağı hazırlanır
+05 Plan ve Toplantilar.dc.html	template	Toplantıyı 30 dk kısalt
+05 Plan ve Toplantilar.dc.html	template	14:00–14:30 · Doktora zamanında yetişirsin
+05 Plan ve Toplantilar.dc.html	template	Böyle kalsın
+05 Plan ve Toplantilar.dc.html	template	Bu çakışmayı bir daha gösterme
+05 Plan ve Toplantilar.dc.html	template	Çakışma görselleştirmesi: ikinci kart sağa kaydırılır ve kısa coral çizgi üst üste binmeyi işaret eder. Çözümler sıralıdır; ilki AI önerisi ve gerekçesi.
+05 Plan ve Toplantilar.dc.html	template	Toplantıya Hazırlan · Light · İmza ekran
+05 Plan ve Toplantilar.dc.html	template	TOPLANTIYA HAZIRLAN
+05 Plan ve Toplantilar.dc.html	template	18 dk
+05 Plan ve Toplantilar.dc.html	template	MY
+05 Plan ve Toplantilar.dc.html	template	Mehmet Yılmaz
+05 Plan ve Toplantilar.dc.html	template	Müşteri toplantısı · 14:30 · 60 dk · Ofis
+05 Plan ve Toplantilar.dc.html	template	KONUŞMAN GEREKEN 3 ŞEY
+05 Plan ve Toplantilar.dc.html	template	Fiyat
+05 Plan ve Toplantilar.dc.html	template	Revize teklif 17:00'ye kadar bekleniyor; %8 indirim sınırını netleştir.
+05 Plan ve Toplantilar.dc.html	template	Teslim tarihi
+05 Plan ve Toplantilar.dc.html	template	Ekim başı için onay istiyor; üretim takvimi 6 Ekim'i gösteriyor.
+05 Plan ve Toplantilar.dc.html	template	Sözleşme
+05 Plan ve Toplantilar.dc.html	template	Taslak 2 haftadır açık; hukuk yorumu bekliyor.
+05 Plan ve Toplantilar.dc.html	template	2 Dakikalık Özeti Oku
+05 Plan ve Toplantilar.dc.html	template	Not Al
+05 Plan ve Toplantilar.dc.html	template	Toplantıdan 20 dk önce bildirim, ekranın ilk katlaması “3 şey” kartıyla biter. Geri kalan bölümler kaynaklı kanıt. Bu ekran mağaza görselinde de kullanılır.
+05 Plan ve Toplantilar.dc.html	template	Toplantıya Hazırlan · Dark
+05 Plan ve Toplantilar.dc.html	template	Dark'ta koyu kart siyah üstünde kaybolacağı için “3 şey” kartı indigo gradyana döner; birincil buton açık indigo, üzerinde koyu metin (kontrast 9:1).
+05 Plan ve Toplantilar.dc.html	template	2 Dakikalık Özet · Okuma görünümü
+05 Plan ve Toplantilar.dc.html	template	2 DAKİKALIK ÖZET
+05 Plan ve Toplantilar.dc.html	template	Mehmet Yılmaz · 14:30
+05 Plan ve Toplantilar.dc.html	template	Nerede kalmıştınız?
+05 Plan ve Toplantilar.dc.html	template	Mehmet ile en son
+05 Plan ve Toplantilar.dc.html	template	1 Eylül'de
+05 Plan ve Toplantilar.dc.html	template	konuştunuz. Fiyat aralığını ve teslim süresini ele aldınız; Mehmet Ekim başı teslimat için revize teklif istedi, sen Cuma göndereceğini söyledin. Teklif v2'yi
+05 Plan ve Toplantilar.dc.html	template	2 Eylül'de
+05 Plan ve Toplantilar.dc.html	template	gönderdin; henüz yanıt gelmedi.
+05 Plan ve Toplantilar.dc.html	template	Dün akşam gelen mailde fiyatın Ekim teslimatına göre güncellenmesini istedi. Bu, %8 indirim sınırını ve üretim takviminin gösterdiği
+05 Plan ve Toplantilar.dc.html	template	6 Ekim
+05 Plan ve Toplantilar.dc.html	template	tarihini konuşmanı gerektiriyor.
+05 Plan ve Toplantilar.dc.html	template	Sözleşme taslağı iki haftadır hukuk yorumu bekliyor; Mehmet'in bunu sorması muhtemel. Nakliye maliyetinin kimde olacağı ilk görüşmede açık kalmıştı.
+05 Plan ve Toplantilar.dc.html	template	KAYNAKLAR
+05 Plan ve Toplantilar.dc.html	template	3 mail
+05 Plan ve Toplantilar.dc.html	template	1 görüşme notu
+05 Plan ve Toplantilar.dc.html	template	Teklif v2.pdf
+05 Plan ve Toplantilar.dc.html	template	Okuma görünümü brifingle aynı editoryal sesi kullanır: Lora, kalın tarih vurguları, altta kaynak çipleri. Kulaklık ikonu aynı metni sesli okur.
+05 Plan ve Toplantilar.dc.html	template	Toplantı Sonrası Yakalama · Ses girişi
+05 Plan ve Toplantilar.dc.html	template	TOPLANTI SONRASI
+05 Plan ve Toplantilar.dc.html	template	Mehmet Yılmaz · 14:30–15:30
+05 Plan ve Toplantilar.dc.html	template	Toplantın bitti.
+05 Plan ve Toplantilar.dc.html	template	Takip etmen gereken bir şey var mı?
+05 Plan ve Toplantilar.dc.html	template	“Mehmet'e yarın teklif göndereceğim. Sözleşme için hukuktan Perşembe'ye kadar yorum isteyeceğim.”
+05 Plan ve Toplantilar.dc.html	template	0:07 · dinleniyor
+05 Plan ve Toplantilar.dc.html	template	2 YENİ TAAHHÜT
+05 Plan ve Toplantilar.dc.html	template	Mehmet'e teklif gönder
+05 Plan ve Toplantilar.dc.html	template	Yarın · Mehmet Yılmaz
+05 Plan ve Toplantilar.dc.html	template	Hukuktan sözleşme yorumu iste
+05 Plan ve Toplantilar.dc.html	template	Perşembe · Hukuk ekibi
+05 Plan ve Toplantilar.dc.html	template	Kaydet
+05 Plan ve Toplantilar.dc.html	template	Toplantı bitiminde 1 dakika sonra sessiz bildirim. Konuşma anında taahhüde dönüşür; yeşil onay “tespit edildi” demek, yazma işlemi yalnızca Kaydet ile.
+05 Plan ve Toplantilar.dc.html	data	TOPLANTININ AMACI
+05 Plan ve Toplantilar.dc.html	data	Eylül teklifinin son hâlini netleştirmek ve Ekim teslimatı için onay almak.
+05 Plan ve Toplantilar.dc.html	data	Takvim davetinden çıkarıldı
+05 Plan ve Toplantilar.dc.html	data	SON GÖRÜŞMENİZ
+05 Plan ve Toplantilar.dc.html	data	4 gün önce · Görüşme notları
+05 Plan ve Toplantilar.dc.html	data	SON MAİLLER
+05 Plan ve Toplantilar.dc.html	data	Re: Teklif — “Fiyatı Ekim teslimatına göre güncelleyebilir misiniz?”
+05 Plan ve Toplantilar.dc.html	data	Mehmet · Dün 18:20
+05 Plan ve Toplantilar.dc.html	data	Teklif v2 gönderildi (PDF)
+05 Plan ve Toplantilar.dc.html	data	Sen · 2 Eyl 10:05
+05 Plan ve Toplantilar.dc.html	data	AÇIK KONULAR
+05 Plan ve Toplantilar.dc.html	data	Sözleşme taslağı hukuk yorumu bekliyor
+05 Plan ve Toplantilar.dc.html	data	14 gün
+05 Plan ve Toplantilar.dc.html	data	Nakliye maliyeti kimde?
+05 Plan ve Toplantilar.dc.html	data	1 Eylül görüşmesi
+05 Plan ve Toplantilar.dc.html	data	SENDEN BEKLENENLER
+05 Plan ve Toplantilar.dc.html	data	Revize teklif · PDF
+05 Plan ve Toplantilar.dc.html	data	Bugün 17:00
+05 Plan ve Toplantilar.dc.html	data	SENİN BEKLEDİKLERİN
+05 Plan ve Toplantilar.dc.html	data	Teklif v2 için geri bildirim
+05 Plan ve Toplantilar.dc.html	data	3 gündür bekliyor
+05 Plan ve Toplantilar.dc.html	data	Haftalık ekip
+05 Plan ve Toplantilar.dc.html	data	60 dk · Ofis
+05 Plan ve Toplantilar.dc.html	data	Ürün gözden geçirme
+05 Plan ve Toplantilar.dc.html	data	30 dk · Online
+05 Plan ve Toplantilar.dc.html	data	2 saat boşluk
+05 Plan ve Toplantilar.dc.html	data	Öğle yemeği ve odaklanma için uygun
+05 Plan ve Toplantilar.dc.html	data	Mehmet ile müşteri toplantısı
+05 Plan ve Toplantilar.dc.html	data	60 dk · Ofis · Hazırlık hazır
+05 Plan ve Toplantilar.dc.html	data	Teklif hazırlama
+05 Plan ve Toplantilar.dc.html	data	Önerilen · 45 dk · AI görev bloğu
+05 Plan ve Toplantilar.dc.html	data	Başvuru son saati
+05 Plan ve Toplantilar.dc.html	data	Girişim programı · Mailden tespit edildi
+05 Plan ve Toplantilar.dc.html	data	Akşam yemeği · Karaköy
+05 Plan ve Toplantilar.dc.html	data	Rezervasyon · 4 kişi
+06 Asistan Hafiza Kisiler.dc.html	template	← Prototip ve IA
+06 Asistan Hafiza Kisiler.dc.html	template	01 Sistem
+06 Asistan Hafiza Kisiler.dc.html	template	02 Onboarding
+06 Asistan Hafiza Kisiler.dc.html	template	03 Bugün
+06 Asistan Hafiza Kisiler.dc.html	template	04 Akış
+06 Asistan Hafiza Kisiler.dc.html	template	05 Plan
+06 Asistan Hafiza Kisiler.dc.html	template	06 Asistan
+06 Asistan Hafiza Kisiler.dc.html	template	07 Hesap
+06 Asistan Hafiza Kisiler.dc.html	template	08 Durumlar
+06 Asistan Hafiza Kisiler.dc.html	template	09 Pazarlama
+06 Asistan Hafiza Kisiler.dc.html	template	06 · Asistan, Ses, Hafıza, Kişiler, Onay
+06 Asistan Hafiza Kisiler.dc.html	template	Sohbet ikinci katmandır ve hiçbir zaman boş açılmaz: bugünün analiz özeti + 5 önerilen soru. Yanıtlar düz metin değil, kaynaklı zengin kartlardır. Her yazma isteği (mail, etkinlik, hatırlatıcı) ses modunda bile onay kartına düşer.
+06 Asistan Hafiza Kisiler.dc.html	template	Asistan · Giriş (boş sohbet yok)
+06 Asistan Hafiza Kisiler.dc.html	template	Asistan
+06 Asistan Hafiza Kisiler.dc.html	template	Hafıza
+06 Asistan Hafiza Kisiler.dc.html	template	Bugün
+06 Asistan Hafiza Kisiler.dc.html	template	46 mail
+06 Asistan Hafiza Kisiler.dc.html	template	4 etkinlik
+06 Asistan Hafiza Kisiler.dc.html	template	2 takip
+06 Asistan Hafiza Kisiler.dc.html	template	analiz edildi. Ne öğrenmek istersin?
+06 Asistan Hafiza Kisiler.dc.html	template	ÖNERİLEN
+06 Asistan Hafiza Kisiler.dc.html	template	Bugün neye odaklanmalıyım?
+06 Asistan Hafiza Kisiler.dc.html	template	Kimlere cevap vermem gerekiyor?
+06 Asistan Hafiza Kisiler.dc.html	template	Yarın yoğun muyum?
+06 Asistan Hafiza Kisiler.dc.html	template	Bu hafta hangi deadline'lar var?
+06 Asistan Hafiza Kisiler.dc.html	template	Mehmet ile en son ne konuştuk?
+06 Asistan Hafiza Kisiler.dc.html	template	SON SOHBETLER
+06 Asistan Hafiza Kisiler.dc.html	template	Geçen ayki uçak bileti ne kadardı?
+06 Asistan Hafiza Kisiler.dc.html	template	Dün
+06 Asistan Hafiza Kisiler.dc.html	template	Bu ay hangi ödemelerim var?
+06 Asistan Hafiza Kisiler.dc.html	template	2 Eyl
+06 Asistan Hafiza Kisiler.dc.html	template	Dijital hayatına sor…
+06 Asistan Hafiza Kisiler.dc.html	template	Akış
+06 Asistan Hafiza Kisiler.dc.html	template	Plan
+06 Asistan Hafiza Kisiler.dc.html	template	Önerilen sorular günün verisine göre değişir (toplantı varsa “X ile en son ne konuştuk?” çıkar). Giriş çubuğu hap biçiminde; mikrofon birincil.
+06 Asistan Hafiza Kisiler.dc.html	template	6.1D
+06 Asistan Hafiza Kisiler.dc.html	template	Asistan · Giriş · Dark
+06 Asistan Hafiza Kisiler.dc.html	template	Bugün/Akış dark ile aynı tokenlar: yüzey #1F1E1B, hairline %6–8 beyaz, ikincil #A39F96, üçüncül #7A776F. Mikrofon dark primary (#8586F2) üzerinde #0F0F2A.
+06 Asistan Hafiza Kisiler.dc.html	template	Asistan · Zengin kartlı yanıt
+06 Asistan Hafiza Kisiler.dc.html	template	Yeni sohbet
+06 Asistan Hafiza Kisiler.dc.html	template	2 kişi senden cevap bekliyor. Ahmet'inki bugün 17:00'ye kadar; Selin'inki yarın öğlene kadar bekleyebilir.
+06 Asistan Hafiza Kisiler.dc.html	template	SENDEN BEKLEYENLER
+06 Asistan Hafiza Kisiler.dc.html	template	AY
+06 Asistan Hafiza Kisiler.dc.html	template	Ahmet Yılmaz
+06 Asistan Hafiza Kisiler.dc.html	template	Revize teklif · Gmail 08:42
+06 Asistan Hafiza Kisiler.dc.html	template	Yanıtla
+06 Asistan Hafiza Kisiler.dc.html	template	SK
+06 Asistan Hafiza Kisiler.dc.html	template	Selin Kaya
+06 Asistan Hafiza Kisiler.dc.html	template	Sözleşme 4. madde · Gmail dün
+06 Asistan Hafiza Kisiler.dc.html	template	Yarın
+06 Asistan Hafiza Kisiler.dc.html	template	İkisi için de taslak hazırla
+06 Asistan Hafiza Kisiler.dc.html	template	Selin'i yarına ertele
+06 Asistan Hafiza Kisiler.dc.html	template	Ahmet'e yanıt taslağı hazırla
+06 Asistan Hafiza Kisiler.dc.html	template	Hazırladım. Profesyonel tonda, 17:00 teslimi teyit ediyor.
+06 Asistan Hafiza Kisiler.dc.html	template	TASLAK · AHMET YILMAZ
+06 Asistan Hafiza Kisiler.dc.html	template	Merhaba Ahmet, talebiniz için teşekkürler. Revize fiyat teklifini güncellenmiş teslim tarihiyle birlikte bugün 17:00'den önce…
+06 Asistan Hafiza Kisiler.dc.html	template	Göndermeyi Onayla
+06 Asistan Hafiza Kisiler.dc.html	template	Düzenle
+06 Asistan Hafiza Kisiler.dc.html	template	Yanıt anatomisi: kısa cümle → kaynaklı kart → devam çipleri. Sohbet içinden mail gönderilmez; taslak kartı onay butonuyla biter. Sohbette alt sekme çubuğu gizlenir.
+06 Asistan Hafiza Kisiler.dc.html	template	Ses Modu · Dinliyor
+06 Asistan Hafiza Kisiler.dc.html	template	SES MODU
+06 Asistan Hafiza Kisiler.dc.html	template	“Mehmet'ten cevap geldi mi?”
+06 Asistan Hafiza Kisiler.dc.html	template	Dinliyorum…
+06 Asistan Hafiza Kisiler.dc.html	template	Bugün ne var?
+06 Asistan Hafiza Kisiler.dc.html	template	Brifingimi oku.
+06 Asistan Hafiza Kisiler.dc.html	template	Nefes alan halka + dalga formu. Bugün'den uzun basılı mikrofonla da açılır. Konuşma metni canlı yazılır; sessizlikte 1,2 sn sonra yanıt.
+06 Asistan Hafiza Kisiler.dc.html	template	Ses Modu · Yanıt + yazma onayı
+06 Asistan Hafiza Kisiler.dc.html	template	Henüz gelmedi. Teklifi 3 gün önce gönderdin. İstersen kısa bir takip mesajı hazırlayıp onayına sunabilirim.
+06 Asistan Hafiza Kisiler.dc.html	template	“Evet, hazırla.”
+06 Asistan Hafiza Kisiler.dc.html	template	ONAY GEREKİYOR · MAİL GÖNDER
+06 Asistan Hafiza Kisiler.dc.html	template	Mehmet Yılmaz'a takip mesajı
+06 Asistan Hafiza Kisiler.dc.html	template	“Merhaba Mehmet, 2 Eylül'de ilettiğim teklif hakkında görüşünüzü alabilir miyim? …”
+06 Asistan Hafiza Kisiler.dc.html	template	Onayla
+06 Asistan Hafiza Kisiler.dc.html	template	İptal
+06 Asistan Hafiza Kisiler.dc.html	template	“Onayla” diyerek de gönderebilirsin.
+06 Asistan Hafiza Kisiler.dc.html	template	Sesle onay mümkündür ama kart her zaman görünür: kullanıcı ne gönderileceğini okur. “İptal” öğrenme sinyali üretmez; “Düzenle” metin moduna geçer.
+06 Asistan Hafiza Kisiler.dc.html	template	AI Hafıza · Anlamsal arama
+06 Asistan Hafiza Kisiler.dc.html	template	Mehmet fiyat konusunda en son ne demişti?
+06 Asistan Hafiza Kisiler.dc.html	template	Tümü
+06 Asistan Hafiza Kisiler.dc.html	template	Mail
+06 Asistan Hafiza Kisiler.dc.html	template	Takvim
+06 Asistan Hafiza Kisiler.dc.html	template	Notlar
+06 Asistan Hafiza Kisiler.dc.html	template	Belgeler
+06 Asistan Hafiza Kisiler.dc.html	template	Son 30 gün
+06 Asistan Hafiza Kisiler.dc.html	template	CEVAP
+06 Asistan Hafiza Kisiler.dc.html	template	Mehmet en son
+06 Asistan Hafiza Kisiler.dc.html	template	dün 18:20
+06 Asistan Hafiza Kisiler.dc.html	template	'de fiyatın
+06 Asistan Hafiza Kisiler.dc.html	template	Ekim teslimatına göre güncellenmesini
+06 Asistan Hafiza Kisiler.dc.html	template	istedi. 1 Eylül görüşmesinde ise %8'in üzerinde indirimin yönetim onayı gerektirdiğini söylemişti.
+06 Asistan Hafiza Kisiler.dc.html	template	3 kaynaktan · %92 eşleşme
+06 Asistan Hafiza Kisiler.dc.html	template	KAYNAKLAR · 3
+06 Asistan Hafiza Kisiler.dc.html	template	Orijinali Aç
+06 Asistan Hafiza Kisiler.dc.html	template	BUNLARI DA SORABİLİRSİN
+06 Asistan Hafiza Kisiler.dc.html	template	Geçen ay aldığım uçak bileti ne kadardı?
+06 Asistan Hafiza Kisiler.dc.html	template	Kimlere dönüş yapmam gerekiyor?
+06 Asistan Hafiza Kisiler.dc.html	template	Cevap kartı önce, kaynaklar altında: kaynak · tarih · AI özeti · orijinali aç. Eşleşme yüzdesi güveni gösterir; %70 altında “emin değilim” dili kullanılır.
+06 Asistan Hafiza Kisiler.dc.html	template	Önemli Kişiler · VIP
+06 Asistan Hafiza Kisiler.dc.html	template	Kişi Ekle
+06 Asistan Hafiza Kisiler.dc.html	template	Önemli Kişiler
+06 Asistan Hafiza Kisiler.dc.html	template	Bu kişilerden gelenleri her zaman öne alırım ve bekleme sürelerini daha sıkı izlerim.
+06 Asistan Hafiza Kisiler.dc.html	template	Öneri:
+06 Asistan Hafiza Kisiler.dc.html	template	ile son 30 günde 14 kez yazıştın. VIP yapayım mı?
+06 Asistan Hafiza Kisiler.dc.html	template	Evet
+06 Asistan Hafiza Kisiler.dc.html	template	Gruplar: eş, aile, yönetici, müşteri, arkadaş. VIP yıldızı yalnızca bu listede ve kişi başlıklarında görünür; kartlarda ekstra renk üretmez, sıralamayı etkiler.
+06 Asistan Hafiza Kisiler.dc.html	template	Kişi Zekâsı · Mehmet Yılmaz
+06 Asistan Hafiza Kisiler.dc.html	template	VIP · Müşteri
+06 Asistan Hafiza Kisiler.dc.html	template	MY
+06 Asistan Hafiza Kisiler.dc.html	template	Mehmet Yılmaz
+06 Asistan Hafiza Kisiler.dc.html	template	Yılmaz Endüstri · Satın alma müdürü
+06 Asistan Hafiza Kisiler.dc.html	template	Son iletişim
+06 Asistan Hafiza Kisiler.dc.html	template	Dün 18:20
+06 Asistan Hafiza Kisiler.dc.html	template	Yaklaşan
+06 Asistan Hafiza Kisiler.dc.html	template	Bugün 14:30
+06 Asistan Hafiza Kisiler.dc.html	template	Açık konu
+06 Asistan Hafiza Kisiler.dc.html	template	Mehmet hakkında sor…
+06 Asistan Hafiza Kisiler.dc.html	template	Kişi sayfası mail dizisi değil ilişki özeti: son iletişim, yaklaşan toplantı, açık konular, iki yönlü beklentiler. Alt giriş kişiye bağlı hafıza aramasıdır.
+06 Asistan Hafiza Kisiler.dc.html	template	Onay Merkezi · Kontrol her zaman kullanıcıda
+06 Asistan Hafiza Kisiler.dc.html	template	Geçmiş
+06 Asistan Hafiza Kisiler.dc.html	template	Onay Bekleyenler
+06 Asistan Hafiza Kisiler.dc.html	template	3 işlem onayını bekliyor. Hiçbiri sen onaylamadan yapılmaz.
+06 Asistan Hafiza Kisiler.dc.html	template	Neden
+06 Asistan Hafiza Kisiler.dc.html	template	Değişim
+06 Asistan Hafiza Kisiler.dc.html	template	Reddet
+06 Asistan Hafiza Kisiler.dc.html	template	BUGÜN ONAYLANANLAR · 2
+06 Asistan Hafiza Kisiler.dc.html	template	Ahmet'e yanıt gönderildi
+06 Asistan Hafiza Kisiler.dc.html	template	“Başvuru son saati” takvime eklendi
+06 Asistan Hafiza Kisiler.dc.html	template	Önemli işlemler sen onaylamadan gerçekleştirilmez. Toplu onay yok; her kart tek tek.
+06 Asistan Hafiza Kisiler.dc.html	template	Kart sözleşmesi: Ne yapılacak · Neden · Ne değişecek. Reddet bir öğrenme sinyalidir (“bu tür önerileri azalt”). Onaylananlar geçmişte 30 gün saklanır.
+06 Asistan Hafiza Kisiler.dc.html	template	AI Kişiselleştirme · “Seni nasıl tanıyor?”
+06 Asistan Hafiza Kisiler.dc.html	template	Dijital Asistan seni nasıl tanıyor?
+06 Asistan Hafiza Kisiler.dc.html	template	Zamanla öğrendiklerim. Her satırı düzenleyebilir veya silebilirsin; sildiğin şeyi bir daha varsaymam.
+06 Asistan Hafiza Kisiler.dc.html	template	Kural Ekle
+06 Asistan Hafiza Kisiler.dc.html	template	Şeffaf model: her kuralın kaynağı yazar (“3 kez ‘önemli değil’ dedin”). Kurallar üç grupta: kişiler, konular, tercihler. Silme geri alınabilir (5 sn toast).
+06 Asistan Hafiza Kisiler.dc.html	data	Gmail · Mehmet Yılmaz
+06 Asistan Hafiza Kisiler.dc.html	data	Re: Teklif
+06 Asistan Hafiza Kisiler.dc.html	data	“Fiyatı Ekim teslimatına göre güncelleyebilir misiniz? Yönetim toplam tutarı görmek istiyor.”
+06 Asistan Hafiza Kisiler.dc.html	data	Görüşme notu · Sen
+06 Asistan Hafiza Kisiler.dc.html	data	1 Eyl 15:00
+06 Asistan Hafiza Kisiler.dc.html	data	Telefon görüşmesi · 12 dk
+06 Asistan Hafiza Kisiler.dc.html	data	%8 üzeri indirim için yönetim onayı gerektiğini söyledi. Teslim tarihi Ekim başı olarak konuşuldu.
+06 Asistan Hafiza Kisiler.dc.html	data	Ek · Teklif_v2.pdf
+06 Asistan Hafiza Kisiler.dc.html	data	2 Eyl 10:05
+06 Asistan Hafiza Kisiler.dc.html	data	Teklif v2 · Sayfa 3, Fiyatlandırma
+06 Asistan Hafiza Kisiler.dc.html	data	Birim fiyat 1.240 TL, 500 adet üzeri %6 indirim. Teslim: siparişten 4 hafta sonra.
+06 Asistan Hafiza Kisiler.dc.html	data	EŞ · AİLE
+06 Asistan Hafiza Kisiler.dc.html	data	Zeynep Emre
+06 Asistan Hafiza Kisiler.dc.html	data	Eş · Mesaj ve takvim öncelikli
+06 Asistan Hafiza Kisiler.dc.html	data	Aile · Aramaları hatırlat
+06 Asistan Hafiza Kisiler.dc.html	data	Can Tekin
+06 Asistan Hafiza Kisiler.dc.html	data	CEO · Aynı gün yanıt beklenir
+06 Asistan Hafiza Kisiler.dc.html	data	Yılmaz Endüstri · 2 açık konu
+06 Asistan Hafiza Kisiler.dc.html	data	Kuzey Lojistik · Revize teklif bekliyor
+06 Asistan Hafiza Kisiler.dc.html	data	Burak Tan
+06 Asistan Hafiza Kisiler.dc.html	data	Planlar için hafta sonu hatırlat
+06 Asistan Hafiza Kisiler.dc.html	data	SON KONUŞULAN KONULAR
+06 Asistan Hafiza Kisiler.dc.html	data	Fiyat · %8 indirim sınırı
+06 Asistan Hafiza Kisiler.dc.html	data	1 Eyl · Telefon
+06 Asistan Hafiza Kisiler.dc.html	data	Ekim başı teslim
+06 Asistan Hafiza Kisiler.dc.html	data	Sözleşme taslağı
+06 Asistan Hafiza Kisiler.dc.html	data	22 Ağu · Mail
+06 Asistan Hafiza Kisiler.dc.html	data	SENDEN BEKLEDİKLERİ
+06 Asistan Hafiza Kisiler.dc.html	data	Revize teklif · PDF
+06 Asistan Hafiza Kisiler.dc.html	data	Bugün 17:00
+06 Asistan Hafiza Kisiler.dc.html	data	SENİN BEKLEDİKLERİN
+06 Asistan Hafiza Kisiler.dc.html	data	Teklif v2 geri bildirimi
+06 Asistan Hafiza Kisiler.dc.html	data	3 gün
+06 Asistan Hafiza Kisiler.dc.html	data	Sözleşme hukuk yorumu (Mehmet tarafı)
+06 Asistan Hafiza Kisiler.dc.html	data	14 gün
+06 Asistan Hafiza Kisiler.dc.html	data	SON İLETİŞİM
+06 Asistan Hafiza Kisiler.dc.html	data	“Fiyatı Ekim teslimatına göre güncelleyebilir misiniz?”
+06 Asistan Hafiza Kisiler.dc.html	data	Dün 18:20 · Gmail
+06 Asistan Hafiza Kisiler.dc.html	data	Tanışma toplantısı
+06 Asistan Hafiza Kisiler.dc.html	data	18 Ağu · Ofis
+06 Asistan Hafiza Kisiler.dc.html	data	MAİL GÖNDER
+06 Asistan Hafiza Kisiler.dc.html	data	Mehmet Yılmaz'a takip mesajı gönder
+06 Asistan Hafiza Kisiler.dc.html	data	Teklif mailine 3 gündür yanıt gelmedi.
+06 Asistan Hafiza Kisiler.dc.html	data	1 mail gönderilecek · Kısa, profesyonel ton · Ek yok
+06 Asistan Hafiza Kisiler.dc.html	data	ETKİNLİK TAŞI
+06 Asistan Hafiza Kisiler.dc.html	data	Mehmet toplantısını 16:30'a al
+06 Asistan Hafiza Kisiler.dc.html	data	14:30 → 16:30 · 2 katılımcıya bildirim gider
+06 Asistan Hafiza Kisiler.dc.html	data	HATIRLATICI OLUŞTUR
+06 Asistan Hafiza Kisiler.dc.html	data	Elektrik faturası · 13 Eylül 10:00
+06 Asistan Hafiza Kisiler.dc.html	data	Fatura fotoğrafında 15 Eylül son ödeme tarihi bulundu.
+06 Asistan Hafiza Kisiler.dc.html	data	1 hatırlatıcı · Takvimine yazılmaz
+06 Asistan Hafiza Kisiler.dc.html	data	Mehmet Yılmaz yüksek öncelikli.
+06 Asistan Hafiza Kisiler.dc.html	data	Sen ekledin · VIP · Müşteri
+06 Asistan Hafiza Kisiler.dc.html	data	Toplu bültenler düşük öncelikli.
+06 Asistan Hafiza Kisiler.dc.html	data	3 kez “önemli değil” dedin
+06 Asistan Hafiza Kisiler.dc.html	data	Promosyon mailleri düşük öncelikli.
+06 Asistan Hafiza Kisiler.dc.html	data	12 kez arşivledin, hiç açmadın
+06 Asistan Hafiza Kisiler.dc.html	data	Uçuş ve rezervasyonlar Bugün ekranında görünür.
+06 Asistan Hafiza Kisiler.dc.html	data	Onboarding · Seyahat seçildi
+06 Asistan Hafiza Kisiler.dc.html	data	Toplantıları 30 dakika önce hatırlatmayı tercih ediyorsun.
+06 Asistan Hafiza Kisiler.dc.html	data	Son 8 hatırlatıcıdan çıkarıldı
+06 Asistan Hafiza Kisiler.dc.html	data	Brifing 08:00, 13:00 ve 19:00.
+06 Asistan Hafiza Kisiler.dc.html	data	Yanıt taslaklarında profesyonel ton.
+06 Asistan Hafiza Kisiler.dc.html	data	Son 6 taslaktan 5'i
+07 Hesap Gizlilik Pro.dc.html	template	← Prototip ve IA
+07 Hesap Gizlilik Pro.dc.html	template	01 Sistem
+07 Hesap Gizlilik Pro.dc.html	template	02 Onboarding
+07 Hesap Gizlilik Pro.dc.html	template	03 Bugün
+07 Hesap Gizlilik Pro.dc.html	template	04 Akış
+07 Hesap Gizlilik Pro.dc.html	template	05 Plan
+07 Hesap Gizlilik Pro.dc.html	template	06 Asistan
+07 Hesap Gizlilik Pro.dc.html	template	07 Hesap
+07 Hesap Gizlilik Pro.dc.html	template	08 Durumlar
+07 Hesap Gizlilik Pro.dc.html	template	09 Pazarlama
+07 Hesap Gizlilik Pro.dc.html	template	07 · Hesap, Gizlilik, Pro, Davet
+07 Hesap Gizlilik Pro.dc.html	template	Ayarlar iOS gruplu liste kalıbında ama ürünün kendi yüzeyleriyle. Gizlilik Merkezi bir ayar sayfası değil, ürünün güven vaadinin görünür hâli: ne okunuyor, ne okunmuyor, ne kadar saklanıyor, nasıl silinir. Paywall'da geri sayım, sahte indirim veya gizli “kapat” yok.
+07 Hesap Gizlilik Pro.dc.html	template	Profil ve Ayarlar
+07 Hesap Gizlilik Pro.dc.html	template	Yunus Emre
+07 Hesap Gizlilik Pro.dc.html	template	PRO
+07 Hesap Gizlilik Pro.dc.html	template	Deneme · 5 gün kaldı
+07 Hesap Gizlilik Pro.dc.html	template	Onay Merkezi
+07 Hesap Gizlilik Pro.dc.html	template	2 işlem onayını bekliyor
+07 Hesap Gizlilik Pro.dc.html	template	Çıkış Yap
+07 Hesap Gizlilik Pro.dc.html	template	Dijital Asistan 1.0 (240) · Sürüm notları
+07 Hesap Gizlilik Pro.dc.html	template	Üç grup: Asistan (davranış), Hesap (bağlantı ve gizlilik), Uygulama. Sağdaki değer sütunu mevcut durumu özetler; kullanıcı açmadan bilir.
+07 Hesap Gizlilik Pro.dc.html	template	Gizlilik Merkezi
+07 Hesap Gizlilik Pro.dc.html	template	Gizlilik ve Güvenlik
+07 Hesap Gizlilik Pro.dc.html	template	Neyi okuduğumu, ne kadar sakladığımı ve nasıl sileceğini burada görürsün.
+07 Hesap Gizlilik Pro.dc.html	template	Verilerin reklamverenlere satılmaz.
+07 Hesap Gizlilik Pro.dc.html	template	Önemli işlemler sen onaylamadan gerçekleştirilmez.
+07 Hesap Gizlilik Pro.dc.html	template	Mail içerikleri model eğitiminde kullanılmaz.
+07 Hesap Gizlilik Pro.dc.html	template	BAĞLI HESAPLAR · 2
+07 Hesap Gizlilik Pro.dc.html	template	Gmail · yunus@…com
+07 Hesap Gizlilik Pro.dc.html	template	Okuma · Taslak oluşturma · Gönderme (onaylı)
+07 Hesap Gizlilik Pro.dc.html	template	Yönet
+07 Hesap Gizlilik Pro.dc.html	template	Google Takvim
+07 Hesap Gizlilik Pro.dc.html	template	Okuma · Etkinlik oluşturma/taşıma (onaylı)
+07 Hesap Gizlilik Pro.dc.html	template	VERİ
+07 Hesap Gizlilik Pro.dc.html	template	Uçtan uca TLS · Veriler AB'de (Frankfurt) saklanır · KVKK ve GDPR uyumlu
+07 Hesap Gizlilik Pro.dc.html	template	Üç vaat en üstte, koyu kartta. Bağlı hesaplar kapsamı düz Türkçe yazar (“Gönderme (onaylı)”). Tehlikeli işlemler coral metin ama aynı listede; gizlenmez.
+07 Hesap Gizlilik Pro.dc.html	template	AI'ın Eriştiği Veriler
+07 Hesap Gizlilik Pro.dc.html	template	AI neye erişiyor?
+07 Hesap Gizlilik Pro.dc.html	template	Bugün itibarıyla. Her satırı kapatabilirsin; kapattığın alanlar analize girmez.
+07 Hesap Gizlilik Pro.dc.html	template	OKUR
+07 Hesap Gizlilik Pro.dc.html	template	HİÇBİR ZAMAN OKUMAZ
+07 Hesap Gizlilik Pro.dc.html	template	Şifreler ve doğrulama kodları
+07 Hesap Gizlilik Pro.dc.html	template	Banka hesap numaraları ve kart bilgileri
+07 Hesap Gizlilik Pro.dc.html	template	Sağlık verisi (randevu saati hariç)
+07 Hesap Gizlilik Pro.dc.html	template	Mesajlaşma içerikleri
+07 Hesap Gizlilik Pro.dc.html	template	“Okur / Hiçbir zaman okumaz” ikiliği yeşil-coral başlıklarla; satırlar nötr. Hassas alan tespiti cihazda yapılır, kırmızı liste sabit ve kapatılamaz.
+07 Hesap Gizlilik Pro.dc.html	template	Veri Saklama ve Silme · Onay sayfası
+07 Hesap Gizlilik Pro.dc.html	template	Veri saklama
+07 Hesap Gizlilik Pro.dc.html	template	Analiz sonuçları ve özetler ne kadar saklansın?
+07 Hesap Gizlilik Pro.dc.html	template	30 gün
+07 Hesap Gizlilik Pro.dc.html	template	90 gün
+07 Hesap Gizlilik Pro.dc.html	template	1 yıl
+07 Hesap Gizlilik Pro.dc.html	template	Hafıza araması bu süreyle sınırlıdır. Orijinal mailler zaten kendi hesabında; biz kopya tutmayız.
+07 Hesap Gizlilik Pro.dc.html	template	Verilerimi dışa aktar
+07 Hesap Gizlilik Pro.dc.html	template	JSON · 2,4 MB
+07 Hesap Gizlilik Pro.dc.html	template	Analiz geçmişini sil
+07 Hesap Gizlilik Pro.dc.html	template	Hesabımı sil
+07 Hesap Gizlilik Pro.dc.html	template	Analiz geçmişi silinsin mi?
+07 Hesap Gizlilik Pro.dc.html	template	90 günlük özetler, öncelik kararları ve hafıza dizini silinir. Maillerin ve takvimin etkilenmez. Bu işlem geri alınamaz.
+07 Hesap Gizlilik Pro.dc.html	template	Silinen: 1.204 özet · 318 öncelik kararı · 42 kural
+07 Hesap Gizlilik Pro.dc.html	template	Korunan: bağlantılar, ayarlar, VIP listesi
+07 Hesap Gizlilik Pro.dc.html	template	Geçmişi Sil
+07 Hesap Gizlilik Pro.dc.html	template	Vazgeç
+07 Hesap Gizlilik Pro.dc.html	template	Yıkıcı işlemler: coral birincil buton yalnızca burada; “Vazgeç” aynı boyutta ve hemen altında. Ne silinir / ne korunur açıkça listelenir.
+07 Hesap Gizlilik Pro.dc.html	template	Paywall · Dijital Asistan PRO
+07 Hesap Gizlilik Pro.dc.html	template	Satın alımı geri yükle
+07 Hesap Gizlilik Pro.dc.html	template	DİJİTAL ASİSTAN PRO
+07 Hesap Gizlilik Pro.dc.html	template	Tüm dijital hayatın, tek brifingde.
+07 Hesap Gizlilik Pro.dc.html	template	Bu hafta 684 mailden 32'sini öne çıkardık; 2 sa 48 dk kazandın.
+07 Hesap Gizlilik Pro.dc.html	template	FREE
+07 Hesap Gizlilik Pro.dc.html	template	Yıllık
+07 Hesap Gizlilik Pro.dc.html	template	EN AVANTAJLI
+07 Hesap Gizlilik Pro.dc.html	template	1.490 TL / yıl · ayda 124 TL · %38 tasarruf
+07 Hesap Gizlilik Pro.dc.html	template	Aylık
+07 Hesap Gizlilik Pro.dc.html	template	199 TL / ay
+07 Hesap Gizlilik Pro.dc.html	template	Ücretsiz Dene · 7 gün
+07 Hesap Gizlilik Pro.dc.html	template	Free ile devam et
+07 Hesap Gizlilik Pro.dc.html	template	7 gün sonra 1.490 TL/yıl. Bitmeden 24 saat önce hatırlatırız. İstediğin zaman iptal.
+07 Hesap Gizlilik Pro.dc.html	template	Free şeffaf: 1 mail, 1 takvim, sabah brifingi, sınırlı AI. Kapat butonu ilk saniyeden görünür; “Free ile devam et” aynı yüzeyde. Fiyat ve yenileme koşulu CTA'nın altında düz yazı.
+07 Hesap Gizlilik Pro.dc.html	template	Bağlamsal Pro kapısı · Free kullanıcı
+07 Hesap Gizlilik Pro.dc.html	template	5 EYLÜL CUMARTESİ
+07 Hesap Gizlilik Pro.dc.html	template	İyi günler, Yunus
+07 Hesap Gizlilik Pro.dc.html	template	ÖĞLE NABZI · PRO
+07 Hesap Gizlilik Pro.dc.html	template	Sabahından beri 2 gelişme oldu.
+07 Hesap Gizlilik Pro.dc.html	template	Öğle nabzı Pro'da. Sabah brifingin her zaman ücretsiz.
+07 Hesap Gizlilik Pro.dc.html	template	7 gün ücretsiz dene
+07 Hesap Gizlilik Pro.dc.html	template	Şimdi değil
+07 Hesap Gizlilik Pro.dc.html	template	ÖNCELİKLERİN
+07 Hesap Gizlilik Pro.dc.html	template	3 konu
+07 Hesap Gizlilik Pro.dc.html	template	ACİL
+07 Hesap Gizlilik Pro.dc.html	template	Ahmet senden bugün 17:00'ye kadar revize teklif bekliyor.
+07 Hesap Gizlilik Pro.dc.html	template	Gmail · Ahmet Yılmaz · 08:42
+07 Hesap Gizlilik Pro.dc.html	template	Yanıtla
+07 Hesap Gizlilik Pro.dc.html	template	Hatırlat
+07 Hesap Gizlilik Pro.dc.html	template	Bugün
+07 Hesap Gizlilik Pro.dc.html	template	Akış
+07 Hesap Gizlilik Pro.dc.html	template	Plan
+07 Hesap Gizlilik Pro.dc.html	template	Asistan
+07 Hesap Gizlilik Pro.dc.html	template	Kapı, özelliğin gerçek değerini gösterir (“2 gelişme oldu”) ama içeriği bulanıklaştırır. “Şimdi değil” 7 gün boyunca aynı kartı tekrar göstermez. Ücretsiz özellikler kilitlenmez.
+07 Hesap Gizlilik Pro.dc.html	template	Arkadaşını Davet Et
+07 Hesap Gizlilik Pro.dc.html	template	Arkadaşını davet et, ikiniz de 14 gün Pro kazanın.
+07 Hesap Gizlilik Pro.dc.html	template	Arkadaşın ilk brifingini aldığında Pro süreniz otomatik uzar.
+07 Hesap Gizlilik Pro.dc.html	template	dijitalasistan.app/d/yunus-7k2
+07 Hesap Gizlilik Pro.dc.html	template	Kopyala
+07 Hesap Gizlilik Pro.dc.html	template	Davet Gönder
+07 Hesap Gizlilik Pro.dc.html	template	DAVETLERİN · 3
+07 Hesap Gizlilik Pro.dc.html	template	BT
+07 Hesap Gizlilik Pro.dc.html	template	Burak Tan
+07 Hesap Gizlilik Pro.dc.html	template	İlk brifingini aldı · 2 Eyl
+07 Hesap Gizlilik Pro.dc.html	template	+14 GÜN
+07 Hesap Gizlilik Pro.dc.html	template	DE
+07 Hesap Gizlilik Pro.dc.html	template	Deniz Erol
+07 Hesap Gizlilik Pro.dc.html	template	Kaydoldu, hesap bağlamadı
+07 Hesap Gizlilik Pro.dc.html	template	BEKLİYOR
+07 Hesap Gizlilik Pro.dc.html	template	elif.a@…
+07 Hesap Gizlilik Pro.dc.html	template	Davet gönderildi · 4 Eyl
+07 Hesap Gizlilik Pro.dc.html	template	GÖNDERİLDİ
+07 Hesap Gizlilik Pro.dc.html	template	Toplam kazanılan: 14 gün Pro · Sınır: yılda 6 davet
+07 Hesap Gizlilik Pro.dc.html	template	Ödül koşulu açık: “ilk brifingini aldığında”. Durum rozetleri sistemdeki aynı üç ton (yeşil, amber, nötr). Davet linki monospace.
+07 Hesap Gizlilik Pro.dc.html	template	Görünüm ve Dil
+07 Hesap Gizlilik Pro.dc.html	template	Görünüm
+07 Hesap Gizlilik Pro.dc.html	template	Açık
+07 Hesap Gizlilik Pro.dc.html	template	Koyu
+07 Hesap Gizlilik Pro.dc.html	template	Sistem
+07 Hesap Gizlilik Pro.dc.html	template	Metin boyutu
+07 Hesap Gizlilik Pro.dc.html	template	Hareketi azalt
+07 Hesap Gizlilik Pro.dc.html	template	Haptik geri bildirim
+07 Hesap Gizlilik Pro.dc.html	template	Dil
+07 Hesap Gizlilik Pro.dc.html	template	Türkçe
+07 Hesap Gizlilik Pro.dc.html	template	English
+07 Hesap Gizlilik Pro.dc.html	template	Deutsch
+07 Hesap Gizlilik Pro.dc.html	template	Brifing ve özetler seçtiğin dilde yazılır; maillerin orijinal dili korunur.
+07 Hesap Gizlilik Pro.dc.html	template	Görünüm önizlemeleri gerçek yüzey renkleriyle. Erişilebilirlik anahtarları (hareket, haptik) burada; “Hareketi azalt” tüm mikro-etkileşimleri geçişsiz duruma alır.
+07 Hesap Gizlilik Pro.dc.html	template	Öncelik Kuralları · Liste
+07 Hesap Gizlilik Pro.dc.html	template	Öncelik Kuralları
+07 Hesap Gizlilik Pro.dc.html	template	Senin yazdığın açık kurallar. Her zaman AI'ın kendi öğrendiklerinin önüne geçer.
+07 Hesap Gizlilik Pro.dc.html	template	AI'ın kendi öğrendiklerini
+07 Hesap Gizlilik Pro.dc.html	template	AI Kişiselleştirme
+07 Hesap Gizlilik Pro.dc.html	template	'de görürsün; burası yalnızca senin kuralların.
+07 Hesap Gizlilik Pro.dc.html	template	Kural Ekle
+07 Hesap Gizlilik Pro.dc.html	template	Kurallar sonuca göre gruplanır (önemli / bildir / düşük / sessiz). Her satır: koşul tipi ikonu, kural metni, etki sayısı, aç/kapat anahtarı. Satıra dokunuş düzenlemeye gider.
+07 Hesap Gizlilik Pro.dc.html	template	Yeni Kural · Koşul + Sonuç + Önizleme
+07 Hesap Gizlilik Pro.dc.html	template	YENİ KURAL
+07 Hesap Gizlilik Pro.dc.html	template	1 · KOŞUL
+07 Hesap Gizlilik Pro.dc.html	template	Kişi
+07 Hesap Gizlilik Pro.dc.html	template	Domain
+07 Hesap Gizlilik Pro.dc.html	template	Anahtar kelime
+07 Hesap Gizlilik Pro.dc.html	template	Kategori
+07 Hesap Gizlilik Pro.dc.html	template	Gönderici
+07 Hesap Gizlilik Pro.dc.html	template	yilmazendustri.com
+07 Hesap Gizlilik Pro.dc.html	template	Önerilen: @kuzeylojistik.com
+07 Hesap Gizlilik Pro.dc.html	template	@itu.edu.tr
+07 Hesap Gizlilik Pro.dc.html	template	2 · SONUÇ
+07 Hesap Gizlilik Pro.dc.html	template	Her zaman önemli say
+07 Hesap Gizlilik Pro.dc.html	template	Yüksek öncelikli say
+07 Hesap Gizlilik Pro.dc.html	template	Düşük öncelikli say
+07 Hesap Gizlilik Pro.dc.html	template	Her zaman bildir
+07 Hesap Gizlilik Pro.dc.html	template	Sessize al
+07 Hesap Gizlilik Pro.dc.html	template	ÖNİZLEME · SON 30 GÜN
+07 Hesap Gizlilik Pro.dc.html	template	14 MAİL BU KURALA UYARDI
+07 Hesap Gizlilik Pro.dc.html	template	Mehmet Yılmaz · Re: Teklif
+07 Hesap Gizlilik Pro.dc.html	template	Dün
+07 Hesap Gizlilik Pro.dc.html	template	Ayşe Kara · Sevkiyat planı
+07 Hesap Gizlilik Pro.dc.html	template	2 Eyl
+07 Hesap Gizlilik Pro.dc.html	template	muhasebe@yilmazendustri.com · Fatura
+07 Hesap Gizlilik Pro.dc.html	template	28 Ağu
+07 Hesap Gizlilik Pro.dc.html	template	3'ü bugün zaten önemli sayılıyordu; 11 mail yukarı taşınacak.
+07 Hesap Gizlilik Pro.dc.html	template	Kuralı Kaydet
+07 Hesap Gizlilik Pro.dc.html	template	İki adım tek ekranda: koşul tipi çipleri + alan, sonuç tek seçim. Önizleme kaydetmeden önce kuralın etkisini gerçek maillerle gösterir; kural yazma işlemi değil, onay istemez.
+07 Hesap Gizlilik Pro.dc.html	template	Kuralı Düzenle · Anahtar kelime
+07 Hesap Gizlilik Pro.dc.html	template	KURALI DÜZENLE
+07 Hesap Gizlilik Pro.dc.html	template	Kural aktif
+07 Hesap Gizlilik Pro.dc.html	template	Oluşturuldu 12 Ağu · 22 mail etkilendi
+07 Hesap Gizlilik Pro.dc.html	template	KOŞUL · ANAHTAR KELİME
+07 Hesap Gizlilik Pro.dc.html	template	sözleşme
+07 Hesap Gizlilik Pro.dc.html	template	Ekle
+07 Hesap Gizlilik Pro.dc.html	template	Konu ve gövdede ara
+07 Hesap Gizlilik Pro.dc.html	template	SONUÇ
+07 Hesap Gizlilik Pro.dc.html	template	Diğer sonuçlar
+07 Hesap Gizlilik Pro.dc.html	template	İSTİSNALAR
+07 Hesap Gizlilik Pro.dc.html	template	Promosyon kategorisi hariç
+07 Hesap Gizlilik Pro.dc.html	template	Kuralı Sil
+07 Hesap Gizlilik Pro.dc.html	template	Değişiklikleri Kaydet
+07 Hesap Gizlilik Pro.dc.html	template	Düzenleme aynı formun dolu hâli: kelime çipleri kaldırılıp eklenebilir, kural geçici olarak kapatılabilir. Sil yalnızca metin buton, kaydetten uzakta.
+07 Hesap Gizlilik Pro.dc.html	template	Kuralı Sil · Onay + geri al
+07 Hesap Gizlilik Pro.dc.html	template	Kural silinsin mi?
+07 Hesap Gizlilik Pro.dc.html	template	“teklif, sözleşme, fatura” kuralı silinir. Bu kelimeleri içeren mailler yeniden AI'ın kendi önceliğine göre sıralanır.
+07 Hesap Gizlilik Pro.dc.html	template	Kural silindi
+07 Hesap Gizlilik Pro.dc.html	template	Geri al
+07 Hesap Gizlilik Pro.dc.html	template	Silme modal ile onaylanır (geri alınamaz işlem kalıbı); ardından 5 sn “Geri al” toast'ı. Aynı kalıp 7.4'teki veri silme ile tutarlı.
+07 Hesap Gizlilik Pro.dc.html	data	Sadece önemli
+07 Hesap Gizlilik Pro.dc.html	data	6 kural
+07 Hesap Gizlilik Pro.dc.html	data	Önemli Kişiler
+07 Hesap Gizlilik Pro.dc.html	data	6 kişi
+07 Hesap Gizlilik Pro.dc.html	data	7 öğrenme
+07 Hesap Gizlilik Pro.dc.html	data	Pro deneme
+07 Hesap Gizlilik Pro.dc.html	data	Gmail · Takvim
+07 Hesap Gizlilik Pro.dc.html	data	AI'ın eriştiği veriler
+07 Hesap Gizlilik Pro.dc.html	data	5 alan
+07 Hesap Gizlilik Pro.dc.html	data	AI kişiselleştirme
+07 Hesap Gizlilik Pro.dc.html	data	Mail konu ve gövdeleri
+07 Hesap Gizlilik Pro.dc.html	data	Özetlemek için · Kopya tutulmaz
+07 Hesap Gizlilik Pro.dc.html	data	Ekler (PDF, görüntü)
+07 Hesap Gizlilik Pro.dc.html	data	Fatura ve teklif tespiti
+07 Hesap Gizlilik Pro.dc.html	data	Takvim etkinlikleri
+07 Hesap Gizlilik Pro.dc.html	data	Katılımcılar ve konumlar dahil
+07 Hesap Gizlilik Pro.dc.html	data	Yalnızca isim eşleştirme
+07 Hesap Gizlilik Pro.dc.html	data	Konum (yaklaşık)
+07 Hesap Gizlilik Pro.dc.html	data	Yol süresi tahmini için
+07 Hesap Gizlilik Pro.dc.html	data	Bağlı mail hesabı
+07 Hesap Gizlilik Pro.dc.html	data	HER ZAMAN ÖNEMLİ SAY
+07 Hesap Gizlilik Pro.dc.html	data	Mehmet Yılmaz'dan gelenler
+07 Hesap Gizlilik Pro.dc.html	data	Kişi · 9 mail etkilendi · bu ay
+07 Hesap Gizlilik Pro.dc.html	data	@yilmazendustri.com adresinden gelenler
+07 Hesap Gizlilik Pro.dc.html	data	Domain · 14 mail · bu ay
+07 Hesap Gizlilik Pro.dc.html	data	“teklif”, “sözleşme”, “fatura” içerenler
+07 Hesap Gizlilik Pro.dc.html	data	Anahtar kelime · 22 mail · bu ay
+07 Hesap Gizlilik Pro.dc.html	data	HER ZAMAN BİLDİR
+07 Hesap Gizlilik Pro.dc.html	data	VIP kişilerden gelenler
+07 Hesap Gizlilik Pro.dc.html	data	6 kişi · Sessiz saatlerde bile
+07 Hesap Gizlilik Pro.dc.html	data	DÜŞÜK ÖNCELİKLİ SAY
+07 Hesap Gizlilik Pro.dc.html	data	Promosyon ve bülten mailleri
+07 Hesap Gizlilik Pro.dc.html	data	Kategori · 131 mail · bu ay
+07 Hesap Gizlilik Pro.dc.html	data	SESSİZE AL
+07 Hesap Gizlilik Pro.dc.html	data	noreply@… göndericileri
+07 Hesap Gizlilik Pro.dc.html	data	Gönderici · 48 mail · bu ay
+07 Hesap Gizlilik Pro.dc.html	data	LinkedIn bildirimleri
+07 Hesap Gizlilik Pro.dc.html	data	Gönderici · 17 mail · bu ay
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	← Prototip ve IA
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	01 Sistem
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	02 Onboarding
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	03 Bugün
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	04 Akış
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	05 Plan
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	06 Asistan
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	07 Hesap
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	08 Durumlar
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	09 Pazarlama
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	08 · Boş / Hata / Yükleme Durumları, Widget'lar, Mikro-etkileşimler
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	Boş durum bir başarı mesajıdır: “Her şey kontrol altında.” Hatalar okunur ve tek aksiyonludur; AI erişilemezse ürün brifingi yine gösterir (son analiz). Widget'lar Bugün ekranının küçültülmüş versiyonu değil, tek bir cevabın yüzeyidir.
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	BOŞ DURUMLAR · POZİTİF, SAKİN
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	HATA DURUMLARI · OKUNUR, TEK AKSİYON
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	error/offline · tam ekran · son analiz görünür kalır
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	Çevrimdışısın. Son analiz 09:40'tan gösteriliyor.
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	Yenile
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	5 EYLÜL CUMARTESİ
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	Günaydın, Yunus
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	BRİFİNG · 07:58 · ÇEVRİMDIŞI
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	Bugün bilmen gereken 5 şey var.
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	3 önemli mail · 4 etkinlik · 2 takip
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	Brifingimi Gör
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	İndirilmedi
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	ACİL
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	Ahmet senden bugün 17:00'ye kadar revize teklif bekliyor.
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	Yanıt taslağı bağlantı gelince hazırlanır.
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	loading/today · iskelet, gerçek kart ölçülerinde
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	ÖNCELİKLERİN
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	Başlık ve tarih anında; yalnızca AI içeriği iskelet. 1,6 sn parıltı, kartlar tek tek 60 ms arayla dolar.
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	WIDGET'LAR · iOS
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	small · 158×158 · sıradaki önemli konu
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	Ahmet 17:00'ye kadar revize teklif bekliyor.
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	Gmail · 08:42
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	medium · 338×158 · bugünün 3 önceliği
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	BUGÜN · 3 ÖNCELİK
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	Ahmet'e revize teklif
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	Mehmet ile müşteri toplantısı
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	Başvuru kapanıyor
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	large · 338×354 · brifing + sonraki toplantı + takip
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	SABAH BRİFİNGİ
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	Bugün bilmen gereken
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	şey var.
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	Dinle · 2 dk
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	SONRAKİ TOPLANTI
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	Hazırlık hazır · 3 konu
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	TAKİP
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	Mehmet · Teklif v2
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	3 gündür yanıt yok
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	Takip Et
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	lock screen · circular · rectangular · inline
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	Cumartesi 5 Eylül
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	5 önemli konu · ilki 17:00
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	ÖNEMLİ
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	SONRAKİ · 14:30
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	Mehmet ile toplantı
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	Hazırlık hazır
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	WIDGET'LAR · ANDROID
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	4×2 · brifing + öncelikler
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	Dijital Asistan
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	Ahmet · 17:00
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	Mehmet · 14:30
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	2×2 · sıradaki
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	3 konu hazır
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	Widget'lar tek cevap verir: sıradaki konu, 3 öncelik ya da brifing girişi. Dokunuş ilgili ekranı açar; yazma işlemi widget'tan yapılmaz. Android'de Material tema rengi yerine ürünün kendi yüzeyleri kullanılır; köşe yarıçapı sistemden gelir.
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	MİKRO-ETKİLEŞİMLER · HAREKET VE HAPTİK SÖZLEŞMESİ
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	ETKİLEŞİM
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	TETİK · DAVRANIŞ
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	HAREKET
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	HAPTİK
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	Eğri: standart
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	cubic-bezier(.2,.8,.2,1)
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	, çıkış
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	ease-out
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	. “Hareketi azalt” açıkken tüm süreler 0, yalnızca opaklık geçişi 120 ms kalır. Hiçbir animasyon 600 ms'yi geçmez; kullanıcı beklerken animasyon değil bulgu gösterilir.
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	KAYDIRMA AKSİYONLARI
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	Tamamlandı
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	3 gün
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	Gönderdiğin teklif mailine 3 gündür cevap gelmedi.
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	Ertele
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	Önemli değil
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	Bugün
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	KİŞİSEL
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	Trendyol siparişin bugün geliyor.
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	Sağa: Tamamlandı (yeşil, tam kaydırmada otomatik). Sola: Ertele · Önemli değil (nötr). Eşik %35; eşikte hafif haptic. Kaydırma yönleri Akış, Bugün ve Takip'te aynıdır.
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	BRİFİNG AÇILIŞI · KARE KARE
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	0 ms · hero solgun
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	240 ms · sayı sayar
+08 Durumlar Widgetlar Etkilesimler.dc.html	template	520 ms · kartlar 60 ms arayla
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	empty/today · önemli mail yok
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	Her şey kontrol altında.
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	Bugün dikkat gerektiren yeni bir konu yok. 46 maili senin için okudum.
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	Akışa göz at
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	empty/plan · toplantı yok
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	Bugün takvimin oldukça sakin.
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	Yarın 09:00 Haftalık ekip ile başlıyorsun. Bugünü odak için kullanabilirsin.
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	Odak bloğu öner
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	empty/follow-up · takip yok
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	Bekleyen takip yok.
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	Gönderdiğin her maile yanıt geldi. Yeni bir gecikme olursa buraya düşer.
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	empty/approvals · onay yok
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	Onay bekleyen işlem yok.
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	Bir mail göndermek veya takvimi değiştirmek istediğimde önce burada görürsün.
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	Geçmişi gör
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	Gmail bağlantısı yenilenmeli.
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	Google oturumu süresi doldu. Yeniden bağlanana kadar yeni mailler analiz edilmez.
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	Yeniden Bağlan
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	Takvim izni verilmedi.
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	Toplantı hazırlığı ve çakışma uyarıları takvim erişimi gerektirir. Diğer her şey çalışıyor.
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	İzin Ver
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	Neden gerekli?
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	Senkronizasyon gecikti.
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	Şimdi Dene
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	Asistan şu an yanıt veremiyor.
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	Tekrar Dene
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	Brifinge Dön
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	Brifing açılışı
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	Bugün açılır → hero solgundan belirir, sayı 0→N sayar, kartlar sırayla girer.
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	AI işliyor
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	shimmer 1.6s linear ∞ · spinner .8s
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	Öncelik tamamlandı
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	Onay ikonuna dokunuş → ikon yeşile dolar, kart küçülerek solar, alttakiler yukarı kayar, toast.
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	ikon 160ms · kart 300ms scale .96 + fade · liste 300ms
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	Kaydırma aksiyonları
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	takip 1:1 · bırakma 260ms spring
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	eşikte light
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	Onayla → buton “Onaylandı” olur, rozet yeşile döner, kart geçmişe kayar.
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	buton 200ms · rozet 160ms · kart 320ms
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	Sesli oynatma
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	Play → dalga çubukları canlanır, oynat ikonu pause olur, bölüm satırı vurgulanır.
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	çubuklar .7–1.2s alternate · ikon 120ms
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	shimmer 1.6s · doluş 60ms kademe
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	Aşağı çekme → ince indigo çizgi üstte, tamamlanınca “Güncel · 09:41” 1,5 sn.
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	çizgi 400ms · mesaj 1.5s
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	success: tamamla/onayla/gönder · light: seçim, eşik · warning: çakışma, hata · asla dekor için.
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	iOS UIFeedbackGenerator · Android HapticFeedbackConstants
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	Kart genişleme
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	height 280ms · chevron 200ms rotate
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	Alt sayfa
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	açılış 300ms · kapanış 240ms · dim 250ms
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	açılışta light
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	Gönderildi/Planlandı → yeşil halka + ikon büyüyerek gelir, tek satır açıklama, geri dönüş butonu.
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	halka 500ms · ikon 450ms 100ms gecikme
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	dashimmer 1.6s linear infinite
+08 Durumlar Widgetlar Etkilesimler.dc.html	data	daspin .8s linear infinite
+09 Pazarlama.dc.html	template	← Prototip ve IA
+09 Pazarlama.dc.html	template	01 Sistem
+09 Pazarlama.dc.html	template	02 Onboarding
+09 Pazarlama.dc.html	template	03 Bugün
+09 Pazarlama.dc.html	template	04 Akış
+09 Pazarlama.dc.html	template	05 Plan
+09 Pazarlama.dc.html	template	06 Asistan
+09 Pazarlama.dc.html	template	07 Hesap
+09 Pazarlama.dc.html	template	08 Durumlar
+09 Pazarlama.dc.html	template	09 Pazarlama
+09 Pazarlama.dc.html	template	09 · Mağaza Ekranları ve Reklamlar
+09 Pazarlama.dc.html	template	6 mağaza görseli 1290×2796 (App Store 6.7", Google Play için aynı kompozisyon 1080×1920'ye yeniden çerçevelenir). 3 reklam 9:16, 1080×1920. Tüm görseller ürünün gerçek ekranlarını kullanır; metinler brief'ten birebir. Aşağıda %30 / %35 ölçekte gösterilir.
+09 Pazarlama.dc.html	template	MAĞAZA · 6 EKRAN · 1290×2796
+09 Pazarlama.dc.html	template	store/01 · Today
+09 Pazarlama.dc.html	template	DİJİTAL ASİSTAN
+09 Pazarlama.dc.html	template	Bugün bilmen gerekenleri, sen sormadan söyler.
+09 Pazarlama.dc.html	template	5 EYLÜL CUMARTESİ
+09 Pazarlama.dc.html	template	Günaydın, Yunus
+09 Pazarlama.dc.html	template	BRİFİNG HAZIR · 07:58
+09 Pazarlama.dc.html	template	Bugün bilmen gereken
+09 Pazarlama.dc.html	template	şey var.
+09 Pazarlama.dc.html	template	3 önemli mail · 4 etkinlik · 2 takip
+09 Pazarlama.dc.html	template	Brifingimi Gör
+09 Pazarlama.dc.html	template	Dinle · 2 dk
+09 Pazarlama.dc.html	template	ÖNCELİKLERİN
+09 Pazarlama.dc.html	template	ACİL
+09 Pazarlama.dc.html	template	Ahmet senden bugün 17:00'ye kadar revize teklif bekliyor.
+09 Pazarlama.dc.html	template	Gmail · Ahmet Yılmaz · 08:42
+09 Pazarlama.dc.html	template	store/02 · Mail Intelligence
+09 Pazarlama.dc.html	template	MAİL ZEKÂSI
+09 Pazarlama.dc.html	template	83 mail.
+09 Pazarlama.dc.html	template	Önemli olan
+09 Pazarlama.dc.html	template	Gerisini senin için okur.
+09 Pazarlama.dc.html	template	mail geldi
+09 Pazarlama.dc.html	template	tanesi dikkat gerektiriyor.
+09 Pazarlama.dc.html	template	AY
+09 Pazarlama.dc.html	template	Ahmet Yılmaz
+09 Pazarlama.dc.html	template	Revize fiyat teklifini bugün 17:00'ye kadar PDF olarak istiyor.
+09 Pazarlama.dc.html	template	SK
+09 Pazarlama.dc.html	template	Selin Kaya
+09 Pazarlama.dc.html	template	Dün
+09 Pazarlama.dc.html	template	Sözleşme taslağının 4. maddesi için yorumunu bekliyor.
+09 Pazarlama.dc.html	template	store/03 · Meeting Prep
+09 Pazarlama.dc.html	template	TOPLANTI HAZIRLIĞI
+09 Pazarlama.dc.html	template	Toplantıya hazırlıksız girme.
+09 Pazarlama.dc.html	template	20 dakika önce: konuşman gereken 3 şey.
+09 Pazarlama.dc.html	template	TOPLANTIYA HAZIRLAN
+09 Pazarlama.dc.html	template	18 dk
+09 Pazarlama.dc.html	template	MY
+09 Pazarlama.dc.html	template	Mehmet Yılmaz
+09 Pazarlama.dc.html	template	Müşteri toplantısı · 14:30 · 60 dk
+09 Pazarlama.dc.html	template	KONUŞMAN GEREKEN 3 ŞEY
+09 Pazarlama.dc.html	template	Fiyat
+09 Pazarlama.dc.html	template	Revize teklif 17:00'ye kadar bekleniyor.
+09 Pazarlama.dc.html	template	Teslim tarihi
+09 Pazarlama.dc.html	template	Ekim başı için onay istiyor.
+09 Pazarlama.dc.html	template	Sözleşme
+09 Pazarlama.dc.html	template	Taslak 2 haftadır açık.
+09 Pazarlama.dc.html	template	store/04 · Follow-ups
+09 Pazarlama.dc.html	template	SENDEN BEKLENENLER
+09 Pazarlama.dc.html	template	Kim senden cevap bekliyor?
+09 Pazarlama.dc.html	template	Unutulan mail kalmaz.
+09 Pazarlama.dc.html	template	Senden Beklenenler
+09 Pazarlama.dc.html	template	4 kişi cevabını bekliyor.
+09 Pazarlama.dc.html	template	2 saat
+09 Pazarlama.dc.html	template	Re: Eylül teklifi – revize
+09 Pazarlama.dc.html	template	Revize fiyat teklifi, PDF olarak.
+09 Pazarlama.dc.html	template	Bugün 17:00
+09 Pazarlama.dc.html	template	Yanıtla
+09 Pazarlama.dc.html	template	BUGÜN
+09 Pazarlama.dc.html	template	18 saat
+09 Pazarlama.dc.html	template	Sözleşme taslağı · 4. madde
+09 Pazarlama.dc.html	template	Cezai şart maddesi için yorumun.
+09 Pazarlama.dc.html	template	store/05 · Planning
+09 Pazarlama.dc.html	template	TAKVİM ZEKÂSI
+09 Pazarlama.dc.html	template	Takvimini sadece göstermez. Anlar.
+09 Pazarlama.dc.html	template	Plan
+09 Pazarlama.dc.html	template	Yarın 14:00–16:30 arasında 2,5 saat boşluğun var.
+09 Pazarlama.dc.html	template	Teklif hazırlama görevini buraya yerleştirebilirim.
+09 Pazarlama.dc.html	template	Planla
+09 Pazarlama.dc.html	template	Yarın oldukça yoğun.
+09 Pazarlama.dc.html	template	09:00 ve 10:00 toplantıların arka arkaya.
+09 Pazarlama.dc.html	template	13:30 doktor için 12:50'de çıkman gerekebilir.
+09 Pazarlama.dc.html	template	38 dk trafik tahmini
+09 Pazarlama.dc.html	template	store/06 · Assistant
+09 Pazarlama.dc.html	template	ASİSTAN
+09 Pazarlama.dc.html	template	Dijital hayatına sor.
+09 Pazarlama.dc.html	template	Mailin, takvimin ve notların tek hafızada.
+09 Pazarlama.dc.html	template	Asistan
+09 Pazarlama.dc.html	template	Mehmet ile en son ne konuştuk?
+09 Pazarlama.dc.html	template	1 Eylül'de fiyat ve teslim tarihini konuştunuz. Mehmet Ekim başı teslim için revize teklif istedi; sen Cuma göndereceğini söyledin.
+09 Pazarlama.dc.html	template	KAYNAKLAR
+09 Pazarlama.dc.html	template	Re: Teklif · Gmail
+09 Pazarlama.dc.html	template	1 Eyl
+09 Pazarlama.dc.html	template	Görüşme notları
+09 Pazarlama.dc.html	template	REKLAM · 3 KONSEPT · 9:16 · 1080×1920
+09 Pazarlama.dc.html	template	ad/01 · Gürültü → 4 şey
+09 Pazarlama.dc.html	template	284 okunmamış mail
+09 Pazarlama.dc.html	template	6 takvim etkinliği
+09 Pazarlama.dc.html	template	14 görev
+09 Pazarlama.dc.html	template	BRİFİNG HAZIR
+09 Pazarlama.dc.html	template	Bugün gerçekten bilmen gereken
+09 Pazarlama.dc.html	template	Dijital Asistan
+09 Pazarlama.dc.html	template	Gürültüyü değil, önemli olanı gör.
+09 Pazarlama.dc.html	template	ad/02 · Akıllı takip
+09 Pazarlama.dc.html	template	Bir maili cevaplamayı unuttuğun oldu mu?
+09 Pazarlama.dc.html	template	Teklif · 3 gün önce gönderildi
+09 Pazarlama.dc.html	template	3 gün
+09 Pazarlama.dc.html	template	Henüz yanıt gelmedi.
+09 Pazarlama.dc.html	template	Takip Mesajı Hazırla
+09 Pazarlama.dc.html	template	Yarın Hatırlat
+09 Pazarlama.dc.html	template	Gönderdiğin ve cevap gelmeyen her maili takip eder. Sen unutsan da o unutmaz.
+09 Pazarlama.dc.html	template	Akıllı Takip · 7 gün ücretsiz
+09 Pazarlama.dc.html	template	ad/03 · Sabah brifingi
+09 Pazarlama.dc.html	template	“Ben artık sabah Gmail açmıyorum.”
+09 Pazarlama.dc.html	template	Yunus E. · Kurucu, İstanbul
+09 Pazarlama.dc.html	template	SABAH BRİFİNGİ · 08:00
+09 Pazarlama.dc.html	template	Günaydın Yunus
+09 Pazarlama.dc.html	template	Öğlene kadar toplantın bulunmuyor. Saat 14:30'da Mehmet ile müşteri toplantın var. Gelen 46 mail arasında 3 konu dikkat gerektiriyor.
+09 Pazarlama.dc.html	template	Brifingi Dinle · 2 dk
+09 Pazarlama.dc.html	template	Reklam kuralları: ürün ekranı her zaman gerçek bileşen; kişisel isimler kurgusal. Sesli/videolu sürümde AD 1 sayılar yukarıdan akarak 4'e “çöker”, AD 3 alıntı daktilo efektiyle yazılır. Alt logo bloğu üçünde sabit.
+Dijital Asistan.dc.html	template	DİJİTAL ASİSTAN · ÜRÜN TASARIMI V1
+Dijital Asistan.dc.html	template	Bugün bilmen gerekenleri, sen sormadan söyler.
+Dijital Asistan.dc.html	template	iOS + Android için proaktif kişisel komuta merkezi. Sağdaki telefon çalışan bir prototip: sekmeler, kartlar, brifing, ses, toplantı hazırlığı, yanıt taslağı ve onay akışı gerçek durumlarla çalışır. Tüm ekran kataloğu aşağıdaki 9 sayfada.
+Dijital Asistan.dc.html	template	VARSAYIMLAR VE KARARLAR
+Dijital Asistan.dc.html	template	Ana ekran
+Dijital Asistan.dc.html	template	Bugün
+Dijital Asistan.dc.html	template	: “Şimdi neyi bilmeliyim?” sorusunun cevabı. Sohbet ikinci katman (Asistan sekmesi).
+Dijital Asistan.dc.html	template	Örnek kullanıcı Yunus; iş ve kişisel hayat tek akışta. Kargo, uçuş, ödeme, abonelik ve güvenlik sinyalleri mail içeriğinden türetilir; ek entegrasyon gerekmez.
+Dijital Asistan.dc.html	template	AI hiçbir yazma işlemini onaysız yapmaz. Mail gönderme, etkinlik oluşturma/taşıma, hatırlatıcı ve görev ekleme
+Dijital Asistan.dc.html	template	Onay Merkezi
+Dijital Asistan.dc.html	template	'nden geçer.
+Dijital Asistan.dc.html	template	Her AI çıkarımının altında kaynak satırı vardır (Gmail · kişi · saat). Orijinal içerik her zaman bir dokunuş uzakta.
+Dijital Asistan.dc.html	template	Renk yalnızca anlam taşır: coral = acil, amber = son tarih, yeşil = tamamlandı, mavi = bilgi. Marka indigosu sadece AI işaretleri ve birincil aksiyon için.
+Dijital Asistan.dc.html	template	Kullanıcı düzeltebilir: her kartın “···” menüsünde
+Dijital Asistan.dc.html	template	Önemli değil · Daha sık göster · VIP yap · Takip etme
+Dijital Asistan.dc.html	template	. Her düzeltme “Öğrendim” geri bildirimi verir.
+Dijital Asistan.dc.html	template	Tipografi: Geist (SF Pro karakterinde; iOS'ta gövde SF Pro'ya düşer) + Lora yalnızca brifing anlatısı ve haftalık özet için. Gövde min. 15px, dokunma alanı min. 44px.
+Dijital Asistan.dc.html	template	Light mode ana mod. Dark mode temsilî ekranlar 03 ve 05 sayfalarında.
+Dijital Asistan.dc.html	template	BİLGİ MİMARİSİ
+Dijital Asistan.dc.html	template	Brifing hero · Öncelikler · Sabah / öğle / akşam brifingi · Sesli brifing · Toplantı hazırlığı · Mail detayı · AI yanıt
+Dijital Asistan.dc.html	template	Akış
+Dijital Asistan.dc.html	template	Tüm kaynaklar tek dikkat akışı · Filtreler · Mail zekâsı · Takip · Senden beklenenler · Taahhütler · Yaşam kartları · Evrensel yakalama
+Dijital Asistan.dc.html	template	Plan
+Dijital Asistan.dc.html	template	Gün / hafta · Takvim zekâsı · Çakışma çözümü · AI görev blokları · Toplantı sonrası yakalama
+Dijital Asistan.dc.html	template	Asistan
+Dijital Asistan.dc.html	template	Önerilen sorular · Zengin kartlı sohbet · Ses modu · Hafıza araması · Kişi zekâsı
+Dijital Asistan.dc.html	template	Sağ üst avatar → Profil: Onay Merkezi, Ayarlar, Bağlantılar, Gizlilik, Abonelik. Sekme sayısı 4'te sabit; yeni yetenekler yeni sekme değil, ilgili sekmenin içinde bir kart olarak açılır.
+Dijital Asistan.dc.html	template	PROTOTİPTE DENE
+Dijital Asistan.dc.html	template	Brifingimi Gör
+Dijital Asistan.dc.html	template	→ tam ekran brifing →
+Dijital Asistan.dc.html	template	Brifingi Dinle
+Dijital Asistan.dc.html	template	→ sesli oynatıcı (oynat, 15 sn, hız).
+Dijital Asistan.dc.html	template	Ahmet kartında
+Dijital Asistan.dc.html	template	Yanıtla
+Dijital Asistan.dc.html	template	→ ton seçimi taslağı değiştirir →
+Dijital Asistan.dc.html	template	Göndermeyi Onayla
+Dijital Asistan.dc.html	template	→ başarı → kart Bugün'den düşer.
+Dijital Asistan.dc.html	template	Mehmet kartında
+Dijital Asistan.dc.html	template	Hazırlan
+Dijital Asistan.dc.html	template	→ Toplantı hazırlığı; isme dokun → Kişi zekâsı.
+Dijital Asistan.dc.html	template	Hatırlat
+Dijital Asistan.dc.html	template	→ akıllı hatırlatıcı sayfası. Kartın onayı → tamamlandı animasyonu. “···” → düzeltme menüsü.
+Dijital Asistan.dc.html	template	Başlıkta
+Dijital Asistan.dc.html	template	rozeti → Onay Merkezi (onayla / düzenle / reddet). “Takvime Ekle” yeni bir onay üretir.
+Dijital Asistan.dc.html	template	Akış filtreleri, Plan'da Gün/Hafta ve
+Dijital Asistan.dc.html	template	Planla
+Dijital Asistan.dc.html	template	, Asistan'da önerilen sorular ve mikrofon → ses modu.
+Dijital Asistan.dc.html	template	EKRAN KATALOĞU · 9 SAYFA
+Dijital Asistan.dc.html	template	01 Tasarım Sistemi
+Dijital Asistan.dc.html	template	· renk, tipografi, spacing, bileşenler ve tüm durumlar
+Dijital Asistan.dc.html	template	02 Onboarding
+Dijital Asistan.dc.html	template	· giriş, hesap, bağlantılar, izin açıklayıcı, kişiselleştirme, ilk analiz, bildirimler, Android
+Dijital Asistan.dc.html	template	03 Bugün ve Brifingler
+Dijital Asistan.dc.html	template	· Bugün (light/dark), sabah, sesli, öğle, akşam, haftalık özet, paylaşım kartı
+Dijital Asistan.dc.html	template	04 Akış ve Mail
+Dijital Asistan.dc.html	template	· akış, mail zekâsı, mail detayı, AI yanıt, takip, senden beklenenler, taahhütler, yaşam kartları, yakalama, hatırlatıcı
+Dijital Asistan.dc.html	template	05 Plan ve Toplantılar
+Dijital Asistan.dc.html	template	· gün/hafta, takvim zekâsı, çakışma, toplantı hazırlığı (light/dark), toplantı sonrası
+Dijital Asistan.dc.html	template	06 Asistan, Hafıza, Kişiler
+Dijital Asistan.dc.html	template	· asistan, sohbet, ses modu, hafıza araması, VIP kişiler, kişi zekâsı, onay merkezi, AI kişiselleştirme
+Dijital Asistan.dc.html	template	07 Hesap, Gizlilik, Pro
+Dijital Asistan.dc.html	template	· profil, ayarlar, brifing ayarları, gizlilik merkezi, paywall, davet
+Dijital Asistan.dc.html	template	08 Durumlar, Widget'lar, Etkileşimler
+Dijital Asistan.dc.html	template	· boş / hata / yükleme, iOS + Android widget'ları, kilit ekranı, mikro-etkileşim notları
+Dijital Asistan.dc.html	template	09 Pazarlama
+Dijital Asistan.dc.html	template	· 6 mağaza ekranı, 3 adet 9:16 reklam
+Dijital Asistan.dc.html	template	5 EYLÜL CUMARTESİ
+Dijital Asistan.dc.html	template	BRİFİNG HAZIR · 07:58
+Dijital Asistan.dc.html	template	Bugün bilmen gereken
+Dijital Asistan.dc.html	template	şey var.
+Dijital Asistan.dc.html	template	3 önemli mail · 4 etkinlik · 2 takip
+Dijital Asistan.dc.html	template	Dinle · 2 dk
+Dijital Asistan.dc.html	template	ÖNCELİKLERİN
+Dijital Asistan.dc.html	template	Her şey kontrol altında.
+Dijital Asistan.dc.html	template	Yeni bir şey olursa haber veririm. Öğle brifingi 13:00'te.
+Dijital Asistan.dc.html	template	Ekle
+Dijital Asistan.dc.html	template	Gün
+Dijital Asistan.dc.html	template	Hafta
+Dijital Asistan.dc.html	template	TAKVİM ZEKÂSI
+Dijital Asistan.dc.html	template	Yarın 14:00–16:30 arasında 2,5 saat boşluğun var.
+Dijital Asistan.dc.html	template	Teklif hazırlama görevini buraya yerleştirebilirim.
+Dijital Asistan.dc.html	template	Başka zaman
+Dijital Asistan.dc.html	template	7–13 EYLÜL · YOĞUNLUK
+Dijital Asistan.dc.html	template	Yarın oldukça yoğun.
+Dijital Asistan.dc.html	template	09:00 ve 10:00 toplantıların arka arkaya. Arada mola yok.
+Dijital Asistan.dc.html	template	13:30 doktor randevusu için 12:50'de çıkman gerekebilir.
+Dijital Asistan.dc.html	template	Kadıköy → Nişantaşı · 38 dk trafik tahmini
+Dijital Asistan.dc.html	template	Çarşamba 14:00 müşteri toplantısı ile 14:30 doktor çakışıyor.
+Dijital Asistan.dc.html	template	Seçenekleri Gör
+Dijital Asistan.dc.html	template	Hafıza
+Dijital Asistan.dc.html	template	46 mail
+Dijital Asistan.dc.html	template	4 etkinlik
+Dijital Asistan.dc.html	template	2 takip
+Dijital Asistan.dc.html	template	analiz edildi. Ne öğrenmek istersin?
+Dijital Asistan.dc.html	template	ÖNERİLEN
+Dijital Asistan.dc.html	template	SABAH BRİFİNGİ · 5 EYLÜL
+Dijital Asistan.dc.html	template	Bugün oldukça sakin bir günün var.
+Dijital Asistan.dc.html	template	Öğlene kadar toplantın bulunmuyor. Saat 14:30'da Mehmet ile müşteri toplantın var. Toplantı öncesinde dün gelen fiyat teklifine bakman faydalı olabilir. Gelen 46 mail arasında 3 konu dikkat gerektiriyor.
+Dijital Asistan.dc.html	template	Brifingi Dinle · 2 dk
+Dijital Asistan.dc.html	template	SESLİ BRİFİNG
+Dijital Asistan.dc.html	template	Sabah Brifingi
+Dijital Asistan.dc.html	template	TOPLANTIYA HAZIRLAN
+Dijital Asistan.dc.html	template	18 dk
+Dijital Asistan.dc.html	template	MY
+Dijital Asistan.dc.html	template	Mehmet Yılmaz
+Dijital Asistan.dc.html	template	Müşteri toplantısı · 14:30 · 60 dk
+Dijital Asistan.dc.html	template	KONUŞMAN GEREKEN 3 ŞEY
+Dijital Asistan.dc.html	template	Fiyat
+Dijital Asistan.dc.html	template	Revize teklif 17:00'ye kadar bekleniyor; %8 indirim sınırını netleştir.
+Dijital Asistan.dc.html	template	Teslim tarihi
+Dijital Asistan.dc.html	template	Ekim başı için onay istiyor; üretim takvimi 6 Ekim'i gösteriyor.
+Dijital Asistan.dc.html	template	Sözleşme
+Dijital Asistan.dc.html	template	Taslak 2 haftadır açık; hukuk yorumu bekliyor.
+Dijital Asistan.dc.html	template	2 Dakikalık Özeti Oku
+Dijital Asistan.dc.html	template	Not Al
+Dijital Asistan.dc.html	template	TOPLANTI SONRASI · MEHMET YILMAZ
+Dijital Asistan.dc.html	template	Toplantın bitti.
+Dijital Asistan.dc.html	template	Takip etmen gereken bir şey var mı?
+Dijital Asistan.dc.html	template	“Mehmet'e yarın teklif göndereceğim.”
+Dijital Asistan.dc.html	template	Sesle eklendi · 15:31
+Dijital Asistan.dc.html	template	YENİ TAAHHÜT
+Dijital Asistan.dc.html	template	Mehmet'e teklif gönder
+Dijital Asistan.dc.html	template	Yarın
+Dijital Asistan.dc.html	template	Kaydet
+Dijital Asistan.dc.html	template	Vazgeç
+Dijital Asistan.dc.html	template	ACİL
+Dijital Asistan.dc.html	template	AY
+Dijital Asistan.dc.html	template	Ahmet Yılmaz
+Dijital Asistan.dc.html	template	Bugün 08:42 · Gmail
+Dijital Asistan.dc.html	template	Re: Eylül teklifi – revize
+Dijital Asistan.dc.html	template	AI ÖZETİ
+Dijital Asistan.dc.html	template	Ahmet revize fiyat teklifinin bugün 17:00'ye kadar gönderilmesini istiyor.
+Dijital Asistan.dc.html	template	ÖNEMLİ NOKTALAR
+Dijital Asistan.dc.html	template	Revize fiyat
+Dijital Asistan.dc.html	template	Deadline 17:00
+Dijital Asistan.dc.html	template	PDF gönderilecek
+Dijital Asistan.dc.html	template	Yanıt Hazırla
+Dijital Asistan.dc.html	template	Görev Oluştur
+Dijital Asistan.dc.html	template	Takvime Ekle
+Dijital Asistan.dc.html	template	Orijinal Mail
+Dijital Asistan.dc.html	template	Merhaba Yunus, Geçen hafta konuştuğumuz teklifi revize edebilir misin? Yönetim bugün saat 17:00'ye kadar güncellenmiş fiyatı PDF olarak görmek istiyor. Teslim tarihini de netleştirsek iyi olur. Teşekkürler, Ahmet
+Dijital Asistan.dc.html	template	Kaynak: Gmail · ahmet.yilmaz@… · Gelen Kutusu
+Dijital Asistan.dc.html	template	Kime
+Dijital Asistan.dc.html	template	Düzenlenebilir
+Dijital Asistan.dc.html	template	Sen onaylamadan hiçbir mail gönderilmez.
+Dijital Asistan.dc.html	template	Düzenle
+Dijital Asistan.dc.html	template	Gönderildi
+Dijital Asistan.dc.html	template	Bugün'e Dön
+Dijital Asistan.dc.html	template	Onay Bekleyenler
+Dijital Asistan.dc.html	template	Neden
+Dijital Asistan.dc.html	template	Değişim
+Dijital Asistan.dc.html	template	Onayla
+Dijital Asistan.dc.html	template	Reddet
+Dijital Asistan.dc.html	template	Önemli işlemler sen onaylamadan gerçekleştirilmez.
+Dijital Asistan.dc.html	template	PRO
+Dijital Asistan.dc.html	template	Deneme · 5 gün kaldı
+Dijital Asistan.dc.html	template	Çıkış Yap
+Dijital Asistan.dc.html	template	VIP
+Dijital Asistan.dc.html	template	Müşteri · Yılmaz Endüstri · Son iletişim dün 18:20
+Dijital Asistan.dc.html	template	Yaklaşan toplantı
+Dijital Asistan.dc.html	template	Bugün 14:30
+Dijital Asistan.dc.html	template	Açık konular
+Dijital Asistan.dc.html	template	2 konu
+Dijital Asistan.dc.html	template	DİJİTAL ASİSTAN PRO
+Dijital Asistan.dc.html	template	Tüm dijital hayatın, tek brifingde.
+Dijital Asistan.dc.html	template	Yıllık
+Dijital Asistan.dc.html	template	EN AVANTAJLI
+Dijital Asistan.dc.html	template	1.490 TL / yıl · ayda 124 TL
+Dijital Asistan.dc.html	template	Aylık
+Dijital Asistan.dc.html	template	199 TL / ay
+Dijital Asistan.dc.html	template	Ücretsiz Dene · 7 gün
+Dijital Asistan.dc.html	template	Free ile devam et
+Dijital Asistan.dc.html	template	Deneme bitmeden 24 saat önce hatırlatırız. İstediğin zaman iptal.
+Dijital Asistan.dc.html	template	SES MODU
+Dijital Asistan.dc.html	template	Çalışan prototip · iOS 26 çerçevesi · 402×874. Ekran:

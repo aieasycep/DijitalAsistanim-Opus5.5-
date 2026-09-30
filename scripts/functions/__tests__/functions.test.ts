@@ -1,0 +1,143 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { scanFunctions } from '../check-guards.ts';
+import { isSharedSource, lcovLines, lockArgs } from '../deno-tasks.ts';
+import {
+  buildConfigs,
+  DENO_LOCKFILE,
+  FUNCTION_NAMES,
+  FUNCTIONS_DIR,
+  readBaseMap,
+  rebaseTarget,
+  syncImportMaps,
+} from '../sync-import-maps.ts';
+
+function tree(files: Record<string, string>): string {
+  const root = mkdtempSync(join(tmpdir(), 'fn-guards-'));
+  for (const [path, body] of Object.entries(files)) {
+    const full = join(root, path);
+    mkdirSync(join(full, '..'), { recursive: true });
+    writeFileSync(full, body);
+  }
+  return root;
+}
+
+const MODEL = ['claude', 'x-1'].join('-');
+
+test('local import-map targets are rebased per directory; remote specifiers are kept', () => {
+  const fnDir = join(FUNCTIONS_DIR, 'api');
+  assert.equal(
+    rebaseTarget('../../../packages/domain/src/index.ts', fnDir, FUNCTIONS_DIR),
+    '../../packages/domain/src/index.ts',
+  );
+  assert.equal(
+    rebaseTarget('../../../packages/i18n/messages/', fnDir, FUNCTIONS_DIR),
+    '../../packages/i18n/messages/',
+  );
+  assert.equal(
+    rebaseTarget('jsr:@hono/hono@4.13.8', fnDir, FUNCTIONS_DIR),
+    'jsr:@hono/hono@4.13.8',
+  );
+});
+
+test('every function gets a generated config with pinned versions; the workspace adds lint rules', () => {
+  const configs = buildConfigs(readBaseMap());
+  assert.equal(configs.size, FUNCTION_NAMES.length + 1);
+  const workspace = configs.get(join(FUNCTIONS_DIR, 'deno.json')) as {
+    imports: Record<string, string>;
+    lint: unknown;
+  };
+  assert.ok(workspace.lint !== undefined);
+  for (const target of Object.values(workspace.imports)) {
+    if (target.startsWith('npm:') || target.startsWith('jsr:'))
+      assert.match(target, /@\d+\.\d+\.\d+/);
+  }
+  assert.equal(workspace.imports['@supabase/supabase-js'], 'npm:@supabase/supabase-js@2.117.0');
+});
+
+test('the committed configs have no drift from the base map', async () => {
+  assert.deepEqual(await syncImportMaps(true), []);
+});
+
+test('serviceClient outside the allow-list and model-ID literals are findings', () => {
+  const root = tree({
+    'api/routes/bad.ts': "import { serviceClient } from '../../_shared/db/clients.ts';\n",
+    'api/routes/sneaky.ts': "import * as db from '../../_shared/db/clients.ts';\n",
+    'api/repos/system/index.ts':
+      "import { serviceClient } from '../../../_shared/db/clients.ts';\n",
+    'worker/index.ts': "import { serviceClient, userClient } from '../_shared/db/clients.ts';\n",
+    '_shared/ai/route.ts': `export const m = '${MODEL}';\n`,
+    '_shared/ai/providers/anthropic.test.ts': `export const m = '${MODEL}';\n`,
+  });
+  const findings = scanFunctions(root).map((f) => `${f.file}:${f.rule}`);
+  assert.deepEqual(findings.sort(), [
+    '_shared/ai/route.ts:model-id-literal',
+    'api/routes/bad.ts:service-client-import',
+    'api/routes/sneaky.ts:service-client-import',
+  ]);
+});
+
+test('the real functions tree is clean', () => {
+  assert.deepEqual(scanFunctions(), []);
+});
+
+test('coverage: lcov line totals and the _shared source filter (T-12.04)', () => {
+  const lcov = [
+    `SF:file://${FUNCTIONS_DIR}/_shared/a.ts`,
+    'LF:10',
+    'LH:8',
+    'end_of_record',
+    `SF:${FUNCTIONS_DIR}/api/b.ts`,
+    'LF:4',
+    'LH:1',
+    'end_of_record',
+  ].join('\n');
+  const files = lcovLines(lcov);
+  assert.deepEqual(files.get(`${FUNCTIONS_DIR}/_shared/a.ts`), { found: 10, hit: 8 });
+  assert.deepEqual(files.get(`${FUNCTIONS_DIR}/api/b.ts`), { found: 4, hit: 1 });
+  assert.equal(isSharedSource(`${FUNCTIONS_DIR}/_shared/services/x.ts`), true);
+  assert.equal(isSharedSource(`${FUNCTIONS_DIR}/_shared/services/x.test.ts`), false);
+  assert.equal(isSharedSource(`${FUNCTIONS_DIR}/_shared/testing/fake.ts`), false);
+  assert.equal(isSharedSource(`${FUNCTIONS_DIR}/api/app.ts`), false);
+});
+
+test('THR-16: the workspace config uses the committed lock and it covers every remote import', () => {
+  const configs = buildConfigs(readBaseMap());
+  const workspace = configs.get(join(FUNCTIONS_DIR, 'deno.json')) as { lock: unknown };
+  assert.equal(workspace.lock, './deno.lock');
+  for (const fn of FUNCTION_NAMES) {
+    // The deployed configs stay lock-free; deno-tasks checks each entrypoint against the lock.
+    assert.equal(
+      (configs.get(join(FUNCTIONS_DIR, fn, 'deno.json')) as { lock: unknown }).lock,
+      false,
+    );
+  }
+  assert.ok(existsSync(DENO_LOCKFILE), 'supabase/functions/deno.lock is committed');
+  const lock = JSON.parse(readFileSync(DENO_LOCKFILE, 'utf8')) as {
+    version: string;
+    workspace?: { dependencies?: string[] };
+  };
+  assert.equal(lock.version, '4');
+  const locked = new Set(lock.workspace?.dependencies ?? []);
+  const remote = Object.values(readBaseMap().imports)
+    .filter((t) => t.startsWith('npm:') || t.startsWith('jsr:'))
+    .map((t) => t.replace(/^(npm|jsr):\//, '$1:').replace(/\/$/, ''));
+  for (const specifier of remote) {
+    assert.ok(
+      locked.has(specifier),
+      `${specifier} is missing from deno.lock (run pnpm functions:lock)`,
+    );
+  }
+});
+
+test('THR-16: check and test run --frozen in CI and with DA_DENO_FROZEN=1 only', () => {
+  assert.deepEqual(lockArgs({ CI: 'true' }), ['--lock=supabase/functions/deno.lock', '--frozen']);
+  assert.deepEqual(lockArgs({ DA_DENO_FROZEN: '1' }), [
+    '--lock=supabase/functions/deno.lock',
+    '--frozen',
+  ]);
+  assert.deepEqual(lockArgs({}), ['--lock=supabase/functions/deno.lock']);
+});

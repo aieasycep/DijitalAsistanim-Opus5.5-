@@ -1,0 +1,22 @@
+{
+  "schema": "PostMeetingCommitmentV1",
+  "prompt_keys": ["post_meeting"],
+  "default": {
+    "items": [
+      {
+        "owner": "user",
+        "what_tr": "Teklif gönder",
+        "counterparty_quote": "Mehmet",
+        "due_quote": "yarın",
+        "evidence": {
+          "ref": "n1",
+          "quote": "Mehmet’e yarın teklif göndereceğim"
+        },
+        "certainty": "explicit"
+      }
+    ],
+    "note_summary_tr": "Teklif yarın gönderilecek.",
+    "injection_suspected": false
+  },
+  "by_input": {}
+}

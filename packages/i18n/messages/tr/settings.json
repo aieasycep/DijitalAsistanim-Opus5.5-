@@ -1,0 +1,564 @@
+{
+  "hub": {
+    "title": "Profil ve Ayarlar",
+    "identity": {
+      "trial": "Deneme · {days} gün kaldı",
+      "proAnnual": "Pro · Yıllık",
+      "proMonthly": "Pro · Aylık",
+      "proGrant": "Pro · davet ödülü · {date} tarihine kadar",
+      "billingIssue": "Ödeme sorunu",
+      "free": "Ücretsiz plan",
+      "upgrade": "Pro'ya geç",
+      "proGrantOther": "Pro · {source} · {date} tarihine kadar"
+    },
+    "approvalCard": {
+      "title": "Onay Merkezi",
+      "pending": "{count} işlem onayını bekliyor",
+      "none": "Bekleyen işlem yok"
+    },
+    "groups": {
+      "assistant": "Asistan",
+      "account": "Hesap",
+      "app": "Uygulama"
+    },
+    "rows": {
+      "briefings": "Brifing",
+      "notifications": "Bildirimler",
+      "notificationsImportantOnly": "Sadece önemli",
+      "priorityRules": "Öncelik Kuralları",
+      "vip": "Önemli Kişiler",
+      "personalization": "AI Kişiselleştirme",
+      "personalizationCount": "{count} öğrenme",
+      "learningOff": "Öğrenme kapalı",
+      "phoneNotifications": "Telefon Bildirimleri",
+      "subscription": "Abonelik",
+      "connections": "Bağlantılar",
+      "connectionsReconnect": "Yeniden bağlan",
+      "connectionsMissingScope": "Eksik izin",
+      "privacy": "Gizlilik ve Güvenlik",
+      "referral": "Arkadaşını Davet Et",
+      "referralMeta": "+{days} gün",
+      "deleteAccount": "Hesabımı Sil",
+      "appearance": "Görünüm",
+      "language": "Dil",
+      "help": "Yardım",
+      "feedback": "Geri Bildirim",
+      "about": "Hakkında",
+      "notificationsOn": "Açık",
+      "notificationsOff": "Kapalı",
+      "connectionsNone": "Hesap bağla",
+      "connectionsCount": "{count} bağlantı",
+      "planFree": "Ücretsiz",
+      "planPro": "Pro",
+      "planTrial": "Pro deneme"
+    },
+    "signOut": "Çıkış Yap",
+    "footer": "Dijital Asistan {version} ({build}) · Sürüm notları",
+    "identityA11y": "{name}, profili düzenle",
+    "lockedA11y": "{title}, Pro özelliği, kilitli",
+    "dangerA11y": "{title}, tehlikeli işlem",
+    "version": "Dijital Asistan {version} ({build})"
+  },
+  "signOut": {
+    "title": "Çıkış yapılsın mı?",
+    "body": "Bu cihazdaki önbellek, widget verileri ve kurulu hatırlatıcılar silinir. Bağlı hesapların ve ayarların hesabında kalır.",
+    "unsent": "Gönderilmemiş {count} değişiklik var; çıkış yaparsan kaybolur.",
+    "everywhere": "Tüm cihazlardan çıkış yap",
+    "everywhereMeta": "Bu hesapla açık tüm oturumlar kapanır.",
+    "everywhereConfirmTitle": "Tüm cihazlardan çıkılsın mı?",
+    "everywhereConfirmBody": "Bu cihaz dahil her yerde oturumun kapanır.",
+    "unsentSettings": "Gönderilmemiş ayar değişiklikleri var; çıkış yaparsan kaybolur.",
+    "globalFailed": "Oturumlar kapatılamadı. Tekrar dene.",
+    "offline": "Çevrimdışısın. Bu cihazın bildirimleri internete bağlandığında durdurulur."
+  },
+  "profile": {
+    "title": "Profil",
+    "accountSection": "Hesap",
+    "sessionSection": "Oturum",
+    "name": "Ad",
+    "nameHint": "Adın",
+    "email": "E-posta",
+    "appleRelay": "Gizli e-posta (Apple)",
+    "signInMethod": "Giriş yöntemi",
+    "signInWith": "{provider} ile giriş",
+    "memberSince": "Üyelik",
+    "timezoneNote": "Saat dilimi brifing ayarlarında.",
+    "nameEmpty": "Ad boş olamaz.",
+    "emailCode": "E-posta kodu"
+  },
+  "accounts": {
+    "title": "Bağlantılar",
+    "subtitle": "Dijital Asistan'ın okuduğu hesaplar. İstediğin zaman kaldırabilirsin.",
+    "groups": {
+      "mail": "Mail",
+      "calendar": "Takvim",
+      "tasks": "Görevler"
+    },
+    "addAccount": "Hesap ekle",
+    "footer": "Bağlantılar sağlayıcının kendi güvenli giriş ekranıyla (OAuth) yapılır; şifren bize gelmez. Apple Takvim ve Hatırlatıcılar yalnızca bu cihazdan okunur.",
+    "status": {
+      "healthy": "Bağlı",
+      "syncing": "Senkronize ediliyor",
+      "connecting": "Bağlanıyor…",
+      "partial": "Eksik izin",
+      "needs_reauth": "Bağlantıyı yenile.",
+      "admin_consent_required": "Yönetici onayı gerekli",
+      "error": "Hata",
+      "disconnected": "Bağlı değil"
+    },
+    "reconnect": "Yeniden bağlan",
+    "lastSync": "Son eşitleme",
+    "lastSyncRow": "{resource} · {time}",
+    "permissionsSection": "İzinler",
+    "dataSourceSection": "Veri kaynağı kontrolleri",
+    "calendarsSection": "Takvimler",
+    "toggles": {
+      "mail_read": "Mailleri oku ve analiz et",
+      "attachments_analyze": "Ekleri analiz et",
+      "deadline_detect": "Son tarihleri tespit et",
+      "draft_replies": "Yanıt taslağı hazırla",
+      "calendar_read": "Etkinlikleri oku",
+      "schedule_suggest": "Program öner",
+      "calendar_write_with_approval": "Onayınla etkinlik oluştur ve taşı",
+      "tasks_read": "Görevleri oku"
+    },
+    "toggleNote": "Kapatmak sağlayıcıya verdiğin izni geri almaz; yalnızca Dijital Asistan'ın bu işlemi yapmasını durdurur.",
+    "explainerNote": "Mail gönderme veya etkinlik oluşturma izni, ilk onayladığın işlemde ayrıca istenir.",
+    "waiting": "{provider_loc} izin bekleniyor…",
+    "completing": "Bağlantı tamamlanıyor…",
+    "disconnect": {
+      "cta": "Bağlantıyı kaldır",
+      "title": "{service} bağlantısı kaldırılsın mı?",
+      "body": "Yeni mailler artık analiz edilmez ve {provider} erişimi iptal edilir. {service} içindeki maillerin etkilenmez.",
+      "purgeNow": "Bu hesaptan çıkarılan analizleri de şimdi sil",
+      "purgeLater": "İşaretlemezsen analizler saklama süren ({retention}) dolunca silinir.",
+      "microsoftNote": "Microsoft erişimi bizim tarafımızdan tamamen kaldırılamaz. Kaldırmak için: kişisel hesapta account.live.com/consent/Manage, iş veya okul hesabında myapps.microsoft.com.",
+      "confirm": "Bağlantıyı Kaldır",
+      "done": "{service} bağlantısı kaldırıldı",
+      "purging": "Bu hesabın analizleri siliniyor…",
+      "removeAtMicrosoft": "Microsoft'ta kaldır",
+      "revokeFailed": "Bağlantı kaldırıldı; Google erişimi iptal edilemedi. Google Hesabı › Güvenlik › Üçüncü taraf bağlantıları bölümünden kaldırabilirsin.",
+      "removeAtGoogle": "Google'da kaldır",
+      "bodyCalendar": "Yeni etkinlikler artık okunmaz ve {provider} erişimi iptal edilir. {service} içindeki etkinliklerin etkilenmez.",
+      "bodyDevice": "Bu cihazdaki takvim artık okunmaz. Takvim iznini sistem ayarlarından kaldırabilirsin.",
+      "failed": "Bağlantı kaldırılamadı. Tekrar dene."
+    },
+    "rowTitle": "{service} · {email}",
+    "rowA11y": "{title}, {status}, {meta}, yönet",
+    "notConfigured": "Harici kimlik bilgisi gerekli",
+    "meta": {
+      "syncing": "İlk analiz sürüyor",
+      "partial": "Bazı izinler verilmedi.",
+      "needsReauth": "{identityProvider} oturumu süresi doldu.",
+      "error": "Eşitleme sırasında bir sorun oldu.",
+      "firstSync": "İlk eşitleme bekleniyor",
+      "lastSync": "Son eşitleme {time}"
+    },
+    "resources": {
+      "mail": "Mail",
+      "calendar": "Takvim",
+      "tasks": "Görevler"
+    },
+    "never": "henüz yok",
+    "noCalendars": "Bu hesapta takvim bulunamadı.",
+    "partialTitle": "Eksik izin",
+    "partialMail": "Mail izni verilmedi. Mailleri analiz etmem için izin ver.",
+    "partialCalendar": "Takvim izni verilmedi. Takvimini okumam için izin ver.",
+    "syncStarted": "Eşitleme başladı.",
+    "syncFresh": "Az önce eşitlendi; veriler güncel.",
+    "syncFailed": "Eşitleme başlatılamadı. Tekrar dene."
+  },
+  "briefings": {
+    "title": "Brifing",
+    "subtitle": "Brifingleri ne zaman hazırlayayım?",
+    "rows": {
+      "morning": {
+        "title": "Sabah brifingi",
+        "meta": "Günün tamamı · sesli sürüm"
+      },
+      "midday": {
+        "title": "Öğle nabzı",
+        "meta": "Yalnızca değişenler"
+      },
+      "evening": {
+        "title": "Akşam kapanışı",
+        "meta": "Yarına kalanlar"
+      },
+      "weekly": {
+        "title": "Haftalık özet",
+        "meta": "Pazar {time}"
+      },
+      "weekend": {
+        "title": "Hafta sonu düzeni",
+        "meta": "Sadece sabah, {time} · Kişisel öncelikli"
+      }
+    },
+    "silentDays": "Sessiz günler",
+    "silentDaysHelp": "Seçtiğin günlerde brifing hazırlanmaz.",
+    "timezone": "Saat dilimi",
+    "timezoneAuto": "Otomatik · {zone}",
+    "timezoneSheet": {
+      "auto": "Otomatik (cihaz saat dilimi)",
+      "current": "Şu an: {zone}",
+      "manual": "Elle seç",
+      "searchHint": "Şehir ara",
+      "empty": "Sonuç yok."
+    }
+  },
+  "personalization": {
+    "title": "AI Kişiselleştirme",
+    "learnToggle": "Etkileşimlerimden öğren",
+    "learnMeta": "Önemli değil dediğin ve öne çıkardığın konulardan öğrenirim.",
+    "learnedSection": "Öğrendiklerim",
+    "priority": {
+      "high": "Yüksek",
+      "normal": "Normal",
+      "low": "Düşük"
+    },
+    "writeRule": "Kendi kuralını yaz → Öncelik Kuralları",
+    "noTraining": "Mail içeriklerin yapay zekâ modellerini eğitmek için kullanılmaz."
+  },
+  "priorityRules": {
+    "title": "Öncelik Kuralları",
+    "alwaysNotify": "Her zaman bildir",
+    "vipRow": "VIP kişilerden gelenler",
+    "conditions": {
+      "person": "Kişi",
+      "domain": "Alan adı",
+      "keyword": "Anahtar kelime",
+      "category": "Kategori",
+      "sender": "Gönderen",
+      "android_app": "Android uygulaması"
+    },
+    "outcomes": {
+      "always_important": "Her zaman önemli",
+      "high": "Yüksek öncelik",
+      "low": "Düşük öncelik",
+      "always_notify": "Her zaman bildir",
+      "mute": "Sessize al"
+    },
+    "matchCount": "{count} mail · son 30 gün",
+    "active": "Kural aktif",
+    "inactive": "Kural kapalı",
+    "create": "Kuralı Kaydet",
+    "saveChanges": "Değişiklikleri Kaydet",
+    "deleteTitle": "Kural silinsin mi?",
+    "deleted": "Kural silindi",
+    "precedenceTitle": "Kurallar nasıl uygulanır?",
+    "precedenceBody": "Önce senin kuralların, sonra öğrendiğim tercihler, sonra kesin sinyaller ve en son AI tahmini uygulanır."
+  },
+  "appearance": {
+    "title": "Görünüm",
+    "system": "Sistem",
+    "light": "Açık",
+    "dark": "Koyu",
+    "textSize": "Yazı boyutu",
+    "textSizeSystem": "Sistem ayarını kullanır",
+    "textSizes": {
+      "system": "Sistem ile aynı",
+      "sm": "Daha küçük",
+      "lg": "Daha büyük",
+      "xl": "En büyük"
+    },
+    "textSizeSample": "Bugün bilmen gereken 5 şey var."
+  },
+  "language": {
+    "title": "Dil",
+    "note": "Uygulama dili brifinglerin ve bildirimlerin dilini de belirler.",
+    "turkish": "Türkçe",
+    "english": "English"
+  },
+  "help": {
+    "title": "Yardım",
+    "subtitle": "Sık sorulan sorular ve destek ekibimize ulaşma yolları.",
+    "supportSection": "Destek",
+    "contact": "Destek ile iletişime geç",
+    "contactMeta": "Yanıtımızı e-posta ile göndeririz.",
+    "reportBug": "Hata bildir",
+    "webSupport": "Web'deki destek sayfası",
+    "emailUs": "E-posta gönder",
+    "myTickets": "Taleplerim",
+    "ticketMeta": "{category} · {date}",
+    "ticketsFailed": "Taleplerin şu an yüklenemedi · Tekrar dene",
+    "ticketStatus": {
+      "open": "Açık",
+      "in_progress": "İnceleniyor",
+      "waiting_user": "Yanıtın bekleniyor",
+      "resolved": "Çözüldü",
+      "closed": "Kapandı"
+    },
+    "ticketNote": "Yanıtlarımızı {email} adresine gönderiyoruz. Ek bilgi için o e-postayı yanıtlayabilirsin.",
+    "footer": "Dijital Asistan {version} ({build}) · © {year} Dijital Asistan",
+    "ticketDates": "Oluşturuldu {created} · Güncellendi {updated}"
+  },
+  "contact": {
+    "title": "Destek ile iletişime geç",
+    "topic": "Konu",
+    "categories": {
+      "account": "Hesap",
+      "integration": "Entegrasyon",
+      "sync": "Senkronizasyon",
+      "billing": "Faturalandırma",
+      "ai_quality": "AI kalitesi",
+      "notification": "Bildirimler",
+      "privacy": "Gizlilik",
+      "other": "Diğer"
+    },
+    "subject": "Başlık",
+    "subjectDefault": "{category} hakkında",
+    "message": "Mesajın",
+    "messageHint": "Ne oldu? Hangi ekrandaydın?",
+    "counter": "{count}/{max}",
+    "noSecrets": "Şifre, doğrulama kodu ya da kart bilgisi paylaşma.",
+    "replyTo": "Yanıt adresi",
+    "appleRelay": "Apple gizli e-posta adresin. Yanıtı bu adrese iletiriz; istersen başka bir adres yaz.",
+    "diagnostics": "Tanılama bilgilerini ekle",
+    "diagnosticsWhat": "Neler eklenir?",
+    "diagnosticsBody": "Uygulama sürümü, cihaz ve işletim sistemi, bağlı hesaplarının durumu (ör. Gmail · bağlı), son hata kodları ve bildirim izni. Mail, takvim veya konuşma içeriği eklenmez.",
+    "privacyHint": "Hesabını ya da verilerini silmek için Gizlilik › Hesabımı sil adımlarını kullanabilirsin; en hızlı yol budur.",
+    "billingHint": "İadeler Apple veya Google üzerinden yapılır.",
+    "billingHow": "Nasıl?",
+    "send": "Gönder",
+    "sending": "Gönderiliyor…",
+    "successTitle": "Talebini aldık.",
+    "successBody": "Referans numaran: {reference}. Yanıtımızı {email} adresine göndereceğiz.",
+    "validation": {
+      "topic": "Bir konu seç.",
+      "messageMin": "Mesajın en az {min} karakter olmalı.",
+      "email": "Geçerli bir e-posta adresi yaz."
+    },
+    "rateLimited": "Çok fazla talep gönderildi. Lütfen bir saat sonra tekrar dene.",
+    "failed": "Gönderilemedi. İnternet bağlantını kontrol edip tekrar dene.",
+    "draftSaved": "Taslak saklandı"
+  },
+  "feedback": {
+    "title": "Geri bildirim",
+    "subtitle": "Görüşün Dijital Asistan'ı geliştirmemize yardım eder.",
+    "types": {
+      "bug": "Hata bildirimi",
+      "feature": "Özellik isteği",
+      "general": "Genel görüş",
+      "ai_quality": "AI kalitesi"
+    },
+    "area": "Hangi bölümle ilgili?",
+    "areas": {
+      "briefing": "Brifing",
+      "mailSummary": "Mail özeti",
+      "replyDraft": "Yanıt taslağı",
+      "assistant": "Asistan",
+      "meetingPrep": "Toplantı hazırlığı",
+      "capture": "Yakalama",
+      "other": "Diğer"
+    },
+    "rating": "Genel memnuniyetin",
+    "ratings": {
+      "r1": "Kötü",
+      "r2": "Geliştirilebilir",
+      "r3": "İyi",
+      "r4": "Çok iyi",
+      "r5": "Mükemmel"
+    },
+    "ratingA11y": "Memnuniyet, {value} / 5, {label}",
+    "hints": {
+      "bug": "Ne oldu, ne bekliyordun?",
+      "feature": "Neye ihtiyacın var?",
+      "general": "Aklındakini yaz.",
+      "ai_quality": "Hangi sonuç yanlış ya da eksikti?"
+    },
+    "aiNote": "Mail içeriği eklenmez; yalnızca yazdığın metin gönderilir.",
+    "diagnostics": "Tanılama bilgisi ekle",
+    "diagnosticsMeta": "Uygulama sürümü, cihaz ve son hata kodları.",
+    "successTitle": "Teşekkürler.",
+    "successBody": "Geri bildirimin bize ulaştı.",
+    "newFeedback": "Yeni geri bildirim",
+    "queued": "Bağlantı gelince gönderilecek.",
+    "sentLater": "Geri bildirimin gönderildi.",
+    "empty": "Mesaj alanı boş olamaz.",
+    "rateLimited": "Kısa sürede çok fazla geri bildirim gönderildi. Biraz sonra tekrar dene.",
+    "storeReview": "Dijital Asistan'ı mağazada değerlendir",
+    "storeReviewCta": "Değerlendir",
+    "failed": "Gönderilemedi. Tekrar dene."
+  },
+  "about": {
+    "title": "Hakkında",
+    "privacySummary": "Gizlilik özeti",
+    "privacyCenter": "Gizlilik Merkezi",
+    "legal": "Yasal",
+    "terms": "Kullanım Koşulları",
+    "privacyPolicy": "Gizlilik Politikası",
+    "dataDeletion": "Veri silme",
+    "dataDeletionMeta": "Uygulamaya erişemezsen web'den de talep oluşturabilirsin.",
+    "licenses": "Açık kaynak lisansları",
+    "releaseNotes": "Sürüm notları",
+    "rate": "Mağazada değerlendir",
+    "support": "Destek",
+    "securityReport": "Güvenlik açığı bildir",
+    "versionA11y": "Sürüm {version}, derleme {build}"
+  },
+  "licenses": {
+    "title": "Açık kaynak lisansları",
+    "subtitle": "Dijital Asistan aşağıdaki açık kaynak yazılımları ve yazı tiplerini kullanır.",
+    "searchHint": "Paket ara",
+    "fontsSection": "Yazı tipleri ve simgeler",
+    "packagesSection": "Yazılım paketleri",
+    "openSource": "Kaynağı aç",
+    "empty": "Paket bulunamadı."
+  },
+  "common": {
+    "offlineBanner": "Çevrimdışısın. Kayıtlı bilgiler gösteriliyor.",
+    "addressCopied": "Adres kopyalandı"
+  },
+  "time": {
+    "hour": "Saat",
+    "minute": "Dakika",
+    "increase": "{unit} artır",
+    "decrease": "{unit} azalt",
+    "chipA11y": "{title} saati, {time}, değiştirmek için dokun"
+  },
+  "quietHours": {
+    "sameTime": "Başlangıç ve bitiş aynı olamaz."
+  },
+  "notificationsScreen": {
+    "noPermissionCaption": "Bildirim izni olmadan bu ayarlar uygulanmaz.",
+    "androidChannels": "Android'de her bildirim kanalı kilit ekranında içeriği gizler; kanalları Android ayarlarından tek tek de kapatabilirsin."
+  },
+  "notificationTest": {
+    "rateLimited": "Kısa süre içinde çok fazla test gönderildi. Biraz sonra tekrar dene."
+  },
+  "briefingsScreen": {
+    "middayAfterMorning": "Öğle nabzı sabah brifinginden en az 1 saat sonra olmalı.",
+    "eveningAfterMidday": "Akşam kapanışı öğle nabzından en az 1 saat sonra olmalı.",
+    "insideQuietHours": "Bu saat sessiz saatlerin içinde; brifing hazırlanır ama bildirimi gönderilmez. Brifingini Bugün ekranında görürsün.",
+    "allSilent": "En az bir gün brifing açık kalmalı. Brifingleri durdurmak için yukarıdaki anahtarları kapat.",
+    "weekendTime": "Hafta sonu sabah saati"
+  },
+  "appearanceScreen": {
+    "systemMeta": "Cihaz ayarına göre",
+    "lightMeta": "Her zaman açık",
+    "darkMeta": "Her zaman koyu",
+    "reduceMotion": "Hareketi azalt",
+    "haptics": "Haptik geri bildirim",
+    "reduceMotionCaption": "“Hareketi azalt” tüm geçişleri kısa bir solma efektine indirir."
+  },
+  "languageScreen": {
+    "note": "Brifing ve özetler seçtiğin dilde yazılır; maillerin orijinal dili korunur.",
+    "region": "Bölge",
+    "dateFormat": "Tarih biçimi",
+    "timeFormat": "Saat biçimi",
+    "hours24": "24 saat ({time})"
+  },
+  "aboutScreen": {
+    "version": "Sürüm {version} ({build})",
+    "tagline": "Bugün bilmen gerekenleri, sen sormadan söyler.",
+    "demo": "Demo modu · Örnek verilerle çalışıyor",
+    "copyright": "© {year} Dijital Asistan"
+  },
+  "licensesScreen": {
+    "licensed": "Lisans: {license}. Lisans metninin tamamı paketin kaynağında yer alır."
+  },
+  "personalizationScreen": {
+    "title": "Dijital Asistan seni nasıl tanıyor?",
+    "subtitle": "Zamanla öğrendiklerim. Her satırı düzenleyebilir, kapatabilir veya silebilirsin; sildiğin şeyi bir daha varsaymam.",
+    "learnMeta": "Tepkilerinden öğrenip önceliklendirmeyi uyarlarım. Model eğitimi yapılmaz.",
+    "learningOff": "Öğrenme kapalı · mevcut tercihler sen kapatana kadar uygulanır.",
+    "sections": {
+      "people": "Kişiler",
+      "topics": "Konular",
+      "preferences": "Tercihler"
+    },
+    "emptyTitle": "AI henüz bir tercih öğrenmedi.",
+    "emptyBody": "Önemli değil dediğin veya sık açtığın mailler burada tercihe dönüşür.",
+    "deleted": "Tercih silindi",
+    "editTitle": "Tercihi düzenle"
+  },
+  "rulesScreen": {
+    "subtitle": "Senin yazdığın açık kurallar. Her zaman AI'ın kendi öğrendiklerinin önüne geçer.",
+    "groups": {
+      "always_important": "Her zaman önemli say",
+      "high": "Yüksek öncelikli say",
+      "low": "Düşük öncelikli say",
+      "always_notify": "Her zaman bildir",
+      "mute": "Sessize al"
+    },
+    "outcomes": {
+      "always_important": "Her zaman önemli say",
+      "high": "Yüksek öncelikli say",
+      "low": "Düşük öncelikli say",
+      "always_notify": "Her zaman bildir",
+      "mute": "Sessize al"
+    },
+    "categories": {
+      "promotions": "Promosyon ve bültenler",
+      "informational": "Bilgilendirme mailleri",
+      "low_priority": "Düşük öncelikli mailler",
+      "has_deadline": "Son tarih içerenler",
+      "awaiting_my_reply": "Senden cevap bekleyenler",
+      "awaiting_their_reply": "Cevap beklediklerin"
+    },
+    "summary": {
+      "person": "{name} kişisinden gelenler",
+      "domain": "@{domain} adresinden gelenler",
+      "sender": "{address} adresinden gelenler",
+      "keyword": "{words} içerenler",
+      "app": "{app} bildirimleri"
+    },
+    "appCount": "{count} bildirim · son 30 gün",
+    "vipMetaQuiet": "{count} kişi · Sessiz saatlerde bile",
+    "rowA11y": "{type} kuralı, {title}, {outcome}, son 30 günde {count} mail, {state}",
+    "emptyTitle": "Henüz kuralın yok.",
+    "emptyBody": "Önemli kişileri, domainleri veya konuları kendin belirle; AI bunları her zaman önce uygular.",
+    "add": "Kural Ekle",
+    "footer": "AI'ın kendi öğrendiklerini AI Kişiselleştirme'de görürsün; burası yalnızca senin kuralların.",
+    "precedence": {
+      "title": "Öncelik nasıl belirlenir?",
+      "rules": "Senin kuralların — her zaman önce uygulanır.",
+      "learned": "AI'ın öğrendikleri — kapatıp silebilirsin.",
+      "signals": "Mail sinyalleri — ör. VIP kişilerin, toplu gönderim ve otomatik yanıt başlıkları.",
+      "ai": "AI sınıflandırması — kaynağı ve nedeni her kartta yazar.",
+      "specificity": "Birden fazla kuralın uyarsa en belirgin olan geçerli olur: kişi ve gönderici, domainden; domain, anahtar kelime ve kategoriden önce gelir."
+    },
+    "newKicker": "Yeni kural",
+    "editKicker": "Kuralı düzenle",
+    "newTitle": "Yeni kural",
+    "conditionSection": "1 · Koşul",
+    "outcomeSection": "2 · Sonuç",
+    "otherOutcomes": "Diğer sonuçlar",
+    "domainHint": "sirket.com",
+    "senderHint": "ad@sirket.com veya noreply@*",
+    "searchBody": "Konu ve gövdede ara",
+    "suggested": "Önerilen: @{domain}",
+    "pickContact": "Kişi seç",
+    "noContacts": "Kişi bulunamadı.",
+    "previewKicker": "Önizleme · son 30 gün",
+    "previewCount": "{count} mail bu kurala uydu",
+    "previewFooter": "{important} tanesi bugün zaten önemli sayılıyordu; {up} mail yukarı taşınacak.",
+    "previewEmpty": "Son 30 günde bu kurala uyan mail yok. Kural yeni gelen maillere uygulanır.",
+    "previewHint": "Koşulu tamamladığında son 30 günün önizlemesi burada görünür.",
+    "previewOffline": "Önizleme için internet gerekiyor.",
+    "previewError": "Önizleme şu an yüklenemedi.",
+    "statusMeta": "Oluşturuldu {date} · son 30 günde {count} mail etkilendi",
+    "errors": {
+      "domain": "Geçerli bir domain gir (ör. sirket.com).",
+      "keywords": "En az bir anahtar kelime ekle.",
+      "sender": "Geçerli bir e-posta gir.",
+      "category": "Bir kategori seç.",
+      "person": "Bir kişi seç.",
+      "duplicate": "Bu kural zaten var."
+    },
+    "saved": "Kural kaydedildi",
+    "delete": "Kuralı Sil",
+    "deleteBody": "“{summary}” kuralı silinir. Bu maillere yeniden AI'ın kendi önceliği uygulanır.",
+    "exceptions": {
+      "title": "İstisnalar",
+      "categories": "Kategoriler",
+      "senders": "Göndericiler",
+      "senderLabel": "Gönderici e-postası",
+      "none": "İstisna yok.",
+      "invalidEmail": "Geçerli bir e-posta gir."
+    },
+    "leaveTitle": "Değişiklikler kaydedilmesin mi?",
+    "leaveDiscard": "Kaydetme",
+    "leaveKeep": "Düzenlemeye devam et",
+    "notFound": "Bu kural bulunamadı."
+  }
+}

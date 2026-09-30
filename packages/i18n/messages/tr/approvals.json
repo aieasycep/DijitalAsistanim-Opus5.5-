@@ -1,0 +1,236 @@
+{
+  "title": "Onay Merkezi",
+  "pendingTitle": "Onay Bekleyenler",
+  "pendingCount": "{count} işlem onayını bekliyor",
+  "noPending": "Bekleyen işlem yok",
+  "tabs": {
+    "pending": "Bekleyenler",
+    "history": "Geçmiş"
+  },
+  "statuses": {
+    "pending": "Bekliyor",
+    "approved": "Onaylandı",
+    "rejected": "Reddedildi",
+    "executing": "İşleniyor",
+    "executed": "Tamamlandı",
+    "failed": "Başarısız",
+    "expired": "Süresi doldu"
+  },
+  "types": {
+    "email_send": "Mail gönder",
+    "calendar_create": "Etkinlik ekle",
+    "calendar_update": "Etkinlik güncelle",
+    "calendar_move": "Etkinlik taşı",
+    "task_create": "Görev oluştur",
+    "reminder_create": "Hatırlatıcı oluştur",
+    "commitment_create": "Taahhüt kaydet"
+  },
+  "card": {
+    "why": "Neden",
+    "change": "Değişim",
+    "where": "Nereye",
+    "whichSource": "Hangi kaynak nedeniyle?",
+    "sideEffectAttendees": "Katılımcılara güncelleme gönderilir"
+  },
+  "progress": {
+    "approved": "Onaylandı",
+    "sending": "Gönderiliyor…",
+    "processing": "İşleniyor…",
+    "rejected": "Reddedildi",
+    "expired": "Süresi doldu · {time} geçti"
+  },
+  "results": {
+    "email_send": "Mail gönderildi.",
+    "calendar_create": "Takvimine eklendi.",
+    "calendar_update": "Etkinlik güncellendi.",
+    "task_create": "Görev oluşturuldu.",
+    "reminder_create": "Hatırlatıcı kuruldu.",
+    "commitment_create": "Taahhüt kaydedildi."
+  },
+  "actions": {
+    "approve": "Onayla",
+    "edit": "Düzenle",
+    "reject": "Reddet",
+    "retry": "Tekrar dene",
+    "viewResult": "Sonucu gör",
+    "repropose": "Yeniden öner"
+  },
+  "undo": "Onaylandı · {count} işlem",
+  "scopeUpgrade": {
+    "title": "Bir izin daha gerekiyor",
+    "body": "Bu işlemi yapabilmem için {service} hesabından ek izin vermen gerekiyor. İzin yalnızca onayladığın işlemler için kullanılır.",
+    "cta": "İzin Ver"
+  },
+  "why": {
+    "reply_draft": "Yanıt taslağını göndermek istedin.",
+    "assistant": "Asistana bunu yapmasını söyledin.",
+    "voice": "Sesli komutla istedin.",
+    "capture": "Yakaladığın içerikte bulundu.",
+    "plan_proposal": "Takvimindeki boşluğa göre önerildi.",
+    "conflict_resolution": "Takvim çakışmasını çözmek için önerildi.",
+    "post_meeting": "Toplantı notlarından çıktı.",
+    "email_detail": "Mailde tespit edildi.",
+    "life_event": "Kişisel gelişmelerinden çıktı.",
+    "follow_up": "Yanıt beklediğin bir konuşmadan çıktı.",
+    "reminder_sheet": "Hatırlatıcı kurmak istedin.",
+    "commitment_detection": "Verilen bir söz tespit edildi.",
+    "insight": "Önceliklerinden birinden çıktı.",
+    "manual": "Kendin ekledin."
+  },
+  "summary": {
+    "timed": "{date} · {start}–{end}",
+    "allDay": "{date} · Tüm gün",
+    "moved": "{from} → {to}",
+    "updated": "Etkinlik bilgileri değişir.",
+    "taskDue": "Son tarih {date}",
+    "taskNoDue": "Son tarih yok",
+    "reminderAt": "{date} · {time}",
+    "commitmentDue": "{counterparty} · {date}",
+    "commitmentNoDue": "{counterparty}",
+    "email": "{count} alıcı · {subject}"
+  },
+  "sideEffects": {
+    "emailSentTo": "Mail {count} alıcıya gönderilir.",
+    "invitesSent": "{count} katılımcıya davet gider.",
+    "attendeesNotified": "{count} katılımcıya güncelleme gider.",
+    "pushReminder": "{time_loc} bildirim gelir.",
+    "quietHours": "Sessiz saatlerde çalar.",
+    "providerTask": "Görev {service} listesine eklenir.",
+    "deviceCalendar": "Etkinlik bu cihazdaki takvime yazılır.",
+    "deviceReminders": "Cihazındaki Anımsatıcılar listesine yazılır.",
+    "internalTask": "Görev uygulamada oluşturulur.",
+    "internalReminder": "Hatırlatıcı uygulamada kurulur.",
+    "internalCommitment": "Taahhüt uygulamaya kaydedilir."
+  },
+  "destination": {
+    "inApp": "Dijital Asistan",
+    "device": "Bu cihaz"
+  },
+  "failure": {
+    "stale": "Etkinlik bu arada değişmiş; öneriyi yenile.",
+    "reauth": "Hesap bağlantısı yenilenmeli.",
+    "scope": "Bu işlem için ek izin gerekiyor.",
+    "rejected": "Hizmet bu işlemi kabul etmedi.",
+    "rate_limited": "Hizmet şu an yoğun. Tekrar dene.",
+    "unavailable": "Hizmete şu an ulaşılamıyor. Tekrar dene.",
+    "timeout": "Hizmet zamanında yanıt vermedi. Tekrar dene.",
+    "device_missing": "Cihazdan sonuç gelmedi. Tekrar dene.",
+    "device_failed": "Cihaza yazılamadı. Tekrar dene.",
+    "device_cancelled": "Cihazda iptal edildi. İstersen tekrar dene.",
+    "generic": "İşlem tamamlanamadı. Tekrar dene."
+  },
+  "learned": {
+    "statement": "“{type}” önerilerini daha seçici göster."
+  },
+  "row": {
+    "what": "Ne",
+    "why": "Neden",
+    "source": "Kaynak",
+    "sourceHint": "Kaynağı açar",
+    "change": "Değişim",
+    "destination": "Hesap",
+    "sideEffect": "Etkisi"
+  },
+  "m2": {
+    "updated": "Bu onay güncellendi; son hâlini incele.",
+    "networkFailed": "İşlem gönderilemedi · Tekrar dene",
+    "cancel": "İptal",
+    "expired": "Bu önerinin süresi doldu.",
+    "slow": "İşlem sürüyor. Bitince bildireceğim.",
+    "device": "Bu işlem cihaz takviminde tamamlanacak; Onay Merkezi'nden takip edebilirsin.",
+    "sheetTitle": "Onayın gerekiyor",
+    "close": "Kapat",
+    "openCenter": "Onay ayrıntıları"
+  },
+  "rows": {
+    "source": "Kaynak",
+    "sourceSelf": "Senin isteğin",
+    "sourceHint": "Kaynağı açar",
+    "account": "Hesap",
+    "sideEffect": "Yan etki",
+    "expiry": "Süre",
+    "diff": "{before} → {after}"
+  },
+  "toasts": {
+    "conflict": "Bu onay güncellendi; son hâlini incele.",
+    "expired": "Süresi doldu",
+    "rejected": "Reddedildi",
+    "rejectedLearned": "Reddedildi · Öğrendim",
+    "offline": "Çevrimdışısın · Bu işlem için bağlantı gerekli.",
+    "waiting": "Onay Merkezi'nde bekliyor",
+    "longRunning": "İşlem sürüyor. Bitince bildireceğim.",
+    "view": "Görüntüle",
+    "batchSummary": "{done}/{total} işlem tamamlandı"
+  },
+  "reauth": {
+    "title": "Hedef hesabın bağlantısı yenilenmeli"
+  },
+  "offline": {
+    "banner": "Çevrimdışısın. Onaylar bağlantı gelince yapılabilir.",
+    "sheet": "Bağlantı gerekli"
+  },
+  "sheet": {
+    "title": "Onay gerekiyor",
+    "subtitle": "Sen onaylamadan hiçbiri yapılmaz.",
+    "batchTitle": "Onay · {count} işlem",
+    "batchSubtitle": "Sen onaylamadan hiçbiri yapılmaz. İstemediğini kaldır.",
+    "approveCount": "Onayla · {count}",
+    "footer": "Onaylananlar Onay Merkezi geçmişine yazılır."
+  },
+  "editor": {
+    "sheetTitle": "İşlemi düzenle",
+    "reproposeTitle": "Yeniden öner",
+    "title": "Başlık",
+    "commitment": "Taahhüt",
+    "direction": "Yön",
+    "directionMine": "Verdiğin",
+    "directionTheirs": "Sana verilen",
+    "noDue": "Son tarih yok",
+    "duration": "Süre",
+    "location": "Konum",
+    "notes": "Notlar",
+    "invalid": "Bilgilerden biri geçersiz; kontrol et.",
+    "conflict": "Bu onay güncellendi; son hâlini incele.",
+    "saved": "Düzenlendi",
+    "offline": "Çevrimdışıyken düzenleme kaydedilemez.",
+    "loadFailed": "Onay yüklenemedi."
+  },
+  "center": {
+    "subtitle": "{count} işlem onayını bekliyor. Hiçbiri sen onaylamadan yapılmaz.",
+    "pending": "Bekleyen",
+    "inFlight": "İşleniyor",
+    "failed": "Tamamlanamadı",
+    "doneToday": "Bugün tamamlananlar",
+    "assurance": "Önemli işlemler sen onaylamadan gerçekleştirilmez. Toplu onay yok; her kart tek tek."
+  },
+  "history": {
+    "title": "Onay geçmişi",
+    "filters": {
+      "all": "Tümü",
+      "executed": "Tamamlanan",
+      "rejected": "Reddedilen",
+      "failed": "Başarısız",
+      "expired": "Süresi dolan"
+    },
+    "emptyTitle": "Henüz geçmiş yok.",
+    "emptyBody": "Onayladığın veya reddettiğin işlemler burada görünür. Saklama süren: {retention}.",
+    "rowA11y": "{status}, {title}, {time}"
+  },
+  "detail": {
+    "kicker": "Onay detayı",
+    "exactChange": "Değişim",
+    "diffA11y": "{field}: {before} yerine {after}",
+    "timeline": "Durum geçmişi",
+    "events": {
+      "created": "Oluşturuldu",
+      "edited": "Düzenlendi · sürüm {version}",
+      "approved": "Onaylandı",
+      "executing": "İşleniyor",
+      "executed": "Tamamlandı",
+      "failed": "Başarısız",
+      "rejected": "Reddedildi",
+      "expired": "Süresi doldu"
+    },
+    "supportCode": "Destek kodu: {code}"
+  }
+}

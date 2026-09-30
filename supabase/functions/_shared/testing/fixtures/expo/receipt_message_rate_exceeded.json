@@ -1,0 +1,7 @@
+{
+  "status": "error",
+  "message": "The app sent too many messages to this device.",
+  "details": {
+    "error": "MessageRateExceeded"
+  }
+}

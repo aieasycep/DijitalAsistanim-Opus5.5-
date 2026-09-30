@@ -1,0 +1,202 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  TURBO_TELEMETRY_DISABLED: '1'
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: ./.github/actions/setup
+        with:
+          turbo-cache-key: lint
+      - run: pnpm exec eslint .
+      - run: pnpm lint
+      - run: pnpm format:check
+      # Runs `run.ts --self-test` (one finding per fixture) before the scan; writes quality-gate.json.
+      - run: pnpm quality-gate
+      - if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: quality-gate-report
+          path: quality-gate.json
+          if-no-files-found: ignore
+          retention-days: 7
+
+  typecheck:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: ./.github/actions/setup
+        with:
+          turbo-cache-key: typecheck
+      - run: pnpm exec tsc -p tsconfig.json
+      - run: pnpm typecheck
+
+  unit:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: ./.github/actions/setup
+        with:
+          turbo-cache-key: unit
+      - run: pnpm test:scripts
+      - run: pnpm test
+
+  mobile:
+    name: mobile (install check, bundle export, prebuild smoke)
+    runs-on: ubuntu-24.04
+    env:
+      EXPO_OFFLINE: '1'
+      EXPO_NO_TELEMETRY: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: ./.github/actions/setup
+        with:
+          turbo-cache-key: mobile
+      - run: pnpm mobile:check
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4.9.1
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4.4.3
+      - name: Android Notification Intelligence rules (pure-Kotlin JVM tests)
+        run: pnpm --filter @da/mobile ni:test
+
+  functions:
+    name: functions (import maps, deno check, lint, test + coverage gate)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: ./.github/actions/setup
+        with:
+          turbo-cache-key: functions
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.cache/deno
+          key: deno-${{ runner.os }}-${{ hashFiles('supabase/functions/import_map.base.json', 'supabase/functions/deno.lock') }}
+          restore-keys: deno-${{ runner.os }}-
+      - run: pnpm functions:imports --check
+      # THR-16: check and test resolve through supabase/functions/deno.lock with --frozen (CI=true).
+      - run: pnpm functions:check
+      - run: pnpm functions:lint
+      # The whole Deno suite with the T-12.04 gate: `_shared` line coverage ≥ 80 %.
+      - run: pnpm functions:coverage
+
+  db:
+    name: db (tier A — supabase start, reset, pgTAP, lint, type drift)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: ./.github/actions/setup
+        with:
+          turbo-cache-key: db
+      - run: pnpm db:lint
+      - run: bash scripts/db/tier-a.sh --keep-running
+      - name: generated types match the real stack
+        run: pnpm db:types:check --no-migrate
+        env:
+          DA_TYPEGEN_DB_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+
+  integration:
+    name: integration (tier A — local stack, mock providers, IT suites)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: ./.github/actions/setup
+        with:
+          turbo-cache-key: integration
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.cache/deno
+          key: deno-${{ runner.os }}-${{ hashFiles('supabase/functions/import_map.base.json', 'supabase/functions/deno.lock') }}
+          restore-keys: deno-${{ runner.os }}-
+      - run: pnpm exec supabase start -x studio,imgproxy
+      - run: pnpm test:integration
+      # The functions run in the local stack's edge runtime container, whose output is not in the
+      # artifact; the gateway log shows refused requests (e.g. 414). Test stack, run-scoped values.
+      - name: Edge runtime, gateway and mock provider logs
+        if: failure()
+        run: |
+          for c in $(docker ps --format '{{.Names}}' | grep -E '^supabase_(edge_runtime|kong)_'); do
+            echo "::group::$c"
+            docker logs --tail 400 "$c" 2>&1
+            echo "::endgroup::"
+          done
+          echo "::group::mock-providers.log"
+          tail -n 200 .cache/integration/logs/mock-providers.log || true
+          echo "::endgroup::"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: failure()
+        with:
+          name: integration-function-logs
+          path: .cache/integration/logs
+          include-hidden-files: true
+          retention-days: 7
+
+  web:
+    name: web (next build, Playwright E2E)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: ./.github/actions/setup
+        with:
+          turbo-cache-key: web
+      - run: pnpm --filter @da/web exec playwright install --with-deps chromium
+      - run: pnpm --filter @da/web e2e:web
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: failure()
+        with:
+          name: web-playwright-report
+          path: apps/web/playwright-report
+          retention-days: 7
+
+  backoffice:
+    name: backoffice (next build, Playwright E2E)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: ./.github/actions/setup
+        with:
+          turbo-cache-key: backoffice
+      - run: pnpm --filter @da/backoffice exec playwright install --with-deps chromium
+      - run: pnpm --filter @da/backoffice e2e
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: failure()
+        with:
+          name: backoffice-playwright-report
+          path: apps/backoffice/playwright-report
+          retention-days: 7
+
+  security:
+    name: security (gitleaks history scan, bundle secret scan, env split, headers)
+    runs-on: ubuntu-24.04
+    env:
+      EXPO_OFFLINE: '1'
+      EXPO_NO_TELEMETRY: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          # SG-2: gitleaks scans the full history.
+          fetch-depth: 0
+      - uses: ./.github/actions/setup
+        with:
+          turbo-cache-key: security
+      - name: gitleaks over the full history (SG-2; pinned release, checksum-verified)
+        run: pnpm secret-scan
+      - run: pnpm turbo run build --filter=@da/web --filter=@da/backoffice
+      - run: pnpm --filter @da/mobile export
+      - run: pnpm scan:bundles

@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "@da/domain": "../domain/src/index.ts",
+    "@da/domain/": "../domain/src/"
+  }
+}

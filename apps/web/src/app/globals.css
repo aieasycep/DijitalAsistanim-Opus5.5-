@@ -1,0 +1,213 @@
+@import 'tailwindcss';
+@import './theme-reset.css';
+@import '@da/design-tokens/tokens.css';
+
+/*
+ * Web-only type steps from SCREEN_AND_FLOW_MAP Part 5 §0.4 that the token package does not carry
+ * (hero H1 at three breakpoints). Section headings, leads and body use the `web-*` tokens.
+ */
+@theme {
+  --text-web-hero-sm: 2.125rem;
+  --text-web-hero-sm--line-height: 2.5rem;
+  --text-web-hero-sm--letter-spacing: -0.025em;
+  --text-web-hero-sm--font-weight: 600;
+  --text-web-hero-md: 2.75rem;
+  --text-web-hero-md--line-height: 3.125rem;
+  --text-web-hero-md--letter-spacing: -0.025em;
+  --text-web-hero-md--font-weight: 600;
+  --text-web-hero-lg: 3.5rem;
+  --text-web-hero-lg--line-height: 3.75rem;
+  --text-web-hero-lg--letter-spacing: -0.025em;
+  --text-web-hero-lg--font-weight: 600;
+  --text-web-h3: 1.125rem;
+  --text-web-h3--line-height: 1.5rem;
+  --text-web-h3--letter-spacing: -0.01em;
+  --text-web-h3--font-weight: 600;
+  --text-web-h3-lg: 1.375rem;
+  --text-web-h3-lg--line-height: 1.75rem;
+  --text-web-h3-lg--letter-spacing: -0.01em;
+  --text-web-h3-lg--font-weight: 600;
+  --text-web-lead-sm: 1.0625rem;
+  --text-web-lead-sm--line-height: 1.625rem;
+  --text-web-lead-md: 1.125rem;
+  --text-web-lead-md--line-height: 1.75rem;
+  --text-web-editorial: 1.375rem;
+  --text-web-editorial--line-height: 2.125rem;
+  --text-web-editorial-sm: 1.125rem;
+  --text-web-editorial-sm--line-height: 1.8125rem;
+  --shadow-focus: 0 0 0 2px var(--da-border-focus);
+}
+
+@layer base {
+  html {
+    background-color: var(--da-bg);
+    color: var(--da-text-primary);
+    font-family: var(--da-font-sans);
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    scroll-padding-top: 5rem;
+    font-feature-settings: 'ss01' on;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  body {
+    min-height: 100dvh;
+    background-color: var(--da-bg);
+  }
+
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 2px solid var(--da-border-focus);
+    outline-offset: 2px;
+  }
+
+  /* Dark bands (night, dawn, ink): a light ring stays visible on the gradient. */
+  .band-dark :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline-color: var(--da-text-on-gradient);
+  }
+
+  [id] {
+    scroll-margin-top: 5rem;
+  }
+
+  summary {
+    list-style: none;
+    cursor: pointer;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  dialog {
+    max-width: none;
+    max-height: none;
+  }
+
+  dialog::backdrop {
+    background: var(--da-overlay-scrim);
+  }
+}
+
+@layer components {
+  /* 4 / 8 / 12-column grid gutters of Part 5 §0.4: 20 → 32 → 40 px, content max 1200 px. */
+  .site-container {
+    width: 100%;
+    max-width: calc(75rem + 5rem);
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+
+  @media (width >= 48rem) {
+    .site-container {
+      padding-inline: 2rem;
+    }
+  }
+
+  @media (width >= 75rem) {
+    .site-container {
+      padding-inline: 2.5rem;
+    }
+  }
+
+  .section-pad {
+    padding-block: 4rem;
+  }
+
+  @media (width >= 48rem) {
+    .section-pad {
+      padding-block: 5.5rem;
+    }
+  }
+
+  @media (width >= 75rem) {
+    .section-pad {
+      padding-block: 7.5rem;
+    }
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .sr-only-focusable:not(:focus, :focus-within) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* Legal prose: comfortable measure, real tables, tokens only. */
+  .legal-prose p,
+  .legal-prose li,
+  .legal-prose dd {
+    @apply text-web-body text-ink;
+  }
+
+  .legal-prose a {
+    color: var(--da-text-link);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    padding-block: 4px;
+  }
+
+  .legal-prose ul {
+    list-style: disc;
+    padding-inline-start: 1.25rem;
+  }
+
+  .legal-prose li + li {
+    margin-top: 0.5rem;
+  }
+}
+
+@layer utilities {
+  .motion-hero {
+    animation: da-hero-in var(--da-duration-hero) var(--da-ease-standard) both;
+  }
+
+  .motion-hero-1 {
+    animation-delay: 60ms;
+  }
+
+  .motion-hero-2 {
+    animation-delay: 120ms;
+  }
+
+  @keyframes da-hero-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation: none !important;
+      transition-duration: 0ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}

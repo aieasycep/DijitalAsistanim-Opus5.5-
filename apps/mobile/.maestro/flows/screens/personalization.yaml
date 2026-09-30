@@ -1,0 +1,19 @@
+appId: com.dijitalasistan.app.e2e
+name: 'E2E-S-12 · Learned preferences'
+tags: [screens, android, ios, pro]
+env:
+  USER_KEY: u_pro
+  SCENARIO: canon
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- openLink: 'dijitalasistan-e2e://settings/personalization'
+- extendedWaitUntil: { visible: { id: 'screen.settings.personalization' }, timeout: 30000 }
+- assertVisible: { id: 'personalization.learn' }
+- tapOn: '${output.t.settings.personalization.priority.high}'
+- extendedWaitUntil: { visible: { id: 'sheet.learnedEdit' }, timeout: 30000 }
+- tapOn: { id: 'learnedEdit.save' }

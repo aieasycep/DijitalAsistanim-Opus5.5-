@@ -1,0 +1,54 @@
+# Android E2E on EAS Workflows (T-12.02): the `e2e` profile APK, then Maestro 2.10.0 over the
+# `android` flows against the staging E2E project with the harness in staging mode. The
+# authoritative Android run is GitHub Actions (.github/workflows/mobile-e2e.yml: local tier-A stack,
+# fixed clock, emulator shards); this one runs on demand for parity with the iOS workflow.
+# External credentials required: EXPO_TOKEN, and in the EAS `preview` environment the staging
+# E2E_SUPABASE_URL / E2E_SUPABASE_SECRET_KEY / E2E_DB_URL secrets.
+name: E2E Android
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  build_android_e2e:
+    name: Build Android APK (e2e)
+    type: build
+    params:
+      platform: android
+      profile: e2e
+
+  maestro_android:
+    name: Maestro (tag android)
+    needs: [build_android_e2e]
+    runs_on: linux-large-nested-virtualization
+    environment: preview
+    env:
+      MAESTRO_VERSION: 2.10.0
+      E2E_TARGET: staging
+      APP_ENV: e2e
+    steps:
+      - uses: eas/checkout
+      - uses: eas/install_node_modules
+      - uses: eas/download_build
+        id: download
+        with:
+          build_id: ${{ needs.build_android_e2e.outputs.build_id }}
+      - uses: eas/start_android_emulator
+        with:
+          system_image_package: system-images;android-35;google_apis;x86_64
+      - run: adb install -r -g "${{ steps.download.outputs.artifact_path }}"
+      - name: Harness (staging mode)
+        run: |
+          SUPABASE_URL="$E2E_SUPABASE_URL" SUPABASE_SECRET_KEY="$E2E_SUPABASE_SECRET_KEY" \
+            DA_E2E_DB_URL="$E2E_DB_URL" nohup node ../../scripts/e2e/harness-server.ts > harness.log 2>&1 &
+      - uses: eas/install_maestro
+      - uses: eas/maestro_test
+        with:
+          flow_path: |
+            .maestro
+          maestro_version: 2.10.0
+          include_tags: android
+      - uses: eas/upload_artifact
+        if: ${{ always() }}
+        with:
+          path: harness.log

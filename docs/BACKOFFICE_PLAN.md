@@ -258,10 +258,12 @@ apps/backoffice/
 | `invalid_state` | 409 | "Bu kayıt mevcut durumunda bu işleme uygun değil." (+ `details.reason_key`) |
 | `validation_failed`, `reason_required` | 422 | field errors; "Gerekçe zorunlu (en az 10 karakter)." |
 | `rate_limited` | 429 | "Çok fazla istek. Lütfen {seconds} saniye sonra tekrar dene." |
-| `external_credential_required` | 424 | "Harici kimlik bilgisi gerekli: {service}. Yapılandırma tamamlanana kadar bu işlem yapılamaz." |
+| `external_credential_required` | 503 (`EXTERNAL_CREDENTIAL_REQUIRED`) | "Harici kimlik bilgisi gerekli: {service}. Yapılandırma tamamlanana kadar bu işlem yapılamaz." |
 | `upstream_unavailable` | 502 | "{service} şu anda yanıt vermiyor. Daha sonra tekrar dene." |
-| `partial_failure` | 207 | action-specific honest message (e.g. §6.3a Disable) |
+| `partial_failure` | 503 (`SERVICE_UNAVAILABLE` + `details.partial=true`, `details.step`) | action-specific honest message (e.g. §6.3a Disable); retrying with the same key resumes the external step |
 | `internal` | 500 | "Beklenmeyen bir hata oluştu. Hata kimliği: {correlationId}" |
+
+Decision (R-20, API_CONTRACTS owns status codes): missing credentials are `503 EXTERNAL_CREDENTIAL_REQUIRED` and partial outcomes are `503 SERVICE_UNAVAILABLE {partial:true, step}`, as API_CONTRACTS §2 and §12.1 define them; `424` and `207` are not used by admin-api.
 
 **Rules for returned data (M§151)**
 - admin-api never returns email bodies, snippets or assistant content.
@@ -405,7 +407,7 @@ A CI bundle scan fails the build if `sb_secret_`, `ADMIN_BFF_SECRET`, `ADMIN_SES
 1. A super_admin (`admins.manage`, SU) opens "Yönetici davet et" with: e-posta, ad soyad, rol, gerekçe.
 2. admin-api:
    - `admin_api.authorize('admins.manage')` (with step-up) and the `ADMIN_ALLOWED_EMAIL_DOMAINS` check;
-   - missing email credentials → 424 `external_credential_required` before anything is created;
+   - missing email credentials → 503 `EXTERNAL_CREDENTIAL_REQUIRED` before anything is created;
    - `auth.admin.createUser({email, email_confirm:true, app_metadata:{da_kind:'admin'}})`. An email that already exists in `auth.users` is refused: `email_in_use_by_app_user` for an app user, `admin_exists` for an admin;
    - `admin_api.admin_invite_record(p_user, p_email, p_role, p_display_name, p_reason)` (DB §6.10) inserts `admin_users(status='invited', invite_token_hash=SHA256(token), invite_expires_at=now()+72h)` ⊕ and audits `admin.invited`. If it fails, the auth user is deleted again (rollback);
    - enqueues a `transactional_email` job (the worker is poked at once) that sends "Dijital Asistan yönetim paneline davet edildin" with the link `ADMIN_ORIGIN/invite?token=<32-byte base64url>`. The admin list shows the delivery state: "Davet e-postası gönderildi" or "Davet e-postası gönderilemedi" with [Daveti yeniden gönder].
@@ -915,12 +917,12 @@ Shared header on every tab:
 | Data source | `GET /users/:id` → `admin_api.user_overview(p_user_id)` returning M§49 fields: user id, account status (active/inactive/disabled/deletion_pending), plan + source + expiry, integrations summary (provider, `account_status`, last sync), last sync overall, recent job errors (last 5: type, error code, time, job link), briefing status (latest per `briefing_kind`: status, time), push status (active tokens by platform, last receipt error, notification detail mode), app version(s) + platform(s) (`app_installations`), timezone, locale, retention policy, pending approvals count, open tickets count, flag overrides, created, last active |
 | Filters | — |
 | Server pagination | — (fixed small lists) |
-| Mutations | `POST /users/:id/force-sync {account_ids?, reason}` → `admin_api.user_force_sync`. It enqueues provider sync jobs per account (google: `gmail_sync` if mail_read, `calendar_sync` if calendar_read, `tasks_sync` if tasks_read; microsoft: `outlook_sync`/`calendar_sync`/`tasks_sync`), idempotency `admin_force_sync:{account_id}:{type}:{5-min bucket}`, then pokes `worker`. Accounts in `needs_reauth`/`admin_consent_required`/`disconnected` are skipped with the reason "Hesap yeniden bağlanmalı; senkron başlatılamaz."; device providers are skipped with "Cihaz takvimi yalnızca uygulama açıldığında senkronlanır." `POST /users/:id/disable` / `restore` (SU) → `admin_api.user_disable` / `admin_api.user_restore` set `profiles.disabled_at/disabled_by_admin_id` ⊕ + scheduler exclusion, then Auth `updateUserById(id,{ban_duration:'876000h'\|'none'})`. Restore enqueues `reconciliation` per account. If the ban call fails → 207: "Hesap devre dışı bırakıldı ancak oturum açma engeli uygulanamadı." + [Tekrar dene] (the audit result is `partial`). `POST /users/:id/internal` → `admin_api.user_mark_internal` (`profiles.is_internal` ⊕) |
+| Mutations | `POST /users/:id/force-sync {account_ids?, reason}` → `admin_api.user_force_sync`. It enqueues provider sync jobs per account (google: `gmail_sync` if mail_read, `calendar_sync` if calendar_read, `tasks_sync` if tasks_read; microsoft: `outlook_sync`/`calendar_sync`/`tasks_sync`), idempotency `admin_force_sync:{account_id}:{type}:{5-min bucket}`, then pokes `worker`. Accounts in `needs_reauth`/`admin_consent_required`/`disconnected` are skipped with the reason "Hesap yeniden bağlanmalı; senkron başlatılamaz."; device providers are skipped with "Cihaz takvimi yalnızca uygulama açıldığında senkronlanır." `POST /users/:id/disable` / `restore` (SU) → `admin_api.user_disable` / `admin_api.user_restore` set `profiles.disabled_at/disabled_by_admin_id` ⊕ + scheduler exclusion, then Auth `updateUserById(id,{ban_duration:'876000h'\|'none'})`. Restore enqueues `reconciliation` per account. If the ban call fails → 503 `SERVICE_UNAVAILABLE {partial:true, step:'auth_ban'}`: "Hesap devre dışı bırakıldı ancak oturum açma engeli uygulanamadı." + [Tekrar dene] (the audit row is a `failure` with `details.partial=true`). `POST /users/:id/internal` → `admin_api.user_mark_internal` (`profiles.is_internal` ⊕) |
 | Confirmation | Force sync L2 (lists the jobs that will be queued); mark internal L2; disable/restore L3 (typed last 6 of the user id), with the disable dialog stating: "Kullanıcı uygulamaya giriş yapamaz, senkron ve bildirimler durur. Mağaza aboneliği etkilenmez; kullanıcı ücretlendirilmeye devam edebilir." |
 | Audit event | `user.force_sync` (metadata: job ids, skipped), `user.disabled`, `user.restored`, `user.marked_internal` / `user.unmarked_internal` |
 | PII handling | Masked; reveal via header (`users.pii.reveal`) |
 | Empty/error state | Section-level: "Bağlı hesap yok.", "Son 7 günde iş hatası yok.", "Henüz brifing oluşturulmadı."; section error + retry |
-| Tests | E2E BO-E2E-11, 12. U: action menu gating; pgTAP: disable sets fields and the scheduler exclusion; force sync idempotency bucket; deno: ban failure → 207 partial + audit `partial` |
+| Tests | E2E BO-E2E-11, 12. U: action menu gating; pgTAP: disable sets fields and the scheduler exclusion; force sync idempotency bucket; deno: ban failure → 503 partial + `failure` audit with `details.partial` |
 
 Cross-document requirements this tab creates:
 - `api` must return 403 `ACCOUNT_DISABLED` for disabled users (API_CONTRACTS §3 account-state gate).
@@ -1414,7 +1416,7 @@ Links: "Sentry'de aç" deep links to the release when configured. The mobile and
 | Audit event | `admin.invited`, `admin.invite_resent`, `admin.role_changed` (from/to), `admin.disabled`, `admin.enabled`, `admin.mfa_reset`, `admin.sessions_revoked`, `admin.unlocked` |
 | PII handling | Staff emails visible to `admins.read` |
 | Empty/error state | Last-super-admin guard copy (§2.5); self-action guard copy (§4.4); email provider missing → invite disabled with the external-credential copy |
-| Tests | E2E BO-E2E-31. pgTAP: guard trigger; self-protection; disabled admin JWT rejected on the next call; deno: invite rollback when `admin_invite_record` fails; 424 when email credentials are missing |
+| Tests | E2E BO-E2E-31. pgTAP: guard trigger; self-protection; disabled admin JWT rejected on the next call; deno: invite rollback when `admin_invite_record` fails; 503 `EXTERNAL_CREDENTIAL_REQUIRED` when email credentials are missing |
 
 ### 6.24 Settings
 
@@ -1698,14 +1700,16 @@ There is no impersonation, no acting as the user, and no provider call on the us
 
 | Area | Actions |
 |---|---|
-| Admin auth | `admin.bootstrap`, `admin.login`, `admin.login_failed`, `admin.login_denied`, `admin.locked`, `admin.unlocked`, `admin.mfa_enrolled`, `admin.mfa_challenge_failed`, `admin.mfa_recovery_used`, `admin.mfa_factor_added`, `admin.mfa_factor_removed`, `admin.recovery_codes_regenerated`, `admin.logout`, `admin.logout_all`, `admin.session_expired`, `admin.permission_denied`, `admin.rate_limited` |
+| Admin auth | `admin.bootstrap`, `admin.login`, `admin.login_failed`, `admin.login_denied`, `admin.locked`, `admin.unlocked`, `admin.mfa_enrolled`, `admin.mfa_challenge_failed`, `admin.mfa_recovery_used`, `admin.mfa_factor_added`, `admin.mfa_factor_removed`, `admin.recovery_codes_regenerated`, `admin.logout`, `admin.logout_all`, `admin.session_expired`, `admin.permission_denied`, `admin.rate_limited`, ⊕ `admin.step_up`, ⊕ `admin.invite_redeemed` (system actor: the BFF token redemption before sign-in) |
 | Admin mgmt | `admin.invited`, `admin.invite_resent`, `admin.invite_accepted`, `admin.role_changed`, `admin.disabled`, `admin.enabled`, `admin.mfa_reset`, `admin.sessions_revoked` |
 | Users | `user.lookup_by_email`, `user.pii_revealed`, `user.force_sync`, `user.disabled`, `user.restored`, `user.marked_internal`, `user.unmarked_internal` |
 | Operations | `integration.disconnected`, `integration.watch_renew_requested`, `job.retried`, `job.bulk_retried`, `job.cancelled`, `briefing.regenerated`, `push.test_sent`, `health.run_requested` |
-| AI | `ai_model_config.updated`, `ai_model_config.tested`, `ai_routing_profile.changed`, `prompt.draft_created`, `prompt.draft_updated`, `prompt.tested`, `prompt.activated`, `prompt.rolled_back`, `prompt.archived`, `ai_feedback.comment_revealed` |
-| Business | `subscription.resync_requested`, `entitlement.granted`, `entitlement.revoked`, `referral.approved`, `referral.rejected` |
+| AI | `ai_model_config.updated`, `ai_model_config.tested`, `ai_routing_profile.changed`, ⊕ `ai_model_price.updated`, ⊕ `ai_calibration.activated`, `prompt.draft_created`, `prompt.draft_updated`, `prompt.tested`, `prompt.activated`, `prompt.rolled_back`, `prompt.archived`, `ai_feedback.comment_revealed` |
+| Business | `subscription.resync_requested`, `entitlement.granted`, `entitlement.revoked`, `referral.approved`, `referral.rejected`, ⊕ `referral.rewarded` (system actor) |
 | Support/product | `ticket.updated`, `ticket.assigned`, `ticket.note_added`, `ticket.reply_sent`, `ticket.reply_failed`, `support_access.granted`, `support_access.revoked`, `support_access.expired`, `support_access.content_viewed`, `feedback.updated`, `feedback.revealed`, `flag.created`, `flag.updated`, `flag.kill_switch_on`, `flag.kill_switch_off`, `flag.override_added`, `flag.override_removed`, `flag.archived`, `announcement.created`, `announcement.updated`, `announcement.scheduled`, `announcement.cancelled` |
-| Privacy/system | `data_request.retried`, `data_request.export_regenerated`, `settings.system_updated`, `plan_limits.updated` |
+| Privacy/system | `data_request.retried`, `data_request.export_regenerated`, ⊕ `data_request.cancelled`, `settings.system_updated`, `plan_limits.updated`, ⊕ `audit.verified` |
+
+- **One name per action.** The catalogue is `private.audit_action_catalogue` (SQL) and `AUDIT_ACTIONS` (`@da/validation`), kept equal by an admin-api test. `private.audit_log_append`, the only writer, stores the catalogue name for the older emitter spellings (`private.audit_action_canonical`, e.g. `pii.reveal` → `user.pii_revealed` / `support_access.content_viewed` / `feedback.revealed` / `ai_feedback.comment_revealed` by the revealed resource, `flag.killed` → `flag.kill_switch_on/_off`). App, worker and system rows outside these areas use the `user.*`, `system.*`, `security.*`, `approval.*` and `privacy.*` namespaces of API_CONTRACTS §17. pgTAP scans every SQL emitter, a Deno test scans the admin-api emitters and the registry test checks every route's declared action.
 
 - **Dashboard "Güvenlik olayları"** = `admin.login_failed` bursts, `admin.locked`, `admin.mfa_recovery_used`, `admin.mfa_reset`, `admin.role_changed`, `admin.disabled`, `admin.permission_denied` (≥5 per admin per hour), `support_access.granted`, and audit-chain failures.
 
@@ -1768,6 +1772,8 @@ Legend:
 | GET /me ⊕ · /me/sessions ⊕ | own | `admin_me` · `sessions_list_own` ⊕ | — | R |
 | GET /preferences · PATCH /preferences | own | `admin_preferences_get` · `admin_preferences_set` | — | R · M |
 | POST /me/recovery-codes (SU) | own | `recovery_codes_store` | — | X |
+| POST /me/mfa-factors | own | `audit_write` (`admin.mfa_factor_added`) | Auth admin: list factors (verified TOTP, ≤ 2; an extra one is deleted again) | X |
+| DELETE /me/mfa-factors/:factorId (SU) | own | `audit_write` (`admin.mfa_factor_removed`) | Auth admin: delete the factor while another verified one remains | X |
 | GET /dashboard/metrics · /dashboard/charts | dashboard.read | `dashboard_metrics` · `dashboard_series` | — | R |
 | GET /metrics/ops · /metrics/product | metrics.ops.read · metrics.product.read | `metrics_ops` · `metrics_product` | — | R |
 | GET /security-events | admins.manage | `security_events` | — | R |
@@ -1779,6 +1785,7 @@ Legend:
 | POST /users/:id/disable · /restore (SU) | users.disable | `user_disable` · `user_restore` | svc ban/unban | X |
 | POST /users/:id/internal | users.mark_internal | `user_mark_internal` | — | M |
 | POST /notifications/test-push | push.test | `notification_send_test` | poke worker; never bypasses quiet hours | X |
+| GET /notifications/test-push/preview | push.test | `notification_test_preview` | — (local time, quiet-hours end, active devices) | R |
 | POST /users/:id/entitlement-grants | entitlements.grant(_limited) | `entitlement_grant` | — | X |
 | POST /subscriptions/:userId/sync | subscriptions.resync | `subscription_resync` ⊕ | poke worker | M |
 | GET /integrations · /integrations/summary ⊕ | integrations.read (summary: or metrics.ops.read) | `integrations_overview` · `integrations_summary` ⊕ | — | R |
@@ -1859,8 +1866,8 @@ Legend:
 - **Middleware:** BFF key (missing/wrong → 401); browser Origin → 403; JWT invalid / aal1 / non-allow-listed route; ctx errors mapping; rate-limit 429 with Retry-After; step-up required; idempotent replay returns `replayed:true`; `Cache-Control: no-store`.
 - **Contracts:** request and response zod for every route; responses contain no forbidden keys (a deny-list scan for `token`, `secret`, `password`, `body_html`, `ciphertext`, `subscriber_attributes`).
 - **Service flows:**
-  - invite rollback when `admin_invite_record` fails, and 424 before any change when email credentials are missing;
-  - disable → ban failure → 207 partial + audit `partial`;
+  - invite rollback when `admin_invite_record` fails, and 503 `EXTERNAL_CREDENTIAL_REQUIRED` before any change when email credentials are missing;
+  - disable → ban failure → 503 partial + `failure` audit with `details.partial`;
   - disconnect reuses the shared service; Microsoft → `revoke='unsupported'` partial metadata;
   - recovery redeem deletes factors;
   - support reply email failure → note `failed`.

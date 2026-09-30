@@ -1,0 +1,10 @@
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.webp binary
+*.ttf binary
+*.otf binary
+*.pdf binary
+*.zip binary
+pnpm-lock.yaml linguist-generated=true merge=binary
+**/generated/** linguist-generated=true

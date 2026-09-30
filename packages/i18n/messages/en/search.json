@@ -1,0 +1,59 @@
+{
+  "title": "Search",
+  "hint": "Search emails, people, meetings or payments…",
+  "examples": {
+    "flightTicket": "The plane ticket from last month",
+    "proposalMail": "Mehmet's proposal email",
+    "bills": "Bills I need to pay",
+    "meetings": "October meetings"
+  },
+  "resultTypes": {
+    "person": "Person",
+    "mail": "Email",
+    "meeting": "Meeting",
+    "life": "Personal",
+    "commitment": "Commitment",
+    "capture": "Capture"
+  },
+  "empty": {
+    "title": "I couldn't find that.",
+    "body": "Try a different word."
+  },
+  "generated": {
+    "notFound": "I could not find this in your records."
+  },
+  "resultsA11y": "{count, plural, one {# result} other {# results}}",
+  "askMemory": "This looks like a question. Ask memory",
+  "offlineHeader": "Offline · only recent data on this device",
+  "recents": "Recent searches",
+  "clearRecents": "Clear",
+  "examplesKicker": "Example searches",
+  "rateLimited": "Slow down a little; try again in a few seconds.",
+  "failed": "Couldn't search.",
+  "noResultsTitle": "No results",
+  "noResultsBody": "Nothing found for “{query}”.",
+  "count": "{count, plural, one {# result} other {# results}}",
+  "seeAll": "See all ({count})",
+  "groups": {
+    "email": "Emails",
+    "person": "People",
+    "event": "Calendar",
+    "task": "Tasks",
+    "commitment": "Commitments",
+    "life_event": "Life",
+    "memory": "Memory",
+    "capture": "Captures"
+  },
+  "scopes": {
+    "all": "All",
+    "email": "Emails",
+    "person": "People",
+    "event": "Calendar",
+    "task": "Tasks",
+    "commitment": "Commitments",
+    "life_event": "Life",
+    "memory": "Memory",
+    "memoryLocked": "Memory · Pro",
+    "capture": "Captures"
+  }
+}

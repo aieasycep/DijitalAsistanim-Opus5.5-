@@ -1,0 +1,148 @@
+{
+  "title": "Frequently asked questions",
+  "featured": "Featured",
+  "searchHint": "Search help",
+  "noResults": {
+    "title": "I couldn't find that.",
+    "body": "Try a different word or write to us."
+  },
+  "goToSetting": "Go to setting",
+  "categories": {
+    "start": "Getting started",
+    "accounts": "Accounts and connections",
+    "privacy": "Privacy and security",
+    "billing": "Subscription and referral",
+    "data": "Your data and account",
+    "trouble": "Troubleshooting"
+  },
+  "items": {
+    "what_is": {
+      "q": "What is Dijital Asistan?",
+      "a": "A personal command center that understands your email, calendar and open tasks and prepares a short briefing for you every day. It isn't a chatbot: it brings forward what you need to know today, before you ask."
+    },
+    "platforms": {
+      "q": "Which devices does it run on?",
+      "a": "iPhone and Android phones. This website is for information, support and data-deletion requests; there is no web app."
+    },
+    "languages": {
+      "q": "Which languages are supported?",
+      "a": "Turkish and English."
+    },
+    "first_analysis": {
+      "q": "What happens after I connect an account?",
+      "a": "The first analysis reviews your last 72 hours and shows how many emails arrived, how many matter, what's on your calendar and which follow-ups are pending. After that, your briefing is prepared every day at the time you choose."
+    },
+    "briefing_time": {
+      "q": "When is the briefing ready?",
+      "a": "At 08:00 by default; you can change the time in Briefing Settings. Pro adds midday (13:00) and evening (19:00) briefings; the midday pulse only arrives if something important has changed since the morning."
+    },
+    "integrations": {
+      "q": "Which accounts can I connect?",
+      "a": "Gmail and Outlook (Microsoft 365, Outlook.com) email; Google Calendar, Outlook Calendar, Apple Calendar on iPhone and the device calendar on Android; Google Tasks, Microsoft To Do and Reminders on iPhone. The Free plan includes {mail, plural, one {# email account} other {# email accounts}} and {cal, plural, one {# calendar} other {# calendars}}; with Pro you can connect more than one."
+    },
+    "login_vs_connect": {
+      "q": "Does my sign-in account have to match the accounts I connect?",
+      "a": "No. You can sign in with Apple, Google, Microsoft or an email code; email and calendar connections are set up separately. For example, you can sign in with Apple and connect your Gmail."
+    },
+    "disconnect": {
+      "q": "How do I disconnect an account?",
+      "a": "Profile › Connections › choose the account › Disconnect. Google access is revoked automatically. Microsoft doesn't let apps revoke their own access, so we recommend also removing the permission in your Microsoft account settings."
+    },
+    "admin_consent": {
+      "q": "Connecting my work account says “admin approval required”.",
+      "a": "Some organisations don't let employees give apps access to Microsoft 365 data. Your IT admin can approve Dijital Asistan for the whole organisation <adminConsent>with this link</adminConsent>; then tap “Reconnect” in the app. The admin can remove the approval at any time in the Microsoft Entra admin center."
+    },
+    "reads_mail": {
+      "q": "Who reads my email?",
+      "a": "Your email is analysed automatically to prepare briefings and suggestions. We don't store full email content, so our staff can't see your emails in full. To resolve a support request, our support team can see limited details such as subject, sender and summary, and only through time-limited access that requires a reason and is logged."
+    },
+    "storage": {
+      "q": "Do you keep copies of my emails?",
+      "a": "We don't store the full content of your emails; only summaries, short quotes and analysis results are kept for your retention period. The subject, sender and a preview of up to 200 characters are also stored; when you open the original, it's fetched from your account on the spot."
+    },
+    "encryption": {
+      "q": "Is my data encrypted?",
+      "a": "Yes. Data is encrypted in transit and at rest. The access keys to your email and calendar accounts are encrypted separately and are only decrypted on our servers when they're needed. Your data is processed on our servers so we can prepare briefings and analysis, which is why we don't claim that only your device can decrypt it."
+    },
+    "training": {
+      "q": "Is my data used to train AI?",
+      "a": "No. Your email content and other data are never used to train AI models, and the AI providers we work with don't train on it either."
+    },
+    "ads": {
+      "q": "Is my data used for advertising?",
+      "a": "No. Your data is never sold for advertising and is never used for ad targeting."
+    },
+    "approval": {
+      "q": "Can the app send email for me?",
+      "a": "Only if you approve. Reply drafts, calendar changes and tasks are shown to you first; you see what will happen and where, then choose Approve, Edit or Reject. Voice commands never approve anything; you tap the card to approve."
+    },
+    "retention": {
+      "q": "How long is my data kept?",
+      "a": "Analysis results are kept for 90 days by default; you can change this to 30 days, 1 year or until you delete them. Details are in the <privacy>Privacy Policy</privacy>."
+    },
+    "where": {
+      "q": "Where is my data stored?",
+      "a": "Our database is in the EU (Frankfurt). AI analysis runs at our sub-processors in the United States, under the required contractual safeguards."
+    },
+    "android_notifications": {
+      "q": "What is phone notification intelligence?",
+      "a": "An Android-only Pro feature that works only if you turn it on. Notification content is processed on your device; only the extracted details (for example shipment status, amount, date) are saved to your account. Verification codes and security apps are always excluded. You choose which apps are read. It isn't available on iPhone because iOS doesn't allow it."
+    },
+    "security_report": {
+      "q": "I found a security issue.",
+      "a": "Please email guvenlik@dijitalasistan.app. We'll review your report and get back to you; please don't try to access other users' data."
+    },
+    "free_vs_pro": {
+      "q": "What's included in the Free plan?",
+      "a": "{mail, plural, one {# email account} other {# email accounts}}, {cal, plural, one {# calendar} other {# calendars}}, the morning briefing, important email, Today, AI reply drafts and {n, plural, one {# AI analysis} other {# AI analyses}} a day. Pro adds more accounts, midday and evening briefings, meeting prep, smart follow-up and commitments, the audio briefing, AI memory, VIP people, advanced planning, universal capture and, on Android, phone notification intelligence. AI usage on Pro follows a fair-use policy."
+    },
+    "billing": {
+      "q": "How do I pay and cancel?",
+      "a": "Pro is bought in the app through the App Store or Google Play and renews automatically at the end of each period. To cancel on iPhone: Settings › [your name] › Subscriptions; on Android: Google Play › Profile › Payments & subscriptions › Subscriptions. If you cancel, Pro lasts until the end of the period."
+    },
+    "trial": {
+      "q": "Is there a free trial?",
+      "a": "If the store offers a trial and you're eligible, the purchase screen clearly shows how long it lasts and when you'll be charged. A valid payment method on your store account may be required."
+    },
+    "restore": {
+      "q": "I changed phones; how do I get Pro back?",
+      "a": "Sign in with the same Dijital Asistan account and Pro is recognised automatically. If needed, tap “Restore purchases” on the Subscription screen."
+    },
+    "refund": {
+      "q": "Can I get a refund?",
+      "a": "Purchases are made through Apple or Google, so refunds follow their process: reportaproblem.apple.com for Apple, and your Play Store order history for Google Play."
+    },
+    "referral": {
+      "q": "How does the referral programme work?",
+      "a": "Share your invite link. If your friend adds your code within {window, plural, one {# day} other {# days}} of signing up, connects an account and receives their first briefing (at least 48 hours after signing up), you both get {days, plural, one {# day} other {# days}} of Pro. You can earn up to {cap, plural, one {# invite reward} other {# invite rewards}} a year."
+    },
+    "pro_ends": {
+      "q": "What happens to my data if Pro ends?",
+      "a": "Your data is not deleted. The Free plan limits apply, and Pro features are off until you subscribe again."
+    },
+    "export": {
+      "q": "How do I export my data?",
+      "a": "Profile › Privacy & Security › Export my data. When the file is ready, a download link that works for 24 hours appears in the app."
+    },
+    "delete_account": {
+      "q": "How do I delete my account?",
+      "a": "In the app, go to Profile › Privacy & Security › Delete my account, or request it at dijitalasistan.app/data-deletion with email verification. Deletion usually completes within 24 hours. Your App Store or Google Play subscription isn't cancelled automatically."
+    },
+    "delete_history": {
+      "q": "Can I delete my history but keep my account?",
+      "a": "Yes: Profile › Privacy & Security › Delete analysis history. Summaries, priority decisions, assistant conversations and the memory index are deleted; your connections and settings stay."
+    },
+    "reconnect": {
+      "q": "I see “Connection needs renewing”.",
+      "a": "Access to your account may have expired or been revoked. Tap “Reconnect” in the notice; new emails aren't analysed until you reconnect."
+    },
+    "notifications": {
+      "q": "Why do I get so few notifications?",
+      "a": "We only notify you when it matters. During quiet hours nothing arrives except the exceptions you allow. You can choose the categories and what appears on your lock screen in Notification Settings."
+    },
+    "wrong_priority": {
+      "q": "The AI prioritised an email wrongly.",
+      "a": "Tap “Not important” on the card or use “Where did this come from?” to correct it, and create permanent priority rules. Your own rules always come before AI guesses."
+    }
+  }
+}

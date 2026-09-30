@@ -1,0 +1,11 @@
+/*
+ * Removes Tailwind's default colour palette and breakpoints before the design tokens are loaded,
+ * so only `@da/design-tokens` colours exist as utilities (no raw colour can slip in through a
+ * class) and the site has exactly the Part 5 breakpoints: <768, 768–1199, ≥1200.
+ */
+@theme {
+  --color-*: initial;
+  --breakpoint-*: initial;
+  --breakpoint-md: 48rem;
+  --breakpoint-xl: 75rem;
+}

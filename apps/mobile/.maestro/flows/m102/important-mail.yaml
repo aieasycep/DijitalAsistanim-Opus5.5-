@@ -1,0 +1,40 @@
+appId: com.dijitalasistan.app.e2e
+name: 'E2E-M-06 · Important mail'
+tags: [m102, android, ios, free]
+env:
+  USER_KEY: u_free
+  SCENARIO: canon
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- openLink: 'dijitalasistan-e2e://mail/${output.ids.messageAhmet}'
+- extendedWaitUntil: { visible: { id: 'email.screen' }, timeout: 30000 }
+- assertVisible: Ahmet Yılmaz
+- assertVisible: { id: 'email.subject' }
+- assertVisible: { id: 'email.ai' }
+- assertVisible: { id: 'email.tile.reply' }
+- assertVisible: { id: 'email.tile.task' }
+- assertVisible: { id: 'email.tile.calendar' }
+- assertVisible: { id: 'email.tile.remind' }
+- tapOn: { id: 'email.badge' }
+- extendedWaitUntil: { visible: { id: 'sheet.why' }, timeout: 30000 }
+- back
+- scrollUntilVisible: { element: { id: 'email.original' }, direction: DOWN, timeout: 20000 }
+- tapOn: '${output.t.mail.detail.original}'
+- extendedWaitUntil: { visible: { id: 'email.original.body' }, timeout: 30000 }
+- openLink: 'dijitalasistan-e2e://mail'
+- extendedWaitUntil: { visible: { id: 'mail.screen' }, timeout: 30000 }
+- assertVisible: '${output.t.mail.categories.awaiting_my_reply}'
+- assertVisible: '${output.t.mail.categories.awaiting_their_reply}'
+- assertVisible: '${output.t.mail.categories.has_deadline}'
+- assertVisible: '${output.t.mail.categories.informational}'
+- assertVisible: '${output.t.mail.categories.low_priority}'
+- tapOn: '${output.t.mail.categories.awaiting_my_reply}'
+- extendedWaitUntil: { visible: { id: 'waiting.screen' }, timeout: 30000 }
+- back
+- tapOn: '${output.t.mail.categories.awaiting_their_reply}'
+- extendedWaitUntil: { visible: { id: 'followups.screen' }, timeout: 30000 }

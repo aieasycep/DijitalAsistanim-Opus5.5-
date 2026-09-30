@@ -1,0 +1,41 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import '@da/design-tokens/tokens.css';
+
+/*
+ * Backoffice visual language (BACKOFFICE_PLAN §5.1): PRIMARY tokens at desktop density. Colours come
+ * only from `--da-*` variables (light by default, `[data-theme="dark"]` overrides from the token
+ * package), so a theme switch needs no reload and charts read the same variables.
+ */
+
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+@layer base {
+  html {
+    background-color: var(--da-bg);
+    color: var(--da-text-primary);
+    font-family: var(--da-font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    min-height: 100dvh;
+    background-color: var(--da-bg);
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--da-border-focus);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: var(--da-brand-soft-pressed);
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}

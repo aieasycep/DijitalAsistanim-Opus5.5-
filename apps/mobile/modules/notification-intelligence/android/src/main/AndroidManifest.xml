@@ -1,0 +1,3 @@
+<!-- The listener service and the launcher <queries> are added to the app manifest by the config
+     plugin (plugin/withNotificationIntelligence.ts), so `expo prebuild` output carries them. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" />

@@ -1,0 +1,26 @@
+{
+  "api_version": "1.0",
+  "event": {
+    "id": "__event_id__",
+    "type": "CANCELLATION",
+    "app_user_id": "__app_user_id__",
+    "original_app_user_id": "__app_user_id__",
+    "aliases": ["__app_user_id__"],
+    "event_timestamp_ms": 1790000000000,
+    "product_id": "da_pro_annual:annual",
+    "entitlement_ids": ["pro"],
+    "period_type": "NORMAL",
+    "purchased_at_ms": 1788220800000,
+    "expiration_at_ms": 1819756800000,
+    "environment": "PRODUCTION",
+    "store": "APP_STORE",
+    "transaction_id": "2000000123456789",
+    "original_transaction_id": "2000000123456789",
+    "currency": "TRY",
+    "price": 899.99,
+    "price_in_purchased_currency": 899.99,
+    "country_code": "TR",
+    "app_id": "app1a2b3c4d5e",
+    "cancel_reason": "UNSUBSCRIBE"
+  }
+}

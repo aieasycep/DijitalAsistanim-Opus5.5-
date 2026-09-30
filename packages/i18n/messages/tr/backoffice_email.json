@@ -1,0 +1,28 @@
+{
+  "invite": {
+    "subject": "Dijital Asistan yönetim paneline davet edildin",
+    "greeting": "Merhaba {name},",
+    "body": "Dijital Asistan yönetim paneline yönetici olarak davet edildin. Giriş için kurumsal e-posta adresine gönderilen 6 haneli kodu ve iki adımlı doğrulamayı kullanacaksın; şifre yoktur.",
+    "action": "Daveti kabul etmek için bu bağlantıyı aç: {url}",
+    "expiry": "Bağlantı 72 saat geçerlidir ve yalnızca bir kez kullanılabilir.",
+    "notYou": "Bu daveti beklemiyorsan e-postayı yok sayabilirsin."
+  },
+  "supportReply": {
+    "subject": "Destek talebin hakkında: {reference}",
+    "footer": "Bu e-postayı yanıtlayarak talebine ek bilgi gönderebilirsin. Talep numaran: {reference}"
+  },
+  "securityRecovery": {
+    "subject": "Güvenlik olayı: kurtarma kodu kullanıldı",
+    "body": "Bir yönetici hesabında iki adımlı doğrulama kurtarma kodu kullanıldı ({time}). Hesabın doğrulayıcı uygulama kayıtları silindi; bir sonraki girişte yeniden kurulum gerekecek.",
+    "action": "Bu işlem beklenmiyorsa yönetim panelinde Yöneticiler sayfasından hesabı hemen devre dışı bırak."
+  },
+  "accountDeleted": {
+    "subject": "Hesabın silindi",
+    "body": "Dijital Asistan hesabın ve hesabına bağlı veriler silindi: profilin, ayarların, bağlı hesap bağlantıların, brifingler, analizler, AI hafızası, yüklediğin dosyalar ve dışa aktarımların. Talep numaran: {reference}",
+    "google": "Google erişim iznin iptal edildi. Dilersen myaccount.google.com/permissions adresinden kontrol edebilirsin.",
+    "microsoft": "Microsoft hesabı bağladıysan erişimi ayrıca kaldırman gerekir: account.live.com/consent/Manage veya myapps.microsoft.com.",
+    "subscription": "Mağaza aboneliğin hesabını silmekle iptal olmaz. Ücretlendirilmemek için App Store veya Google Play abonelik ayarlarından iptal et.",
+    "backups": "Yedeklerdeki kopyalar en geç 30 gün içinde kendiliğinden silinir."
+  },
+  "signature": "Dijital Asistan"
+}

@@ -1,0 +1,98 @@
+{
+  "title": "Ne zaman hatırlatayım?",
+  "presets": {
+    "before_30m": "30 dakika önce",
+    "before_1h": "1 saat önce",
+    "this_evening": "Bu akşam",
+    "tomorrow_morning": "Yarın sabah",
+    "smart": "Uygun zamanda",
+    "custom": "Kendin seç"
+  },
+  "presetWithTime": "{preset} · {time}",
+  "smart": {
+    "explainer": "Takvimindeki boşluklara göre uygun zamanı Dijital Asistan seçer.",
+    "resolved": "Takvimine göre: {time}",
+    "reason": "takvim boşluğuna ve mesai saatine göre seçilir",
+    "resolving": "Uygun zaman aranıyor…",
+    "noSlot": "Bugün için uygun bir boşluk bulamadım; başka bir seçenek seç."
+  },
+  "unavailable": {
+    "past": "Bu zaman geçti",
+    "quietHours": "Sessiz saatlere denk geliyor"
+  },
+  "existing": "Mevcut: {time} · Değiştir",
+  "destination": {
+    "label": "Nereye kurulsun?",
+    "inApp": "Dijital Asistan bildirimi",
+    "row": "Nereye: {destination}",
+    "inAppMeta": "Bu cihaz ve diğer cihazların",
+    "apple": "Apple Anımsatıcılar",
+    "appleMeta": "Cihazda saklanır",
+    "appleDenied": "İzin verilmedi · Ayarlar",
+    "googleWith": "Google Görevler · {email}",
+    "googleMeta": "Yalnızca tarih saklanır; saat bildirimini Google göstermez",
+    "microsoftWith": "Microsoft To Do · {email}",
+    "microsoftMeta": "Microsoft To Do listene eklenir",
+    "connect": "Hesap bağla",
+    "notConnected": "Bağlı değil",
+    "makeDefault": "Varsayılan yap"
+  },
+  "confirm": "Hatırlatıcıyı Kur",
+  "set": "Hatırlatıcı kuruldu · {when}",
+  "cancelled": "Hatırlatıcı iptal edildi",
+  "snoozeTitle": "Ne zamana erteleyelim?",
+  "notificationsOff": "Bildirimler kapalı olduğu için hatırlatıcı gelmez.",
+  "notificationActions": {
+    "snooze": "1 saat ertele",
+    "done": "Tamamlandı"
+  },
+  "toasts": {
+    "pendingSync": "Kaydedildi · Eşitleme bekliyor",
+    "queued": "Hatırlatıcı kuruldu · {when} · Eşitleme bekliyor",
+    "snoozed": "Ertelendi · {when}"
+  },
+  "custom": {
+    "title": "Kendin seç",
+    "date": "Tarih",
+    "time": "Saat",
+    "hour": "Saat",
+    "minute": "Dakika",
+    "increase": "{unit} artır",
+    "decrease": "{unit} azalt",
+    "past": "Geçmiş bir zaman seçilemez.",
+    "tooFar": "En fazla 1 yıl sonrası seçilebilir.",
+    "choose": "Bu zamanı seç"
+  },
+  "meta": {
+    "noCalendar": "Takvim bağlı değil",
+    "offline": "Bağlantı gerekli",
+    "smartFailed": "Şu an hesaplanamadı · Tekrar dene",
+    "noTime": "Saat yok",
+    "past": "Geçti",
+    "quiet": "{time} · sessiz saatte"
+  },
+  "cta": {
+    "approval": "Onaya Gönder",
+    "snoozePlain": "Ertele",
+    "snooze": "Ertele · {time}",
+    "remind": "Hatırlatıcıyı Kur · {time}"
+  },
+  "snoozeNotify": "Zamanı gelince bildir",
+  "permissionDenied": "Bildirim izni kapalı; hatırlatıcı kaydedilir ama bu cihazda bildirim gösterilemez.",
+  "reason": {
+    "before_anchor": "{minutes} dakika önce · başlangıç {anchor_time}",
+    "evening_time": "Bu akşam · {time}",
+    "morning_time": "Yarın sabah · {time}",
+    "calendar_slot": "Takvimine göre: {time}",
+    "custom": "Seçtiğin zaman · {time}"
+  },
+  "exactAlarm": {
+    "warning": "Tam saatinde hatırlatabilmem için “Alarmlar ve hatırlatıcılar” iznini aç. Bu izin kapalıyken hatırlatıcı birkaç dakika gecikebilir.",
+    "cta": "İzni Aç",
+    "region": "Hatırlatıcı zamanlaması"
+  },
+  "timeSensitive": {
+    "title": "Zamana Duyarlı Bildirimler kapalı",
+    "body": "Hatırlatıcı bildirimlerin Odak modunda ya da Planlanmış Özet'te bekleyebilir."
+  }
+}

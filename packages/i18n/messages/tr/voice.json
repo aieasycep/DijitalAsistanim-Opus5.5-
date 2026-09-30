@@ -1,0 +1,51 @@
+{
+  "title": "Sesli komut",
+  "listening": "Dinliyorum…",
+  "processing": "Anlıyorum…",
+  "tapToApprove": "Onaylamak için karta dokun.",
+  "continueWithText": "Metinle devam et",
+  "examples": {
+    "moveMeeting": "Yarınki toplantımı 30 dakika ileri al.",
+    "readBriefing": "Bugünkü brifingimi oku.",
+    "shouldReply": "Mehmet'e cevap vermem gerekiyor mu?"
+  },
+  "permission": {
+    "title": "Mikrofon izni gerekli",
+    "body": "Sesli komut için mikrofonuna ve konuşma tanımaya izin vermen gerekiyor."
+  },
+  "notUnderstood": "Bunu anlayamadım. Tekrar söyler misin?",
+  "kicker": "Ses modu",
+  "idle": "Konuşmak için dokun",
+  "answering": "Yanıtlıyorum",
+  "tapToApproveSpoken": "Onaylamak için ekrandaki Onayla'ya dokun.",
+  "offline": "Çevrimdışıyken soru yanıtlanamaz.",
+  "noSpeech": "Seni duyamadım. Tekrar dene.",
+  "unavailable": "Sesli giriş bu cihazda kullanılamıyor.",
+  "network": "Bağlantı sorunu. Tekrar dene.",
+  "interrupted": "Ses modu kesintiye uğradı.",
+  "askWithText": "Metinle sor",
+  "readAnswer": "Yanıtı oku",
+  "startListening": "Konuşmaya başla",
+  "stopListening": "Durdur",
+  "briefingGate": {
+    "title": "Brifingini dinle.",
+    "body": "Sesli brifing Pro'da. Brifingi okumak her zaman ücretsiz."
+  },
+  "chips": {
+    "today": "Bugün ne var?",
+    "briefing": "Brifingimi oku.",
+    "tomorrow": "Yarın yoğun muyum?"
+  },
+  "serverNotice": "Bu cihazda Türkçe konuşma tanıma cihaz üzerinde çalışmıyor. Sesin, metne çevrilmek için güvenli bağlantıyla sunucumuza gönderilir ve hemen silinir.",
+  "model": {
+    "missing": "Türkçe konuşma modeli bu cihaza indirilmemiş. İndirirsen sesin cihazında yazıya çevrilir.",
+    "download": "Türkçe modeli indir",
+    "started": "İndirme başladı. Bittiğinde sesli giriş cihazında çalışır.",
+    "failed": "Model indirilemedi. Daha sonra tekrar dene."
+  },
+  "install": {
+    "missing": "Bu cihazda konuşma tanıma hizmeti yok.",
+    "cta": "Konuşma hizmetini yükle",
+    "failed": "Mağaza açılamadı."
+  }
+}

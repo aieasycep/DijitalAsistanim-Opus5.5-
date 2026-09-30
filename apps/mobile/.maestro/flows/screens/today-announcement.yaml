@@ -1,0 +1,28 @@
+appId: com.dijitalasistan.app.e2e
+name: 'E2E-S-19 · Today announcement banner (R-25)'
+tags: [screens, android, ios, pro]
+env:
+  USER_KEY: u_pro
+  SCENARIO: announcement_active
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- extendedWaitUntil: { visible: { id: 'today.announcement' }, timeout: 60000 }
+- tapOn: '${output.t.common.actions.close}'
+- assertNotVisible: { id: 'today.announcement' }
+- launchApp: { clearState: false }
+- assertNotVisible: { id: 'today.announcement' }
+- runScript:
+    file: ../../scripts/harness.js
+    env:
+      {
+        ACTION: state,
+        USER_KEY: '${USER_KEY}',
+        PROBE: 'announcement_dismissals',
+        FIELD: count,
+        EXPECT: '1',
+      }

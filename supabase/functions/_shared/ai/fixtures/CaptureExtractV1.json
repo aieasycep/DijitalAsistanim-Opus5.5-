@@ -1,0 +1,39 @@
+{
+  "schema": "CaptureExtractV1",
+  "prompt_keys": ["capture", "capture_vision", "capture_pdf"],
+  "default": {
+    "doc_type": "event",
+    "link_type": null,
+    "title_tr": "Lansman toplantısı",
+    "summary_tr": "Ürün lansmanı daveti.",
+    "transcript": [
+      {
+        "ref": "img1",
+        "line": "Lansman · 2 Ekim 14:00 · Levent"
+      }
+    ],
+    "items": [
+      {
+        "kind": "event",
+        "title_tr": "Lansman",
+        "date_quote": "2 Ekim",
+        "time_quote": "14:00",
+        "end_quote": null,
+        "place_quote": "Levent",
+        "section_quote": null,
+        "evidence": {
+          "ref": "img1",
+          "quote": "Lansman · 2 Ekim 14:00"
+        }
+      },
+      {
+        "kind": "note",
+        "text_tr": "Kıyafet: rahat",
+        "evidence": null
+      }
+    ],
+    "injection_suspected": false,
+    "confidence": "medium"
+  },
+  "by_input": {}
+}

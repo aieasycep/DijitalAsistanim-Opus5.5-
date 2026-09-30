@@ -1,0 +1,19 @@
+# One case-insensitive regular expression per line. Lines starting with # are comments.
+# R-17 work markers and unfinished-feature copy (TR + EN). "later" / "sonra" are NOT banned.
+\bTODO\b
+\bFIXME\b
+\bXXX\b
+\bTBD\b
+\bplaceholder\b
+lorem ipsum
+coming soon
+not implemented
+\byakında\b
+çok yakında
+sonraki sürüm
+ileride eklenecek
+# Product-copy bans (truthfulness)
+uçtan uca şifreleme
+end-to-end encrypt
+kredi kartı gerekmez
+no credit card required

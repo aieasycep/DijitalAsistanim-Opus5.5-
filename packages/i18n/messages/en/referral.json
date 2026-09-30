@@ -1,0 +1,84 @@
+{
+  "title": "Invite a friend",
+  "headline": "You both get {days, plural, one {# day} other {# days}} of Pro.",
+  "body": "Your rewards are added once your friend joins with your link, connects an account and receives their first briefing.",
+  "link": "Your invite link",
+  "copyLink": "Copy link",
+  "share": "Share",
+  "shareMessage": "Dijital Asistan tells you what you need to know today, before you ask. Join with this link and we both get {days, plural, one {# day} other {# days}} of Pro: {url}",
+  "cap": "Up to {cap, plural, one {# reward} other {# rewards}} a year",
+  "invitesSection": "Your invites",
+  "statuses": {
+    "pending": "Pending",
+    "qualified": "Qualified",
+    "rewarded": "Rewarded",
+    "rejected": "Not eligible",
+    "flagged": "Under review"
+  },
+  "enterCode": "Have an invite code?",
+  "codeHint": "Invite code",
+  "apply": "Apply",
+  "applied": "Your invite code was added. You'll both get Pro once the conditions are met.",
+  "landing": "A friend invited you",
+  "send": "Send Invite",
+  "copied": "Link copied",
+  "linkA11y": "Your invite link, code {code}",
+  "emptyTitle": "No invites yet.",
+  "emptyBody": "Friends who join with your link appear here.",
+  "footer": "Earned in total: {days} days of Pro · Limit: at most {cap} rewards a year",
+  "capReached": "You reached this year's reward limit; your invites still earn your friends their reward.",
+  "statusMeta": {
+    "pending": "Joined · the reward comes once they connect an account and get their first briefing",
+    "flagged": "Under review",
+    "qualified": "Conditions met · reward in progress",
+    "rewarded": "Reward granted",
+    "rejected": "Conditions not met"
+  },
+  "badges": {
+    "pending": "Pending",
+    "flagged": "Pending",
+    "qualified": "Processing",
+    "rewarded": "+{days} days",
+    "rejected": "Not valid"
+  },
+  "referee": {
+    "title": "You joined with an invite code",
+    "reward": "Your reward: {days} days of Pro after your first briefing"
+  },
+  "codeSheet": {
+    "title": "Enter your invite code",
+    "body": "A code can be added within {days} days of signing up.",
+    "cta": "Apply Code",
+    "success": "Invite code added. You will both earn Pro after your first briefing."
+  },
+  "errors": {
+    "invalid": "This code is not valid.",
+    "self": "You cannot use your own invite code.",
+    "windowClosed": "An invite code can only be added within 7 days of signing up.",
+    "alreadyApplied": "You already used an invite code.",
+    "failed": "The code could not be applied. Try again."
+  },
+  "rewardsOff": {
+    "headline": "Share Dijital Asistan with your friends.",
+    "body": "Referral rewards are paused right now. Your friend can still join with your link and add your code.",
+    "shareMessage": "Dijital Asistan tells you what you need to know today, before you ask. Join with this link: {url}",
+    "refereeReward": "Referral rewards are paused right now; your invite code is saved on your account.",
+    "codeSheetSuccess": "Invite code added.",
+    "footer": "Earned in total: {days} days of Pro · Referral rewards are paused right now.",
+    "faqAnswer": "You can share your invite link; your friend can add your code within {window, plural, one {# day} other {# days}} of signing up. Referral rewards are paused right now.",
+    "statusMeta": {
+      "pending": "Joined",
+      "flagged": "Under review",
+      "qualified": "Conditions met",
+      "rewarded": "Reward granted",
+      "rejected": "Conditions not met"
+    },
+    "badges": {
+      "pending": "Pending",
+      "flagged": "Pending",
+      "qualified": "Completed",
+      "rewarded": "+{days} days",
+      "rejected": "Not valid"
+    }
+  }
+}

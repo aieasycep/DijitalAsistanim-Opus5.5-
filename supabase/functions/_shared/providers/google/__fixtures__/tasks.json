@@ -1,0 +1,37 @@
+{
+  "tasklists": {
+    "items": [
+      {
+        "id": "MDE2NzQ0",
+        "title": "Görevlerim",
+        "updated": "2026-09-23T08:00:00.000Z"
+      }
+    ]
+  },
+  "tasks": {
+    "items": [
+      {
+        "id": "t1",
+        "title": "Teklif v2’yi Mehmet’e gönder",
+        "status": "needsAction",
+        "due": "2026-09-24T00:00:00.000Z",
+        "updated": "2026-09-23T08:00:00.000Z"
+      },
+      {
+        "id": "t2",
+        "title": "Elektrik faturasını öde",
+        "notes": "1.842,00 TL",
+        "status": "completed",
+        "completed": "2026-09-23T18:00:00.000Z",
+        "updated": "2026-09-23T18:00:00.000Z"
+      },
+      {
+        "id": "t3",
+        "title": "Eski görev",
+        "status": "needsAction",
+        "deleted": true,
+        "updated": "2026-09-23T19:00:00.000Z"
+      }
+    ]
+  }
+}

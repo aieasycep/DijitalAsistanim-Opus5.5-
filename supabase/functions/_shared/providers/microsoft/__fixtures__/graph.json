@@ -1,0 +1,62 @@
+{
+  "token_response": {
+    "token_type": "Bearer",
+    "scope": "openid profile email offline_access User.Read Mail.Read Calendars.Read",
+    "expires_in": 3599,
+    "access_token": "eyJ0eXAi.test-graph-access",
+    "refresh_token": "0.AXoA-test-graph-refresh"
+  },
+  "admin_consent_error": {
+    "error": "invalid_grant",
+    "error_description": "AADSTS90094: The grant requires admin permission.",
+    "error_codes": [90094]
+  },
+  "me": {
+    "id": "7d8e9f00-1111-4222-8333-444455556666",
+    "mail": "Yunus@Contoso.example",
+    "userPrincipalName": "yunus@contoso.example",
+    "displayName": "Yunus Emre"
+  },
+  "inbox_delta_page1": {
+    "value": [
+      {
+        "id": "AAMkAGI2-immutable-1",
+        "conversationId": "AAQkAGI2-conv-1",
+        "internetMessageId": "<DB7PR01MB1234@contoso.example>",
+        "subject": "Sözleşme taslağı",
+        "from": {
+          "emailAddress": { "address": "Selin.Kaya@contoso.example", "name": "Selin Kaya" }
+        },
+        "toRecipients": [
+          { "emailAddress": { "address": "yunus@contoso.example", "name": "Yunus Emre" } }
+        ],
+        "ccRecipients": [],
+        "receivedDateTime": "2026-09-24T06:15:00Z",
+        "sentDateTime": "2026-09-24T06:14:40Z",
+        "isRead": false,
+        "importance": "high",
+        "flag": { "flagStatus": "flagged" },
+        "categories": [],
+        "hasAttachments": true,
+        "bodyPreview": "Merhaba Yunus, sözleşme taslağının son halini ekte bulabilirsin. Cuma gününe kadar yorumlarını bekliyorum.",
+        "inferenceClassification": "focused",
+        "webLink": "https://outlook.office365.com/owa/?ItemID=AAMkAGI2-immutable-1"
+      },
+      { "id": "AAMkAGI2-immutable-0", "@removed": { "reason": "deleted" } }
+    ],
+    "@odata.nextLink": "https://graph.microsoft.com/v1.0/me/mailFolders('inbox')/messages/delta?$skiptoken=page2"
+  },
+  "inbox_delta_page2": {
+    "value": [],
+    "@odata.deltaLink": "https://graph.microsoft.com/v1.0/me/mailFolders('inbox')/messages/delta?$deltatoken=final"
+  },
+  "delta_expired": {
+    "error": { "code": "syncStateNotFound", "message": "The sync state is not found." }
+  },
+  "subscription_created": {
+    "id": "7f105c7d-2dc5-4530-97cd-4e7ae6534c07",
+    "resource": "me/mailFolders('inbox')/messages",
+    "changeType": "created,updated,deleted",
+    "expirationDateTime": "2026-10-01T07:20:00Z"
+  }
+}

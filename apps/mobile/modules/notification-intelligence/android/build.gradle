@@ -1,0 +1,23 @@
+// Android library of the local `notification-intelligence` module (T-8.26), autolinked by Expo.
+// The service and the launcher `<queries>` are merged into the app manifest by the config plugin
+// (plugin/withNotificationIntelligence.ts), so `expo prebuild` output shows them.
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'expo.modules.notificationintelligence'
+version = '1.0.0'
+
+android {
+  namespace "expo.modules.notificationintelligence"
+  defaultConfig {
+    versionCode 1
+    versionName '1.0.0'
+  }
+}
+
+dependencies {
+  implementation "androidx.core:core-ktx:1.17.0"
+  testImplementation "org.jetbrains.kotlin:kotlin-test-junit"
+}

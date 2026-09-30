@@ -4015,7 +4015,7 @@ Scheme `dijitalasistan://`; universal links `https://<web-domain>/app/...`. Ever
   - Hidden if "Ekleri analiz et" is off for that account.
 - **API dependencies**
   - Device: `DocumentPicker.getDocumentAsync({type:['application/pdf','text/plain','text/calendar','image/*'], copyToCacheDirectory:true})`.
-  - Mail attachment: `POST /captures` (API-CAP-02) with `source:{kind:'file', from_email_attachment:{email_message_id, attachment_ref}}` (`attachment_ref` = the HMAC-signed token from API-MAIL-01). The server fetches the attachment from the provider into the private bucket for the analysis window only.
+  - Mail attachment: `POST /captures` (API-CAP-02) with `source:{kind:'file', from_email_attachment:{email_message_id, attachment_ref}}` (`attachment_ref` = the HMAC-signed token from API-MAIL-09 `GET /mail/:messageId/attachments`, or from API-MAIL-01). The server fetches the attachment from the provider into the private bucket for the analysis window only.
 - **State dependencies** — Single selection.
 - **Source design reference**
   - PRIMARY 04/4.12a "PDF seç" sheet (`FileRow`s; selected `#F7F7FE` + `check_circle`; "Dosyalar'dan seç…"; CTA "Analiz Et"). Title changed to "PDF veya dosya seç" (Deviation D-5).
@@ -8664,7 +8664,7 @@ Pushes are server-rendered by the `worker` job `notification` (API JOB-18):
 - the templates are `packages/domain/notifications/templates.ts`;
 - i18n keys follow `push.{category}.{template}.{level}.{title|body}`.
 
-The payload is exactly `{v:1, type:<notification_category>, entity_id, deeplink, nid}`. `nid` is `notifications.id`; `entity_id` is null for digests and tests. It never contains content. M-GL-08 (Part 1) routes taps.
+The payload is exactly `{type, entity_id, deeplink}` (MASTER_PLAN §12); `type` is the push template's category. `entity_id` is null for digests and tests. It never contains content. M-GL-08 (Part 1) routes taps.
 
 ### 12.1 Android channels (ruling R-12)
 
@@ -8876,7 +8876,7 @@ The payload is exactly `{v:1, type:<notification_category>, entity_id, deeplink,
 
 ### 12.6 Tests
 - **Unit `render.test.ts`:** snapshots of every `template_key` × `full` / `title_only` / `generic` × tr/en (the M-SET-20 tests reference this catalogue).
-- **Property test (UT-NTF-13, fast-check):** `title_only` and `generic` never contain a name, subject, amount or email; the data keys are exactly `{v, type, entity_id, deeplink, nid}`; the payload is under 1 KB.
+- **Property test (UT-NTF-13, fast-check):** `title_only` and `generic` never contain a name, subject, amount or email; the data keys are exactly `{type, entity_id, deeplink}`; the payload is under 1 KB.
 - **Decision tests:**
   - a quiet-hours window across midnight and a DST day;
   - VIP bypass limited to 3 per window, with the per-VIP override;
@@ -9453,7 +9453,7 @@ The columns follow the M§98 end-to-end standard. IDs are F4-xx. In §1–§9 of
 | # | UI | State | API | Backend / job | DB | Provider / AI | Approval | Confirmation → refreshed state |
 |---|---|---|---|---|---|---|---|---|
 | 1 | Referrer: M-REF-01 "Davet Gönder" | `['referrals','me']` | `GET /referrals/me` | Lazy code creation (7 characters; DB check on `referral_codes.code`) | `referral_codes` | — | — | Native share of `https://<web-domain>/r/{code}` |
-| 2 | Referee installs | — | Web `GET /referrals/:code` (W-REF-01) | — | — | Play Install Referrer `da_ref={code}` (Android) | — | MMKV `pending_referral_code` (Android automatic; iOS by paste or universal link) |
+| 2 | Referee installs | — | Web `GET /referrals/:code` (W-REF-01) | — | — | Play Install Referrer `code={code}` (Android) | — | MMKV `pending_referral_code` (Android automatic; iOS by paste or universal link) |
 | 3 | After sign-up, M-REF-02 opens prefilled → "Kodu Uygula" | — | `POST /referrals/apply {code, installation_id, source}` | Checks: window 7 d, self-referral by id / email / Apple relay / device hash; `referral_evaluate` with `run_after = created_at + 48 h`; audit `user.referral.applied` | `referrals (pending)`, `jobs` | — | — | Toast "Davet kodu eklendi. İlk brifinginden sonra ikiniz de 14 gün Pro kazanacaksınız." |
 | 4 | Referee completes onboarding, connects an account, receives the first morning briefing | — | — | `referral_evaluate`: qualification (onboarding done, ≥1 account, first briefing delivered, age ≥48 h) plus anti-abuse (loop A→B→A, cap 6 per year, velocity, risk score) | `referrals.status` | — | — | — |
 | 5 | — | — | — | `referral_credits (referral_id, side)` ×2 → `entitlement_grants` +14 d each (`referral:{id}:{side}`, stacked, non-overlapping) → `notification` `account.referral_reward` ×2 | `referral_credits`, `entitlement_grants`, `notifications` | — | — | Both: push; M-REF-01 row "+14 GÜN"; M-SUB-01 `KAYNAKLAR` "Davet ödülü · +14 gün"; `effective_entitlement` extends |

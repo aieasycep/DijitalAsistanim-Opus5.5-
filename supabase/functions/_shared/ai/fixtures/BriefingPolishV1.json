@@ -1,0 +1,14 @@
+{
+  "schema": "BriefingPolishV1",
+  "prompt_keys": ["briefing_midday", "briefing_evening"],
+  "default": {
+    "items": [
+      {
+        "ref": "i1",
+        "title_tr": "Mehmet 16:00’ya kaydırmak istiyor",
+        "sub_tr": null
+      }
+    ]
+  },
+  "by_input": {}
+}

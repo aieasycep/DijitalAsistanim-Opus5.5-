@@ -1,0 +1,16 @@
+{
+  "title": "Bunu nasıl değerlendireyim?",
+  "subtitle": "Seçimin gelecekteki öncelikleri etkiler",
+  "options": {
+    "not_important": "Önemli değil",
+    "show_more": "Bunu daha sık göster",
+    "make_vip": "VIP yap",
+    "stop_tracking": "Takibi bırak"
+  },
+  "feedback": {
+    "correct": "Doğru",
+    "notImportant": "Önemli değil",
+    "thanks": "Teşekkürler, öğrendim."
+  },
+  "learningOff": "Öğrenme kapalı; bu seçim yalnızca bu kartı etkiler."
+}

@@ -1,0 +1,25 @@
+appId: com.dijitalasistan.app.e2e
+name: 'E2E-M-17 · Referral'
+tags: [m102, android, ios, free]
+env:
+  USER_KEY: u_ref_referrer
+  SCENARIO: referral_pending
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- openLink: 'dijitalasistan-e2e://settings/referral'
+- extendedWaitUntil: { visible: { id: 'screen.settings.referral' }, timeout: 30000 }
+- assertVisible: { id: 'referral.link' }
+- tapOn: { id: 'referral.share' }
+- back
+- tapOn: { id: 'referral.enterCode' }
+- tapOn: { id: 'referralCode.input' }
+- inputText: '${output.ids.referralCode}'
+- tapOn: { id: 'referralCode.apply' }
+- runScript:
+    file: ../../scripts/harness.js
+    env: { ACTION: state, USER_KEY: '${USER_KEY}', PROBE: 'referral_state' }

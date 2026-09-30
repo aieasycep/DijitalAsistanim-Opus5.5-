@@ -1,0 +1,25 @@
+appId: com.dijitalasistan.app.e2e
+name: 'E2E-S-10 · Notification settings persist'
+tags: [screens, android, ios, pro]
+env:
+  USER_KEY: u_pro
+  SCENARIO: canon
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- openLink: 'dijitalasistan-e2e://settings/notifications'
+- extendedWaitUntil: { visible: { id: 'screen.settings.notifications' }, timeout: 30000 }
+- assertVisible: { id: 'notifications.promise' }
+- tapOn: { id: 'notifications.quietHours' }
+- extendedWaitUntil: { visible: { id: 'sheet.quietHours' }, timeout: 30000 }
+- assertVisible: { id: 'quietHours.enabled' }
+- assertVisible: { id: 'quietHours.vip' }
+- tapOn: { id: 'quietHours.save' }
+- assertVisible: { id: 'notifications.lockScreen' }
+- launchApp: { clearState: false }
+- openLink: 'dijitalasistan-e2e://settings/notifications'
+- assertVisible: { id: 'notifications.quietHours' }

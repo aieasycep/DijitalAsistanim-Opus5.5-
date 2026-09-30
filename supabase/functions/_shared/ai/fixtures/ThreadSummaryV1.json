@@ -1,0 +1,37 @@
+{
+  "schema": "ThreadSummaryV1",
+  "prompt_keys": ["thread_summary"],
+  "default": {
+    "summary_tr": "Mehmet Bey Ekim teslimatı için fiyatın güncellenmesini istiyor.",
+    "key_points": [
+      {
+        "text_tr": "Fiyat güncellemesi istendi",
+        "evidence": {
+          "ref": "m2",
+          "quote": "fiyatı Ekim teslimatına göre güncelleyebilir"
+        }
+      }
+    ],
+    "decisions": [],
+    "open_questions": [
+      {
+        "text_tr": "Teslim tarihi kesin mi?",
+        "owner": "counterparty",
+        "evidence": {
+          "ref": "m2",
+          "quote": "teslim tarihi netleşince"
+        }
+      }
+    ],
+    "latest_ask": {
+      "text_tr": "Güncel fiyat",
+      "evidence": {
+        "ref": "m2",
+        "quote": "güncel fiyatı paylaşır mısınız"
+      }
+    },
+    "injection_suspected": false,
+    "confidence": "medium"
+  },
+  "by_input": {}
+}

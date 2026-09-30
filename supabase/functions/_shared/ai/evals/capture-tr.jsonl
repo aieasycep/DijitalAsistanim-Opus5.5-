@@ -1,0 +1,25 @@
+{"id": "cp01", "text": "Perşembe 15:00 Ayşe ile kahve.", "expect": {"event": 1}}
+{"id": "cp02", "text": "Sunumu Cuma’ya kadar bitir.", "expect": {"deadline": 1}}
+{"id": "cp03", "text": "Cumartesi 11:00 Kadıköy buluşması.", "expect": {"event": 1}}
+{"id": "cp04", "text": "Elektrik faturası 1.842 TL, son ödeme 5 Ekim.", "expect": {"payment": 1}}
+{"id": "cp05", "text": "Perşembe 15:00 Ayşe ile kahve. Sunumu Cuma’ya kadar bitir. Cumartesi 11:00 Kadıköy buluşması.", "expect": {"event": 2, "deadline": 1}}
+{"id": "cp06", "text": "Pazartesi 10:00 diş hekimi randevusu.", "expect": {"event": 1}}
+{"id": "cp07", "text": "Raporu Çarşamba’ya kadar gönder.", "expect": {"deadline": 1}}
+{"id": "cp08", "text": "Aidat 2.450 TL, son ödeme 10 Ekim.", "expect": {"payment": 1}}
+{"id": "cp09", "text": "Salı 19:30 okul veli toplantısı.", "expect": {"event": 1}}
+{"id": "cp10", "text": "Vergi beyannamesini 25 Ekim’e kadar ver.", "expect": {"deadline": 1}}
+{"id": "cp11", "text": "Doğalgaz faturası 1.120 TL.", "expect": {"payment": 1}}
+{"id": "cp12", "text": "Pazar 12:00 annemlerde öğle yemeği.", "expect": {"event": 1}}
+{"id": "cp13", "text": "Başvuru formunu Perşembe’ye kadar doldur.", "expect": {"deadline": 1}}
+{"id": "cp14", "text": "İnternet faturası 499,90 TL, son ödeme 7 Ekim.", "expect": {"payment": 1}}
+{"id": "cp15", "text": "Cuma 18:00 Zeynep’in doğum günü partisi.", "expect": {"event": 1}}
+{"id": "cp16", "text": "Kira 18.500 TL, 1 Kasım’a kadar yatırılacak.", "expect": {"payment": 1}}
+{"id": "cp17", "text": "Yarın 09:30 ekip toplantısı. Sunumu Pazartesi’ye kadar hazırla.", "expect": {"event": 1, "deadline": 1}}
+{"id": "cp18", "text": "Konser biletleri 750 TL. Cumartesi 21:00 konser.", "expect": {"payment": 1, "event": 1}}
+{"id": "cp19", "text": "Alışveriş listesi: süt, ekmek, peynir.", "expect": {}}
+{"id": "cp20", "text": "Toplantıda konuşulan konular: bütçe, işe alım ve ofis taşınması.", "expect": {}}
+{"id": "cp21", "text": "Çarşamba 14:00 müşteri ziyareti.", "expect": {"event": 1}}
+{"id": "cp22", "text": "Sigorta poliçesini 30 Ekim’e kadar yenile.", "expect": {"deadline": 1}}
+{"id": "cp23", "text": "Spor salonu üyeliği 1.200 TL.", "expect": {"payment": 1}}
+{"id": "cp24", "text": "Perşembe 20:00 sinema.", "expect": {"event": 1}}
+{"id": "cp25", "text": "Ödevi Salı’ya kadar teslim et.", "expect": {"deadline": 1}}

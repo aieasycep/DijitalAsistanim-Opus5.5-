@@ -1,0 +1,368 @@
+{
+  "progress": "Step {current} of {total}",
+  "welcome": {
+    "kicker": "Dijital Asistan",
+    "body": "Understands your email, calendar and to-dos in one place.",
+    "cta": "Let's start",
+    "signIn": "Already have an account? <signIn>Sign in</signIn>",
+    "signInA11y": "Already have an account? Sign in"
+  },
+  "noise": {
+    "title": "Cut the noise.",
+    "body": "Reads everything that comes in and shows only what matters.",
+    "summary": "{emails, plural, one {# email} other {# emails}} → {items, plural, one {# thing that matters} other {# things that matter}}",
+    "a11y": "Example: {emails, plural, one {# email comes} other {# emails come}} down to {items, plural, one {# thing that matters} other {# things that matter}}.",
+    "examples": {
+      "urgent": "Ahmet is waiting for a revised proposal",
+      "deadline": "Application closes today at 17:00",
+      "followUp": "No reply to the proposal for 3 days",
+      "urgentBadge": "Urgent",
+      "deadlineBadge": "Deadline",
+      "followUpBadge": "Follow-up"
+    }
+  },
+  "proactive": {
+    "kicker": "Morning briefing · {time}",
+    "greeting": "Good morning",
+    "sampleHeadline": "You have a fairly calm day today.",
+    "sampleBody": "No meetings until noon. At 14:30 you have a client meeting with Mehmet…",
+    "listen": "Listen to the briefing · {minutes} min",
+    "schedule": "Every morning at {time}",
+    "title": "We prepare your day before you ask.",
+    "body": "Don't feel like reading? Listen in {minutes, plural, one {# minute} other {# minutes}}.",
+    "a11y": "Sample morning briefing card."
+  },
+  "control": {
+    "sampleAction": "Send a follow-up to Mehmet Yılmaz",
+    "whyLabel": "Why",
+    "whySample": "No reply to the proposal for 3 days.",
+    "changeLabel": "Change",
+    "changeSample": "1 email · Short, professional tone",
+    "title": "You're always in control.",
+    "body": "It never sends an email or touches your calendar without your approval.",
+    "cta": "Create account",
+    "a11y": "Sample approval card: sending an email is waiting for approval."
+  },
+  "connect": {
+    "title": "Connect your digital life.",
+    "body": "One email account and one calendar are enough. You can remove them at any time.",
+    "trust": "We never send email without your approval.",
+    "connected": "Connected",
+    "cta": "Continue · {count, plural, one {# account connected} other {# accounts connected}}",
+    "skip": "Skip for now",
+    "ctaNone": "Connect a mail account",
+    "loadFailed": "Connections couldn't be loaded.",
+    "meta": "{email} · Waiting for the first analysis",
+    "notConfigured": "External credential required",
+    "pills": {
+      "connect": "Connect",
+      "connecting": "Connecting…",
+      "connected": "Connected",
+      "partial": "Missing permission",
+      "reauth": "Renew",
+      "adminConsent": "Admin approval",
+      "retry": "Try again"
+    },
+    "toasts": {
+      "failed": "Couldn't connect {service}. Try again.",
+      "expired": "The connection expired. Try again.",
+      "partialMail": "Mail access wasn't granted.",
+      "partial": "Connected · some permissions weren't granted",
+      "mismatch": "A different account was chosen. Try again with the right account.",
+      "alreadyLinked": "This account is linked to another Dijital Asistan account.",
+      "rejected": "The connection couldn't be completed. Try again.",
+      "notConfigured": "This connection isn't configured in this environment (external credential required).",
+      "conditionalAccess": "Your company policy doesn't allow this connection."
+    }
+  },
+  "explainer": {
+    "gmail": {
+      "kicker": "Gmail",
+      "title": "Why do we need access to your email?",
+      "reasons": {
+        "important": "Finding important emails",
+        "awaiting": "Understanding what's waiting for a reply",
+        "deadlines": "Spotting deadlines"
+      },
+      "cta": "Connect with Google",
+      "note": "Next, Google's own permission screen opens.",
+      "unverifiedNotice": "Until our verification is complete, Google may show a \"Google hasn't verified this app\" warning."
+    },
+    "outlook": {
+      "kicker": "Outlook · Microsoft 365",
+      "title": "Why do we need access to Outlook?",
+      "reasons": {
+        "important": "Finding what matters in work email",
+        "awaiting": "Understanding conversations waiting for a reply",
+        "deadlines": "Spotting proposals, contracts and deadlines"
+      },
+      "orgPolicy": "On a work account, only the permissions granted to you are used; your company policies still apply.",
+      "cta": "Connect with Microsoft",
+      "note": "Next, Microsoft's own permission screen opens."
+    },
+    "calendar": {
+      "kicker": "Calendar",
+      "title": "Why do we need access to your calendar?",
+      "reasons": {
+        "schedule": "Understanding your day's schedule",
+        "conflicts": "Spotting meeting conflicts",
+        "briefing": "Adding upcoming events to your briefing",
+        "slots": "Suggesting good times"
+      },
+      "ads": "Event details are never used for advertising.",
+      "cta": {
+        "google": "Connect Google Calendar",
+        "microsoft": "Connect Microsoft Calendar",
+        "apple": "Allow Apple Calendar",
+        "device": "Allow device calendar"
+      },
+      "note": {
+        "google": "Next, Google's own permission screen opens.",
+        "microsoft": "Next, Microsoft's own permission screen opens.",
+        "apple": "Apple Calendar is read on your device; no separate sign-in. Event details are sent to our servers over an encrypted connection for analysis.",
+        "device": "The device calendar is read on your phone. Event details are sent to our servers over an encrypted connection for analysis."
+      }
+    },
+    "trustSend": "We never send email without your approval.",
+    "trustCalendar": "We ask for your approval before changing your calendar.",
+    "trustRemove": "You can remove the connection at any time.",
+    "trustAds": "Your data is never used or sold for advertising.",
+    "notNow": "Not now",
+    "offlineHint": "This needs an internet connection.",
+    "tasks": {
+      "kicker": "Tasks",
+      "title": "Why do we want to read your tasks?",
+      "reasons": {
+        "today": "Show today's to-dos in one place",
+        "briefing": "Add upcoming tasks to your briefing"
+      },
+      "ctaGoogle": "Connect Google Tasks",
+      "ctaMicrosoft": "Connect Microsoft To Do"
+    }
+  },
+  "calendar": {
+    "title": "Connect your calendar.",
+    "body": "For meeting prep, conflict alerts and time suggestions. You can remove it at any time.",
+    "appleMeta": "iCloud · read from this device",
+    "appleNote": "Apple Calendar is read from this device; no separate sign-in is needed. Event details are sent to our servers over an encrypted connection for analysis.",
+    "appleCta": "Allow Apple Calendar",
+    "pickedMeta": "{count, plural, one {# calendar} other {# calendars}} · {names}",
+    "picker": {
+      "title": "Which calendars?",
+      "body": "The calendars you choose feed your briefing and plan.",
+      "empty": "No calendars found in this account.",
+      "offlineQueued": "The calendar will upload when you're back online."
+    },
+    "denied": {
+      "title": "Calendar access is off",
+      "body": "You can turn it on later in Settings. The core features work without a calendar.",
+      "skip": "Skip for now"
+    },
+    "ctaNone": "Connect a calendar or mail",
+    "deviceMeta": "Read on this device",
+    "deniedMeta": "Permission not granted",
+    "chooseDevice": "Choose device calendars"
+  },
+  "adminConsent": {
+    "title": "Your admin needs to approve.",
+    "body": "Your work account needs your IT admin to approve this app. You can send them the approval link.",
+    "cta": "Send to my admin"
+  },
+  "permissions": {
+    "kicker": "Permissions",
+    "title": "Review what I can access",
+    "body": "You can change any of this later in Privacy & Security.",
+    "reviewTitle": "See what I can access.",
+    "reviewBody": "You can change these later in the Privacy Center too.",
+    "accountsSection": "Connected accounts",
+    "deviceSection": "Device permissions",
+    "noAccounts": "No connected accounts yet.",
+    "sendInfo": "Sending mail · only with your approval, permission is asked at the first send",
+    "writeInfo": "Writing to your calendar · only with your approval, permission is asked the first time",
+    "mailOffTitle": "Turn off mail analysis?",
+    "mailOffBody": "With mail analysis off, no new priorities come from this account."
+  },
+  "personalization": {
+    "title": "What matters to you?",
+    "body": "Pick as many as you like. I'll also learn over time.",
+    "interests": {
+      "work": "Work",
+      "family": "Family",
+      "finance": "Finance",
+      "travel": "Travel",
+      "shopping": "Shopping",
+      "appointments": "Appointments",
+      "deadlines": "Deadlines",
+      "all": "All"
+    },
+    "cta": "Continue · {count} selected",
+    "helper": "Choose at least one area.",
+    "allSelected": "All selected"
+  },
+  "schedule": {
+    "title": "Your daily rhythm",
+    "body": "When should I prepare your briefings? You can change this later.",
+    "morningMeta": "Your whole day · audio version",
+    "middayMeta": "Only what changed",
+    "eveningMeta": "What carries over to tomorrow",
+    "weekend": "Weekends",
+    "weekendMeta": "Mornings only, {time} · Personal first",
+    "pickerTitle": {
+      "morning": "Morning briefing time",
+      "midday": "Midday pulse time",
+      "evening": "Evening wrap-up time",
+      "weekend": "Weekend briefing time"
+    },
+    "morningTitle": "Morning briefing",
+    "middayTitle": "Midday pulse",
+    "eveningTitle": "Evening close",
+    "proSuffix": "{meta} · Pro",
+    "weekendOnlyTitle": "Weekends: morning only",
+    "weekendTime": "Weekend time",
+    "timezone": "Times are in {zone}.",
+    "rowA11y": "{title}, {time}, change time",
+    "rowA11yLocked": "{title}, {time}, Pro feature",
+    "picker": {
+      "hour": "Hour",
+      "minute": "Minute",
+      "increase": "Increase {unit}",
+      "decrease": "Decrease {unit}",
+      "range": {
+        "morning": "The morning briefing must be between 05:00 and 11:55.",
+        "midday": "The midday pulse must be between 11:00 and 15:55.",
+        "evening": "The evening close must be between 16:00 and 23:00.",
+        "weekend": "The weekend briefing must be between 06:00 and 12:00."
+      },
+      "order": {
+        "midday": "The midday pulse must be at least 1 hour after the morning briefing.",
+        "evening": "The evening close must be at least 1 hour after the midday pulse."
+      }
+    }
+  },
+  "vip": {
+    "title": "Whose messages do you never want to miss?",
+    "body": "Messages from your VIPs always come first.",
+    "cta": "Continue ({count})",
+    "add": {
+      "title": "Add a person",
+      "emailHint": "Email address",
+      "nameHint": "Name (optional)",
+      "cta": "Add",
+      "invalid": "Enter a valid email address.",
+      "duplicate": "This person is already on the list."
+    },
+    "addPerson": "Add person",
+    "rowMeta": "{count, plural, one {# email} other {# emails}} in the last 30 days",
+    "rowA11yOn": "{name}, {meta}, VIP",
+    "rowA11yOff": "{name}, {meta}, not VIP",
+    "emptyTitle": "No suggestions yet.",
+    "emptyBody": "As your mail is analysed, I'll suggest the people you write with most. You can add someone by email now.",
+    "skipContinue": "Skip and continue",
+    "full": "Your VIP list is full."
+  },
+  "analysis": {
+    "title": "Analysing your digital life…",
+    "subtitle": "Last 72 hours · {sources}",
+    "steps": {
+      "scanning": "Scanning the last 72 hours",
+      "classifying": "Sorting your emails",
+      "calendar": "Checking your calendar",
+      "openItems": "Looking for open items"
+    },
+    "counters": {
+      "emails": "{count, plural, one {# email found} other {# emails found}}",
+      "important": "{count, plural, one {# potentially important item} other {# potentially important items}}",
+      "events": "{count, plural, one {# upcoming event} other {# upcoming events}}",
+      "followUps": "{count, plural, one {# possible follow-up} other {# possible follow-ups}}"
+    },
+    "kicker": "First analysis",
+    "and": "and",
+    "ringA11y": "Analysis in progress",
+    "stateDone": "Done",
+    "stateActive": "In progress",
+    "statePending": "Waiting",
+    "calendarFailed": "Calendar couldn't be read · will retry later",
+    "runningFooter": "This usually takes 20–40 seconds. Full email content isn't stored.",
+    "slow": "This is taking a little longer; I'll let you know when it's ready.",
+    "goToday": "Go to Today",
+    "waiting": "Waiting for a connection…",
+    "failedTitle": "The first analysis couldn't finish.",
+    "failedBody": "Your connections are fine; we can try again in a few seconds."
+  },
+  "aha": {
+    "kicker": "Ready.",
+    "title": "We found {count, plural, one {# thing} other {# things}} you need to know from the last 72 hours.",
+    "zero": "Nothing urgent in the last 72 hours.",
+    "more": "+ {count, plural, one {# more item} other {# more items}}",
+    "pending": "Loading findings…",
+    "zeroBody": "I'll let you know if something new comes up."
+  },
+  "notifications": {
+    "exampleMeeting": "Your meeting starts in {minutes, plural, one {# minute} other {# minutes}}. {count, plural, one {# topic} other {# topics}} ready for {name}.",
+    "exampleMeetingFree": "Your meeting starts in {minutes, plural, one {# minute} other {# minutes}}.",
+    "exampleMail": "There's an important email you need to answer today.",
+    "exampleShipment": "Your package arrives today between {from} and {to}.",
+    "body": "No marketing notifications, no “look at me” pings.",
+    "cta": "Turn on notifications",
+    "later": "Not now",
+    "exampleName": "Mehmet",
+    "previewA11y": "Sample notifications",
+    "illustrative": "Sample notifications; yours are built from your own data.",
+    "deniedBody": "Notifications are off. You can turn them on in Settings."
+  },
+  "androidNotifications": {
+    "title": "Shall I understand your phone notifications too?",
+    "body": "I pick out personal signals from delivery, bank and app notifications. Message content is never stored.",
+    "groups": {
+      "shipping": {
+        "title": "Delivery apps",
+        "meta": "Trendyol, Hepsiburada, Yurtiçi"
+      },
+      "banking": {
+        "title": "Banking",
+        "meta": "Payment and due-date notifications"
+      },
+      "airline": {
+        "title": "Airlines",
+        "meta": "THY, Pegasus · gates and delays"
+      },
+      "reservation": {
+        "title": "Reservations",
+        "meta": "Restaurants, hotels, events"
+      },
+      "messaging": {
+        "title": "Messaging",
+        "meta": "WhatsApp, Telegram · always excluded"
+      }
+    },
+    "footer": "Notifications are processed on your device. Chat apps are always excluded.",
+    "cta": "Allow notification access",
+    "skip": "Not now",
+    "kicker": "Android only",
+    "modeA11y": "Which apps",
+    "lockedTitle": "Security apps are always excluded",
+    "lockedMeta": "Authenticators, password managers, e-Devlet",
+    "lockedA11y": "Security apps are always excluded, can't be changed",
+    "settingsHint": "Android Settings › Notification access opens.",
+    "returned": "If you turned on notification access, you can check it in Phone notifications settings.",
+    "restricted": "Having trouble? App info › ⋮ › Allow restricted settings",
+    "settingsFailed": "Settings couldn't be opened."
+  },
+  "introA11y": "Introduction, page {current} of {total}",
+  "steps": {
+    "mail": "Step 1 / 4 · Mail",
+    "calendar": "Step 1 / 4 · Calendar",
+    "permissions": "Step 1 / 4 · Permissions",
+    "personalization": "Step 2 / 4",
+    "schedule": "Step 3 / 4",
+    "vip": "Step 4 / 4"
+  },
+  "signOut": {
+    "title": "Sign out?",
+    "body": "You can sign out to start with a different account."
+  },
+  "account": {
+    "access": "What can I access?",
+    "chooseCalendars": "Choose calendars"
+  }
+}

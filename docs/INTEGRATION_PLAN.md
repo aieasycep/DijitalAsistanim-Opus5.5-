@@ -94,7 +94,7 @@ All names come from the master plan.
 |---|---|---|---|---|---|
 | `development` | `development` | `com.dijitalasistan.app.dev` | `dijitalasistan-dev` | `group.com.dijitalasistan.app.dev` | yes |
 | `preview` | `preview` | `com.dijitalasistan.app.preview` | `dijitalasistan-preview` | `group.com.dijitalasistan.app.preview` | yes |
-| `e2e` | `e2e` | `com.dijitalasistan.app.preview` | `dijitalasistan-preview` | `group.com.dijitalasistan.app.preview` | yes (required) |
+| `e2e` | `e2e` | `com.dijitalasistan.app.e2e` | `dijitalasistan-e2e` | `group.com.dijitalasistan.app.e2e` | yes (required) |
 | `production` | `production` | `com.dijitalasistan.app` | `dijitalasistan` | `group.com.dijitalasistan.app` | no, unless `ALLOW_DEMO_IN_PRODUCTION=true` |
 
 Extension bundle IDs:
@@ -660,12 +660,14 @@ export class ProviderError extends Error {
 | google | `calendar_write` | `…/auth/calendar.events.owned`; if it is refused on the consent screen, `…/auth/calendar.events` [verify availability on consent screen] | sensitive | "Etkinlik oluşturma/taşıma (onaylı)" |
 | google | `tasks_read` | `…/auth/tasks.readonly` | sensitive | "Görevleri okuma" |
 | google | `tasks_write` | `…/auth/tasks` | sensitive | "Görev oluşturma (onaylı)" |
+| google | `calendar_freebusy` | `…/auth/calendar.events.freebusy` (progressive, from the conflict options only; `calendar.readonly` or `calendar` also satisfy it) | sensitive | "Katılımcıların dolu/boş saatleri (çakışma seçenekleri)" |
 | microsoft | identity + `mail_read` | `openid profile email offline_access User.Read Mail.Read` | user-consentable [OFF] | "Mailleri okuma" |
 | microsoft | `mail_send` | `Mail.Send` | user-consentable | "Gönderme (onaylı)" |
 | microsoft | `calendar_read` | `Calendars.Read` (+ `offline_access`) | user-consentable | "Takvimi okuma" |
 | microsoft | `calendar_write` | `Calendars.ReadWrite` | user-consentable | "Etkinlik oluşturma/taşıma (onaylı)" |
 | microsoft | `tasks_read` | `Tasks.Read` | user-consentable | "Görevleri okuma" |
 | microsoft | `tasks_write` | `Tasks.ReadWrite` | user-consentable | "Görev oluşturma (onaylı)" |
+| microsoft | `calendar_freebusy` | `Calendars.Read` (`calendar/getSchedule`; held with `calendar_read`) | user-consentable | "Katılımcıların dolu/boş saatleri (çakışma seçenekleri)" |
 
 Rules:
 - **Never requested:** `gmail.compose`, `gmail.modify`, `gmail.metadata` (it is restricted as well and blocks `q`), `https://mail.google.com/`, `Mail.ReadWrite`, `Mail.ReadBasic`, `Calendars.Read.Shared` and any Graph application permission.
@@ -1343,7 +1345,7 @@ The scopes are listed in §2.11. Gmail `gmail.readonly` is **restricted**, which
 | Watch | `events.watch(calendarId, {id: uuid, type:"web_hook", address:"https://api.dijitalasistan.app/functions/v1/webhooks-google/calendar", token: base64url(HMAC-SHA256(WEBHOOK_HMAC_SECRET, channelId)), params:{ttl:"604800"}})`. Store `resourceId` and `expiration`. Renew when <24 h is left: create the new channel, then `channels.stop` the old one. |
 | Push verification | Recompute the HMAC from `X-Goog-Channel-ID` and compare constant-time with `X-Goog-Channel-Token`. `X-Goog-Resource-ID` must equal the stored `watch_resource_id`. `X-Goog-Resource-State: sync` → 200, ignored. `exists` / `not_exists` → coalesced `calendar_sync`. `external_id = channelId + ':' + X-Goog-Message-Number`. If channel creation fails with an unauthorized-webhook error, verify `api.dijitalasistan.app` in Search Console [verify]. |
 | Write | §3.12. `calendar_write` targets calendars with `access_role='owner'` (the `events.owned` scope). `sendUpdates` defaults to `none` when there are no attendees, and to `all` when the approval lists attendees (disclosed). Google warns that `none` "can have significant adverse effects" when attendees exist, so `none` is never used with attendees [OFF]. |
-| Attendee availability | Not checked; no free/busy scope is requested. The conflict UI states "Katılımcıların uygunluğu kontrol edilemiyor." (SREQ-20, M§91). |
+| Attendee availability | As built (KNOWN_PLATFORM_LIMITATIONS KPL-46): `POST /calendar/v3/freeBusy` for the event's other attendees with the progressive `calendar_freebusy` capability (`calendar.events.freebusy`), requested from the conflict screen's "Uygunluğu göster" only. `notFound` → `not_shared`; `groupTooBig` / `tooManyCalendarsRequested` → `too_many`; anyone not answered stays unknown. Nothing is inferred (SREQ-20, M§91). Graph uses `POST /me/calendar/getSchedule` under `Calendars.Read`. |
 
 ### 4.6 Google Tasks
 
@@ -1712,7 +1714,7 @@ The **Time Sensitive** entitlement is `com.apple.developer.usernotifications.tim
 `critical` is never used.
 
 ### 9.5 Detail-mode rendering (server-side in `worker`; default `title_only`)
-- Payload `data` = `{type, entity_id, deeplink, notification_id}`. It never contains mail content (ADR-12, M§86).
+- Payload `data` = exactly `{type, entity_id, deeplink}` (MASTER_PLAN §12). It never contains mail content (ADR-12, M§86).
 - **Names and subjects appear only in `full` mode (C-14).**
 - `generic` for every category: title "Dijital Asistan", body "Yeni bir güncellemen var."
 - `lock_screen_private` (default true): on iOS the server caps the detail at `title_only`, because it cannot know whether the device is locked. On Android the `PRIVATE` channel hides content on the secure lock screen, so the chosen detail mode is sent unchanged. This difference is documented in KNOWN_PLATFORM_LIMITATIONS.
@@ -1913,7 +1915,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       ['@sentry/react-native/expo', { organization: process.env.SENTRY_ORG, project: 'da-mobile' }],
     ],
     extra: { eas: { projectId: process.env.EXPO_PUBLIC_EAS_PROJECT_ID, build: { experimental: { ios: { appExtensions: [
-      { targetName: 'DijitalAsistan', bundleIdentifier: `${v.bundleId}.share-extension`, entitlements: { 'com.apple.security.application-groups': [v.appGroup] } },
+      { targetName: 'DijitalAsistanaEkle', bundleIdentifier: `${v.bundleId}.share-extension`, entitlements: { 'com.apple.security.application-groups': [v.appGroup] } },
       { targetName: 'widget', bundleIdentifier: `${v.bundleId}.widget`, entitlements: { 'com.apple.security.application-groups': [v.appGroup] } },
     ] } } } } },
   };
@@ -2029,7 +2031,7 @@ const SHARE_INTENT_OPTIONS = (v) => ({
     'ANY $attachment.registeredTypeIdentifiers UTI-CONFORMS-TO "public.url" || ' +
     'ANY $attachment.registeredTypeIdentifiers UTI-CONFORMS-TO "public.plain-text").@count >= 1).@count >= 1',
   iosAppGroupIdentifier: v.appGroup,
-  iosShareExtensionName: 'Dijital Asistan',           // target "DijitalAsistan"
+  iosShareExtensionName: "Dijital Asistan'a Ekle",   // target "DijitalAsistanaEkle" (capture.title; "Dijital Asistan" would reuse the production app target)
   androidIntentFilters: ['text/*', 'image/*', 'application/pdf'],      // ACTION_SEND
   androidMultiIntentFilters: ['image/*', 'application/pdf'],           // ACTION_SEND_MULTIPLE
   androidMainActivityAttributes: { 'android:launchMode': 'singleTask' },

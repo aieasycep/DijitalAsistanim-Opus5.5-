@@ -1,0 +1,38 @@
+{
+  "whyImportant": "Why is this important?",
+  "whereFrom": "Where did this come from?",
+  "tiers": {
+    "explicit_rule": "Your rule",
+    "learned_preference": "Learned preference",
+    "deterministic_signal": "Clear signal",
+    "ai_classification": "AI estimate"
+  },
+  "precedence": "Your own rules always come before AI guesses.",
+  "source": {
+    "title": "Source",
+    "quote": "Quote from the source",
+    "open": "Open source",
+    "deviceStale": "Device calendar last synced at {time}",
+    "quoted": "“{quote}”"
+  },
+  "confidence": "{percent}% confidence",
+  "notify": {
+    "always": "Your notification rule: you are always notified about this.",
+    "muted": "Your notification rule: you are not notified about this."
+  },
+  "unverified": {
+    "due_at": "The due date is not confirmed in the source.",
+    "amount": "The amount is not stated in the source.",
+    "time": "The time is not confirmed in the source.",
+    "person": "The person is not confirmed in the source."
+  },
+  "confidenceBand": {
+    "medium": "Probably; medium confidence.",
+    "low": "I am not sure; I suggest checking the source."
+  },
+  "confidenceWording": {
+    "assertive": "Verified in the source",
+    "probably": "Probably",
+    "uncertain": "Not sure"
+  }
+}

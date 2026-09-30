@@ -1,0 +1,9 @@
+{
+  "platforms": ["apple", "android"],
+  "apple": {
+    "modules": ["DaTtsModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.datts.DaTtsModule"]
+  }
+}

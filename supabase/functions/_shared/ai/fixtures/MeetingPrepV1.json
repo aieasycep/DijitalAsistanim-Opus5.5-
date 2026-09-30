@@ -1,0 +1,52 @@
+{
+  "schema": "MeetingPrepV1",
+  "prompt_keys": ["meeting_prep"],
+  "default": {
+    "purpose": {
+      "text_tr": "Fiyat revizyonunu konuşmak.",
+      "basis": "email",
+      "evidence": {
+        "ref": "m1",
+        "quote": "fiyat revizyonunu görüşelim"
+      }
+    },
+    "talking_points": [
+      {
+        "title_tr": "Ekim fiyatı",
+        "body_tr": "Güncel fiyatı teyit et.",
+        "refs": ["m1"],
+        "evidence": {
+          "ref": "m1",
+          "quote": "Ekim teslimatına göre fiyat"
+        }
+      },
+      {
+        "title_tr": "Teslim tarihi",
+        "body_tr": "Kesin tarihi sor.",
+        "refs": ["m1"],
+        "evidence": {
+          "ref": "m1",
+          "quote": "teslim tarihi netleşince"
+        }
+      }
+    ],
+    "last_interaction": {
+      "text_tr": "Dün fiyat istedi.",
+      "refs": ["m1"],
+      "evidence": {
+        "ref": "m1",
+        "quote": "güncel fiyatı paylaşır mısınız"
+      }
+    },
+    "open_loops": [],
+    "summary_2min": [
+      {
+        "text_tr": "Mehmet Bey Ekim teslimatı için güncel fiyat bekliyor.",
+        "refs": ["m1"]
+      }
+    ],
+    "injection_suspected": false,
+    "confidence": "high"
+  },
+  "by_input": {}
+}

@@ -1,0 +1,4 @@
+jobs:
+  lint:
+    steps:
+      - uses: actions/checkout@v4

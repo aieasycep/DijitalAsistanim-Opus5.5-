@@ -1,0 +1,5 @@
+{
+  "scripts": {
+    "scan:bundles": "node scripts/security/scan-bundles.ts"
+  }
+}

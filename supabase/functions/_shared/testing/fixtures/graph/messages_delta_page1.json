@@ -1,0 +1,133 @@
+{
+  "value": [
+    {
+      "id": "AAMkAGI2THVSAAA1",
+      "conversationId": "AAQkTHVSAAA1",
+      "internetMessageId": "<AGI2THVSAAA1@kuzeylojistik.example>",
+      "subject": "Re: Eylül teklifi – revize",
+      "bodyPreview": "Revize teklifi bugün 17:00’ye kadar iletebilir misiniz?",
+      "from": {
+        "emailAddress": {
+          "name": "Ahmet Yılmaz",
+          "address": "ahmet.yilmaz@kuzeylojistik.example"
+        }
+      },
+      "sender": {
+        "emailAddress": {
+          "name": "Ahmet Yılmaz",
+          "address": "ahmet.yilmaz@kuzeylojistik.example"
+        }
+      },
+      "toRecipients": [
+        {
+          "emailAddress": {
+            "name": "Yunus Demir",
+            "address": "yunus.demir@kuzeylojistik.example"
+          }
+        }
+      ],
+      "ccRecipients": [],
+      "replyTo": [],
+      "receivedDateTime": "__minus_40m__",
+      "sentDateTime": "__minus_40m__",
+      "hasAttachments": false,
+      "importance": "normal",
+      "isRead": false,
+      "isDraft": false,
+      "inferenceClassification": "focused",
+      "parentFolderId": "AAMkInbox",
+      "categories": [],
+      "flag": {
+        "flagStatus": "notFlagged"
+      },
+      "webLink": "https://outlook.office365.com/owa/?ItemID=AAMkAGI2THVSAAA1",
+      "internetMessageHeaders": []
+    },
+    {
+      "id": "AAMkAGI2THVSAAA2",
+      "conversationId": "AAQkTHVSAAA2",
+      "internetMessageId": "<AGI2THVSAAA2@kuzeylojistik.example>",
+      "subject": "Ekim teslimatı",
+      "bodyPreview": "Ekim teslimatının tarihini netleştirebilir miyiz?",
+      "from": {
+        "emailAddress": {
+          "name": "Mehmet Yılmaz",
+          "address": "mehmet@yilmazendustri.example"
+        }
+      },
+      "sender": {
+        "emailAddress": {
+          "name": "Mehmet Yılmaz",
+          "address": "mehmet@yilmazendustri.example"
+        }
+      },
+      "toRecipients": [
+        {
+          "emailAddress": {
+            "name": "Yunus Demir",
+            "address": "yunus.demir@kuzeylojistik.example"
+          }
+        }
+      ],
+      "ccRecipients": [],
+      "replyTo": [],
+      "receivedDateTime": "__minus_300m__",
+      "sentDateTime": "__minus_300m__",
+      "hasAttachments": false,
+      "importance": "normal",
+      "isRead": false,
+      "isDraft": false,
+      "inferenceClassification": "focused",
+      "parentFolderId": "AAMkInbox",
+      "categories": [],
+      "flag": {
+        "flagStatus": "notFlagged"
+      },
+      "webLink": "https://outlook.office365.com/owa/?ItemID=AAMkAGI2THVSAAA2",
+      "internetMessageHeaders": []
+    },
+    {
+      "id": "AAMkAGI2THVSAAA3",
+      "conversationId": "AAQkTHVSAAA3",
+      "internetMessageId": "<AGI2THVSAAA3@kuzeylojistik.example>",
+      "subject": "Sözleşme madde 4",
+      "bodyPreview": "Madde 4 için yorumunu yarın 12:00’ye kadar bekliyorum.",
+      "from": {
+        "emailAddress": {
+          "name": "Selin Kaya",
+          "address": "selin.kaya@example.com"
+        }
+      },
+      "sender": {
+        "emailAddress": {
+          "name": "Selin Kaya",
+          "address": "selin.kaya@example.com"
+        }
+      },
+      "toRecipients": [
+        {
+          "emailAddress": {
+            "name": "Yunus Demir",
+            "address": "yunus.demir@kuzeylojistik.example"
+          }
+        }
+      ],
+      "ccRecipients": [],
+      "replyTo": [],
+      "receivedDateTime": "__minus_500m__",
+      "sentDateTime": "__minus_500m__",
+      "hasAttachments": false,
+      "importance": "normal",
+      "isRead": false,
+      "isDraft": false,
+      "inferenceClassification": "focused",
+      "parentFolderId": "AAMkInbox",
+      "categories": [],
+      "flag": {
+        "flagStatus": "notFlagged"
+      },
+      "webLink": "https://outlook.office365.com/owa/?ItemID=AAMkAGI2THVSAAA3",
+      "internetMessageHeaders": []
+    }
+  ]
+}

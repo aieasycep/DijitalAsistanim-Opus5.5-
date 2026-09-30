@@ -1,0 +1,14 @@
+[
+  {
+    "advisory": "GHSA-jx2c-rxcm-jvmq",
+    "package": "fastify",
+    "reason": "Dev-only: @supabase/postgres-meta 0.99.0 (latest, fastify 4) is run by scripts/db/gen-types.sh in PG_META_GENERATE_TYPES mode, which prints the types and exits without starting the HTTP server; no fastify 4 release carries the fix.",
+    "expires": "2026-12-28"
+  },
+  {
+    "advisory": "GHSA-c96f-x56v-gq3h",
+    "package": "find-my-way",
+    "reason": "Dev-only: the fastify router inside @supabase/postgres-meta 0.99.0; gen-types.sh runs the one-shot type generator, so no route is ever matched. Re-check when postgres-meta moves to fastify 5.",
+    "expires": "2026-12-28"
+  }
+]

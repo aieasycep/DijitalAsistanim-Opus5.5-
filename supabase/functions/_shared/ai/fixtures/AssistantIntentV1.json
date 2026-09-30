@@ -1,0 +1,13 @@
+{
+  "schema": "AssistantIntentV1",
+  "prompt_keys": ["assistant_intent"],
+  "default": {
+    "intent": "last_talk_with_person",
+    "person_quote": "Mehmet",
+    "period_quote": null,
+    "topic_quote": null,
+    "target_ref": null,
+    "confidence": "high"
+  },
+  "by_input": {}
+}

@@ -1,0 +1,84 @@
+{
+  "title": "Arkadaşını Davet Et",
+  "headline": "İkiniz de {days} gün Pro kazanın.",
+  "body": "Arkadaşın bağlantınla katılıp bir hesap bağladığında ve ilk brifingini aldığında ödülünüz tanımlanır.",
+  "link": "Davet bağlantın",
+  "copyLink": "Bağlantıyı kopyala",
+  "share": "Paylaş",
+  "shareMessage": "Dijital Asistan bugün bilmen gerekenleri sen sormadan söylüyor. Bu bağlantıyla katılırsan ikimiz de {days} gün Pro kazanırız: {url}",
+  "cap": "Yılda en fazla {cap} ödül",
+  "invitesSection": "Davetlerin",
+  "statuses": {
+    "pending": "Bekliyor",
+    "qualified": "Koşullar tamamlandı",
+    "rewarded": "Ödül tanımlandı",
+    "rejected": "Uygun değil",
+    "flagged": "İnceleniyor"
+  },
+  "enterCode": "Davet kodun var mı?",
+  "codeHint": "Davet kodu",
+  "apply": "Uygula",
+  "applied": "Davet kodun eklendi. Koşullar tamamlanınca ikiniz de Pro kazanırsınız.",
+  "landing": "Bir arkadaşın seni davet etti",
+  "send": "Davet Gönder",
+  "copied": "Bağlantı kopyalandı",
+  "linkA11y": "Davet bağlantın, kod {code}",
+  "emptyTitle": "Henüz davetin yok.",
+  "emptyBody": "Bağlantını paylaştığında katılan arkadaşların burada görünür.",
+  "footer": "Toplam kazanılan: {days} gün Pro · Sınır: yılda en fazla {cap} ödül",
+  "capReached": "Bu yılki ödül sınırına ulaştın; davetlerin yine de arkadaşlarına ödül kazandırır.",
+  "statusMeta": {
+    "pending": "Katıldı · hesabını bağlayıp ilk brifingini alınca ödül verilir",
+    "flagged": "İnceleniyor",
+    "qualified": "Koşullar tamamlandı · ödül işleniyor",
+    "rewarded": "Ödül verildi",
+    "rejected": "Koşullar sağlanmadı"
+  },
+  "badges": {
+    "pending": "Bekliyor",
+    "flagged": "Bekliyor",
+    "qualified": "İşleniyor",
+    "rewarded": "+{days} gün",
+    "rejected": "Geçersiz"
+  },
+  "referee": {
+    "title": "Davet koduyla katıldın",
+    "reward": "Ödülün: ilk brifinginden sonra {days} gün Pro"
+  },
+  "codeSheet": {
+    "title": "Davet kodunu gir",
+    "body": "Kod, kayıt olduktan sonraki {days} gün içinde eklenebilir.",
+    "cta": "Kodu Uygula",
+    "success": "Davet kodu eklendi. İlk brifinginden sonra ikiniz de Pro kazanacaksınız."
+  },
+  "errors": {
+    "invalid": "Bu kod geçerli değil.",
+    "self": "Kendi davet kodunu kullanamazsın.",
+    "windowClosed": "Davet kodu yalnızca kayıttan sonraki 7 gün içinde eklenebilir.",
+    "alreadyApplied": "Zaten bir davet kodu kullandın.",
+    "failed": "Kod uygulanamadı. Tekrar dene."
+  },
+  "rewardsOff": {
+    "headline": "Dijital Asistan'ı arkadaşlarınla paylaş.",
+    "body": "Davet ödülleri şu anda verilmiyor. Arkadaşın bağlantınla katılıp kodunu yine de ekleyebilir.",
+    "shareMessage": "Dijital Asistan bugün bilmen gerekenleri sen sormadan söylüyor. Bu bağlantıyla katılabilirsin: {url}",
+    "refereeReward": "Davet ödülleri şu anda verilmiyor; davet kodun hesabında kayıtlı.",
+    "codeSheetSuccess": "Davet kodu eklendi.",
+    "footer": "Toplam kazanılan: {days} gün Pro · Davet ödülleri şu anda verilmiyor.",
+    "faqAnswer": "Davet bağlantını paylaşabilirsin; arkadaşın kaydolduktan sonraki {window} gün içinde kodunu ekleyebilir. Davet ödülleri şu anda verilmiyor.",
+    "statusMeta": {
+      "pending": "Katıldı",
+      "flagged": "İnceleniyor",
+      "qualified": "Koşullar tamamlandı",
+      "rewarded": "Ödül verildi",
+      "rejected": "Koşullar sağlanmadı"
+    },
+    "badges": {
+      "pending": "Bekliyor",
+      "flagged": "Bekliyor",
+      "qualified": "Tamamlandı",
+      "rewarded": "+{days} gün",
+      "rejected": "Geçersiz"
+    }
+  }
+}

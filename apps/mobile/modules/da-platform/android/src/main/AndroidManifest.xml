@@ -1,0 +1,5 @@
+<!-- SCHEDULE_EXACT_ALARM is added to the app manifest by the config plugin
+     (plugin/withDaPlatform.ts), so `expo prebuild` output carries it. USE_EXACT_ALARM and
+     REQUEST_IGNORE_BATTERY_OPTIMIZATIONS are never declared: both are Play-restricted (KPL-04,
+     KPL-09); the module only reads the states and opens the system settings screens. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" />

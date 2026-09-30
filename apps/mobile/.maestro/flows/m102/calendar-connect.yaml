@@ -1,0 +1,34 @@
+appId: com.dijitalasistan.app.e2e
+name: 'E2E-M-04 · Calendar connect'
+tags: [m102, android, ios, free]
+env:
+  USER_KEY: u_mail_only
+  SCENARIO: mail_only
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- openLink: 'dijitalasistan-e2e://settings/accounts'
+- tapOn: { id: 'accounts.add' }
+- tapOn: '${output.t.common.providers.googleCalendar}'
+- tapOn: { id: 'explainer' }
+- runFlow: ../../subflows/demo-consent.yaml
+- runFlow: { file: ../../subflows/open-tab.yaml, env: { TAB: plan } }
+- extendedWaitUntil: { visible: Mehmet Yılmaz, timeout: 60000 }
+- runFlow:
+    when: { platform: Android }
+    commands:
+      - assertVisible: '${output.t.common.providers.deviceCalendar}'
+      - assertNotVisible: '${output.t.common.providers.appleCalendar}'
+- runFlow:
+    when: { platform: iOS }
+    commands:
+      - assertVisible: '${output.t.common.providers.appleCalendar}'
+- launchApp: { clearState: false, permissions: { calendar: deny } }
+- openLink: 'dijitalasistan-e2e://connect-calendar'
+- tapOn: { id: 'connectCalendar.pickDevice' }
+- extendedWaitUntil: { visible: '${output.t.onboarding.calendar.denied.title}', timeout: 30000 }
+- assertVisible: '${output.t.common.actions.openSettings}'

@@ -1,0 +1,26 @@
+// da-platform (KPL-04, KPL-07, KPL-09): the exact-alarm state with its special-access handoff and
+// the battery-optimisation state with its settings handoff. The manifest permission is added by
+// the config plugin (plugin/withDaPlatform.ts), so `expo prebuild` output shows it.
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'expo.modules.daplatform'
+version = '1.0.0'
+
+expoModule {
+  canBePublished false
+}
+
+android {
+  namespace "expo.modules.daplatform"
+  defaultConfig {
+    versionCode 1
+    versionName "1.0.0"
+  }
+}
+
+dependencies {
+  testImplementation "org.jetbrains.kotlin:kotlin-test-junit"
+}

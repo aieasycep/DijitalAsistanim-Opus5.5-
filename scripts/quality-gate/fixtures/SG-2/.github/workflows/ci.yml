@@ -1,0 +1,6 @@
+jobs:
+  security:
+    steps:
+      - with:
+          fetch-depth: 0
+      - run: pnpm secret-scan

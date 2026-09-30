@@ -1,0 +1,27 @@
+appId: com.dijitalasistan.app.e2e
+name: 'E2E-S-16 · Help, contact support and feedback'
+tags: [screens, android, ios, pro]
+env:
+  USER_KEY: u_pro
+  SCENARIO: canon
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- openLink: 'dijitalasistan-e2e://settings/help'
+- extendedWaitUntil: { visible: { id: 'screen.settings.help' }, timeout: 30000 }
+- tapOn: { id: 'help.contact' }
+- extendedWaitUntil: { visible: { id: 'sheet.contact' }, timeout: 30000 }
+- tapOn: { id: 'contact.message' }
+- inputText: 'Takvim eşitlemesi hakkında sorum var.'
+- tapOn: { id: 'contact.send' }
+- extendedWaitUntil: { visible: { id: 'contact.success' }, timeout: 30000 }
+- openLink: 'dijitalasistan-e2e://settings/feedback'
+- extendedWaitUntil: { visible: { id: 'screen.settings.feedback' }, timeout: 30000 }
+- assertVisible: { id: 'feedback.type.bug' }
+- assertVisible: { id: 'feedback.type.feature' }
+- assertVisible: { id: 'feedback.type.general' }
+- assertVisible: { id: 'feedback.type.ai_quality' }

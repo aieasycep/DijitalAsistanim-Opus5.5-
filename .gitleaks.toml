@@ -1,0 +1,12 @@
+# gitleaks configuration for `pnpm secret-scan` (DELIVERY_CHECKLIST SG-2, TEST_PLAN TST-CI-01):
+# the default rule set, plus the public-by-design key prefix that QG-09 allows in client bundles.
+# Verified false positives already in history are pinned by fingerprint in `.gitleaksignore`.
+title = "Dijital Asistan secret scan"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Supabase publishable keys are public by design (QG-09 allowed public prefix sb_publishable_)"
+regexTarget = "match"
+regexes = ['''sb_publishable_[A-Za-z0-9_-]+''']

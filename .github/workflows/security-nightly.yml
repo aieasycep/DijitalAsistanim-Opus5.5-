@@ -1,0 +1,82 @@
+# DELIVERY_CHECKLIST SG-8 / TEST_PLAN §18 `security-nightly`: CodeQL (JS/TS) with a high-severity
+# gate and the OWASP ZAP baseline against the web and backoffice builds (TST-CI-08), and the
+# dependency audit with allow-list expiry (TST-CI-03). It must be green on the nightly run before a
+# release tag. Exceptions live in security/*-allowlist.json, each with a reason and an expiry date.
+name: security-nightly
+
+on:
+  schedule:
+    - cron: '23 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-nightly
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    name: dependency audit (TST-CI-03)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: ./.github/actions/setup
+        with:
+          turbo-cache-key: security-audit
+      - run: pnpm security:audit
+
+  codeql:
+    name: CodeQL JS/TS and high-severity gate (TST-CI-08)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      actions: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: github/codeql-action/init@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
+        with:
+          languages: javascript-typescript
+          build-mode: none
+          queries: security-extended
+          config-file: ./.github/codeql/codeql-config.yml
+      - uses: github/codeql-action/analyze@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
+        with:
+          category: /language:javascript-typescript
+          output: build/codeql
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .nvmrc
+      - run: node scripts/security/sarif-gate.ts build/codeql/*.sarif
+
+  dast:
+    name: ZAP baseline, web and backoffice (TST-CI-08)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: ./.github/actions/setup
+        with:
+          turbo-cache-key: security-dast
+      # Playwright starts each app exactly as its E2E suite does (production build, contract stub
+      # or mock); the specs use no browser, so no browser is installed.
+      - name: web
+        env:
+          DA_DAST: '1'
+        run: pnpm --filter @da/web exec playwright test e2e/dast.spec.ts --project chromium
+      - name: backoffice
+        if: success() || failure()
+        env:
+          DA_DAST: '1'
+        run: pnpm --filter @da/backoffice exec playwright test e2e/dast.spec.ts --project bo-contract
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: zap-baseline-reports
+          path: build/zap
+          if-no-files-found: warn
+          retention-days: 14

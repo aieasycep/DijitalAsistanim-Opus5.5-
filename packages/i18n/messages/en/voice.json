@@ -1,0 +1,51 @@
+{
+  "title": "Voice command",
+  "listening": "I'm listening…",
+  "processing": "Working it out…",
+  "tapToApprove": "Tap the card to approve.",
+  "continueWithText": "Continue with text",
+  "examples": {
+    "moveMeeting": "Move tomorrow's meeting 30 minutes later.",
+    "readBriefing": "Read today's briefing.",
+    "shouldReply": "Do I need to reply to Mehmet?"
+  },
+  "permission": {
+    "title": "Microphone access needed",
+    "body": "Voice commands need access to your microphone and speech recognition."
+  },
+  "notUnderstood": "I didn't catch that. Could you say it again?",
+  "kicker": "Voice mode",
+  "idle": "Tap to talk",
+  "answering": "Answering",
+  "tapToApproveSpoken": "To approve, tap Approve on the screen.",
+  "offline": "Questions can't be answered while you're offline.",
+  "noSpeech": "I couldn't hear you. Try again.",
+  "unavailable": "Voice input isn't available on this device.",
+  "network": "Connection problem. Try again.",
+  "interrupted": "Voice mode was interrupted.",
+  "askWithText": "Ask with text",
+  "readAnswer": "Read the answer",
+  "startListening": "Start talking",
+  "stopListening": "Stop",
+  "briefingGate": {
+    "title": "Listen to your briefing.",
+    "body": "Audio briefings are part of Pro. Reading your briefing is always free."
+  },
+  "chips": {
+    "today": "What's on today?",
+    "briefing": "Read my briefing.",
+    "tomorrow": "Am I busy tomorrow?"
+  },
+  "serverNotice": "On-device Turkish speech recognition isn't available on this device. Your voice is sent over a secure connection to our server to be transcribed and is deleted right away.",
+  "model": {
+    "missing": "The Turkish speech model isn't downloaded on this device. Download it to have your voice transcribed on your device.",
+    "download": "Download Turkish model",
+    "started": "The download has started. Voice input runs on your device when it finishes.",
+    "failed": "The model couldn't be downloaded. Try again later."
+  },
+  "install": {
+    "missing": "This device has no speech recognition service.",
+    "cta": "Install speech services",
+    "failed": "Couldn't open the store."
+  }
+}

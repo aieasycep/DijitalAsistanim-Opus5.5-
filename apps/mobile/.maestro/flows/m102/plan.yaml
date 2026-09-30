@@ -1,0 +1,28 @@
+appId: com.dijitalasistan.app.e2e
+name: 'E2E-M-10 · Plan'
+tags: [m102, android, ios, pro]
+env:
+  USER_KEY: u_pro
+  SCENARIO: canon_plan
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- runFlow: { file: ../../subflows/open-tab.yaml, env: { TAB: plan } }
+- extendedWaitUntil: { visible: { id: 'plan.screen' }, timeout: 30000 }
+- assertVisible: Mehmet Yılmaz
+- extendedWaitUntil: { visible: { id: 'plan.intel' }, timeout: 30000 }
+- tapOn: '${output.t.common.actions.schedule}'
+- extendedWaitUntil: { visible: { id: 'proposal.screen' }, timeout: 30000 }
+- tapOn: '${output.t.plan.proposal.changeTime}'
+- assertVisible: { id: 'freeSlots' }
+- tapOn: { id: 'freeSlots.slot.*', index: 1 }
+- runFlow: ../../subflows/approve-sheet.yaml
+- extendedWaitUntil: { visible: '${output.t.common.toast.addedToCalendar}', timeout: 60000 }
+- runFlow: { file: ../../subflows/open-tab.yaml, env: { TAB: plan } }
+- tapOn: { id: 'plan.segments' }
+- assertVisible: { id: 'plan.week' }
+- assertVisible: { id: 'plan.density' }

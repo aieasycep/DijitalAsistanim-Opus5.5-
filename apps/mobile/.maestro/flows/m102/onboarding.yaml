@@ -1,0 +1,85 @@
+appId: com.dijitalasistan.app.e2e
+name: 'E2E-M-01 · Onboarding'
+tags: [m102, android, ios, free]
+env:
+  USER_KEY: u_new
+  SCENARIO: none
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- assertVisible: '${output.t.common.app.tagline}'
+- tapOn: { id: 'intro.start' }
+- assertVisible: '${output.t.onboarding.noise.title}'
+- tapOn: { id: 'intro.next' }
+- tapOn: { id: 'intro.next' }
+- assertVisible: '${output.t.onboarding.control.title}'
+- tapOn: { id: 'intro.createAccount' }
+- assertVisible: { id: 'auth.signIn' }
+- assertVisible: '${output.t.auth.providers.google}'
+- assertVisible: '${output.t.auth.providers.email}'
+- tapOn: { id: 'auth.provider.email' }
+- tapOn: { id: 'auth.email.field' }
+- inputText: '${output.user.email}'
+- tapOn: { id: 'auth.email.send' }
+- runScript:
+    file: ../../scripts/harness.js
+    env: { ACTION: otp, EMAIL: '${output.user.email}' }
+- tapOn: { id: 'auth.code.input' }
+- inputText: '${output.otp.code}'
+- tapOn: { id: 'auth.code.verify' }
+- extendedWaitUntil: { visible: { id: 'onboarding.connectMail' }, timeout: 30000 }
+- assertVisible: '${output.t.onboarding.connect.title}'
+- tapOn: { id: 'connectMail.row.google' }
+- runFlow: ../../subflows/demo-consent.yaml
+- tapOn: { id: 'connectMail.continue' }
+- extendedWaitUntil: { visible: { id: 'onboarding.connectCalendar' }, timeout: 30000 }
+- tapOn: { id: 'connectCalendar.row.google' }
+- runFlow: ../../subflows/demo-consent.yaml
+- tapOn: { id: 'connectCalendar.continue' }
+- extendedWaitUntil: { visible: { id: 'onboarding.permissions' }, timeout: 30000 }
+- tapOn: { id: 'permissions.continue' }
+- extendedWaitUntil: { visible: { id: 'onboarding.personalization' }, timeout: 30000 }
+- assertVisible: '${output.t.onboarding.personalization.title}'
+- tapOn: { id: 'personalization.continue' }
+- extendedWaitUntil: { visible: { id: 'onboarding.schedule' }, timeout: 30000 }
+- assertVisible: '${output.t.onboarding.schedule.title}'
+- tapOn: { id: 'schedule.continue' }
+- extendedWaitUntil: { visible: { id: 'onboarding.vip' }, timeout: 30000 }
+- tapOn: { id: 'vip.skip' }
+- extendedWaitUntil: { visible: { id: 'onboarding.analysis' }, timeout: 30000 }
+- assertVisible: '${output.t.onboarding.analysis.title}'
+- extendedWaitUntil: { visible: { id: 'onboarding.ready' }, timeout: 60000 }
+- assertVisible: { id: 'ready.title' }
+- tapOn: { id: 'ready.continue' }
+- extendedWaitUntil: { visible: { id: 'onboarding.notifications' }, timeout: 30000 }
+- tapOn: { id: 'notifications.allow' }
+- runFlow:
+    when: { platform: Android }
+    commands:
+      - extendedWaitUntil: { visible: { id: 'onboarding.androidNi' }, timeout: 30000 }
+      - tapOn: { id: 'androidNi.skip' }
+- extendedWaitUntil: { visible: { id: 'tab.today' }, timeout: 60000 }
+- assertVisible: '${output.t.common.demo.banner}'
+- runScript:
+    file: ../../scripts/harness.js
+    env:
+      {
+        ACTION: state,
+        USER_KEY: '${USER_KEY}',
+        PROBE: 'onboarding',
+        FIELD: completed,
+        EXPECT: 'true',
+      }
+- runScript:
+    file: ../../scripts/harness.js
+    env:
+      {
+        ACTION: state,
+        USER_KEY: '${USER_KEY}',
+        PROBE: 'connected_accounts',
+        FIELD: count,
+        EXPECT: '2',
+      }

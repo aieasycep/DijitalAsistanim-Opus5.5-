@@ -1,0 +1,16 @@
+{
+  "title": "How should I treat this?",
+  "subtitle": "Your choice shapes future priorities",
+  "options": {
+    "not_important": "Not important",
+    "show_more": "Show this more often",
+    "make_vip": "Make VIP",
+    "stop_tracking": "Stop tracking"
+  },
+  "feedback": {
+    "correct": "Correct",
+    "notImportant": "Not important",
+    "thanks": "Thanks, I've learned from that."
+  },
+  "learningOff": "Learning is off; this choice affects only this card."
+}

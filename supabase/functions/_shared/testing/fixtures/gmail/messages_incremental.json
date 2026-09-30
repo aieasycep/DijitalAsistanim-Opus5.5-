@@ -1,0 +1,215 @@
+[
+  {
+    "id": "18f2a0c1d0000101",
+    "threadId": "18f2a0c1d0000101",
+    "labelIds": ["INBOX", "UNREAD", "IMPORTANT"],
+    "snippet": "Yunus merhaba, dünkü toplantının notlarını ekte paylaşıyorum. Burak",
+    "internalDate": "0",
+    "internal_offset_minutes": -5,
+    "sizeEstimate": 467,
+    "payload": {
+      "partId": "",
+      "mimeType": "multipart/alternative",
+      "filename": "",
+      "headers": [
+        {
+          "name": "From",
+          "value": "Burak Tan <burak.tan@example.com>"
+        },
+        {
+          "name": "To",
+          "value": "Yunus Demir <yunus.demir@example.com>"
+        },
+        {
+          "name": "Subject",
+          "value": "Toplantı notları"
+        },
+        {
+          "name": "Date",
+          "value": "Fri, 25 Sep 2026 08:15:00 +0300"
+        },
+        {
+          "name": "Message-ID",
+          "value": "<18f2a0c1d0000101@mail.example.com>"
+        }
+      ],
+      "body": {
+        "size": 0
+      },
+      "parts": [
+        {
+          "partId": "0",
+          "mimeType": "text/plain",
+          "filename": "",
+          "headers": [
+            {
+              "name": "Content-Type",
+              "value": "text/plain; charset=\"UTF-8\""
+            }
+          ],
+          "body": {
+            "size": 75,
+            "data": "WXVudXMgbWVyaGFiYSwgZMO8bmvDvCB0b3BsYW50xLFuxLFuIG5vdGxhcsSxbsSxIGVrdGUgcGF5bGHFn8SxeW9ydW0uIEJ1cmFr"
+          }
+        },
+        {
+          "partId": "1",
+          "mimeType": "text/html",
+          "filename": "",
+          "headers": [
+            {
+              "name": "Content-Type",
+              "value": "text/html; charset=\"UTF-8\""
+            }
+          ],
+          "body": {
+            "size": 88,
+            "data": "PHA-WXVudXMgbWVyaGFiYSwgZMO8bmvDvCB0b3BsYW50xLFuxLFuIG5vdGxhcsSxbsSxIGVrdGUgcGF5bGHFn8SxeW9ydW0uIEJ1cmFrPC9wPg"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "18f2a0c1d0000102",
+    "threadId": "18f2a0c1d0000102",
+    "labelIds": ["INBOX", "UNREAD", "IMPORTANT"],
+    "snippet": "Yunus Bey, bütçe onayını cuma gününe kadar verebilir misiniz? Deniz",
+    "internalDate": "0",
+    "internal_offset_minutes": -4,
+    "sizeEstimate": 467,
+    "payload": {
+      "partId": "",
+      "mimeType": "multipart/alternative",
+      "filename": "",
+      "headers": [
+        {
+          "name": "From",
+          "value": "Deniz Erol <deniz.erol@example.com>"
+        },
+        {
+          "name": "To",
+          "value": "Yunus Demir <yunus.demir@example.com>"
+        },
+        {
+          "name": "Subject",
+          "value": "Bütçe onayı"
+        },
+        {
+          "name": "Date",
+          "value": "Fri, 25 Sep 2026 08:15:00 +0300"
+        },
+        {
+          "name": "Message-ID",
+          "value": "<18f2a0c1d0000102@mail.example.com>"
+        }
+      ],
+      "body": {
+        "size": 0
+      },
+      "parts": [
+        {
+          "partId": "0",
+          "mimeType": "text/plain",
+          "filename": "",
+          "headers": [
+            {
+              "name": "Content-Type",
+              "value": "text/plain; charset=\"UTF-8\""
+            }
+          ],
+          "body": {
+            "size": 73,
+            "data": "WXVudXMgQmV5LCBiw7x0w6dlIG9uYXnEsW7EsSBjdW1hIGfDvG7DvG5lIGthZGFyIHZlcmViaWxpciBtaXNpbml6PyBEZW5peg"
+          }
+        },
+        {
+          "partId": "1",
+          "mimeType": "text/html",
+          "filename": "",
+          "headers": [
+            {
+              "name": "Content-Type",
+              "value": "text/html; charset=\"UTF-8\""
+            }
+          ],
+          "body": {
+            "size": 86,
+            "data": "PHA-WXVudXMgQmV5LCBiw7x0w6dlIG9uYXnEsW7EsSBjdW1hIGfDvG7DvG5lIGthZGFyIHZlcmViaWxpciBtaXNpbml6PyBEZW5pejwvcD4"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "18f2a0c1d0000103",
+    "threadId": "18f2a0c1d0000103",
+    "labelIds": ["INBOX", "UNREAD", "IMPORTANT"],
+    "snippet": "Sunum taslağını gözden geçirdim, küçük düzeltmeler var. Elif",
+    "internalDate": "0",
+    "internal_offset_minutes": -3,
+    "sizeEstimate": 460,
+    "payload": {
+      "partId": "",
+      "mimeType": "multipart/alternative",
+      "filename": "",
+      "headers": [
+        {
+          "name": "From",
+          "value": "Elif Arslan <elif.arslan@example.com>"
+        },
+        {
+          "name": "To",
+          "value": "Yunus Demir <yunus.demir@example.com>"
+        },
+        {
+          "name": "Subject",
+          "value": "Sunum taslağı"
+        },
+        {
+          "name": "Date",
+          "value": "Fri, 25 Sep 2026 08:15:00 +0300"
+        },
+        {
+          "name": "Message-ID",
+          "value": "<18f2a0c1d0000103@mail.example.com>"
+        }
+      ],
+      "body": {
+        "size": 0
+      },
+      "parts": [
+        {
+          "partId": "0",
+          "mimeType": "text/plain",
+          "filename": "",
+          "headers": [
+            {
+              "name": "Content-Type",
+              "value": "text/plain; charset=\"UTF-8\""
+            }
+          ],
+          "body": {
+            "size": 69,
+            "data": "U3VudW0gdGFzbGHEn8SxbsSxIGfDtnpkZW4gZ2XDp2lyZGltLCBrw7zDp8O8ayBkw7x6ZWx0bWVsZXIgdmFyLiBFbGlm"
+          }
+        },
+        {
+          "partId": "1",
+          "mimeType": "text/html",
+          "filename": "",
+          "headers": [
+            {
+              "name": "Content-Type",
+              "value": "text/html; charset=\"UTF-8\""
+            }
+          ],
+          "body": {
+            "size": 82,
+            "data": "PHA-U3VudW0gdGFzbGHEn8SxbsSxIGfDtnpkZW4gZ2XDp2lyZGltLCBrw7zDp8O8ayBkw7x6ZWx0bWVsZXIgdmFyLiBFbGlmPC9wPg"
+          }
+        }
+      ]
+    }
+  }
+]

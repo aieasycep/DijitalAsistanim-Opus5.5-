@@ -1,0 +1,28 @@
+appId: com.dijitalasistan.app.e2e
+name: 'E2E-M-15 · Capture'
+tags: [m102, android, ios, pro]
+env:
+  USER_KEY: u_pro
+  SCENARIO: canon
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- runFlow: { file: ../../subflows/open-tab.yaml, env: { TAB: today } }
+- tapOn: { id: 'today.capture' }
+- extendedWaitUntil: { visible: { id: 'screen.capture' }, timeout: 30000 }
+- assertVisible: '${output.t.capture.title}'
+- tapOn: { id: 'capture.text' }
+- inputText: 'Perşembe 15:00 Ayşe ile kahve, öncesinde raporu bitir. Çarşamba akşamı bana hatırlat.'
+- hideKeyboard
+- tapOn: { id: 'capture.analyze' }
+- extendedWaitUntil: { visible: { id: 'capture.results' }, timeout: 90000 }
+- tapOn: { id: 'capture.send' }
+- runFlow: ../../subflows/approve-sheet.yaml
+- extendedWaitUntil: { visible: { id: 'capture.success' }, timeout: 60000 }
+- runScript:
+    file: ../../scripts/harness.js
+    env: { ACTION: state, USER_KEY: '${USER_KEY}', PROBE: 'approvals_by_status' }

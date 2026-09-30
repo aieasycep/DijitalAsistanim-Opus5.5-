@@ -1,0 +1,98 @@
+{
+  "title": "When should I remind you?",
+  "presets": {
+    "before_30m": "30 minutes before",
+    "before_1h": "1 hour before",
+    "this_evening": "This evening",
+    "tomorrow_morning": "Tomorrow morning",
+    "smart": "At a good time",
+    "custom": "Pick a time"
+  },
+  "presetWithTime": "{preset} · {time}",
+  "smart": {
+    "explainer": "Dijital Asistan picks a good time based on the gaps in your calendar.",
+    "resolved": "Based on your calendar: {time}",
+    "reason": "chosen from your free time and working hours",
+    "resolving": "Finding a good time…",
+    "noSlot": "I couldn't find a free slot today; choose another option."
+  },
+  "unavailable": {
+    "past": "This time has passed",
+    "quietHours": "Falls in quiet hours"
+  },
+  "existing": "Current: {time} · Change",
+  "destination": {
+    "label": "Where should it be set?",
+    "inApp": "Dijital Asistan notification",
+    "row": "Where: {destination}",
+    "inAppMeta": "This device and your other devices",
+    "apple": "Apple Reminders",
+    "appleMeta": "Stored on the device",
+    "appleDenied": "Not allowed · Settings",
+    "googleWith": "Google Tasks · {email}",
+    "googleMeta": "Only the date is stored; Google doesn't show a time alert",
+    "microsoftWith": "Microsoft To Do · {email}",
+    "microsoftMeta": "Added to your Microsoft To Do list",
+    "connect": "Connect an account",
+    "notConnected": "Not connected",
+    "makeDefault": "Make default"
+  },
+  "confirm": "Set reminder",
+  "set": "Reminder set · {when}",
+  "cancelled": "Reminder cancelled",
+  "snoozeTitle": "Snooze until when?",
+  "notificationsOff": "Notifications are off, so the reminder won't arrive.",
+  "notificationActions": {
+    "snooze": "Snooze 1 hour",
+    "done": "Done"
+  },
+  "toasts": {
+    "pendingSync": "Saved · Waiting to sync",
+    "queued": "Reminder set · {when} · Waiting to sync",
+    "snoozed": "Snoozed · {when}"
+  },
+  "custom": {
+    "title": "Pick a time",
+    "date": "Date",
+    "time": "Time",
+    "hour": "Hour",
+    "minute": "Minute",
+    "increase": "Increase {unit}",
+    "decrease": "Decrease {unit}",
+    "past": "You can't pick a time in the past.",
+    "tooFar": "You can pick up to 1 year ahead.",
+    "choose": "Use this time"
+  },
+  "meta": {
+    "noCalendar": "No calendar connected",
+    "offline": "Connection required",
+    "smartFailed": "Couldn't work it out right now · Try again",
+    "noTime": "No time",
+    "past": "Passed",
+    "quiet": "{time} · during quiet hours"
+  },
+  "cta": {
+    "approval": "Send for approval",
+    "snoozePlain": "Snooze",
+    "snooze": "Snooze · {time}",
+    "remind": "Set reminder · {time}"
+  },
+  "snoozeNotify": "Notify me when it's time",
+  "permissionDenied": "Notifications are off; the reminder is saved but can't be shown on this device.",
+  "reason": {
+    "before_anchor": "{minutes} minutes before · starts at {anchor_time}",
+    "evening_time": "This evening · {time}",
+    "morning_time": "Tomorrow morning · {time}",
+    "calendar_slot": "Based on your calendar: {time}",
+    "custom": "Your chosen time · {time}"
+  },
+  "exactAlarm": {
+    "warning": "Turn on “Alarms & reminders” so I can remind you on time. Without it, reminders may arrive a few minutes late.",
+    "cta": "Turn On",
+    "region": "Reminder timing"
+  },
+  "timeSensitive": {
+    "title": "Time Sensitive Notifications are off",
+    "body": "Reminder notifications may be held by Focus or the Scheduled Summary."
+  }
+}

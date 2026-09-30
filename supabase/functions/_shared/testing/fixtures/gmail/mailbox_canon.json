@@ -1,0 +1,365 @@
+[
+  {
+    "id": "18f2a0c1d0000001",
+    "threadId": "18f2a0c1d0000001",
+    "labelIds": ["INBOX", "UNREAD", "IMPORTANT"],
+    "snippet": "Merhaba Yunus Bey, revize teklifi bugün saat 17:00’ye kadar iletebilir misiniz? Müşteri on",
+    "internalDate": "0",
+    "internal_offset_minutes": -45,
+    "sizeEstimate": 522,
+    "payload": {
+      "partId": "",
+      "mimeType": "multipart/alternative",
+      "filename": "",
+      "headers": [
+        {
+          "name": "From",
+          "value": "Ahmet Yılmaz <ahmet.yilmaz@kuzeylojistik.example>"
+        },
+        {
+          "name": "To",
+          "value": "Yunus Demir <yunus.demir@example.com>"
+        },
+        {
+          "name": "Subject",
+          "value": "Re: Eylül teklifi – revize"
+        },
+        {
+          "name": "Date",
+          "value": "Fri, 25 Sep 2026 08:15:00 +0300"
+        },
+        {
+          "name": "Message-ID",
+          "value": "<18f2a0c1d0000001@mail.example.com>"
+        }
+      ],
+      "body": {
+        "size": 0
+      },
+      "parts": [
+        {
+          "partId": "0",
+          "mimeType": "text/plain",
+          "filename": "",
+          "headers": [
+            {
+              "name": "Content-Type",
+              "value": "text/plain; charset=\"UTF-8\""
+            }
+          ],
+          "body": {
+            "size": 130,
+            "data": "TWVyaGFiYSBZdW51cyBCZXksIHJldml6ZSB0ZWtsaWZpIGJ1Z8O8biBzYWF0IDE3OjAw4oCZeWUga2FkYXIgaWxldGViaWxpciBtaXNpbml6PyBNw7zFn3Rlcmkgb25hecSxIGJla2xpeW9yLiBUZcWfZWtrw7xybGVyLCBBaG1ldA"
+          }
+        },
+        {
+          "partId": "1",
+          "mimeType": "text/html",
+          "filename": "",
+          "headers": [
+            {
+              "name": "Content-Type",
+              "value": "text/html; charset=\"UTF-8\""
+            }
+          ],
+          "body": {
+            "size": 143,
+            "data": "PHA-TWVyaGFiYSBZdW51cyBCZXksIHJldml6ZSB0ZWtsaWZpIGJ1Z8O8biBzYWF0IDE3OjAw4oCZeWUga2FkYXIgaWxldGViaWxpciBtaXNpbml6PyBNw7zFn3Rlcmkgb25hecSxIGJla2xpeW9yLiBUZcWfZWtrw7xybGVyLCBBaG1ldDwvcD4"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "18f2a0c1d0000002",
+    "threadId": "18f2a0c1d0000002",
+    "labelIds": ["INBOX", "UNREAD", "IMPORTANT"],
+    "snippet": "Yunus Bey merhaba, ekim teslimatının tarihini netleştirebilir miyiz? Sözleşme de hukuk inc",
+    "internalDate": "0",
+    "internal_offset_minutes": -900,
+    "sizeEstimate": 522,
+    "payload": {
+      "partId": "",
+      "mimeType": "multipart/alternative",
+      "filename": "",
+      "headers": [
+        {
+          "name": "From",
+          "value": "Mehmet Yılmaz <mehmet@yilmazendustri.example>"
+        },
+        {
+          "name": "To",
+          "value": "Yunus Demir <yunus.demir@example.com>"
+        },
+        {
+          "name": "Subject",
+          "value": "Ekim teslimatı hakkında"
+        },
+        {
+          "name": "Date",
+          "value": "Fri, 25 Sep 2026 08:15:00 +0300"
+        },
+        {
+          "name": "Message-ID",
+          "value": "<18f2a0c1d0000002@mail.example.com>"
+        }
+      ],
+      "body": {
+        "size": 0
+      },
+      "parts": [
+        {
+          "partId": "0",
+          "mimeType": "text/plain",
+          "filename": "",
+          "headers": [
+            {
+              "name": "Content-Type",
+              "value": "text/plain; charset=\"UTF-8\""
+            }
+          ],
+          "body": {
+            "size": 129,
+            "data": "WXVudXMgQmV5IG1lcmhhYmEsIGVraW0gdGVzbGltYXTEsW7EsW4gdGFyaWhpbmkgbmV0bGXFn3RpcmViaWxpciBtaXlpej8gU8O2emxlxZ9tZSBkZSBodWt1ayBpbmNlbGVtZXNpbmRlLiBTYXlnxLFsYXLEsW1sYSwgTWVobWV0"
+          }
+        },
+        {
+          "partId": "1",
+          "mimeType": "text/html",
+          "filename": "",
+          "headers": [
+            {
+              "name": "Content-Type",
+              "value": "text/html; charset=\"UTF-8\""
+            }
+          ],
+          "body": {
+            "size": 142,
+            "data": "PHA-WXVudXMgQmV5IG1lcmhhYmEsIGVraW0gdGVzbGltYXTEsW7EsW4gdGFyaWhpbmkgbmV0bGXFn3RpcmViaWxpciBtaXlpej8gU8O2emxlxZ9tZSBkZSBodWt1ayBpbmNlbGVtZXNpbmRlLiBTYXlnxLFsYXLEsW1sYSwgTWVobWV0PC9wPg"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "18f2a0c1d0000003",
+    "threadId": "18f2a0c1d0000003",
+    "labelIds": ["INBOX", "UNREAD", "IMPORTANT"],
+    "snippet": "Yunus, sözleşmenin 4. maddesi için yorumunu yarın 12:00’ye kadar bekliyorum. Selin",
+    "internalDate": "0",
+    "internal_offset_minutes": -120,
+    "sizeEstimate": 482,
+    "payload": {
+      "partId": "",
+      "mimeType": "multipart/alternative",
+      "filename": "",
+      "headers": [
+        {
+          "name": "From",
+          "value": "Selin Kaya <selin.kaya@example.com>"
+        },
+        {
+          "name": "To",
+          "value": "Yunus Demir <yunus.demir@example.com>"
+        },
+        {
+          "name": "Subject",
+          "value": "Sözleşme madde 4"
+        },
+        {
+          "name": "Date",
+          "value": "Fri, 25 Sep 2026 08:15:00 +0300"
+        },
+        {
+          "name": "Message-ID",
+          "value": "<18f2a0c1d0000003@mail.example.com>"
+        }
+      ],
+      "body": {
+        "size": 0
+      },
+      "parts": [
+        {
+          "partId": "0",
+          "mimeType": "text/plain",
+          "filename": "",
+          "headers": [
+            {
+              "name": "Content-Type",
+              "value": "text/plain; charset=\"UTF-8\""
+            }
+          ],
+          "body": {
+            "size": 88,
+            "data": "WXVudXMsIHPDtnpsZcWfbWVuaW4gNC4gbWFkZGVzaSBpw6dpbiB5b3J1bXVudSB5YXLEsW4gMTI6MDDigJl5ZSBrYWRhciBiZWtsaXlvcnVtLiBTZWxpbg"
+          }
+        },
+        {
+          "partId": "1",
+          "mimeType": "text/html",
+          "filename": "",
+          "headers": [
+            {
+              "name": "Content-Type",
+              "value": "text/html; charset=\"UTF-8\""
+            }
+          ],
+          "body": {
+            "size": 101,
+            "data": "PHA-WXVudXMsIHPDtnpsZcWfbWVuaW4gNC4gbWFkZGVzaSBpw6dpbiB5b3J1bXVudSB5YXLEsW4gMTI6MDDigJl5ZSBrYWRhciBiZWtsaXlvcnVtLiBTZWxpbjwvcD4"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "18f2a0c1d0000004",
+    "threadId": "18f2a0c1d0000004",
+    "labelIds": ["INBOX", "UNREAD", "CATEGORY_UPDATES"],
+    "snippet": "Sayın müşterimiz, 1.842 TL tutarındaki elektrik faturanızın son ödeme tarihi 30 Eylül 2026",
+    "internalDate": "0",
+    "internal_offset_minutes": -300,
+    "sizeEstimate": 495,
+    "payload": {
+      "partId": "",
+      "mimeType": "multipart/alternative",
+      "filename": "",
+      "headers": [
+        {
+          "name": "From",
+          "value": "CK Enerji <bildirim@ckenerji.example>"
+        },
+        {
+          "name": "To",
+          "value": "Yunus Demir <yunus.demir@example.com>"
+        },
+        {
+          "name": "Subject",
+          "value": "Elektrik faturanız hazır"
+        },
+        {
+          "name": "Date",
+          "value": "Fri, 25 Sep 2026 08:15:00 +0300"
+        },
+        {
+          "name": "Message-ID",
+          "value": "<18f2a0c1d0000004@mail.example.com>"
+        }
+      ],
+      "body": {
+        "size": 0
+      },
+      "parts": [
+        {
+          "partId": "0",
+          "mimeType": "text/plain",
+          "filename": "",
+          "headers": [
+            {
+              "name": "Content-Type",
+              "value": "text/plain; charset=\"UTF-8\""
+            }
+          ],
+          "body": {
+            "size": 106,
+            "data": "U2F5xLFuIG3DvMWfdGVyaW1peiwgMS44NDIgVEwgdHV0YXLEsW5kYWtpIGVsZWt0cmlrIGZhdHVyYW7EsXrEsW4gc29uIMO2ZGVtZSB0YXJpaGkgMzAgRXlsw7xsIDIwMjbigJlkxLFyLg"
+          }
+        },
+        {
+          "partId": "1",
+          "mimeType": "text/html",
+          "filename": "",
+          "headers": [
+            {
+              "name": "Content-Type",
+              "value": "text/html; charset=\"UTF-8\""
+            }
+          ],
+          "body": {
+            "size": 119,
+            "data": "PHA-U2F5xLFuIG3DvMWfdGVyaW1peiwgMS44NDIgVEwgdHV0YXLEsW5kYWtpIGVsZWt0cmlrIGZhdHVyYW7EsXrEsW4gc29uIMO2ZGVtZSB0YXJpaGkgMzAgRXlsw7xsIDIwMjbigJlkxLFyLjwvcD4"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "18f2a0c1d0000005",
+    "threadId": "18f2a0c1d0000005",
+    "labelIds": ["INBOX", "CATEGORY_PROMOTIONS"],
+    "snippet": "Tüm ürünlerde %50 indirim! Abonelikten çıkmak için tıklayın.",
+    "internalDate": "0",
+    "internal_offset_minutes": -200,
+    "sizeEstimate": 460,
+    "payload": {
+      "partId": "",
+      "mimeType": "multipart/alternative",
+      "filename": "",
+      "headers": [
+        {
+          "name": "From",
+          "value": "Kampanya <kampanya@indirim.example>"
+        },
+        {
+          "name": "To",
+          "value": "Yunus Demir <yunus.demir@example.com>"
+        },
+        {
+          "name": "Subject",
+          "value": "Bu hafta sonu %50 indirim"
+        },
+        {
+          "name": "Date",
+          "value": "Fri, 25 Sep 2026 08:15:00 +0300"
+        },
+        {
+          "name": "Message-ID",
+          "value": "<18f2a0c1d0000005@mail.example.com>"
+        },
+        {
+          "name": "List-Unsubscribe",
+          "value": "<mailto:unsub@indirim.example>"
+        },
+        {
+          "name": "Precedence",
+          "value": "bulk"
+        }
+      ],
+      "body": {
+        "size": 0
+      },
+      "parts": [
+        {
+          "partId": "0",
+          "mimeType": "text/plain",
+          "filename": "",
+          "headers": [
+            {
+              "name": "Content-Type",
+              "value": "text/plain; charset=\"UTF-8\""
+            }
+          ],
+          "body": {
+            "size": 68,
+            "data": "VMO8bSDDvHLDvG5sZXJkZSAlNTAgaW5kaXJpbSEgQWJvbmVsaWt0ZW4gw6fEsWttYWsgacOnaW4gdMSxa2xhecSxbi4"
+          }
+        },
+        {
+          "partId": "1",
+          "mimeType": "text/html",
+          "filename": "",
+          "headers": [
+            {
+              "name": "Content-Type",
+              "value": "text/html; charset=\"UTF-8\""
+            }
+          ],
+          "body": {
+            "size": 81,
+            "data": "PHA-VMO8bSDDvHLDvG5sZXJkZSAlNTAgaW5kaXJpbSEgQWJvbmVsaWt0ZW4gw6fEsWttYWsgacOnaW4gdMSxa2xhecSxbi48L3A-"
+          }
+        }
+      ]
+    }
+  }
+]

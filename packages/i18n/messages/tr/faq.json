@@ -1,0 +1,148 @@
+{
+  "title": "Sık sorulan sorular",
+  "featured": "Öne çıkanlar",
+  "searchHint": "Yardımda ara",
+  "noResults": {
+    "title": "Aradığını bulamadım.",
+    "body": "Farklı bir kelime dene ya da bize yaz."
+  },
+  "goToSetting": "Ayara git",
+  "categories": {
+    "start": "Başlarken",
+    "accounts": "Hesaplar ve bağlantılar",
+    "privacy": "Gizlilik ve güvenlik",
+    "billing": "Abonelik ve davet",
+    "data": "Verilerin ve hesabın",
+    "trouble": "Sorun giderme"
+  },
+  "items": {
+    "what_is": {
+      "q": "Dijital Asistan nedir?",
+      "a": "Mailini, takvimini ve açık işlerini anlayıp her gün sana kısa bir brifing hazırlayan kişisel bir komuta merkezidir. Bir sohbet botu değildir: sen sormadan, bugün bilmen gerekenleri öne çıkarır."
+    },
+    "platforms": {
+      "q": "Hangi cihazlarda çalışır?",
+      "a": "iPhone ve Android telefonlarda. Bu web sitesi bilgi, destek ve veri silme talepleri içindir; web üzerinden kullanılan bir uygulama yoktur."
+    },
+    "languages": {
+      "q": "Hangi dillerde kullanılabilir?",
+      "a": "Türkçe ve İngilizce."
+    },
+    "first_analysis": {
+      "q": "Hesabımı bağladıktan sonra ne olur?",
+      "a": "İlk analiz son 72 saatini inceler; kaç mail geldiğini, kaçının önemli olduğunu, takviminde neler olduğunu ve bekleyen takipleri gösterir. Sonra brifingin her gün seçtiğin saatte hazırlanır."
+    },
+    "briefing_time": {
+      "q": "Brifing ne zaman hazırlanır?",
+      "a": "Varsayılan olarak 08:00'de; saati Brifing Ayarları'ndan değiştirebilirsin. Pro'da öğle (13:00) ve akşam (19:00) brifingleri de var; öğle nabzı yalnızca sabahtan beri önemli bir gelişme olduysa gelir."
+    },
+    "integrations": {
+      "q": "Hangi hesapları bağlayabilirim?",
+      "a": "Gmail ve Outlook (Microsoft 365, Outlook.com) mail hesaplarını; Google Takvim, Outlook Takvim, iPhone'da Apple Takvim ve Android'de cihaz takvimini; Google Tasks, Microsoft To Do ve iPhone'da Anımsatıcılar'ı. Ücretsiz planda {mail} mail hesabı ve {cal} takvim, Pro'da birden fazla hesap bağlanabilir."
+    },
+    "login_vs_connect": {
+      "q": "Giriş yaptığım hesapla bağladığım hesap aynı mı olmalı?",
+      "a": "Hayır. Uygulamaya Apple, Google, Microsoft ya da e-posta koduyla giriş yapabilirsin; mail ve takvim bağlantıları ayrıca yapılır. Örneğin Apple ile giriş yapıp Gmail hesabını bağlayabilirsin."
+    },
+    "disconnect": {
+      "q": "Bir hesabın bağlantısını nasıl kaldırırım?",
+      "a": "Profil › Bağlantılar › hesabı seç › Bağlantıyı kaldır. Google erişimi otomatik olarak geri alınır. Microsoft, uygulamaların kendi erişimlerini geri almasına izin vermediği için Microsoft hesap ayarlarından da izni kaldırmanı öneririz."
+    },
+    "admin_consent": {
+      "q": "İş hesabımı bağlarken “yönetici onayı gerekiyor” uyarısı alıyorum.",
+      "a": "Bazı kuruluşlar, çalışanlarının uygulamalara Microsoft 365 verisi için izin vermesini kısıtlar. Kuruluşunun BT yöneticisi <adminConsent>bu bağlantıyla</adminConsent> Dijital Asistan'a kuruluş genelinde izin verebilir; ardından uygulamada “Yeniden Bağlan”a dokun. Yönetici bu izni Microsoft Entra yönetim merkezinden istediği an kaldırabilir."
+    },
+    "reads_mail": {
+      "q": "Maillerimi kim okuyor?",
+      "a": "Maillerin, brifing ve öneriler hazırlamak için otomatik olarak analiz edilir. Mail içeriğinin tamamı saklanmadığı için çalışanlarımız maillerinin tamamını göremez. Destek ekibi yalnızca bir destek talebini çözmek için; süreli, gerekçeli ve kayıt altına alınan bir erişimle konu, gönderen ve özet gibi sınırlı bilgileri görebilir."
+    },
+    "storage": {
+      "q": "Maillerimin kopyası saklanıyor mu?",
+      "a": "Mail içeriğinin tamamı saklanmaz; yalnızca özetler, kısa alıntılar ve analiz sonuçları saklama süren boyunca tutulur. Konu, gönderen ve en fazla 200 karakterlik önizleme de saklanır; orijinal maili açtığında hesabından anlık getirilir."
+    },
+    "encryption": {
+      "q": "Verilerim şifreleniyor mu?",
+      "a": "Evet. Veriler aktarım sırasında ve saklanırken şifrelenir. Mail ve takvim hesaplarına erişim anahtarların ayrıca şifrelenir ve yalnızca sunucularımızda, gerektiği anda çözülür. Brifing ve analiz hazırlayabilmek için verilerin sunucularımızda işlenir; bu yüzden verilerini yalnızca senin cihazının çözebildiği bir şifreleme vaat etmiyoruz."
+    },
+    "training": {
+      "q": "Verilerim yapay zekâ eğitiminde kullanılıyor mu?",
+      "a": "Hayır. Mail içeriklerin ve diğer verilerin yapay zekâ modellerini eğitmek için kullanılmaz; çalıştığımız AI sağlayıcıları da bu verilerle model eğitmez."
+    },
+    "ads": {
+      "q": "Verilerim reklam için kullanılıyor mu?",
+      "a": "Hayır. Verilerin reklam amacıyla satılmaz ve reklam hedeflemesi için kullanılmaz."
+    },
+    "approval": {
+      "q": "Uygulama benim adıma mail gönderebilir mi?",
+      "a": "Yalnızca sen onaylarsan. Yanıt taslakları, takvim değişiklikleri ve görevler önce sana gösterilir; ne yapılacağını ve nereye uygulanacağını görüp Onayla, Düzenle ya da Reddet'i seçersin. Sesli komutla onay verilmez; onaylamak için karta dokunman gerekir."
+    },
+    "retention": {
+      "q": "Verilerim ne kadar saklanır?",
+      "a": "Analiz sonuçları varsayılan olarak 90 gün saklanır; bunu 30 gün, 1 yıl ya da sen silene kadar olarak değiştirebilirsin. Ayrıntılar <privacy>Gizlilik Politikası</privacy>'nda."
+    },
+    "where": {
+      "q": "Verilerim nerede tutuluyor?",
+      "a": "Veritabanımız AB'de (Frankfurt). AI analizi ABD'deki alt işleyicilerimizde yapılır; bu aktarımlar için gerekli sözleşmesel güvenceleri uygularız."
+    },
+    "android_notifications": {
+      "q": "Telefon bildirimleri zekâsı nedir?",
+      "a": "Yalnızca Android'de, açıkça etkinleştirirsen çalışan bir Pro özelliğidir. Bildirim içerikleri cihazında işlenir; yalnızca çıkarılan bilgiler (ör. kargo durumu, tutar, tarih) hesabına kaydedilir. Doğrulama kodları ve güvenlik uygulamaları her zaman hariç tutulur. Hangi uygulamaların okunacağını sen seçersin. iOS buna izin vermediği için iPhone'da bu özellik yoktur."
+    },
+    "security_report": {
+      "q": "Bir güvenlik açığı buldum.",
+      "a": "Lütfen guvenlik@dijitalasistan.app adresine yaz. Bildirimini inceleyip sana dönüş yaparız; lütfen başka kullanıcıların verilerine erişmeye çalışma."
+    },
+    "free_vs_pro": {
+      "q": "Ücretsiz planda neler var?",
+      "a": "{mail} mail hesabı, {cal} takvim, sabah brifingi, önemli mailler, Bugün ekranı, AI yanıt taslakları ve günde {n} AI analizi. Pro; birden fazla hesap, öğle ve akşam brifingleri, toplantı hazırlığı, akıllı takip ve taahhütler, sesli brifing, AI hafıza, VIP kişiler, gelişmiş planlama, evrensel yakalama ve Android'de telefon bildirimleri zekâsını ekler. Pro'da AI kullanımı adil kullanım ilkesine tabidir."
+    },
+    "billing": {
+      "q": "Nasıl öderim, nasıl iptal ederim?",
+      "a": "Pro uygulama içinden App Store veya Google Play üzerinden satın alınır ve dönem sonunda otomatik yenilenir. İptal için iPhone'da Ayarlar › [adın] › Abonelikler; Android'de Google Play › Profil › Ödemeler ve abonelikler › Abonelikler. İptal edersen Pro dönem sonuna kadar sürer."
+    },
+    "trial": {
+      "q": "Ücretsiz deneme var mı?",
+      "a": "Mağazada bir deneme teklifi tanımlıysa ve uygunsan, satın alma ekranında deneme süresi ve ne zaman ücretlendirileceğin açıkça gösterilir. Deneme için mağaza hesabında geçerli bir ödeme yöntemi gerekebilir."
+    },
+    "restore": {
+      "q": "Telefon değiştirdim; Pro'm nasıl geri gelir?",
+      "a": "Aynı Dijital Asistan hesabıyla giriş yap; Pro otomatik tanınır. Gerekirse Abonelik ekranındaki “Satın alımları geri yükle”ye dokun."
+    },
+    "refund": {
+      "q": "İade alabilir miyim?",
+      "a": "Satın alımları Apple veya Google yaptığı için iadeler ilgili mağazanın sürecine tabidir: Apple için reportaproblem.apple.com, Google Play için Play Store sipariş geçmişin."
+    },
+    "referral": {
+      "q": "Davet programı nasıl çalışır?",
+      "a": "Davet bağlantını paylaş. Arkadaşın kaydolduktan sonraki {window} gün içinde kodunu ekler, bir hesap bağlar ve ilk brifingini alırsa (en erken kayıttan 48 saat sonra) ikiniz de {days} gün Pro kazanırsınız. Yılda en fazla {cap} davet ödülü kazanılabilir."
+    },
+    "pro_ends": {
+      "q": "Pro sona ererse verilerime ne olur?",
+      "a": "Verilerin silinmez. Ücretsiz planın sınırları geçerli olur; Pro özellikleri yeniden abone olana kadar kapanır."
+    },
+    "export": {
+      "q": "Verilerimi nasıl dışa aktarırım?",
+      "a": "Profil › Gizlilik ve Güvenlik › Verilerimi dışa aktar. Dosya hazır olduğunda uygulamada 24 saat geçerli bir indirme bağlantısı görünür."
+    },
+    "delete_account": {
+      "q": "Hesabımı nasıl silerim?",
+      "a": "Uygulamada Profil › Gizlilik ve Güvenlik › Hesabımı sil adımlarını izle ya da dijitalasistan.app/data-deletion adresinden e-posta doğrulamasıyla talep oluştur. Silme genellikle 24 saat içinde tamamlanır. App Store veya Google Play aboneliğin otomatik olarak iptal olmaz."
+    },
+    "delete_history": {
+      "q": "Hesabımı silmeden geçmişimi silebilir miyim?",
+      "a": "Evet: Profil › Gizlilik ve Güvenlik › Analiz geçmişini sil. Özetler, öncelik kararları, asistan konuşmaları ve hafıza dizini silinir; bağlantıların ve ayarların kalır."
+    },
+    "reconnect": {
+      "q": "“Bağlantı yenilenmeli” uyarısı görüyorum.",
+      "a": "Hesabının erişim izninin süresi dolmuş ya da izin geri alınmış olabilir. Uyarıdaki “Yeniden Bağlan”a dokun; yeniden bağlanana kadar yeni mailler analiz edilmez."
+    },
+    "notifications": {
+      "q": "Bildirimler neden az geliyor?",
+      "a": "Sadece önemli olduğunda haber veririz. Sessiz saatlerde, izin verdiğin istisnalar dışında bildirim gelmez. Kategorileri ve kilit ekranında ne görüneceğini Bildirim Ayarları'ndan seçebilirsin."
+    },
+    "wrong_priority": {
+      "q": "AI bir maili yanlış önceliklendirdi.",
+      "a": "Kartta “Önemli değil”e dokunarak ya da “Bu nereden çıktı?” ile düzeltebilir, kalıcı öncelik kuralları oluşturabilirsin. Kendi kuralların her zaman AI tahmininden önce gelir."
+    }
+  }
+}

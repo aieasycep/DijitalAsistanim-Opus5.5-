@@ -1,0 +1,22 @@
+node_modules
+.turbo
+.next
+dist
+coverage
+pnpm-lock.yaml
+**/generated/**
+docs/
+design/reference/
+supabase/.temp
+apps/mobile/ios
+apps/mobile/android
+# Rewritten by @bacons/apple-targets on every prebuild (widget colour sets, T-8.25).
+apps/mobile/targets/*/Assets.xcassets
+.expo
+.expo-export
+.claude/
+# Next.js regenerates this file on every build and typegen
+**/next-env.d.ts
+quality-gate.json
+# Quality-gate fixtures hold deliberately bad snippets (one finding each).
+scripts/quality-gate/fixtures/

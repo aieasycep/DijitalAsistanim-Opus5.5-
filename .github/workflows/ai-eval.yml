@@ -1,0 +1,74 @@
+name: ai-eval
+
+# TEST_PLAN §13 `ai-eval` / AI_PIPELINE_PLAN §5.4 "Gate run", §16.3: nightly and on demand. First the
+# fixture baseline (`pnpm ai:eval`: prompt-seed drift + the golden sets on the fixture provider),
+# then the live gate run (`pnpm ai:eval:live`): every eval suite against the active prompt version
+# and every configured target of the staging project, recorded on `prompt_versions.eval_report` /
+# `eval_passed` and `ai_model_config.eval_status` like the `ai_eval` job (backoffice "Run eval").
+#
+# External credential required (the `staging` environment): SUPABASE_URL, SUPABASE_SECRET_KEY and
+# the provider keys the configured targets use (ANTHROPIC_API_KEY, OPENAI_API_KEY; VOYAGE_API_KEY for
+# embedding routes). A missing one fails the run with "External credential required" and the names;
+# nothing is skipped silently. A failed gate fails the run.
+
+on:
+  schedule:
+    - cron: '37 1 * * *'
+  workflow_dispatch:
+    inputs:
+      suites:
+        description: Prompt keys to evaluate, comma-separated (empty = every suite)
+        type: string
+        default: ''
+      dry_run:
+        description: Run and report without recording the results
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ai-eval
+  cancel-in-progress: false
+
+jobs:
+  eval:
+    name: ai-eval (fixture baseline + live gate run)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    environment: staging
+    env:
+      TURBO_TELEMETRY_DISABLED: '1'
+      APP_ENV: staging
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      VOYAGE_API_KEY: ${{ secrets.VOYAGE_API_KEY }}
+      DEPLOY_ID: ai-eval-${{ github.run_id }}
+      AI_EVAL_SUITES: ${{ inputs.suites }}
+      AI_EVAL_DRY_RUN: ${{ inputs.dry_run && 'true' || 'false' }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: ./.github/actions/setup
+        with:
+          turbo-cache-key: ai-eval
+
+      - name: Fixture baseline (prompt drift + golden sets on the fixture provider)
+        run: pnpm ai:eval
+
+      - name: Live gate run (staging routes, real providers)
+        run: |
+          set -o pipefail
+          pnpm --silent ai:eval:live | tee "$RUNNER_TEMP/ai-eval.txt"
+
+      - name: Report
+        if: always()
+        run: |
+          {
+            echo '### ai-eval'
+            echo '```'
+            if [[ -f "$RUNNER_TEMP/ai-eval.txt" ]]; then grep -v '^::' "$RUNNER_TEMP/ai-eval.txt"; else echo 'the live run did not start'; fi
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

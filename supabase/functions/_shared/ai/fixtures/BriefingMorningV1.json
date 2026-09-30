@@ -1,0 +1,32 @@
+{
+  "schema": "BriefingMorningV1",
+  "prompt_keys": ["briefing_morning"],
+  "default": {
+    "narrative": [
+      {
+        "text_tr": "Bugün 3 önceliğin var; ilki 17:00’deki teklif.",
+        "refs": ["i1", "s1"]
+      },
+      {
+        "text_tr": "Öğleden sonra takvimin sakin.",
+        "refs": ["s2"]
+      }
+    ],
+    "overview_spoken_tr": "Günaydın, bugün 3 önceliğin var.",
+    "overview_refs": ["s1"],
+    "section_spoken": [
+      {
+        "section": "priorities",
+        "text_tr": "İlk öncelik 17:00’deki teklif.",
+        "refs": ["i1"]
+      }
+    ],
+    "priority_reasons": [
+      {
+        "ref": "i1",
+        "why_tr": "Bugün 17:00’ye kadar istendi."
+      }
+    ]
+  },
+  "by_input": {}
+}

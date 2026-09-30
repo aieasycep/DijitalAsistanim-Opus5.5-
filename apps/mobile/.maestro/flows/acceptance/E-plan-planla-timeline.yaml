@@ -1,0 +1,25 @@
+appId: com.dijitalasistan.app.e2e
+name: 'E2E-E · Plan "Planla" → proposal → timeline'
+tags: [acceptance, android, ios, pro]
+env:
+  USER_KEY: u_pro
+  SCENARIO: canon_plan
+onFlowStart:
+  - runScript:
+      file: ../../scripts/harness.js
+      env: { ACTION: seed, USER_KEY: '${USER_KEY}', SCENARIO: '${SCENARIO}' }
+---
+- launchApp: { clearState: true, permissions: { notifications: allow } }
+- runFlow: ../../subflows/sign-in-otp.yaml
+- runFlow: { file: ../../subflows/open-tab.yaml, env: { TAB: plan } }
+- extendedWaitUntil: { visible: { id: 'plan.intel' }, timeout: 30000 }
+- tapOn: '${output.t.common.actions.schedule}'
+- extendedWaitUntil: { visible: { id: 'proposal.screen' }, timeout: 30000 }
+- tapOn: '${output.t.approvals.actions.approve}'
+- runFlow: ../../subflows/approve-sheet.yaml
+- extendedWaitUntil: { visible: '${output.t.common.toast.addedToCalendar}', timeout: 60000 }
+- runScript:
+    file: ../../scripts/harness.js
+    env: { ACTION: drain, TYPES: 'calendar_sync' }
+- runFlow: { file: ../../subflows/open-tab.yaml, env: { TAB: plan } }
+- extendedWaitUntil: { visible: { id: 'plan.timeline' }, timeout: 30000 }
