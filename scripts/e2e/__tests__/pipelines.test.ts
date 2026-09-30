@@ -64,7 +64,9 @@ test('mobile-e2e.yml: PR, manual and nightly only; emulator API 35 x86_64 google
   assert.equal(inputs['api-level'], 35);
   assert.equal(inputs.arch, 'x86_64');
   assert.equal(inputs.target, 'google_apis');
-  assert.match(String(inputs['emulator-options']), /-change-locale tr-TR/);
+  // tr-TR is set after readiness by prepare-emulator.sh; the emulator's -change-locale restarts the
+  // framework while the action's first adb command runs.
+  assert.doesNotMatch(String(inputs['emulator-options']), /-change-locale/);
   const runs = job.steps.map((s) => str(s.run)).join('\n');
   assert.match(runs, /expo prebuild --platform android/);
   assert.match(runs, /assembleRelease/);
@@ -86,6 +88,10 @@ test('mobile-e2e.yml: PR, manual and nightly only; emulator API 35 x86_64 google
   const prepare = readFileSync(join(ROOT, 'scripts/e2e/prepare-emulator.sh'), 'utf8');
   assert.match(prepare, /pm path android/);
   assert.match(prepare, /am get-current-user/);
+  assert.match(prepare, /persist\.sys\.locale/);
+  assert.match(prepare, /ctl\.restart zygote/);
+  assert.match(prepare, /E2E_LOCALE:-tr-TR/);
+  assert.doesNotMatch(script, /-change-locale/);
   assert.match(script, /install_apk\(\)/);
   // Failure reasons reach the job log; artifact paths avoid the characters the upload refuses.
   assert.match(script, /junit-failures\.ts/);

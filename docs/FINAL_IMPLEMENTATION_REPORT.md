@@ -218,6 +218,7 @@ Evidence compiled read-only at `d59d471` (branch `claude/magical-pascal-edvjgn`)
     - Its first full run (run 21) failed every flow at sign-in. The shared demo users hit Auth's one-code-per-60-seconds limit, and two shards re-seeded the same user under each other.
     - Fixed in `4b74183`: the harness resets the send timer and mailbox, the run uses one device, and failure reasons are printed to the log.
     - The next run (run 54) never reached the flows: Gradle ran out of JVM Metaspace in the native build and hung. The build's memory, ABI list and a step timeout are fixed in the commit after `5772ee8`.
+    - With that fix the APK builds in 18 minutes (`bd675ca`). The emulator step then failed before any flow: the emulator's own `-change-locale tr-TR` restarts the Android framework right after boot, and the emulator action's first `adb` command hit the restart. The locale is now set by `prepare-emulator.sh` after its readiness wait.
     - A green Maestro run is not claimed in this report.
   - iOS flows run on EAS Workflows (`apps/mobile/.eas/workflows/e2e-ios.yml`) once `EXPO_TOKEN` and the staging project exist (owner).
 
@@ -374,6 +375,7 @@ Where each tier ran, with counts at `1f85dfb` (details in [TESTING.md](TESTING.m
 - The `090_jobs_scheduler` pgTAP suite collided with the live `da_health_check` cron. The suite now takes the scheduler advisory lock and then locks the table.
 - The emulator failed in CI after the framework restarted post-boot. A readiness wait and install retries fixed it.
 - Mobile E2E run 54 never reached the flows. Gradle ran out of JVM Metaspace during the native (CMake) build and then hung until the job timeout. The build now raises the Gradle and Kotlin daemon memory, builds only the emulator's x86_64 ABI and has a 60-minute step timeout.
+- The emulator action failed with "Failure calling service input: Broken pipe" because `-change-locale` restarted the framework under its first `adb` command. `prepare-emulator.sh` now sets `tr-TR` itself (as root, then a framework restart and the readiness wait).
 - The CI security job failed once fetching Google Fonts. The push run of the same commit passed.
 - The backoffice eval-run spec (`e2e/ai.spec.ts`) failed on `17b7937`. This was a test bug, not a flake: the toast text also matched the `aria-live` announcer, and during streaming a hidden copy of the version panel can sit next to the swapped-in one. The assertions now take the first match, as the sibling specs do. It passed 12/12 when repeated locally.
 

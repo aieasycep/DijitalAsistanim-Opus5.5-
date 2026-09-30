@@ -8,10 +8,10 @@ if [[ ${#SERIALS[@]} -eq 0 ]]; then
   mapfile -t SERIALS < <(adb devices | awk 'NR > 1 && $2 == "device" { print $1 }')
 fi
 
-# The emulator restarts the Android framework after boot when it applies `-change-locale`, so
-# sys.boot_completed can read 1 while system_server is down: installs then fail with "Failure
-# calling service package / activity: Broken pipe". Ready means the package and activity services
-# answer three times in a row, two seconds apart (at most 4 minutes).
+# A framework restart (the locale change below) leaves sys.boot_completed at 1 while
+# system_server is down: device commands then fail with "Failure calling service package /
+# activity: Broken pipe". Ready means the package and activity services answer three times in a
+# row, two seconds apart (at most 4 minutes).
 wait_for_services() {
   local serial="$1" streak=0
   for ((tries = 0; tries < 120; tries++)); do
@@ -40,10 +40,29 @@ on_device() {
   return 1
 }
 
+# The flows expect Turkish. The emulator's own `-change-locale` restarts the framework right after
+# boot, racing the emulator action's first adb command, so the locale is set here instead: as root
+# (google_apis images allow it), then a framework restart and the same readiness wait.
+LOCALE="${E2E_LOCALE:-tr-TR}"
+set_locale() {
+  local serial="$1"
+  [[ "$(adb -s "$serial" shell getprop persist.sys.locale | tr -d '\r')" == "$LOCALE" ]] && return 0
+  adb -s "$serial" root >/dev/null
+  adb -s "$serial" wait-for-device
+  on_device "$serial" "setprop persist.sys.locale $LOCALE; setprop ctl.restart zygote"
+  sleep 5
+  wait_for_services "$serial"
+  if [[ "$(adb -s "$serial" shell getprop persist.sys.locale | tr -d '\r')" != "$LOCALE" ]]; then
+    echo "prepare-emulator: $serial locale is not $LOCALE" >&2
+    return 1
+  fi
+}
+
 for serial in "${SERIALS[@]}"; do
   adb -s "$serial" wait-for-device
   until [[ "$(adb -s "$serial" shell getprop sys.boot_completed | tr -d '\r')" == "1" ]]; do sleep 2; done
   wait_for_services "$serial"
+  set_locale "$serial"
   for key in window_animation_scale transition_animation_scale animator_duration_scale; do
     on_device "$serial" settings put global "$key" 0
   done

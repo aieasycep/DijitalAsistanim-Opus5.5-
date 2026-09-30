@@ -21,7 +21,7 @@ for ((i = 1; i < SHARDS; i++)); do
   port=$((5554 + 2 * i))
   nohup "$ANDROID_HOME/emulator/emulator" -avd "$AVD" -read-only -port "$port" -no-window \
     -no-snapshot -noaudio -no-boot-anim -camera-back none -gpu swiftshader_indirect \
-    -change-locale tr-TR -timezone Europe/Istanbul >"$OUT/emulator-$port.log" 2>&1 &
+    -timezone Europe/Istanbul >"$OUT/emulator-$port.log" 2>&1 &
 done
 
 mapfile -t SERIALS < <(for ((i = 0; i < SHARDS; i++)); do echo "emulator-$((5554 + 2 * i))"; done)
