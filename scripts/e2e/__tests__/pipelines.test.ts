@@ -95,6 +95,12 @@ test('mobile-e2e.yml: PR, manual and nightly only; emulator API 35 x86_64 google
   assert.match(script, /install_apk\(\)/);
   // Failure reasons reach the job log; artifact paths avoid the characters the upload refuses.
   assert.match(script, /junit-failures\.ts/);
+  // A sign-in canary runs first; the suite has a time cap below the job's; failures print the
+  // screen, the Auth log and the app's errors.
+  assert.match(script, /CANARY="apps\/mobile\/\.maestro\/flows\/m102\/auth\.yaml"/);
+  assert.match(script, /timeout --signal=INT/);
+  assert.match(script, /uiautomator dump/);
+  assert.match(script, /supabase_auth/);
   assert.match(script, /tr '":<>\|\*\?'/);
   assert.equal(String((wf.env as Record<string, unknown>).MAESTRO_SHARDS), '1');
 });

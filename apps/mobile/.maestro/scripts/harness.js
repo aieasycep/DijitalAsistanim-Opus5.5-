@@ -46,7 +46,8 @@ if (action === 'seed') {
   output.t = seeded.t;
 } else if (action === 'otp') {
   var code = '';
-  for (var attempt = 0; attempt < 20 && code === ''; attempt++) {
+  // The harness waits up to 15 s per call for the mail; two calls are enough.
+  for (var attempt = 0; attempt < 2 && code === ''; attempt++) {
     code = post('/otp', { email: EMAIL }).code;
   }
   if (code === '') throw new Error('harness: no OTP mail for ' + EMAIL);

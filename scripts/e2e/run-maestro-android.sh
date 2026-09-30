@@ -48,19 +48,22 @@ collect() {
 }
 trap collect EXIT
 
-sharding=()
-((SHARDS > 1)) && sharding=(--shard-split "$SHARDS")
-status=0
-"$HOME/.maestro/bin/maestro" test apps/mobile/.maestro \
-  --include-tags android \
-  --format junit --output "$OUT/junit.xml" \
-  --test-output-dir "$OUT" \
-  "${sharding[@]}" || status=$?
-
-if ((status != 0)); then
-  # Artifacts cannot always be downloaded: the reasons go into the job log as well.
+# Everything a failed run needs to be diagnosed from the job log alone (artifacts cannot always be
+# downloaded): the JUnit reasons, what the screen shows, the Auth and harness logs, the app's errors.
+diagnose() {
   echo "::group::Failed flows (JUnit)"
   node scripts/e2e/junit-failures.ts "$OUT"/junit*.xml || true
+  echo "::endgroup::"
+  echo "::group::Screen at the end (texts, ids)"
+  for serial in "${SERIALS[@]}"; do
+    adb -s "$serial" exec-out uiautomator dump /dev/tty 2>/dev/null |
+      grep -oE '(text|resource-id|content-desc)="[^"]+"' | head -n 80 || true
+  done
+  echo "::endgroup::"
+  echo "::group::Auth container log (tail)"
+  auth="$(docker ps --format '{{.Names}}' | grep -m1 supabase_auth || true)"
+  [[ -n "$auth" ]] && docker logs --tail 60 "$auth" 2>&1 | cut -c1-400 || true
+  echo "mailpit messages: $(curl -fsS http://127.0.0.1:54324/api/v1/messages?limit=1 2>/dev/null | grep -oE '"total":[0-9]+' || echo unknown)"
   echo "::endgroup::"
   echo "::group::Harness and functions log (tail)"
   tail -n 80 "$ROOT/build/e2e/harness.log" 2>/dev/null || true
@@ -69,9 +72,33 @@ if ((status != 0)); then
   echo "::group::App errors in logcat"
   for serial in "${SERIALS[@]}"; do
     adb -s "$serial" logcat -d 2>/dev/null |
-      grep -E 'FATAL EXCEPTION|AndroidRuntime|ReactNativeJS.*(Error|error|Warning)|E ReactNative' |
-      tail -n 60 || true
+      grep -E 'FATAL EXCEPTION|AndroidRuntime|ReactNativeJS|E ReactNative' |
+      tail -n 80 || true
   done
   echo "::endgroup::"
+}
+
+maestro() { "$HOME/.maestro/bin/maestro" "$@"; }
+
+# Canary: the sign-in flow first. Every other flow signs in the same way, so when it fails the
+# rest would only repeat it for hours; the run stops with the diagnosis instead.
+CANARY="apps/mobile/.maestro/flows/m102/auth.yaml"
+if ! maestro test "$CANARY" --format junit --output "$OUT/junit-canary.xml" \
+  --test-output-dir "$OUT/canary"; then
+  echo "::error::Canary $CANARY failed; the full suite was not started."
+  diagnose
+  exit 1
 fi
+
+sharding=()
+((SHARDS > 1)) && sharding=(--shard-split "$SHARDS")
+status=0
+# A time cap below the job's, so the diagnosis is still printed when the suite runs long.
+timeout --signal=INT "${MAESTRO_BUDGET:-150m}" "$HOME/.maestro/bin/maestro" test apps/mobile/.maestro \
+  --include-tags android \
+  --format junit --output "$OUT/junit.xml" \
+  --test-output-dir "$OUT" \
+  "${sharding[@]}" || status=$?
+
+((status != 0)) && diagnose
 exit "$status"
