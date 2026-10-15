@@ -7,7 +7,7 @@ catalog:
   react-dom: 19.2.3
   '@types/react': ~19.2.18
   '@types/react-dom': ~19.2.7
-  typescript: ~6.0.3
+  typescript: ~7.0.2
   zod: 4.6.5
   date-fns: 4.4.0
   '@date-fns/tz': 1.5.0
